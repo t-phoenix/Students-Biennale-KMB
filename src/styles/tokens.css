@@ -1,0 +1,60 @@
+/* Figma Designs (Tokenized) — local variables from file yiuNRibnTKzqEZVR0XpTRc */
+
+:root {
+  /* Color — text */
+  --color-text-primary: #000000;
+  --color-text-secondary: #545454;
+  --color-text-inverse: #ffffff;
+
+  /* Color — primary */
+  --color-primary-red: #e83239;
+  --color-primary-green: #b4cf45;
+  --color-primary-teal: #7bc8c0;
+  --color-primary-dark: #1b171c;
+
+  /* Color — neutral */
+  --color-neutral-white: #ffffff;
+  --color-neutral-black: #000000;
+  --color-neutral-gray-light: #e0e0e0;
+  --color-neutral-gray-mid: #d9d9d9;
+  --color-neutral-gray-dark: #757575;
+  --color-neutral-bg-light: #f8f8f8;
+
+  /* Color — accent */
+  --color-accent-blue: #dcebf2;
+
+  /* Type — Degular Variable (load font separately) */
+  --font-family: "Degular Variable", "Degular", system-ui, sans-serif;
+
+  --type-title-size: 26px;
+  --type-title-line: 34px;
+  --type-title-weight: 600;
+
+  --type-subtitle-size: 20px;
+  --type-subtitle-line: 28px;
+  --type-subtitle-weight: 500;
+
+  --type-body-size: 16px;
+  --type-body-line: 24px;
+  --type-body-weight: 400;
+
+  --type-body-emphasis-weight: 500;
+
+  --type-caption-size: 12px;
+  --type-caption-line: 16px;
+  --type-caption-weight: 400;
+
+  /* Spacing */
+  --spacing-none: 0;
+  --spacing-xs: 4px;
+  --spacing-md: 10px;
+  --spacing-xl: 20px;
+  --spacing-2xl: 24px;
+  --spacing-3xl: 32px;
+  --spacing-4xl: 40px;
+
+  /* Layout */
+  --page-max: 1440px;
+  --page-pad: 60px;
+  --nav-height: 60px;
+}
