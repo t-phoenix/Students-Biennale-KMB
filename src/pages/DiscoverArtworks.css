@@ -1,0 +1,50 @@
+.discover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-neutral-bg-light);
+}
+
+.discover__search {
+  flex: 0 0 auto;
+  padding: 20px var(--page-pad) 12px;
+  border-bottom: 1px solid var(--color-neutral-gray-light);
+  background: var(--color-neutral-white);
+}
+
+.discover__search-field {
+  display: block;
+  position: relative;
+  border-bottom: 1px solid var(--color-neutral-gray-dark);
+}
+
+.discover__search-field input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 14px 72px 14px 0;
+  font: inherit;
+  font-size: 18px;
+  outline: none;
+}
+
+.discover__clear {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.discover__stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+}

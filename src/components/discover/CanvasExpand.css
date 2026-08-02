@@ -1,0 +1,65 @@
+.canvas-expand {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+.canvas-expand__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.canvas-expand__sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: var(--color-neutral-white);
+  pointer-events: auto;
+  padding: var(--spacing-4xl) var(--page-pad);
+  overflow: auto;
+  box-sizing: border-box;
+}
+
+.canvas-expand__close {
+  border: 0;
+  background: transparent;
+  font-size: var(--type-caption-size);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--spacing-3xl);
+  padding: 0;
+}
+
+.canvas-expand__kind {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--type-caption-size);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+}
+
+.canvas-expand__title {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+}
+
+.canvas-expand__meta {
+  margin: 0 0 var(--spacing-3xl);
+  color: var(--color-text-secondary);
+}
+
+.canvas-expand__bio {
+  margin: 0;
+  max-width: 65ch;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}

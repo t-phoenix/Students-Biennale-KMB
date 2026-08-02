@@ -1,0 +1,62 @@
+.canvas-expand {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.canvas-expand__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.28);
+  border: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.canvas-expand__sheet {
+  position: fixed;
+  top: var(--header-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background: var(--color-neutral-white);
+  color: var(--color-text-primary);
+  overflow: auto;
+  pointer-events: auto;
+  padding: 40px var(--page-pad);
+  will-change: transform, opacity;
+}
+
+.canvas-expand__back {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin-bottom: 24px;
+  font-size: var(--type-caption-size);
+  letter-spacing: 0.08em;
+}
+
+.canvas-expand__kind {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: var(--type-caption-size);
+  color: var(--color-text-secondary);
+}
+
+.canvas-expand__sheet h2 {
+  margin: 8px 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 600;
+}
+
+.canvas-expand__meta {
+  color: var(--color-text-secondary);
+}
+
+.canvas-expand__bio {
+  max-width: 720px;
+  margin-top: 24px;
+  line-height: var(--type-body-line);
+}

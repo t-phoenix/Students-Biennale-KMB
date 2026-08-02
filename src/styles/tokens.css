@@ -4,6 +4,7 @@
   /* Color — text */
   --color-text-primary: #000000;
   --color-text-secondary: #545454;
+  --color-text-tertiary: #c3c3c3;
   --color-text-inverse: #ffffff;
 
   /* Color — primary */
@@ -57,4 +58,5 @@
   --page-max: 1440px;
   --page-pad: 60px;
   --nav-height: 60px;
+  --header-h: 60px;
 }

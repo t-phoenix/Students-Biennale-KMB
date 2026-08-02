@@ -1,0 +1,60 @@
+.canvas-tile {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--color-neutral-white);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+}
+
+.canvas-tile.is-dimmed {
+  opacity: 0.28;
+}
+
+.canvas-tile__media {
+  width: 100%;
+  height: calc(100% - 72px);
+  object-fit: cover;
+  background: var(--color-neutral-gray-mid);
+  pointer-events: none;
+}
+
+.canvas-tile__media--empty {
+  background: linear-gradient(
+    135deg,
+    var(--color-accent-blue),
+    var(--color-neutral-gray-light)
+  );
+}
+
+.canvas-tile__caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  font-family: var(--font-family);
+}
+
+.canvas-tile__kind {
+  font-size: 10px;
+  line-height: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-secondary);
+}
+
+.canvas-tile__name {
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.canvas-tile__meta {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--color-text-secondary);
+}

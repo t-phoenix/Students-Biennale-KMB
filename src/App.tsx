@@ -1,37 +1,47 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <main style={{ padding: "var(--page-pad)" }}>
-      <h1
-        style={{
-          fontSize: "var(--type-title-size)",
-          lineHeight: "var(--type-title-line)",
-          fontWeight: "var(--type-title-weight)",
-          margin: 0,
-        }}
-      >
-        {title}
-      </h1>
-      <p style={{ color: "var(--color-text-secondary)", marginTop: "var(--spacing-md)" }}>
-        Scaffold ready — Figma build next.
-      </p>
-    </main>
-  );
-}
+import { Layout } from "./components/Layout";
+import { Home } from "./pages/Home";
+import { DiscoverArtworks } from "./pages/DiscoverArtworks";
+import { EditionShell } from "./pages/EditionShell";
+import {
+  ArtistsView,
+  ArtworksView,
+  CuratorsView,
+  VenueView,
+} from "./pages/EditionViews";
+import { Detail } from "./pages/Detail";
+import { Programmes } from "./pages/Programmes";
+import { Press } from "./pages/Press";
+import { EDITIONS_PATH, LATEST_EDITION } from "./data/site";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Placeholder title="Home" />} />
-        <Route path="/artworks" element={<Placeholder title="Discover Artworks" />} />
-        <Route path="/archive" element={<Navigate to="/artworks" replace />} />
-        <Route path="/editions/*" element={<Placeholder title="Editions" />} />
-        <Route path="/programmes" element={<Placeholder title="Programmes" />} />
-        <Route path="/press" element={<Placeholder title="Press" />} />
-        <Route path="/about" element={<Navigate to={{ pathname: "/", hash: "about" }} replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route element={<Layout />}>
+          <Route index element={<Home />} />
+          <Route path="artworks" element={<DiscoverArtworks />} />
+          <Route path="archive" element={<Navigate to="/artworks" replace />} />
+          <Route path="editions" element={<Navigate to={EDITIONS_PATH} replace />} />
+          <Route path="editions/:yearId" element={<EditionShell />}>
+            <Route index element={<Navigate to="curators" replace />} />
+            <Route path="curators" element={<CuratorsView />} />
+            <Route path="artworks" element={<ArtworksView />} />
+            <Route path="artists" element={<ArtistsView />} />
+            <Route path="venue" element={<VenueView />} />
+          </Route>
+          <Route path="editions/:yearId/:kindSeg/:id" element={<Detail />} />
+          <Route path="programmes" element={<Programmes />} />
+          <Route path="press" element={<Press />} />
+          <Route
+            path="about"
+            element={<Navigate to={{ pathname: "/", hash: "about" }} replace />}
+          />
+          <Route
+            path="*"
+            element={<Navigate to="/" replace state={{ from: LATEST_EDITION.id }} />}
+          />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

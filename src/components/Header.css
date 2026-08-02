@@ -1,0 +1,120 @@
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: var(--nav-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  padding: 0 var(--page-pad);
+  background: var(--color-neutral-bg-light);
+}
+
+.site-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.site-header__brand img {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.site-header__brand-mark {
+  width: 28px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.site-header__brand-text {
+  width: 42px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.site-header__discover {
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+  font-weight: var(--type-caption-weight);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  padding: 10px;
+  flex-shrink: 0;
+}
+
+.site-header__discover.is-active,
+.site-header__discover:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.site-header__nav a,
+.site-header__sep {
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+  font-weight: var(--type-caption-weight);
+  color: var(--color-text-primary);
+  text-transform: none;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.site-header__nav a[data-label="editions"] {
+  text-transform: uppercase;
+}
+
+.site-header__nav a.is-active {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.site-header__sep {
+  padding-inline: 0;
+  pointer-events: none;
+}
+
+.site-header__kbf {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.site-header__kbf-mark {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+
+.site-header__kbf-text {
+  width: 68px;
+  height: 34px;
+  object-fit: contain;
+}
+
+@media (max-width: 900px) {
+  .site-header {
+    padding: 0 16px;
+    flex-wrap: wrap;
+    height: auto;
+    min-height: var(--nav-height);
+    padding-block: 8px;
+  }
+
+  .site-header__kbf-text {
+    display: none;
+  }
+}

@@ -1,0 +1,24 @@
+.site-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-neutral-white);
+}
+
+.site-layout__main {
+  flex: 1 1 auto;
+}
+
+.site-layout--discover {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.site-layout--discover .site-layout__main {
+  min-height: 0;
+  height: calc(100vh - var(--nav-height));
+}
+
+:root {
+  --header-h: var(--nav-height);
+}
