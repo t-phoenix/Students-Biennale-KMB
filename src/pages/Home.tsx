@@ -1,26 +1,23 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { gsap, useGSAP, withMotionPreference } from "../lib/motion";
+import { gsap, ScrollTrigger, useGSAP, withMotionPreference } from "../lib/motion";
 import { SpotlightModal } from "../components/SpotlightModal";
 import "./Home.css";
 
 const UPDATES = [
   {
     id: "u1",
-    edition: "2027–28",
-    label: "Update 01",
+    label: "UPDATE 01",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
   {
     id: "u2",
-    edition: "2027–28",
-    label: "Update 02",
+    label: "UPDATE 02",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
   {
     id: "u3",
-    edition: "2027–28",
-    label: "Update 03",
+    label: "UPDATE 03",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
 ] as const;
@@ -60,6 +57,12 @@ const TEAM_COLS = [
   [["Social Media and Catalogue", "Mishal MA"]],
 ];
 
+function CtaMark() {
+  return (
+    <img className="home-cta__mark" src="/icons/explore.svg" alt="" width={31} height={52} />
+  );
+}
+
 export function Home() {
   const rootRef = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
@@ -77,12 +80,37 @@ export function Home() {
 
       withMotionPreference({
         animate: () => {
+          const heroBg = root.querySelector<HTMLElement>(".home-hero__slides");
+          if (heroBg) {
+            gsap.fromTo(
+              heroBg,
+              { scale: 1.06 },
+              {
+                scale: 1,
+                duration: 1.6,
+                ease: "power2.out",
+              }
+            );
+          }
+
+          const credit = root.querySelector(".home-hero__credit");
+          const dots = root.querySelector(".home-hero__dots");
+          gsap.from([credit, dots].filter(Boolean), {
+            autoAlpha: 0,
+            y: 16,
+            duration: 0.9,
+            delay: 0.35,
+            stagger: 0.08,
+            ease: "power3.out",
+          });
+
           gsap.from(".home-hero__card", {
             autoAlpha: 0,
-            stagger: 0.08,
-            duration: 0.45,
-            ease: "power2.out",
-            clearProps: "transform",
+            y: 28,
+            stagger: 0.1,
+            duration: 0.75,
+            delay: 0.2,
+            ease: "power3.out",
           });
 
           const slides = gsap.utils.toArray<HTMLElement>(".home-hero__slide");
@@ -92,9 +120,9 @@ export function Home() {
             const tl = gsap.timeline({ repeat: -1 });
             slides.forEach((el, i) => {
               const next = slides[(i + 1) % slides.length];
-              tl.to({}, { duration: 4 })
-                .to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.out" }, ">")
-                .to(next, { autoAlpha: 1, duration: 0.6, ease: "power2.out" }, "<")
+              tl.to({}, { duration: 5 })
+                .to(el, { autoAlpha: 0, duration: 0.85, ease: "power2.inOut" }, ">")
+                .to(next, { autoAlpha: 1, duration: 0.85, ease: "power2.inOut" }, "<")
                 .call(() => setSlide((i + 1) % slides.length));
             });
             const hero = root.querySelector<HTMLElement>(".home-hero");
@@ -112,18 +140,53 @@ export function Home() {
             };
           }
 
+          // One-shot section reveals — no reverse / no in-out loop
           gsap.utils.toArray<HTMLElement>(".home-section").forEach((section) => {
-            gsap.from(section, {
+            const bits = section.querySelectorAll<HTMLElement>(
+              ".fig-label, .home-edition__body > *, .home-sensing__links > *, .home-sensing__media > *, .home-cta, .home-programmes__banner, .home-programmes__rail button, .home-programmes__thumbs img, .home-press__featured, .home-press__list li, .home-about__intro, .home-about__block, .home-about__team, .home-about__sponsors"
+            );
+            if (!bits.length) return;
+
+            gsap.from(bits, {
               autoAlpha: 0,
-              y: 36,
-              duration: 0.65,
-              ease: "power2.out",
-              scrollTrigger: { trigger: section, start: "top 82%", once: true },
+              y: 28,
+              duration: 0.8,
+              stagger: 0.05,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: section,
+                start: "top 80%",
+                once: true,
+              },
             });
           });
+
+          gsap.utils
+            .toArray<HTMLElement>(".home-sensing__wide img, .home-programmes__banner img")
+            .forEach((img) => {
+              gsap.fromTo(
+                img,
+                { yPercent: -3 },
+                {
+                  yPercent: 3,
+                  ease: "none",
+                  scrollTrigger: {
+                    trigger: img.closest("section") ?? img,
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: 1,
+                  },
+                }
+              );
+            });
+
+          requestAnimationFrame(() => ScrollTrigger.refresh());
         },
         onReduce: () => {
-          gsap.set(".home-hero__card, .home-section", { autoAlpha: 1, y: 0 });
+          gsap.set(
+            ".home-hero__card, .home-hero__credit, .home-hero__dots, .home-section, .home-reveal, .fig-label, .fig-body",
+            { autoAlpha: 1, y: 0, clearProps: "transform" }
+          );
           gsap.set(".home-hero__slide", { autoAlpha: 0 });
           gsap.set(".home-hero__slide:first-child", { autoAlpha: 1 });
         },
@@ -163,15 +226,14 @@ export function Home() {
             >
               <div className="home-hero__card-inner">
                 <header className="home-hero__card-head">
-                  <p className="home-hero__card-edition">{item.edition}</p>
                   <h2>{item.label}</h2>
+                  {i > 0 ? (
+                    <span className="home-hero__card-close" aria-hidden>
+                      <img src="/home/close.svg" alt="" width={15.46} height={16} />
+                    </span>
+                  ) : null}
                 </header>
                 <p className="home-hero__card-body">{item.body}</p>
-                {i === 0 ? (
-                  <p className="home-hero__card-count" aria-hidden>
-                    {String(i + 1).padStart(2, "0")} / {String(UPDATES.length).padStart(2, "0")}
-                  </p>
-                ) : null}
               </div>
             </article>
           ))}
@@ -215,7 +277,7 @@ export function Home() {
             ))}
             <button
               type="button"
-              className="home-text-btn"
+              className="home-text-btn home-reveal"
               onClick={() => setEditionOpen(true)}
             >
               Read more...
@@ -266,9 +328,7 @@ export function Home() {
             <br />
             Edition
           </span>
-          <span className="home-cta__mark" aria-hidden>
-            →
-          </span>
+          <CtaMark />
         </Link>
       </section>
 
@@ -345,9 +405,7 @@ export function Home() {
                 <br />
                 more
               </span>
-              <span className="home-cta__mark" aria-hidden>
-                →
-              </span>
+              <CtaMark />
             </Link>
           </div>
         </div>
@@ -379,8 +437,8 @@ export function Home() {
         </div>
         <div className="fig-row home-about__block">
           <div className="home-about__logo-sb" aria-label="Students' Biennale">
-            <img src="/home/logo-sb-mark-about.svg" alt="" width={72} height={100} />
-            <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={120} height={48} />
+            <img src="/home/logo-sb-mark-about.svg" alt="" width={71} height={102} />
+            <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={118} height={47} />
           </div>
           <div className="home-about__sb-copy">
             <p className="fig-body">

@@ -8,9 +8,9 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   padding: 0 var(--page-pad);
-  max-width: var(--page-max);
-  margin-inline: auto;
   width: 100%;
+  max-width: none;
+  margin-inline: 0;
   box-sizing: border-box;
   background: var(--color-neutral-bg-light);
 }
@@ -111,14 +111,27 @@
 
 @media (max-width: 900px) {
   .site-header {
-    padding: 0 16px;
+    padding: 8px var(--page-pad);
     flex-wrap: wrap;
     height: auto;
     min-height: var(--nav-height);
-    padding-block: 8px;
+    row-gap: 8px;
+  }
+
+  .site-header__nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .site-header__kbf-text {
     display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-header__discover {
+    font-size: 11px;
   }
 }

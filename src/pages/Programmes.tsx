@@ -1,64 +1,80 @@
 import { useRef, useState } from "react";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import {
+  INTERNATIONAL_AWARDS,
+  INTERNATIONAL_AWARDS_CONTENT_MISSING,
+  NATIONAL_AWARDS,
+  PAST_WORKSHOPS,
+} from "../data/site";
 import "./Programmes.css";
 
+/**
+ * "UPCOMING WORKSHOPS" cards (Figma 6:2326) are intentionally lorem-ipsum
+ * placeholder copy in the design itself ("workshop 01/02/03" + standard
+ * lorem, blank Date/Place values) — keep as placeholder, that is the
+ * confirmed design intent, not a content gap.
+ */
 const WORKSHOPS = [
   {
     id: "w1",
     title: "workshop 01",
     date: "TBA",
-    time: "TBA",
+    place: "TBA",
     blurb:
-      "Material practice and peer critique sessions with mid-career mentors across Fort Kochi venues.",
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
     image: "/programmes/workshop-1.jpg",
   },
   {
     id: "w2",
     title: "workshop 02",
     date: "TBA",
-    time: "TBA",
-    blurb: "Collaborative making labs that treat the classroom as shared ground for experiment.",
+    place: "TBA",
+    blurb:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
     image: "/programmes/workshop-2.jpg",
   },
   {
     id: "w3",
     title: "workshop 03",
     date: "TBA",
-    time: "TBA",
-    blurb: "Short intensive sessions supporting research, publishing, and collective work.",
+    place: "TBA",
+    blurb:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
     image: "/programmes/workshop-3.jpg",
   },
 ];
 
-const PAST = [
-  { title: "Peer Critique Intensive", facilitators: "Facilitators · Kochi", year: "2019" },
-  { title: "Regional Mentorship Circles", facilitators: "Collectives · Multi-city", year: "2018" },
-  { title: "Material Residencies", facilitators: "Visiting mentors", year: "2018" },
-  { title: "Pedagogy Labs", facilitators: "Educators network", year: "2017" },
-];
-
+/**
+ * Residencies (Figma node 6:2495–6:2541): the full-bleed section is NOT
+ * photo-only — it carries a real residency card (title/host/period/venue/
+ * awardees + a copy paragraph). Only one residency is present in the design
+ * (no carousel of multiple residencies), so RESIDENCIES_CONTENT_UNCONFIRMED
+ * has been flipped to false in site.ts. The source paragraph itself trails
+ * off mid-sentence ("Held from 10 June to 10 July 2026,") in the design —
+ * reproduced verbatim rather than guessed/completed.
+ */
 const RESIDENCIES = [
   {
-    id: "r1",
+    id: "national-residency-2026",
     title: "Students' Biennale National Residency Award Programme",
-    host: "Kochi Biennale Foundation",
-    period: "2025–26",
-    venue: "Fort Kochi",
-    awardees: "Selected participants",
-    copy: "A focused residency for collaborative material research with visiting mentors and peer exchange.",
-  },
-  {
-    id: "r2",
-    title: "Pedagogy Labs Residency",
-    host: "KBF Education",
-    period: "2024",
-    venue: "Kochi",
-    awardees: "Regional cohorts",
-    copy: "Workshops that treat the classroom as a shared ground for experiment and care.",
+    host: "KBF",
+    period: "10 June – 10 July 2026",
+    venue: "SMS Hall, Mattancherry, Kochi, Kerala",
+    awardees: "Reppandee Lepcha & Durgesh Prajapati",
+    copy: "As an extension of the Kochi Biennale Foundation's commitment to supporting emerging artistic practices beyond the exhibition period, the Foundation hosted two of the seven recipients of the Students' Biennale Tata Trusts National Awards through the KBF Residency Programme. Held from 10 June to 10 July 2026,",
   },
 ];
 
-const AWARDS = [
+/**
+ * "INTERNATIONAL AWARDS" section: get_design_context on 6:2326 does show
+ * text positioned under this heading, but it duplicates three of the six
+ * winners already captured in `NATIONAL_AWARDS` (same Indian-institution
+ * winners of the "Students' Biennale Tata Trusts National Awards" mentioned
+ * in the Residencies copy) rather than distinct international-award data.
+ * Treated as a Figma placeholder/duplication artifact, not real content —
+ * left as a generic placeholder per INTERNATIONAL_AWARDS_CONTENT_MISSING.
+ */
+const INTERNATIONAL_PLACEHOLDER_AWARDS = [
   { name: "Awardee Name", artwork: "Artwork title", institution: "Institution" },
   { name: "Awardee Name", artwork: "Artwork title", institution: "Institution" },
   { name: "Awardee Name", artwork: "Artwork title", institution: "Institution" },
@@ -118,6 +134,9 @@ export function Programmes() {
   );
 
   const residency = RESIDENCIES[resIndex];
+  const internationalAwards = INTERNATIONAL_AWARDS_CONTENT_MISSING
+    ? INTERNATIONAL_PLACEHOLDER_AWARDS
+    : INTERNATIONAL_AWARDS;
 
   return (
     <div ref={root} className="programmes">
@@ -147,7 +166,7 @@ export function Programmes() {
               <p className="programmes__meta">
                 Date: {p.date}
                 <br />
-                Time: {p.time}
+                Place: {p.place}
               </p>
               <p>{p.blurb}</p>
               <button type="button">Know more...</button>
@@ -159,11 +178,15 @@ export function Programmes() {
       <section className="programmes__block prog-reveal">
         <h2>Past WORKSHOPS</h2>
         <ul className="programmes__completed">
-          {PAST.map((item) => (
-            <li key={item.title}>
+          {PAST_WORKSHOPS.map((item) => (
+            <li key={item.id}>
               <div>
                 <span className="programmes__past-title">{item.title}</span>
-                <span className="programmes__past-sub">{item.facilitators}</span>
+                <span className="programmes__past-sub">
+                  Facilitators: {item.facilitators}
+                  <br />
+                  {item.place}
+                </span>
               </div>
               <span>{item.year}</span>
             </li>
@@ -199,39 +222,56 @@ export function Programmes() {
             </dl>
             <p>{residency.copy}</p>
             <button type="button">Learn more...</button>
-            <div className="programmes__dots">
-              {RESIDENCIES.map((r, i) => (
-                <button
-                  key={r.id}
-                  type="button"
-                  className={i === resIndex ? "is-active" : undefined}
-                  aria-label={`Residency ${i + 1}`}
-                  onClick={() => setResIndex(i)}
-                />
-              ))}
-            </div>
+            {RESIDENCIES.length > 1 ? (
+              <div className="programmes__dots">
+                {RESIDENCIES.map((r, i) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    className={i === resIndex ? "is-active" : undefined}
+                    aria-label={`Residency ${i + 1}`}
+                    onClick={() => setResIndex(i)}
+                  />
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
       </section>
 
-      {(["INTERNATIONAL AWARDS", "NATIONAL AWARDS"] as const).map((heading) => (
-        <section key={heading} className="programmes__block prog-reveal">
-          <h2>{heading}</h2>
-          <div className="programmes__awards">
-            {AWARDS.map((a, i) => (
-              <article key={`${heading}-${i}`}>
-                <div className="programmes__award-media" aria-hidden />
-                <h3>{a.name}</h3>
-                <p>Artwork: {a.artwork}</p>
-                <p>Institution: {a.institution}</p>
-              </article>
-            ))}
-          </div>
-          <button type="button" className="programmes__more">
-            View MORE →
-          </button>
-        </section>
-      ))}
+      <section className="programmes__block prog-reveal">
+        <h2>INTERNATIONAL AWARDS</h2>
+        <div className="programmes__awards">
+          {internationalAwards.map((a, i) => (
+            <article key={`intl-${i}`}>
+              <div className="programmes__award-media" aria-hidden />
+              <h3>{a.name}</h3>
+              <p>Artwork: {a.artwork}</p>
+              <p>Institution: {a.institution}</p>
+            </article>
+          ))}
+        </div>
+        <button type="button" className="programmes__more">
+          View MORE →
+        </button>
+      </section>
+
+      <section className="programmes__block prog-reveal">
+        <h2>NATIONAL AWARDS</h2>
+        <div className="programmes__awards">
+          {NATIONAL_AWARDS.map((a) => (
+            <article key={a.id}>
+              <img src="/programmes/award.jpg" alt="" className="programmes__award-media" />
+              <h3>{a.name}</h3>
+              <p>Artwork: {a.artwork}</p>
+              <p>Institution: {a.institution}</p>
+            </article>
+          ))}
+        </div>
+        <button type="button" className="programmes__more">
+          View MORE →
+        </button>
+      </section>
     </div>
   );
 }

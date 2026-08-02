@@ -31,16 +31,16 @@ export function EditionShell() {
             </NavLink>
           ))}
         </nav>
-        <details className="edition__prev">
-          <summary>Previous EDITIONS</summary>
+        <div className="edition__prev">
+          <p className="edition__prev-label">Previous EDITIONS</p>
           <ul>
             {PREVIOUS_EDITIONS.map((y) => (
               <li key={y}>
-                <NavLink to={`/editions/${y}/curators`}>{y}</NavLink>
+                <NavLink to={`/editions/${y}/about`}>{y}</NavLink>
               </li>
             ))}
           </ul>
-        </details>
+        </div>
       </aside>
       <div className="edition__main">
         <Outlet />

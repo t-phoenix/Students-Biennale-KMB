@@ -1,5 +1,11 @@
-<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="31.2148" height="18.3612" viewBox="0 0 31.2148 18.3612" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="Group">
-<path id="Vector" d="M31.2148 0V2.03028L0 18.3612V16.3291L31.2148 0Z" fill="black"/>
-</g>
+<svg width="31" height="52" viewBox="0 0 31 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M31 0L0 16.3V18.3L31 2V0Z" fill="black"/>
+  <path d="M28.5 5.6L0 20.6V22.6L28.5 7.6V5.6Z" fill="black"/>
+  <path d="M26 11.2L0 25V27L26 13.2V11.2Z" fill="black"/>
+  <path d="M31 16.8L0 29.4V31.4L31 18.8V16.8Z" fill="black"/>
+  <path d="M31 22.4L0 33.8V35.8L31 24.4V22.4Z" fill="black"/>
+  <path d="M31 28L0 38.2V40.2L31 30V28Z" fill="black"/>
+  <path d="M31 33.6L0 42.6V44.6L31 35.6V33.6Z" fill="black"/>
+  <path d="M31 39.2L0 47V49L31 41.2V39.2Z" fill="black"/>
+  <path d="M31 44.8L0 51.4V52L31 46.8V44.8Z" fill="black"/>
 </svg>

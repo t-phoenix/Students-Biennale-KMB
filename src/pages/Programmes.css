@@ -10,10 +10,10 @@
 .programmes__hero-media {
   display: block;
   width: 100%;
-  max-width: var(--page-max);
-  margin-inline: auto;
-  height: min(520px, 58vh);
-  object-fit: cover;
+  max-width: none;
+  margin-inline: 0;
+  height: clamp(280px, 52vh, 560px);
+  object-fit: contain;
 }
 
 .programmes__hero-dots {
@@ -39,10 +39,11 @@
 
 .programmes__block {
   display: grid;
-  grid-template-columns: 295px minmax(0, 1fr);
-  gap: 40px;
-  max-width: var(--page-max);
-  margin-inline: auto;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  gap: clamp(16px, 2.8vw, 40px);
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
   padding: 72px var(--page-pad);
   box-sizing: border-box;
 }
@@ -70,7 +71,7 @@
 
 .programmes__card-media {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 314 / 273;
   object-fit: cover;
   background: var(--color-neutral-gray-mid);
 }
@@ -144,9 +145,10 @@
 
 .programmes__residencies {
   position: relative;
-  max-width: var(--page-max);
-  margin: 0 auto 40px;
-  min-height: 480px;
+  width: 100%;
+  max-width: none;
+  margin: 0 0 40px;
+  min-height: clamp(320px, 50vh, 520px);
   overflow: hidden;
   display: flex;
   justify-content: flex-end;
@@ -226,7 +228,10 @@
 }
 
 .programmes__award-media {
-  aspect-ratio: 4 / 3;
+  display: block;
+  width: 100%;
+  aspect-ratio: 315 / 273;
+  object-fit: cover;
   background: var(--color-neutral-gray-mid);
   margin-bottom: 12px;
 }
@@ -258,11 +263,11 @@
   }
 
   .programmes__block {
-    padding: 40px 20px;
+    padding: 40px var(--page-pad);
   }
 
   .programmes__residencies {
-    margin: 0 16px 40px;
+    margin: 0 0 40px;
     justify-content: center;
   }
 }

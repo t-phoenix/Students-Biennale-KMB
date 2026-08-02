@@ -9,6 +9,7 @@ import {
   CuratorsView,
   VenueView,
 } from "./pages/EditionViews";
+import { EditionOverview } from "./pages/EditionOverview";
 import { Detail } from "./pages/Detail";
 import { Programmes } from "./pages/Programmes";
 import { Press } from "./pages/Press";
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="artists" element={<ArtistsView />} />
             <Route path="venue" element={<VenueView />} />
           </Route>
+          <Route path="editions/:yearId/about" element={<EditionOverview />} />
           <Route path="editions/:yearId/:kindSeg/:id" element={<Detail />} />
           <Route path="programmes" element={<Programmes />} />
           <Route path="press" element={<Press />} />
