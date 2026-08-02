@@ -33,7 +33,15 @@ export function Layout() {
     };
     raf = requestAnimationFrame(loop);
 
+    const onSpotlight = (e: Event) => {
+      const open = Boolean((e as CustomEvent<{ open: boolean }>).detail?.open);
+      if (open) lenis.stop();
+      else lenis.start();
+    };
+    window.addEventListener("spotlight:change", onSpotlight);
+
     return () => {
+      window.removeEventListener("spotlight:change", onSpotlight);
       cancelAnimationFrame(raf);
       lenis.destroy();
       lenisRef.current = null;

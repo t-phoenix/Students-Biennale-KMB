@@ -1,5 +1,9 @@
 .press {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
   padding: 56px var(--page-pad) 80px;
+  box-sizing: border-box;
 }
 
 .press__layout {

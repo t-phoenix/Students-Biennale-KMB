@@ -83,18 +83,20 @@ function CuratorPortrait({
       className="edition-card edition-card--curator"
       to={`/editions/${yearId}/curators/${curator.id}`}
     >
-      {curator.image ? (
-        <img
-          className="edition-card__media edition-card__media--portrait"
-          src={curator.image}
-          alt=""
-        />
-      ) : (
-        <div
-          className="edition-card__media edition-card__media--portrait edition-card__media--placeholder"
-          aria-hidden
-        />
-      )}
+      <div
+        className={`edition-card__frame${curator.image ? "" : " edition-card__frame--placeholder"}`}
+        aria-hidden={!curator.image}
+      >
+        {curator.image ? (
+          <img
+            src={curator.image}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            style={{ objectPosition: curator.focus ?? "50% 20%" }}
+          />
+        ) : null}
+      </div>
       <h3>{curator.name}</h3>
     </Link>
   );

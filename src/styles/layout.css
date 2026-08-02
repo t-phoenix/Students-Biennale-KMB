@@ -1,0 +1,64 @@
+/* Figma Designs (Tokenized) — 1440 canvas
+   Label rail 295px right-aligned · 40px gutter · content from x=395 */
+
+.fig-page {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
+}
+
+.fig-row {
+  display: grid;
+  grid-template-columns: 295px minmax(0, 1fr);
+  column-gap: 40px;
+  padding-inline: var(--page-pad);
+}
+
+.fig-label {
+  margin: 0;
+  text-align: right;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+  color: var(--color-text-primary);
+}
+
+.fig-label--sub {
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  font-weight: var(--type-subtitle-weight);
+}
+
+.fig-body {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  font-weight: var(--type-body-weight);
+}
+
+.fig-link-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  font-weight: 500;
+  text-align: right;
+}
+
+.fig-link-more span {
+  display: block;
+  text-align: right;
+}
+
+@media (max-width: 900px) {
+  .fig-row {
+    grid-template-columns: 1fr;
+    column-gap: 16px;
+    padding-inline: 16px;
+  }
+
+  .fig-label {
+    text-align: left;
+  }
+}

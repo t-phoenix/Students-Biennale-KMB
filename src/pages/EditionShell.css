@@ -1,8 +1,13 @@
+/* Edition shell — Figma 6:1310 (1440 canvas) */
 .edition {
+  width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
   display: grid;
-  grid-template-columns: minmax(240px, 295px) minmax(0, 1fr);
-  gap: 40px;
-  padding: 56px var(--page-pad) 80px;
+  grid-template-columns: 295px minmax(0, 1fr);
+  column-gap: 40px;
+  padding: 63px var(--page-pad) 80px;
+  box-sizing: border-box;
   min-height: 60vh;
 }
 
@@ -74,6 +79,8 @@
 
 .edition__main {
   min-width: 0;
+  width: 100%;
+  max-width: 985px;
 }
 
 @media (max-width: 900px) {
@@ -87,5 +94,9 @@
   .edition__prev ul {
     text-align: left;
     align-items: flex-start;
+  }
+
+  .edition__main {
+    max-width: none;
   }
 }

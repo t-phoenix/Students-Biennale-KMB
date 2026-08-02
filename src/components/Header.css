@@ -8,6 +8,10 @@
   justify-content: space-between;
   gap: var(--spacing-md);
   padding: 0 var(--page-pad);
+  max-width: var(--page-max);
+  margin-inline: auto;
+  width: 100%;
+  box-sizing: border-box;
   background: var(--color-neutral-bg-light);
 }
 

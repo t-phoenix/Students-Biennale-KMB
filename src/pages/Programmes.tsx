@@ -80,6 +80,22 @@ export function Programmes() {
         stagger: 0.08,
         ease: "power2.out",
       });
+
+      const heroTl = gsap.timeline({ repeat: -1 });
+      for (let i = 0; i < 5; i += 1) {
+        heroTl
+          .call(() => setHeroSlide(i))
+          .to({}, { duration: 3.5 });
+      }
+      const hero = root.current?.querySelector<HTMLElement>(".programmes__hero");
+      const pause = () => heroTl.pause();
+      const play = () => heroTl.play();
+      hero?.addEventListener("pointerenter", pause);
+      hero?.addEventListener("pointerleave", play);
+      return () => {
+        hero?.removeEventListener("pointerenter", pause);
+        hero?.removeEventListener("pointerleave", play);
+      };
     },
     { scope: root }
   );

@@ -13,7 +13,7 @@ export function EditionShell() {
   const { yearId = LATEST_EDITION.id } = useParams();
 
   return (
-    <div className="edition">
+    <div className="edition" data-node-id="6:1310">
       <aside className="edition__rail">
         <h1>
           Students&apos; Biennale

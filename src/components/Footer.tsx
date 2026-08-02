@@ -5,7 +5,7 @@ export function Footer() {
   return (
     <footer className="site-footer">
       <div className="site-footer__brand">
-        <img src="/logo-kbf-text.png" alt="Kochi Biennale Foundation" />
+        <img src="/logo-kbf-text.svg" alt="Kochi Biennale Foundation" />
         <p>Kochi Biennale Foundation, Indian Chamber Centenary Building, Kochi.</p>
         <p>© Kochi Biennale Foundation</p>
       </div>

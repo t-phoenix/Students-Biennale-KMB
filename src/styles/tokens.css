@@ -53,8 +53,9 @@
   --spacing-2xl: 24px;
   --spacing-3xl: 32px;
   --spacing-4xl: 40px;
+  --spacing-5xl: 64px;
 
-  /* Layout */
+  /* Layout — Figma 1440 canvas */
   --page-max: 1440px;
   --page-pad: 60px;
   --nav-height: 60px;

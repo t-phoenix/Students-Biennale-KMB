@@ -146,6 +146,8 @@ export type CuratorCard = {
   region: string;
   note: string;
   image?: string;
+  /** CSS object-position — keeps heads framed in the 315×360 crop */
+  focus?: string;
 };
 
 export type CuratorZone = {
@@ -166,14 +168,16 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "Savyasachi Anju Prabir",
         region: "Zone 1",
         note: "Regional mentorship · North & West",
-        image: "/curators/savyasachi.jpg",
+        image: "/curators/savyasachi.png",
+        focus: "50% 30%",
       },
       {
         id: "sukanya",
         name: "Sukanya Deb",
         region: "Zone 1",
         note: "Regional mentorship · North & West",
-        image: "/curators/sukanya.jpg",
+        image: "/curators/sukanya.png",
+        focus: "50% 18%",
       },
     ],
   },
@@ -187,7 +191,8 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "GABAA",
         region: "Zone 2",
         note: "te(a)m-plurality — Sensing Grounds curatorial note",
-        image: "/curators/gabaa.jpg",
+        image: "/curators/gabaa.png",
+        focus: "50% 38%",
       },
     ],
   },
@@ -201,14 +206,16 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "Dr. Seethal C. P",
         region: "Zone 3",
         note: "Regional mentorship · South",
-        image: "/curators/seethal.jpg",
+        image: "/curators/seethal.png",
+        focus: "50% 16%",
       },
       {
         id: "sudheesh",
         name: "Dr Sudheesh Kottembram",
         region: "Zone 3",
         note: "Regional mentorship · South",
-        image: "/curators/sudheesh.jpg",
+        image: "/curators/sudheesh.png",
+        focus: "50% 14%",
       },
     ],
   },
@@ -223,7 +230,9 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "Anga Art Collective",
         region: "Zone 4",
         note: "Collective mentorship across the Northeast",
+        // No file in images/Curators — using prior asset until original is supplied
         image: "/curators/anga.jpg",
+        focus: "50% 40%",
       },
     ],
   },
@@ -237,7 +246,8 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "Secular Art Collective",
         region: "Zone 5",
         note: "Collective frameworks · Central India",
-        image: "/curators/secular.jpg",
+        image: "/curators/secular.png",
+        focus: "50% 36%",
       },
     ],
   },
@@ -251,14 +261,16 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "Ashok Vish",
         region: "Zone 6",
         note: "Artistic duo · regional frameworks",
-        image: "/curators/ashok.jpg",
+        image: "/curators/ashok.png",
+        focus: "50% 16%",
       },
       {
         id: "chinar",
         name: "Chinar Shah",
         region: "Zone 6",
         note: "Artistic duo · regional frameworks",
-        image: "/curators/chinar.jpg",
+        image: "/curators/chinar.png",
+        focus: "50% 16%",
       },
     ],
   },
@@ -272,13 +284,15 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "Khursheed Ahmad",
         region: "Zone 7",
         note: "Artistic duo · mountain ecologies",
+        // Frame 97.png is a placeholder strip, not a portrait — omit image
       },
       {
         id: "salman",
         name: "Salman B Baba",
         region: "Zone 7",
         note: "Artistic duo · mountain ecologies",
-        image: "/curators/salman.jpg",
+        image: "/curators/salman.png",
+        focus: "50% 26%",
       },
     ],
   },

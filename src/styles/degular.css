@@ -1,5 +1,5 @@
-/* Degular Variable — add licensed @font-face files under /public/fonts when available.
-   Fallback stack is defined on --font-family in tokens.css. */
+/* Degular — use locally installed faces (verified on this machine).
+   Primary: "Degular Variable". Fallback: "Degular" static family. */
 
 @font-face {
   font-family: "Degular Variable";

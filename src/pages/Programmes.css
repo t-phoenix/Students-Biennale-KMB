@@ -1,3 +1,7 @@
+.programmes {
+  width: 100%;
+}
+
 .programmes__hero {
   position: relative;
   background: var(--color-primary-dark);
@@ -6,6 +10,8 @@
 .programmes__hero-media {
   display: block;
   width: 100%;
+  max-width: var(--page-max);
+  margin-inline: auto;
   height: min(520px, 58vh);
   object-fit: cover;
 }
@@ -35,7 +41,10 @@
   display: grid;
   grid-template-columns: 295px minmax(0, 1fr);
   gap: 40px;
+  max-width: var(--page-max);
+  margin-inline: auto;
   padding: 72px var(--page-pad);
+  box-sizing: border-box;
 }
 
 .programmes__block h1,
@@ -135,13 +144,15 @@
 
 .programmes__residencies {
   position: relative;
-  margin: 0 var(--page-pad) 40px;
+  max-width: var(--page-max);
+  margin: 0 auto 40px;
   min-height: 480px;
   overflow: hidden;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 40px;
+  padding: 40px var(--page-pad);
+  box-sizing: border-box;
 }
 
 .programmes__res-bg {

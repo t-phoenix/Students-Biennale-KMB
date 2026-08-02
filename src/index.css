@@ -1,5 +1,6 @@
 @import "./styles/tokens.css";
 @import "./styles/degular.css";
+@import "./styles/layout.css";
 
 *,
 *::before,
@@ -41,4 +42,33 @@ img {
 button {
   font: inherit;
   cursor: pointer;
+}
+
+/* Thin scrollbar — thumb only, no track */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(27, 23, 28, 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track-piece,
+*::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-button {
+  background: transparent;
+  border: 0;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: rgba(27, 23, 28, 0.35);
+  border: 0;
+  border-radius: 0;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(27, 23, 28, 0.5);
 }
