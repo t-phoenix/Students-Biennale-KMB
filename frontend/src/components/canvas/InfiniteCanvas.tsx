@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { getCanvasPool, getCanvasSeedSize, type CanvasItem } from "../../data/site";
+import {
+  CANVAS_TILE,
+  getCanvasPool,
+  getCanvasSeedSize,
+  type CanvasItem,
+} from "../../data/site";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
 
@@ -18,10 +23,12 @@ function wrap(n: number, size: number) {
 export function InfiniteCanvas({ query, onSelect }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
-  const pool = useMemo(() => getCanvasPool(), []);
-  const { width: seedW, height: seedH } = useMemo(() => getCanvasSeedSize(), []);
+  // Re-read on render so HMR / pack changes aren't stuck in a stale useMemo.
+  const pool = getCanvasPool();
+  const { width: seedW, height: seedH } = getCanvasSeedSize();
+  const tileKey = `${CANVAS_TILE.width}x${CANVAS_TILE.height}x${CANVAS_TILE.gap}`;
 
-  const offset = useRef({ x: -seedW * 0.2, y: -seedH * 0.15 });
+  const offset = useRef({ x: -40, y: -40 });
   const vel = useRef({ x: 0, y: 0 });
   const dragging = useRef(false);
   const didDrag = useRef(false);
@@ -190,7 +197,7 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
       >
         {seeds.map(({ key, ox, oy }) => (
           <div
-            key={key}
+            key={`${tileKey}-${key}`}
             className="infinite-canvas__seed"
             style={{
               width: seedW,
@@ -200,7 +207,7 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
           >
             {pool.map((item) => (
               <CanvasTile
-                key={`${key}-${item.id}`}
+                key={`${tileKey}-${key}-${item.id}`}
                 item={item}
                 dimmed={Boolean(q) && !matches(item)}
                 onSelect={handleSelect}

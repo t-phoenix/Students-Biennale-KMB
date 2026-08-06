@@ -23,121 +23,102 @@ export type CanvasItem = {
   height: number;
 };
 
-const SAMPLE: Omit<CanvasItem, "x" | "y" | "width" | "height">[] = [
-  {
-    id: "aw-absence",
-    kind: "artwork",
-    name: "What absence carries",
-    meta: "VKL Warehouse",
-    bio: "Traces the quiet terrain where memory, grief and body entwine through soft sculptures, drawings and stitched traces.",
-  },
-  {
-    id: "aw-rubble",
-    kind: "artwork",
-    name: "The quiet beneath the rubble",
-    meta: "VKL Warehouse",
-  },
-  {
-    id: "aw-panic",
-    kind: "artwork",
-    name: "A warm kind of panic",
-    meta: "BMS Warehouse",
-  },
-  {
-    id: "aw-house",
-    kind: "artwork",
-    name: "The house that remembers",
-    meta: "BMS Warehouse",
-  },
-  {
-    id: "aw-blind",
-    kind: "artwork",
-    name: "Blind Command A4 Collective",
-    meta: "St. Andrews Parish Hall",
-  },
-  {
-    id: "aw-residual",
-    kind: "artwork",
-    name: "Residual Marks",
-    meta: "VKL Warehouse",
-  },
-  {
-    id: "cu-gabaa",
-    kind: "curator",
-    name: "GABAA",
-    meta: "te(a)m-plurality · Sensing Grounds",
-  },
-  {
-    id: "cu-anga",
-    kind: "curator",
-    name: "Anga Art Collective",
-    meta: "North Eastern states",
-  },
-  {
-    id: "ar-ananya",
-    kind: "artist",
-    name: "Ananya Gautam",
-    meta: "National Institute of Design, Ahmedabad",
-  },
-  {
-    id: "ar-annanya",
-    kind: "artist",
-    name: "Annanya Dhanda",
-    meta: "The Maharaja Sayajirao University, Baroda",
-  },
-  {
-    id: "vn-vkl",
-    kind: "venue",
-    name: "VKL Warehouse",
-    meta: "Fort Kochi",
-  },
-  {
-    id: "vn-bms",
-    kind: "venue",
-    name: "BMS Warehouse",
-    meta: "Fort Kochi",
-  },
-];
+/**
+ * Discover Artworks canvas — every tile identical size, slim gap, seamless wrap.
+ */
+export const CANVAS_TILE = {
+  gap: 8,
+  width: 180,
+  height: 180,
+  cols: 8,
+  rows: 8,
+} as const;
 
-const WIDTHS = [280, 320, 360, 420, 480];
-const SEED_W = 2200;
-const GAP = 16;
+const GAP = CANVAS_TILE.gap;
+const COLS = CANVAS_TILE.cols;
+const ROWS = CANVAS_TILE.rows;
+const TILE_W = CANVAS_TILE.width;
+const TILE_H = CANVAS_TILE.height;
+const SEED_W = GAP + COLS * (TILE_W + GAP);
+const SEED_H = GAP + ROWS * (TILE_H + GAP);
 
-function pack(items: typeof SAMPLE): CanvasItem[] {
-  let x = GAP;
-  let y = GAP;
-  let rowH = 0;
-  return items.map((item, i) => {
-    const width = WIDTHS[i % WIDTHS.length];
-    const height = Math.round(width * (0.65 + (i % 3) * 0.12));
-    if (x + width + GAP > SEED_W) {
-      x = GAP;
-      y += rowH + GAP;
-      rowH = 0;
+type CanvasDraft = Omit<CanvasItem, "x" | "y" | "width" | "height">;
+
+function canvasBase(): CanvasDraft[] {
+  return [
+    ...ARTWORKS.map((a) => ({
+      id: `aw-${a.id}`,
+      kind: "artwork" as const,
+      name: a.title,
+      meta: a.venue,
+      image: a.image ?? a.heroImage,
+      bio: a.description,
+    })),
+    ...CURATORS.map((c) => ({
+      id: `cu-${c.id}`,
+      kind: "curator" as const,
+      name: c.name,
+      meta: c.region,
+      image: c.image,
+      bio: c.bio ?? c.note,
+    })),
+    ...VENUES.map((v) => ({
+      id: `vn-${v.id}`,
+      kind: "venue" as const,
+      name: v.name,
+      meta: v.address.split(",")[0]?.trim() || "Fort Kochi",
+      image: v.image ?? v.heroImage,
+      bio: v.history,
+    })),
+  ];
+}
+
+/** Full grid — no empty cells, no ragged column voids. */
+function packGrid(): CanvasItem[] {
+  const base = canvasBase();
+  if (!base.length) return [];
+
+  const items: CanvasItem[] = [];
+  let n = 0;
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const src = base[n % base.length];
+      const cycle = Math.floor(n / base.length);
+      const draft = cycle === 0 ? src : { ...src, id: `${src.id}__${cycle}` };
+      items.push({
+        ...draft,
+        x: GAP + col * (TILE_W + GAP),
+        y: GAP + row * (TILE_H + GAP),
+        width: TILE_W,
+        height: TILE_H,
+      });
+      n += 1;
     }
-    const placed = { ...item, x, y, width, height };
-    x += width + GAP;
-    rowH = Math.max(rowH, height);
-    return placed;
-  });
+  }
+
+  return items;
 }
 
 let pool: CanvasItem[] | null = null;
+let poolKey: string | null = null;
+
+function packKey() {
+  return `${TILE_W}x${TILE_H}x${GAP}x${COLS}x${ROWS}`;
+}
 
 export function getCanvasPool(): CanvasItem[] {
-  if (!pool) pool = pack(SAMPLE);
+  const key = packKey();
+  if (!pool || poolKey !== key) {
+    pool = packGrid();
+    poolKey = key;
+  }
   return pool;
 }
 
 export function getCanvasSeedSize() {
-  const items = getCanvasPool();
-  let width = SEED_W;
-  let height = 800;
-  for (const item of items) {
-    width = Math.max(width, item.x + item.width + GAP);
-    height = Math.max(height, item.y + item.height + GAP);
-  }
-  return { width, height };
+  getCanvasPool();
+  return { width: SEED_W, height: SEED_H };
 }
 
 export type CuratorCard = {

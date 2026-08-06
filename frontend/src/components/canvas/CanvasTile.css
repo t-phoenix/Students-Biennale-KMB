@@ -8,8 +8,8 @@
   background: transparent;
   color: var(--color-text-primary);
   overflow: hidden;
-  border-radius: 2px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.14);
+  border-radius: 0;
+  box-shadow: none;
   -webkit-user-select: none;
   user-select: none;
 }

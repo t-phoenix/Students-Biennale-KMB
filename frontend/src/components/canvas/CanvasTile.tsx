@@ -1,4 +1,4 @@
-import type { CanvasItem } from "../../data/site";
+import { CANVAS_TILE, type CanvasItem } from "../../data/site";
 import "./CanvasTile.css";
 
 type Props = {
@@ -11,10 +11,10 @@ export function CanvasTile({ item, dimmed, onSelect }: Props) {
   return (
     <button
       type="button"
-      className={`canvas-tile ${dimmed ? "is-dimmed" : ""}`}
+      className={`canvas-tile${dimmed ? " is-dimmed" : ""}`}
       style={{
-        width: item.width,
-        height: item.height,
+        width: CANVAS_TILE.width,
+        height: CANVAS_TILE.height,
         left: item.x,
         top: item.y,
       }}
