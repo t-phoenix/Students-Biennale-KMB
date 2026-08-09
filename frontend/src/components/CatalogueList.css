@@ -1,0 +1,266 @@
+/* Catalogue list view — Figma 708:518 / 713:970.
+   Inside the cols 4-12 band: rows span band cols 1-5 (page cols 4-8) and the preview
+   panel spans band cols 6-9 (page cols 9-12, x=953 -> 1380 at 1440). */
+
+.catalogue {
+  align-items: start;
+}
+
+.catalogue__rows {
+  grid-column: 1 / span 5;
+  min-width: 0;
+}
+
+/* Each row is 85px tall with a rule above and below, so consecutive rows share one
+   line (Figma Line 6 / Line 7). */
+.catalogue__row {
+  border-top: 1px solid var(--color-neutral-gray-light);
+}
+
+.catalogue__row:last-of-type {
+  border-bottom: 1px solid var(--color-neutral-gray-light);
+}
+
+.catalogue__row-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  row-gap: 5px;
+  min-height: 85px;
+  padding: 18px 0;
+  box-sizing: border-box;
+  color: var(--color-text-primary);
+}
+
+.catalogue__row-eyebrow {
+  grid-column: 1;
+  font-size: var(--type-caption-size);
+  line-height: 18px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.catalogue__row-title {
+  grid-column: 1;
+  font-size: var(--type-subtitle-size);
+  line-height: 21px;
+  font-weight: 500;
+}
+
+.catalogue__row-sub {
+  grid-column: 1;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-secondary);
+}
+
+/* Small chevron at the row's right edge (Figma Group 112, ~16px square). */
+.catalogue__row-mark {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: center;
+  width: 16px;
+  height: 16px;
+  border-top: 1px solid var(--color-text-primary);
+  border-right: 1px solid var(--color-text-primary);
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.catalogue__row.is-active .catalogue__row-mark,
+.catalogue__row-link:hover .catalogue__row-mark,
+.catalogue__row-link:focus-visible .catalogue__row-mark {
+  opacity: 1;
+}
+
+.catalogue__row-link:hover .catalogue__row-mark {
+  transform: rotate(45deg) translate(2px, -2px);
+}
+
+.catalogue__more {
+  display: block;
+  margin-top: 28px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: var(--type-body-size);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  cursor: pointer;
+}
+
+.catalogue__more:hover {
+  color: var(--color-text-primary);
+}
+
+/* Preview — page cols 9-12. */
+.catalogue__preview {
+  grid-column: 6 / span 4;
+  position: sticky;
+  top: calc(var(--nav-height) + 24px);
+  min-width: 0;
+}
+
+.catalogue__preview-media {
+  width: 100%;
+  aspect-ratio: 427 / 388;
+  background: var(--color-neutral-gray-mid);
+  overflow: hidden;
+  margin-bottom: 35px;
+}
+
+.catalogue__preview-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.catalogue__preview-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.catalogue__preview-head h3 {
+  margin: 0;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+}
+
+.catalogue__preview-head span {
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  white-space: nowrap;
+}
+
+/* Label column is 77px wide in Figma, value starts at 1045 (92px in). */
+.catalogue__preview-meta > div,
+.catalogue__preview-note {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  column-gap: 0;
+  margin: 0 0 12px;
+}
+
+.catalogue__preview-meta dt {
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-secondary);
+}
+
+.catalogue__preview-meta dd {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+
+.catalogue__preview-note {
+  margin-top: 20px;
+}
+
+.catalogue__preview-note dd {
+  grid-column: 1 / -1;
+  margin: 12px 0 0;
+}
+
+.catalogue__preview-note p {
+  margin: 0 0 12px;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+
+.catalogue__preview-note a {
+  font-size: var(--type-body-size);
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.catalogue__preview-note a:hover {
+  color: var(--color-text-primary);
+}
+
+/* Curators preview — zone header, then each curator's 315x360 portrait, name and
+   bio, then "Know more..." (Figma 636:1865 Group 239). */
+.curator-panel__zone {
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-neutral-gray-light);
+  font-size: var(--type-caption-size);
+  line-height: 18px;
+  color: var(--color-text-secondary);
+}
+
+.curator-panel__states {
+  margin: 0 0 40px;
+  font-size: var(--type-subtitle-size);
+  line-height: 27px;
+}
+
+.curator-panel__person {
+  margin-bottom: 48px;
+}
+
+.curator-panel__portrait {
+  width: 315px;
+  max-width: 100%;
+  aspect-ratio: 315 / 360;
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+  margin-bottom: 20px;
+}
+
+.curator-panel__portrait--empty {
+  background: var(--color-neutral-gray-light);
+}
+
+.curator-panel__portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.curator-panel__person h3 {
+  margin: 0 0 16px;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+}
+
+.curator-panel__person p {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+
+.curator-panel__more {
+  display: inline-block;
+  font-size: var(--type-body-size);
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.curator-panel__more:hover {
+  color: var(--color-text-primary);
+}
+
+/* Tier C — preview drops below the list. */
+@media (max-width: 899px) {
+  .catalogue__rows,
+  .catalogue__preview {
+    grid-column: 1 / -1;
+  }
+
+  .catalogue__preview {
+    position: static;
+    margin-top: 40px;
+  }
+}

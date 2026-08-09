@@ -1,14 +1,13 @@
 .site-footer {
   background: var(--color-neutral-white);
   border-top: 1px solid var(--color-neutral-gray-light);
-  padding: var(--spacing-4xl) var(--page-pad);
+  padding: var(--spacing-4xl) var(--grid-margin);
   width: 100%;
-  max-width: none;
-  margin-inline: 0;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: minmax(180px, 1.2fr) repeat(4, minmax(0, 1fr));
-  gap: var(--spacing-3xl);
+  grid-template-columns: minmax(220px, 1.2fr) repeat(4, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  row-gap: var(--spacing-3xl);
 }
 
 .site-footer__brand img {
@@ -46,14 +45,14 @@
   color: var(--color-text-primary);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .site-footer {
     grid-template-columns: 1fr 1fr;
-    padding: var(--spacing-3xl) 16px;
+    padding: var(--spacing-3xl) var(--grid-margin);
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 599px) {
   .site-footer {
     grid-template-columns: 1fr;
   }

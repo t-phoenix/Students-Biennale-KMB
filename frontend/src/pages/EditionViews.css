@@ -16,22 +16,18 @@
   border: 0;
 }
 
+/* Search fills cols 4-11 (872 at 1440); toggles sit on col 12. */
 .edition-toolbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
+  align-items: end;
   margin-bottom: 48px;
 }
 
 .edition-search {
-  flex: 1;
-  max-width: 872px;
+  grid-column: 1 / span 8;
   border-bottom: 1px solid var(--color-text-primary);
 }
 
-.edition-search input,
-.edition-search--alone input {
+.edition-search input {
   width: 100%;
   border: 0;
   background: transparent;
@@ -48,13 +44,9 @@
   color: var(--color-text-secondary);
 }
 
-.edition-search--alone {
-  display: block;
-  border-bottom: 1px solid var(--color-text-primary);
-  margin-bottom: 28px;
-}
-
 .edition-view-toggle {
+  grid-column: 9 / span 1;
+  justify-self: end;
   display: flex;
   gap: 0;
   flex-shrink: 0;
@@ -65,6 +57,8 @@
   height: 36px;
   border: 0;
   background: transparent;
+  font-size: 14px;
+  line-height: 1;
   color: var(--color-text-secondary);
   display: grid;
   place-items: center;
@@ -75,58 +69,27 @@
   color: var(--color-text-inverse);
 }
 
-/* Grid/list toggle icons — downloaded from Figma (Frame 42 / Frame 43),
-   recolored via mask + currentColor so the same asset works active/inactive. */
-.edition-view-toggle__icon {
-  width: 18px;
-  height: 18px;
-  display: inline-block;
-  background-color: currentColor;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-}
-
-.edition-view-toggle__icon--grid {
-  -webkit-mask-image: url("/icons/grid-view.svg");
-  mask-image: url("/icons/grid-view.svg");
-}
-
-.edition-view-toggle__icon--list {
-  -webkit-mask-image: url("/icons/list-view.svg");
-  mask-image: url("/icons/list-view.svg");
-}
-
-/* Zones: portraits + meta — fluid columns (Curators grid) */
+/* Zone row: curators on cols 4-9, zone meta on cols 10-12. */
 .edition-zones {
   display: flex;
   flex-direction: column;
-  gap: clamp(40px, 5vw, 60px);
+  gap: 60px;
 }
 
 .edition-zone {
-  display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr);
-  column-gap: clamp(16px, 2vw, 20px);
   align-items: start;
-  width: 100%;
 }
 
 .edition-zone__grid {
+  grid-column: 1 / span 6;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: clamp(16px, 2vw, 20px);
-  row-gap: clamp(40px, 5vw, 60px);
-  width: 100%;
-  min-width: 0;
+  column-gap: var(--grid-gutter);
+  row-gap: 60px;
 }
 
 .edition-zone__meta {
-  width: 100%;
-  min-width: 0;
+  grid-column: 7 / span 3;
 }
 
 .edition-zone__meta h4 {
@@ -145,104 +108,44 @@
   font-weight: 400;
 }
 
-/* Curators list — zone-grouped two-column bio layout (Figma 32:530):
-   portrait frame + name/bio text side by side, grouped under each zone. */
-.edition-curator-list {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(48px, 6vw, 72px);
-}
-
-.edition-curator-list__zone-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 20px;
-  border-bottom: 1px solid var(--color-text-primary);
-  padding-bottom: 8px;
-  margin-bottom: 32px;
-}
-
-.edition-curator-list__zone-head h4 {
-  margin: 0;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.edition-curator-list__zone-head p {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  text-align: right;
-}
-
-.edition-curator-list__bios {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(32px, 4vw, 48px);
-}
-
-.edition-curator-bio {
-  display: grid;
-  grid-template-columns: 315px minmax(0, 1fr);
-  gap: clamp(20px, 3vw, 40px);
-  align-items: start;
-}
-
-.edition-curator-bio__frame {
-  width: 100%;
-}
-
-.edition-curator-bio__text h3 {
-  margin: 0 0 20px;
-  font-size: var(--type-subtitle-size);
-  line-height: var(--type-subtitle-line);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.edition-curator-bio__text p {
-  margin: 0 0 16px;
-  font-size: var(--type-body-size);
-  line-height: 1.7;
-  color: var(--color-text-primary);
-  max-width: 68ch;
-}
-
-.edition-curator-bio__link {
-  display: inline-block;
-  font-style: italic;
-  font-size: var(--type-body-size);
-  color: var(--color-text-primary);
-}
-
+/* Artists — 3-up on cols 4-6 / 7-9 / 10-12 (Figma 713:297). */
 .edition-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px 20px;
-  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  row-gap: 28px;
 }
 
+/* Name + institution blocks, 76px tall on a 136px stride (Figma Frame 121). */
+.edition-grid--artists {
+  row-gap: 60px;
+}
+
+.edition-card--artist h3 {
+  margin: 0;
+  font-size: var(--type-subtitle-size);
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.edition-card--artist p {
+  margin: 10px 0 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-secondary);
+}
+
+/* Artworks — 2-up split of the cols 4-12 band, 482 + 20 + 483 (Figma 1:1574).
+   Row stride 513 - card height 433 = 80px gap between rows. */
 .edition-grid--art {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  max-width: none;
+  row-gap: 80px;
 }
 
-.edition-grid--artists {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: clamp(20px, 3vw, 40px);
-  row-gap: clamp(32px, 4vw, 48px);
-}
-
-.edition-grid--venues {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: 20px;
-  row-gap: clamp(32px, 4vw, 48px);
+.edition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .edition-card {
@@ -251,13 +154,6 @@
 
 .edition-card--curator {
   width: 100%;
-  min-width: 0;
-}
-
-.edition-card__link {
-  display: block;
-  color: inherit;
-  text-decoration: none;
 }
 
 .edition-card h3 {
@@ -273,33 +169,10 @@
   font-size: var(--type-caption-size);
 }
 
-.edition-card__excerpt {
-  margin: 12px 0 0;
-  font-size: var(--type-body-size);
-  line-height: 1.6;
-  color: var(--color-text-primary);
-}
-
-.edition-card__more {
-  font-style: italic;
-  color: var(--color-text-primary);
-}
-
-.edition-card__links {
-  margin: 12px 0 0;
-  font-size: var(--type-body-size);
-  color: var(--color-text-primary);
-}
-
-.edition-card__links a {
-  color: inherit;
-}
-
-/* Crop frame — fluid width, fixed 315:360 ratio; cover, never stretch */
+/* Crop frame — keep intrinsic aspect; cover + clip (never stretch) */
 .edition-card__frame {
   width: 100%;
   aspect-ratio: 315 / 360;
-  height: auto;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
   position: relative;
@@ -329,307 +202,148 @@
 .edition-card__media {
   width: 100%;
   aspect-ratio: 1;
-  background: var(--color-neutral-gray-mid);
-  display: block;
-  overflow: hidden;
-  position: relative;
-}
-
-.edition-card__media img {
-  width: 100%;
-  height: 100%;
   object-fit: cover;
   object-position: center;
+  background: var(--color-neutral-gray-mid);
   display: block;
+  filter: grayscale(1);
 }
 
-.edition-card__media--placeholder {
-  background:
-    radial-gradient(circle at 50% 38%, transparent 28%, var(--color-neutral-gray-light) 29%),
-    var(--color-neutral-gray-light);
+.edition-card__media--portrait {
+  width: 100%;
+  aspect-ratio: 315 / 360;
+  object-fit: cover;
+  object-position: center bottom;
 }
 
-.edition-card__media--square {
-  aspect-ratio: 1;
-}
-
-/* Artwork grid thumbnail — Figma 6:1693 crops are landscape (~483:360), not portrait */
-.edition-card__media--landscape {
-  aspect-ratio: 483 / 360;
-}
-
-.edition-card__media--venue {
-  aspect-ratio: 4 / 3;
+/* Artwork catalogue thumbnail — Figma Frame120 is 482 x 360 (landscape). */
+.edition-card__media--art {
+  aspect-ratio: 482 / 360;
+  filter: none;
 }
 
 .edition-card__media--wide {
-  aspect-ratio: 16 / 10;
-  width: 280px;
-  flex-shrink: 0;
+  aspect-ratio: 482 / 300;
+  filter: none;
+  width: 100%;
 }
 
-/* Row list (Artworks/Artists list) + featured side panel — Figma 32:267 / 32:2 */
-.edition-row-list {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 315px;
-  gap: clamp(24px, 4vw, 48px);
-  align-items: start;
-}
-
-.edition-row-list__rows {
+.edition-card--row {
   display: flex;
-  flex-direction: column;
-}
-
-.edition-row {
-  display: flex;
+  gap: var(--grid-gutter);
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  width: 100%;
-  padding: 16px 0;
-  border: 0;
+  padding: 12px 0;
   border-top: 1px solid var(--color-neutral-gray-light);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font: inherit;
-  color: var(--color-text-primary);
 }
 
-.edition-row-list__rows .edition-row:last-child {
-  border-bottom: 1px solid var(--color-neutral-gray-light);
-}
-
-.edition-row__main {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.edition-row__title {
-  font-size: var(--type-body-size);
-  font-weight: 400;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.edition-row.is-active .edition-row__title {
-  font-weight: 600;
-}
-
-.edition-row__meta {
-  font-size: var(--type-caption-size);
-  color: var(--color-text-secondary);
-}
-
-.edition-row__toggle {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  background-color: currentColor;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: contain;
-  mask-size: contain;
-}
-
-.edition-row__toggle--plus {
-  -webkit-mask-image: url("/icons/row-plus.svg");
-  mask-image: url("/icons/row-plus.svg");
-}
-
-.edition-row__toggle--minus {
-  -webkit-mask-image: url("/icons/row-minus.svg");
-  mask-image: url("/icons/row-minus.svg");
-}
-
-.edition-feature {
-  position: sticky;
-  top: 24px;
-  width: 100%;
-}
-
-.edition-feature__media {
-  width: 100%;
-  aspect-ratio: 427 / 388;
-  background: var(--color-neutral-gray-mid);
-  overflow: hidden;
-  position: relative;
-}
-
-.edition-feature__media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.edition-feature__media--placeholder {
-  background:
-    radial-gradient(circle at 50% 38%, transparent 28%, var(--color-neutral-gray-light) 29%),
-    var(--color-neutral-gray-light);
-}
-
-.edition-feature__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin: 24px 0 0;
-}
-
-.edition-feature__head h3 {
-  margin: 0;
-  font-size: var(--type-subtitle-size);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.edition-feature__head span {
-  color: var(--color-text-secondary);
-  font-size: var(--type-body-size);
-  white-space: nowrap;
-}
-
-.edition-feature__fields {
-  margin: 20px 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.edition-feature__field {
+/* Venue rows — image and text each take half the cols 4-12 band (Figma 1:1765). */
+.edition-card--split {
   display: grid;
-  grid-template-columns: 84px minmax(0, 1fr);
-  gap: 8px;
-  font-size: var(--type-body-size);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  align-items: start;
+  padding: 20px 0;
+  border-top: 1px solid var(--color-neutral-gray-light);
 }
 
-.edition-feature__field dt {
-  margin: 0;
-  color: var(--color-text-primary);
-}
-
-.edition-feature__field dd {
-  margin: 0;
-}
-
-.edition-feature__note {
-  margin: 24px 0 0;
-}
-
-.edition-feature__note p {
-  margin: 0 0 12px;
-  font-size: var(--type-body-size);
-  line-height: 1.6;
-}
-
-.edition-feature__more {
-  display: inline-block;
-  margin-top: 4px;
-  font-style: italic;
-  color: var(--color-text-primary);
-}
-
-/* Venue rows (list view) — image + name + history excerpt + map/tour links */
+/* Venue rows — 482x300 image then copy, 320px stride (Figma 718:1326). */
 .edition-venue-rows {
   display: flex;
   flex-direction: column;
-}
-
-.edition-venue-row {
-  padding: 24px 0;
-  border-top: 1px solid var(--color-neutral-gray-light);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.edition-venue-rows .edition-venue-row:last-child {
-  border-bottom: 1px solid var(--color-neutral-gray-light);
-}
-
-.edition-venue-row__link {
-  display: flex;
   gap: 20px;
-  align-items: flex-start;
-  color: inherit;
-  text-decoration: none;
 }
 
-.edition-venue-row__body h3 {
-  margin: 0 0 12px;
+.edition-venue {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  align-items: start;
+}
+
+.edition-venue__media {
+  width: 100%;
+  aspect-ratio: 482 / 300;
+  background: var(--color-neutral-gray-mid);
+}
+
+.edition-venue__copy h3 {
+  margin: 0 0 30px;
   font-size: var(--type-subtitle-size);
-  line-height: var(--type-subtitle-line);
+  line-height: 20px;
   font-weight: 500;
 }
 
-.edition-venue-row__body p {
+.edition-venue__copy p {
   margin: 0;
   font-size: var(--type-body-size);
-  line-height: 1.6;
-  color: var(--color-text-primary);
-  max-width: 68ch;
+  line-height: var(--type-body-line);
 }
 
-@media (max-width: 1100px) {
-  .edition-zone {
-    grid-template-columns: 1fr;
-    row-gap: 20px;
+.edition-venue__copy p a {
+  font-style: italic;
+  color: var(--color-text-secondary);
+}
+
+.edition-venue__copy p a:hover {
+  color: var(--color-text-primary);
+}
+
+.edition-venue__links {
+  display: flex;
+  gap: 8px;
+  margin-top: 30px;
+}
+
+.edition-venue__links a,
+.edition-venue__links span {
+  font-style: normal;
+  font-size: var(--type-body-size);
+  color: var(--color-text-primary);
+}
+
+.edition-venue__links a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Tier C — bands stop being 9 columns; zone meta moves above its curators and the
+   3-up card grids drop to 2-up. */
+@media (max-width: 899px) {
+  .edition-zone__grid,
+  .edition-zone__meta,
+  .edition-search,
+  .edition-view-toggle {
+    grid-column: 1 / -1;
   }
 
   .edition-zone__meta {
     order: -1;
   }
 
-  .edition-row-list {
-    grid-template-columns: 1fr;
+  .edition-view-toggle {
+    justify-self: start;
   }
 
-  .edition-feature {
-    position: static;
-  }
-}
-
-@media (max-width: 900px) {
-  .edition-curator-bio {
-    grid-template-columns: 1fr;
-  }
-
-  .edition-curator-bio__frame {
-    max-width: 315px;
-  }
-
-  .edition-curator-list__zone-head {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .edition-curator-list__zone-head p {
-    text-align: left;
+  .edition-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 800px) {
+@media (max-width: 599px) {
   .edition-zone__grid,
   .edition-grid,
   .edition-grid--art,
-  .edition-grid--artists,
-  .edition-grid--venues {
-    grid-template-columns: 1fr;
+  .edition-card--split,
+  .edition-venue {
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .edition-card__media--wide {
-    width: 100%;
+  .edition-venue {
+    row-gap: 20px;
   }
 
-  .edition-venue-row__link {
+  .edition-card--row {
     flex-direction: column;
+    align-items: stretch;
   }
 }

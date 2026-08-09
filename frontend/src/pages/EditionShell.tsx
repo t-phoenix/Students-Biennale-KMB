@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useParams } from "react-router-dom";
+import { NavLink, Outlet, useMatch, useParams } from "react-router-dom";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import "./EditionShell.css";
 
@@ -11,11 +11,16 @@ const TABS = [
 
 export function EditionShell() {
   const { yearId = LATEST_EDITION.id } = useParams();
+  const isOverview = Boolean(useMatch("/editions/:yearId"));
+
+  // The edition overview is a full-width page in Figma — it owns its own layout and
+  // does not sit beside the catalogue rail.
+  if (isOverview) return <Outlet />;
 
   return (
-    <div className="edition" data-node-id="6:1310">
-      <aside className="edition__rail">
-        <h1>
+    <div className="edition fig-grid" data-node-id="6:1310">
+      <aside className="edition__rail fig-rail">
+        <h1 className="fig-heading">
           Students&apos; Biennale
           <br />
           {yearId === LATEST_EDITION.id ? "2025–26" : yearId}
@@ -25,24 +30,27 @@ export function EditionShell() {
             <NavLink
               key={tab.to}
               to={`/editions/${yearId}/${tab.to}`}
-              className={({ isActive }) => (isActive ? "is-active" : undefined)}
+              className={({ isActive }) =>
+                `fig-subheading${isActive ? " is-selected" : ""}`
+              }
             >
               {tab.label}
+              <span className="fig-subheading__underline" aria-hidden />
             </NavLink>
           ))}
         </nav>
-        <div className="edition__prev">
-          <p className="edition__prev-label">Previous EDITIONS</p>
+        <details className="edition__prev">
+          <summary>Previous EDITIONS</summary>
           <ul>
             {PREVIOUS_EDITIONS.map((y) => (
               <li key={y}>
-                <NavLink to={`/editions/${y}/about`}>{y}</NavLink>
+                <NavLink to={`/editions/${y}`}>{y}</NavLink>
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       </aside>
-      <div className="edition__main">
+      <div className="edition__main fig-c4-12">
         <Outlet />
       </div>
     </div>

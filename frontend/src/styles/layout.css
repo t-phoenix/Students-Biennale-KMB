@@ -1,37 +1,218 @@
-/* Full-bleed responsive layout
-   Label rail · gutter · fluid content — scales on every screen */
+/* Figma layout grid — 12 columns, Stretch, margin 60, gutter 20.
+ *
+ * "Stretch" means margin and gutter are fixed; the columns fill whatever width the
+ * frame is. There is no 1440 ceiling — that was an earlier misreading of the spec
+ * (centering the grid inside a capped 1440 shell), which grows equal but increasingly
+ * large margins on wide monitors. This file stretches for real, including paragraph
+ * text (.fig-body): it fills whatever grid-column span it's given, at any width,
+ * rather than freezing at the 650px .fig-body renders as when that span is cols 4-9
+ * on a 1440 frame.
+ *
+ * At 1440: colW = (1440 - 2*60 - 11*20) / 12 = 91.6667
+ *   col 1 left 60 · col 4 left 395 · col 7 left 730 · col 10 left 1065 · col 12 right 1380
+ *   span 3 = 315 · span 5 = 538.33 · span 6 = 650 · span 7 = 761.67 · span 9 = 985
+ *
+ * The red guide at x=355 is not a column edge: cols 1-3 end at 375. It is the right
+ * edge of the 295px label text box, i.e. col 3 right minus one gutter — which is why
+ * .fig-label carries a gutter of trailing padding instead of a fixed width.
+ */
+
+/* Responsive ladder. Margin and gutter are fixed per tier (true Figma Stretch);
+   only the column width is fluid. */
+@media (max-width: 1199px) {
+  :root {
+    --grid-margin: 40px;
+  }
+}
+
+@media (max-width: 899px) {
+  :root {
+    --grid-cols: 6;
+    --grid-margin: 32px;
+    --grid-gutter: 16px;
+    --fig-stack-gap: 24px;
+  }
+}
+
+@media (max-width: 599px) {
+  :root {
+    --grid-cols: 1;
+    --grid-margin: 20px;
+  }
+}
 
 .fig-page {
   width: 100%;
-  max-width: none;
-  margin-inline: 0;
 }
 
-.fig-row {
+.fig-grid {
   display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
-  column-gap: clamp(16px, 2.778vw, 40px);
-  padding-inline: var(--page-pad);
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  row-gap: var(--fig-stack-gap);
+  padding-inline: var(--grid-margin);
   width: 100%;
   box-sizing: border-box;
-  align-items: start;
+}
+
+/* Column spans — named for their Figma column range at 1440. */
+.fig-c1-3 {
+  grid-column: 1 / span 3;
+}
+.fig-c1-7 {
+  grid-column: 1 / span 7;
+}
+.fig-c1-12 {
+  grid-column: 1 / span 12;
+}
+.fig-c4-6 {
+  grid-column: 4 / span 3;
+}
+.fig-c4-9 {
+  grid-column: 4 / span 6;
+}
+.fig-c4-11 {
+  grid-column: 4 / span 8;
+}
+.fig-c4-12 {
+  grid-column: 4 / span 9;
+}
+.fig-c7-9 {
+  grid-column: 7 / span 3;
+}
+.fig-c7-12 {
+  grid-column: 7 / span 6;
+}
+.fig-c8-12 {
+  grid-column: 8 / span 5;
+}
+.fig-c10-12 {
+  grid-column: 10 / span 3;
+}
+.fig-c12 {
+  grid-column: 12 / span 1;
+}
+
+/* Nested 9-column band for content living inside the cols 4-12 area. Column n of
+   the band is page column n+3, so a child on band cols 4-9 lands on page cols 7-12. */
+.fig-band-9 {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  min-width: 0;
+}
+
+/* Even splits nested inside a band. A 3-up inside cols 4-12 reproduces the
+   315px cards at 395 / 730 / 1065; a 2-up reproduces the 482 + 20 + 483 split. */
+.fig-sub-2,
+.fig-sub-3 {
+  display: grid;
+  gap: var(--grid-gutter);
+  min-width: 0;
+}
+
+.fig-sub-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fig-sub-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* Runs cols 1-3 plus the trailing gutter — 335px at 1440 (hero update cards). */
+.fig-span3-plus-gutter {
+  grid-column: 1 / span 3;
+  width: calc(100% + var(--grid-gutter));
+}
+
+/* Bleeds out of the grid to the shell edge (full-bleed media). */
+.fig-bleed {
+  grid-column: 1 / -1;
+  margin-inline: calc(-1 * var(--grid-margin));
+}
+
+/* Right edge lands on col 12 right — how every CTA is anchored in the design. */
+.fig-cta-end {
+  grid-column: 1 / -1;
+  justify-self: end;
+}
+
+/* Right-aligned rail in cols 1-3. The trailing gutter is what puts the text edge on
+   the 355 guide (col 3 right is 375). Used by labels, sensing links, programme tabs. */
+.fig-rail {
+  grid-column: 1 / span 3;
+  text-align: right;
+  padding-inline-end: var(--grid-gutter);
 }
 
 .fig-label {
+  grid-column: 1 / span 3;
   margin: 0;
   text-align: right;
+  padding-inline-end: var(--grid-gutter);
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   color: var(--color-text-primary);
-  overflow-wrap: anywhere;
-  min-width: 0;
 }
 
 .fig-label--sub {
   font-size: var(--type-subtitle-size);
   line-height: var(--type-subtitle-line);
   font-weight: var(--type-subtitle-weight);
+}
+
+/* Main headings — Students' Biennale, Upcoming Programmes, Press, About Us,
+   wherever they appear. Medium weight, caps, generous line-height and tracking. */
+.fig-heading {
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+}
+
+/* Subheadings — Sensing Grounds, Curators, Artworks/Artists, Venues,
+   Workshops, Residencies, Awards. Regular by default; Medium + an underline
+   that reveals from the right when selected (hover/focus, or an explicit
+   .is-selected state driven by an existing active/route match). */
+.fig-subheading {
+  font-weight: 400;
+  text-transform: uppercase;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  position: relative;
+}
+
+.fig-subheading.is-selected,
+.fig-subheading:hover,
+.fig-subheading:focus-visible {
+  font-weight: 500;
+}
+
+.fig-subheading__underline {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -6px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: opacity 0.25s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+
+.fig-subheading.is-selected .fig-subheading__underline,
+.fig-subheading:hover .fig-subheading__underline,
+.fig-subheading:focus-visible .fig-subheading__underline {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fig-subheading__underline {
+    transition: none;
+  }
 }
 
 .fig-body {
@@ -41,44 +222,55 @@
   font-weight: var(--type-body-weight);
 }
 
-.fig-link-more {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  font-size: var(--type-subtitle-size);
-  line-height: var(--type-subtitle-line);
-  font-weight: 500;
-  text-align: right;
-}
-
-.fig-link-more span {
-  display: block;
-  text-align: right;
-}
-
-@media (max-width: 900px) {
-  .fig-row {
-    grid-template-columns: 1fr;
-    row-gap: 16px;
+/* Tier C — 6 columns. Labels move above their content; bands go full width;
+   3-up becomes 2-up and 2-up becomes 1-up. */
+@media (max-width: 899px) {
+  .fig-label,
+  .fig-rail,
+  .fig-c1-3,
+  .fig-c1-7,
+  .fig-c1-12,
+  .fig-c4-6,
+  .fig-c4-9,
+  .fig-c4-11,
+  .fig-c4-12,
+  .fig-c7-9,
+  .fig-c7-12,
+  .fig-c8-12,
+  .fig-c10-12,
+  .fig-c12,
+  .fig-span3-plus-gutter {
+    grid-column: 1 / -1;
   }
 
-  .fig-label {
+  .fig-label,
+  .fig-rail {
     text-align: left;
+    padding-inline-end: 0;
   }
 
-  .fig-link-more,
-  .fig-link-more span {
-    text-align: left;
+  .fig-span3-plus-gutter {
+    width: 100%;
+  }
+
+  .fig-band-9 {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 24px;
+  }
+
+  .fig-sub-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fig-sub-2 {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-@media (max-width: 520px) {
-  :root {
-    --type-title-size: 22px;
-    --type-title-line: 28px;
-    --type-subtitle-size: 18px;
-    --type-subtitle-line: 24px;
-    --type-body-size: 15px;
-    --type-body-line: 22px;
+/* Tier D — single column. */
+@media (max-width: 599px) {
+  .fig-sub-2,
+  .fig-sub-3 {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

@@ -1,18 +1,25 @@
 import { useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
-import { EDITION_OVERVIEWS } from "../data/site";
+import { CtaLink } from "../components/CtaLink";
+import { getEditionOverview } from "../data/editions";
+import { LATEST_EDITION } from "../data/site";
 import "./EditionOverview.css";
 
+/**
+ * Edition overview — Figma "Previous Editions Page" 1:2626.
+ * Full-bleed hero, intro on cols 4-9, team and institutions on cols 4-12, and the
+ * only 4-up gallery in the file: cols 1-3 / 4-6 / 7-9 / 10-12.
+ */
 export function EditionOverview() {
-  const { yearId = "2014-15" } = useParams();
+  const { yearId = LATEST_EDITION.id } = useParams();
   const root = useRef<HTMLDivElement>(null);
-  const overview = EDITION_OVERVIEWS[yearId];
+  const edition = getEditionOverview(yearId);
 
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
-      gsap.from(".eo-reveal", {
+      gsap.from(".edition-overview__reveal", {
         autoAlpha: 0,
         y: 24,
         duration: 0.55,
@@ -23,162 +30,99 @@ export function EditionOverview() {
     { scope: root, dependencies: [yearId] }
   );
 
-  if (!overview) {
-    return (
-      <div ref={root} className="edition-overview">
-        <section className="eo__row eo-reveal">
-          <p className="fig-label">Not found</p>
-          <p className="fig-body">
-            There's no overview yet for this edition. <Link to="/editions">Back to editions</Link>
-          </p>
-        </section>
-      </div>
-    );
-  }
-
-  const hasTeam =
-    (overview.curators && overview.curators.length > 0) ||
-    (overview.advisors && overview.advisors.length > 0) ||
-    Boolean(
-      overview.curatorialAdvisor ||
-        overview.projectAdvisor ||
-        overview.directorOfProgrammes ||
-        overview.programmeCoordinator
-    );
-  const hasInstitutions = Boolean(overview.institutions && overview.institutions.length > 0);
-  const workshopRows =
-    overview.workshopImages && overview.workshopImages.length > 0
-      ? [overview.workshopImages.slice(0, 4), overview.workshopImages.slice(4, 8)]
-      : [];
-
   return (
     <div ref={root} className="edition-overview">
-      <section className="eo__hero eo-reveal" aria-label={`${overview.title} — ${overview.editionLabel}`}>
-        {overview.heroImage ? (
-          <img src={overview.heroImage} alt="" className="eo__hero-media" />
+      <div className="edition-overview__hero" aria-hidden />
+
+      <div className="fig-grid edition-overview__section">
+        <h1 className="fig-label fig-heading edition-overview__title edition-overview__reveal">
+          {edition.title}
+          <br />
+          {edition.subtitle}
+        </h1>
+        {edition.intro.length ? (
+          <div className="fig-c4-9 edition-overview__intro edition-overview__reveal">
+            {edition.intro.map((para) => (
+              <p key={para.slice(0, 48)} className="fig-body">
+                {para}
+              </p>
+            ))}
+          </div>
         ) : (
-          <div className="eo__hero-media eo__hero-media--placeholder" aria-hidden />
+          <p className="fig-c4-9 fig-body edition-overview__reveal">
+            Catalogue records for this edition are available in the sections below.
+          </p>
         )}
-      </section>
+      </div>
 
-      <section className="eo__row eo-reveal">
-        <div className="eo__title">
-          <p className="fig-label">{overview.title}</p>
-          <p className="fig-label fig-label--sub eo__title-sub">{overview.editionLabel}</p>
-        </div>
-        <p className="fig-body eo__history">{overview.history}</p>
-      </section>
-
-      {hasTeam ? (
-        <section className="eo__row eo-reveal">
-          <p className="fig-label fig-label--sub">THE TEAM</p>
-          <div className="eo__team">
-            {overview.curators && overview.curators.length > 0 ? (
-              <div className="eo__team-col">
-                <h3>Curators</h3>
-                <ul>
-                  {overview.curators.map((name) => (
-                    <li key={name}>{name}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {overview.curatorialAdvisor ||
-            overview.projectAdvisor ||
-            overview.directorOfProgrammes ||
-            overview.programmeCoordinator ? (
-              <div className="eo__team-col eo__team-col--roles">
-                {overview.curatorialAdvisor ? (
-                  <div>
-                    <h3>Curatorial Advisor</h3>
-                    <p>{overview.curatorialAdvisor}</p>
-                  </div>
-                ) : null}
-                {overview.projectAdvisor ? (
-                  <div>
-                    <h3>Project Advisor</h3>
-                    <p>{overview.projectAdvisor}</p>
-                  </div>
-                ) : null}
-                {overview.directorOfProgrammes ? (
-                  <div>
-                    <h3>Director of Programmes</h3>
-                    <p>{overview.directorOfProgrammes}</p>
-                  </div>
-                ) : null}
-                {overview.programmeCoordinator ? (
-                  <div>
-                    <h3>Programme Coordinator</h3>
-                    <p>{overview.programmeCoordinator}</p>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            {overview.advisors && overview.advisors.length > 0 ? (
-              <div className="eo__team-col">
-                <h3>Advisors</h3>
-                <ul>
-                  {overview.advisors.map((name) => (
-                    <li key={name}>{name}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
-      {hasInstitutions ? (
-        <section className="eo__row eo-reveal">
-          <p className="fig-label fig-label--sub">Participating Institutions</p>
-          <ul className="eo__institutions">
-            {overview.institutions!.map((inst) => (
-              <li key={inst}>{inst}</li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
-
-      {workshopRows.length > 0 ? (
-        <section className="eo__row eo-reveal">
-          <p className="fig-label fig-label--sub">Workshops</p>
-          <div className="eo__workshops">
-            {workshopRows.map((row, rowIndex) => (
-              <div className="eo__workshop-grid" key={rowIndex}>
-                {row.map((src, i) => {
-                  const isLastTile = rowIndex === workshopRows.length - 1 && i === row.length - 1;
-                  return isLastTile ? (
-                    <Link key={src} to="/programmes" className="eo__workshop-tile eo__workshop-tile--more">
-                      <img src={src} alt="" />
-                      <span className="eo__workshop-more">View more →</span>
-                    </Link>
-                  ) : (
-                    <div className="eo__workshop-tile" key={src}>
-                      <img src={src} alt="" />
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {overview.nextEditionYearId && overview.nextEditionLabel ? (
-        <section className="eo__row eo__row--next eo-reveal">
-          <div aria-hidden />
-          <Link to={`/editions/${overview.nextEditionYearId}/about`} className="fig-link-more eo__next-link">
-            <span>{overview.nextEditionLabel} →</span>
+      <div className="fig-grid edition-overview__section">
+        <p className="fig-label fig-label--sub edition-overview__reveal">Catalogue</p>
+        <nav className="fig-c4-12 edition-overview__links edition-overview__reveal">
+          <Link to={`/editions/${yearId}/curators`} className="fig-subheading">
+            Curators
+            <span className="fig-subheading__underline" aria-hidden />
           </Link>
-        </section>
+          <Link to={`/editions/${yearId}/artworks`} className="fig-subheading">
+            Artworks
+            <span className="fig-subheading__underline" aria-hidden />
+          </Link>
+          <Link to={`/editions/${yearId}/artists`} className="fig-subheading">
+            Artists
+            <span className="fig-subheading__underline" aria-hidden />
+          </Link>
+          <Link to={`/editions/${yearId}/venue`} className="fig-subheading">
+            Venues
+            <span className="fig-subheading__underline" aria-hidden />
+          </Link>
+        </nav>
+      </div>
+
+      {edition.team.length ? (
+        <div className="fig-grid edition-overview__section">
+          <h2 className="fig-label fig-label--sub edition-overview__reveal">THE TEAM</h2>
+          <div className="fig-c4-12 fig-sub-3 edition-overview__team edition-overview__reveal">
+            {edition.team.map((col, i) => (
+              <div key={i}>
+                {col.map(([role, ...people]) => (
+                  <div key={role} className="edition-overview__role">
+                    <strong>{role}</strong>
+                    {people.map((name) => (
+                      <span key={name}>{name}</span>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
       ) : null}
 
-      {overview.closerImage ? (
-        <section className="eo__closer eo-reveal">
-          <img src={overview.closerImage} alt="" className="eo__closer-media" />
-        </section>
+      {edition.institutions.length ? (
+        <div className="fig-grid edition-overview__section">
+          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+            Participating Institutions
+          </h2>
+          <p className="fig-c4-12 fig-body edition-overview__reveal">
+            {edition.institutions.join(" · ")}
+          </p>
+        </div>
+      ) : null}
+
+      {/* 4-up gallery across all 12 columns — the one full-width card grid in the file. */}
+      <div className="fig-grid edition-overview__gallery">
+        {Array.from({ length: edition.gallerySlots }).map((_, i) => (
+          <div key={i} className="edition-overview__slot edition-overview__reveal" aria-hidden />
+        ))}
+      </div>
+
+      {edition.nextId ? (
+        <div className="fig-grid edition-overview__nav">
+          <CtaLink
+            className="fig-cta-end"
+            to={`/editions/${edition.nextId}`}
+            lines={["Next", "Edition"]}
+          />
+        </div>
       ) : null}
     </div>
   );

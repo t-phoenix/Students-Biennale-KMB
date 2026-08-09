@@ -7,7 +7,9 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--spacing-md);
-  padding: 0 var(--page-pad);
+  /* Same Stretch margin as the page grid: logo on col 1 left, KBF mark flush to
+     col 12 right, at any viewport width. */
+  padding-inline: var(--grid-margin);
   width: 100%;
   max-width: none;
   margin-inline: 0;
@@ -18,43 +20,34 @@
 .site-header__brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 34px;
+  height: 52px;
   flex-shrink: 0;
 }
 
-.site-header__brand img {
-  height: 34px;
+.site-header__brand-logo {
+  height: 52px;
   width: auto;
   display: block;
-}
-
-.site-header__brand-mark {
-  width: 28px;
-  height: 34px;
   object-fit: contain;
 }
 
-.site-header__brand-text {
-  width: 42px;
-  height: 16px;
-  object-fit: contain;
+.site-header__brand-logo--icon {
+  display: none;
 }
 
 .site-header__discover {
-  font-size: var(--type-caption-size);
+  font-size: 14px;
   line-height: var(--type-caption-line);
-  font-weight: var(--type-caption-weight);
+  font-weight: 400;
+  text-transform: uppercase;
   color: var(--color-text-primary);
   white-space: nowrap;
   padding: 10px;
   flex-shrink: 0;
 }
 
-.site-header__discover.is-active,
-.site-header__discover:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.site-header__discover.is-active {
+  font-weight: 500;
 }
 
 .site-header__nav {
@@ -66,22 +59,17 @@
 
 .site-header__nav a,
 .site-header__sep {
-  font-size: var(--type-caption-size);
+  font-size: 14px;
   line-height: var(--type-caption-line);
-  font-weight: var(--type-caption-weight);
+  font-weight: 400;
+  text-transform: uppercase;
   color: var(--color-text-primary);
-  text-transform: none;
   padding: 10px;
   white-space: nowrap;
 }
 
-.site-header__nav a[data-label="editions"] {
-  text-transform: uppercase;
-}
-
 .site-header__nav a.is-active {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-weight: 500;
 }
 
 .site-header__sep {
@@ -92,46 +80,51 @@
 .site-header__kbf {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 34px;
+  height: 52px;
   flex-shrink: 0;
 }
 
-.site-header__kbf-mark {
-  width: 34px;
-  height: 34px;
+.site-header__kbf-logo {
+  height: 52px;
+  width: auto;
+  display: block;
   object-fit: contain;
 }
 
-.site-header__kbf-text {
-  width: 68px;
-  height: 34px;
-  object-fit: contain;
+.site-header__kbf-logo--icon {
+  display: none;
 }
 
-@media (max-width: 900px) {
+/* Mobile — just the two brand marks, nothing else: no wordmark, no nav links,
+   no Discover Artworks. */
+@media (max-width: 899px) {
   .site-header {
-    padding: 8px var(--page-pad);
-    flex-wrap: wrap;
-    height: auto;
-    min-height: var(--nav-height);
-    row-gap: 8px;
+    height: var(--nav-height-mobile);
+    padding-block: 0;
   }
 
-  .site-header__nav {
-    order: 3;
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+  .site-header__brand,
+  .site-header__kbf {
+    height: 32px;
   }
 
-  .site-header__kbf-text {
+  .site-header__brand-logo,
+  .site-header__kbf-logo {
+    height: 32px;
+  }
+
+  .site-header__brand-logo--full,
+  .site-header__kbf-logo--full {
     display: none;
   }
-}
 
-@media (max-width: 520px) {
-  .site-header__discover {
-    font-size: 11px;
+  .site-header__brand-logo--icon,
+  .site-header__kbf-logo--icon {
+    display: block;
+  }
+
+  .site-header__discover,
+  .site-header__nav {
+    display: none;
   }
 }

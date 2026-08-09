@@ -55,12 +55,16 @@
   --spacing-4xl: 40px;
   --spacing-5xl: 64px;
 
-  /* Layout — Figma 1440 rail: pad 60 · label 295 · gap 40 · content */
-  --page-max: none;
-  --page-pad: clamp(16px, 4.167vw, 60px);
-  --rail-w: clamp(140px, 20.5vw, 295px);
-  --content-max: 985px;
-  --section-pad-y: clamp(48px, 8.4vh, 90px);
-  --nav-height: 60px;
+  /* Layout — Figma layout grid: 12 columns, Stretch, margin 60, gutter 20.
+     Tier overrides live in layout.css; --page-pad aliases the margin so every
+     consumer follows the ladder. Stretch has no page-width ceiling — only
+     paragraph text (.fig-body) keeps a readability cap; see layout.css. */
+  --grid-cols: 12;
+  --grid-margin: 60px;
+  --grid-gutter: 20px;
+  --page-pad: var(--grid-margin);
+  --fig-stack-gap: 0px;
+  --nav-height: 72px;
+  --nav-height-mobile: 56px;
   --header-h: 60px;
 }

@@ -1,10 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import {
-  CANVAS_TILE,
-  getCanvasPool,
-  getCanvasSeedSize,
-  type CanvasItem,
-} from "../../data/site";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getCanvasPack, getCanvasTier, type CanvasItem } from "../../data/site";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
 
@@ -13,20 +8,58 @@ type Props = {
   onSelect: (item: CanvasItem, el: HTMLButtonElement) => void;
 };
 
-const REPEAT = 3;
+/** Horizontal repeat count — all columns share one X period (seedW). */
+const REPEAT_X = 3;
+/** Vertical repeat count *per column* — each column has its own period. */
+const REPEAT_Y = 3;
 const DRAG_THRESHOLD = 5;
 
 function wrap(n: number, size: number) {
   return ((n % size) + size) % size;
 }
 
+/** Re-tier on real viewport-width crossings only, not every pixel of resize. */
+function useCanvasTier() {
+  const [tier, setTier] = useState(() =>
+    getCanvasTier(typeof window === "undefined" ? 1440 : window.innerWidth)
+  );
+  useEffect(() => {
+    let raf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const next = getCanvasTier(window.innerWidth);
+        setTier((prev) => (prev === next ? prev : next));
+      });
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+  return tier;
+}
+
 export function InfiniteCanvas({ query, onSelect }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
-  // Re-read on render so HMR / pack changes aren't stuck in a stale useMemo.
-  const pool = getCanvasPool();
-  const { width: seedW, height: seedH } = getCanvasSeedSize();
-  const tileKey = `${CANVAS_TILE.width}x${CANVAS_TILE.height}x${CANVAS_TILE.gap}`;
+  // Column-wrapper elements, keyed "tx-col" — every X-copy has its own set of
+  // column wrappers, but wrappers sharing the same col index always get the
+  // same Y-transform (a column's period doesn't depend on which X-copy it's in).
+  const columnEls = useRef(new Map<string, HTMLDivElement>());
+
+  const tier = useCanvasTier();
+  const pack = useMemo(() => getCanvasPack(tier), [tier]);
+  const { items: pool, seedW, colWidths, colPeriods } = pack;
+  const columns = colWidths.length;
+  const tileKey = `masonry-${tier}`;
+
+  const itemsByCol = useMemo(() => {
+    const groups: CanvasItem[][] = Array.from({ length: columns }, () => []);
+    for (const item of pool) groups[item.col]?.push(item);
+    return groups;
+  }, [pool, columns]);
 
   const offset = useRef({ x: -40, y: -40 });
   const vel = useRef({ x: 0, y: 0 });
@@ -52,14 +85,30 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
   );
 
   const applyTransform = useCallback(() => {
-    const el = worldRef.current;
-    if (!el) return;
+    const world = worldRef.current;
+    if (!world) return;
+    // World handles X only — all columns share the same horizontal period.
     const x = -wrap(-offset.current.x, seedW) - seedW;
-    const y = -wrap(-offset.current.y, seedH) - seedH;
-    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-  }, [seedW, seedH]);
+    world.style.transform = `translate3d(${x}px, 0, 0)`;
 
+    // Each column wraps on its own vertical period, so different columns'
+    // "reset" points land at different Y — no shared seam across the canvas.
+    for (let col = 0; col < columns; col++) {
+      const period = colPeriods[col] || 1;
+      const y = -wrap(-offset.current.y, period) - period;
+      const transform = `translate3d(0, ${y}px, 0)`;
+      for (let tx = 0; tx < REPEAT_X; tx++) {
+        const el = columnEls.current.get(`${tx}-${col}`);
+        if (el) el.style.transform = transform;
+      }
+    }
+  }, [seedW, columns, colPeriods]);
+
+  // The pan offset is only meaningful relative to the current seed size —
+  // re-centre when a resize crosses a tier boundary (seedW/colPeriods change).
   useEffect(() => {
+    offset.current = { x: -40, y: -40 };
+    vel.current = { x: 0, y: 0 };
     applyTransform();
   }, [applyTransform]);
 
@@ -178,40 +227,44 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
     onSelect(item, el);
   };
 
-  const seeds = useMemo(() => {
-    const out: Array<{ key: string; ox: number; oy: number }> = [];
-    for (let ty = 0; ty < REPEAT; ty++) {
-      for (let tx = 0; tx < REPEAT; tx++) {
-        out.push({ key: `${tx}-${ty}`, ox: tx * seedW, oy: ty * seedH });
-      }
-    }
-    return out;
-  }, [seedW, seedH]);
+  const xCopies = useMemo(() => Array.from({ length: REPEAT_X }, (_, tx) => tx), []);
+  const colIndexes = useMemo(() => Array.from({ length: columns }, (_, i) => i), [columns]);
+  const yCopies = useMemo(() => Array.from({ length: REPEAT_Y }, (_, ty) => ty), []);
 
   return (
     <div ref={rootRef} className="infinite-canvas" aria-label="Discover Artworks canvas">
       <div
         ref={worldRef}
         className="infinite-canvas__world"
-        style={{ width: seedW * REPEAT, height: seedH * REPEAT }}
+        style={{ width: seedW * REPEAT_X, height: "100%" }}
       >
-        {seeds.map(({ key, ox, oy }) => (
+        {xCopies.map((tx) => (
           <div
-            key={`${tileKey}-${key}`}
-            className="infinite-canvas__seed"
-            style={{
-              width: seedW,
-              height: seedH,
-              transform: `translate(${ox}px, ${oy}px)`,
-            }}
+            key={`${tileKey}-x${tx}`}
+            className="infinite-canvas__xcopy"
+            style={{ left: tx * seedW, width: seedW }}
           >
-            {pool.map((item) => (
-              <CanvasTile
-                key={`${tileKey}-${key}-${item.id}`}
-                item={item}
-                dimmed={Boolean(q) && !matches(item)}
-                onSelect={handleSelect}
-              />
+            {colIndexes.map((col) => (
+              <div
+                key={`${tileKey}-x${tx}-c${col}`}
+                ref={(el) => {
+                  const key = `${tx}-${col}`;
+                  if (el) columnEls.current.set(key, el);
+                  else columnEls.current.delete(key);
+                }}
+                className="infinite-canvas__column"
+              >
+                {yCopies.map((ty) =>
+                  itemsByCol[col].map((item) => (
+                    <CanvasTile
+                      key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
+                      item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriods[col] }}
+                      dimmed={Boolean(q) && !matches(item)}
+                      onSelect={handleSelect}
+                    />
+                  ))
+                )}
+              </div>
             ))}
           </div>
         ))}

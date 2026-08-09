@@ -1,0 +1,58 @@
+/* Figma Frame 73 (1:972 / 1:1040): right-aligned two-line label + gap + mark.
+   Bumped bold + a bigger, closer mark versus the literal Figma spec (regular
+   weight, 31x52 mark, 20px gap) per direct visual reference from the user —
+   both lines' tracking is tuned so they align flush on both edges (first and
+   last letter), e.g. Explore/Edition's 2.7px / 4px split. */
+
+.cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.cta-link__label {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  font-size: var(--type-subtitle-size);
+  line-height: 1;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cta-link__arrow {
+  display: block;
+  flex: none;
+  width: 36px;
+  height: 60px;
+}
+
+.cta-link--next .cta-link__arrow {
+  width: 44px;
+  height: 75px;
+}
+
+.cta-link:hover .cta-link__arrow {
+  transform: translateX(4px);
+}
+
+.cta-link__arrow {
+  transition: transform 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-link__arrow {
+    transition: none;
+  }
+
+  .cta-link:hover .cta-link__arrow {
+    transform: none;
+  }
+}

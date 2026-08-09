@@ -1,25 +1,17 @@
 import { useRef, useState } from "react";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
-import {
-  INTERNATIONAL_AWARDS,
-  INTERNATIONAL_AWARDS_CONTENT_MISSING,
-  NATIONAL_AWARDS,
-  PAST_WORKSHOPS,
-} from "../data/site";
+import { CtaLink } from "../components/CtaLink";
+import { AWARDS_INTERNATIONAL, AWARDS_NATIONAL, PAST_WORKSHOPS } from "../data/site";
 import "./Programmes.css";
 
-/**
- * "UPCOMING WORKSHOPS" cards (Figma 6:2326) are intentionally lorem-ipsum
- * placeholder copy in the design itself ("workshop 01/02/03" + standard
- * lorem, blank Date/Place values) — keep as placeholder, that is the
- * confirmed design intent, not a content gap.
- */
+/* Upcoming workshops are still Lorem Ipsum in the design itself (Figma 1:1658 /
+   1:1669 / 1:1680) — date and place are genuinely blank, not withheld from us. */
 const WORKSHOPS = [
   {
     id: "w1",
     title: "workshop 01",
-    date: "TBA",
-    place: "TBA",
+    date: "",
+    place: "",
     blurb:
       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
     image: "/programmes/workshop-1.jpg",
@@ -27,8 +19,8 @@ const WORKSHOPS = [
   {
     id: "w2",
     title: "workshop 02",
-    date: "TBA",
-    place: "TBA",
+    date: "",
+    place: "",
     blurb:
       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
     image: "/programmes/workshop-2.jpg",
@@ -36,48 +28,33 @@ const WORKSHOPS = [
   {
     id: "w3",
     title: "workshop 03",
-    date: "TBA",
-    place: "TBA",
+    date: "",
+    place: "",
     blurb:
       "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
     image: "/programmes/workshop-3.jpg",
   },
 ];
 
-/**
- * Residencies (Figma node 6:2495–6:2541): the full-bleed section is NOT
- * photo-only — it carries a real residency card (title/host/period/venue/
- * awardees + a copy paragraph). Only one residency is present in the design
- * (no carousel of multiple residencies), so RESIDENCIES_CONTENT_UNCONFIRMED
- * has been flipped to false in site.ts. The source paragraph itself trails
- * off mid-sentence ("Held from 10 June to 10 July 2026,") in the design —
- * reproduced verbatim rather than guessed/completed.
- */
 const RESIDENCIES = [
   {
-    id: "national-residency-2026",
+    id: "r1",
     title: "Students' Biennale National Residency Award Programme",
-    host: "KBF",
-    period: "10 June – 10 July 2026",
-    venue: "SMS Hall, Mattancherry, Kochi, Kerala",
-    awardees: "Reppandee Lepcha & Durgesh Prajapati",
-    copy: "As an extension of the Kochi Biennale Foundation's commitment to supporting emerging artistic practices beyond the exhibition period, the Foundation hosted two of the seven recipients of the Students' Biennale Tata Trusts National Awards through the KBF Residency Programme. Held from 10 June to 10 July 2026,",
+    host: "Kochi Biennale Foundation",
+    period: "2025–26",
+    venue: "Fort Kochi",
+    awardees: "Selected participants",
+    copy: "A focused residency for collaborative material research with visiting mentors and peer exchange.",
   },
-];
-
-/**
- * "INTERNATIONAL AWARDS" section: get_design_context on 6:2326 does show
- * text positioned under this heading, but it duplicates three of the six
- * winners already captured in `NATIONAL_AWARDS` (same Indian-institution
- * winners of the "Students' Biennale Tata Trusts National Awards" mentioned
- * in the Residencies copy) rather than distinct international-award data.
- * Treated as a Figma placeholder/duplication artifact, not real content —
- * left as a generic placeholder per INTERNATIONAL_AWARDS_CONTENT_MISSING.
- */
-const INTERNATIONAL_PLACEHOLDER_AWARDS = [
-  { name: "Awardee Name", artwork: "Artwork title", institution: "Institution" },
-  { name: "Awardee Name", artwork: "Artwork title", institution: "Institution" },
-  { name: "Awardee Name", artwork: "Artwork title", institution: "Institution" },
+  {
+    id: "r2",
+    title: "Pedagogy Labs Residency",
+    host: "KBF Education",
+    period: "2024",
+    venue: "Kochi",
+    awardees: "Regional cohorts",
+    copy: "Workshops that treat the classroom as a shared ground for experiment and care.",
+  },
 ];
 
 export function Programmes() {
@@ -134,9 +111,6 @@ export function Programmes() {
   );
 
   const residency = RESIDENCIES[resIndex];
-  const internationalAwards = INTERNATIONAL_AWARDS_CONTENT_MISSING
-    ? INTERNATIONAL_PLACEHOLDER_AWARDS
-    : INTERNATIONAL_AWARDS;
 
   return (
     <div ref={root} className="programmes">
@@ -156,17 +130,17 @@ export function Programmes() {
         </div>
       </section>
 
-      <section className="programmes__block prog-reveal">
-        <h1>UPCOMING WORKSHOPS</h1>
-        <div className="programmes__cards">
+      <section className="programmes__block fig-grid prog-reveal">
+        <h1 className="fig-label">UPCOMING WORKSHOPS</h1>
+        <div className="programmes__cards fig-c4-12 fig-sub-3">
           {WORKSHOPS.map((p) => (
             <article key={p.id}>
               <img src={p.image} alt="" className="programmes__card-media" />
               <h2>{p.title}</h2>
               <p className="programmes__meta">
-                Date: {p.date}
+                Date : {p.date}
                 <br />
-                Place: {p.place}
+                Place : {p.place}
               </p>
               <p>{p.blurb}</p>
               <button type="button">Know more...</button>
@@ -175,29 +149,28 @@ export function Programmes() {
         </div>
       </section>
 
-      <section className="programmes__block prog-reveal">
-        <h2>Past WORKSHOPS</h2>
-        <ul className="programmes__completed">
+      <section className="programmes__block fig-grid prog-reveal">
+        <h2 className="fig-label">Past WORKSHOPS</h2>
+        <ul className="programmes__completed fig-c4-12">
           {PAST_WORKSHOPS.map((item) => (
-            <li key={item.id}>
+            <li key={item.title}>
               <div>
                 <span className="programmes__past-title">{item.title}</span>
-                <span className="programmes__past-sub">
-                  Facilitators: {item.facilitators}
-                  <br />
-                  {item.place}
-                </span>
+                <span className="programmes__past-sub">Facilitators: {item.facilitators}</span>
               </div>
               <span>{item.year}</span>
             </li>
           ))}
         </ul>
-        <button type="button" className="programmes__more">
-          View MORE →
-        </button>
+        <CtaLink
+          className="fig-cta-end programmes__more"
+          lines={["View", "MORE"]}
+          spacing={["0.26em", "0.135em"]}
+        />
       </section>
 
       <section className="programmes__residencies prog-reveal">
+        <h2 className="programmes__residencies-label">Residencies</h2>
         <img src="/programmes/residency.jpg" alt="" className="programmes__res-bg" />
         <div ref={slideRef} className="programmes__res-slide">
           <div className="programmes__res-card">
@@ -222,56 +195,46 @@ export function Programmes() {
             </dl>
             <p>{residency.copy}</p>
             <button type="button">Learn more...</button>
-            {RESIDENCIES.length > 1 ? (
-              <div className="programmes__dots">
-                {RESIDENCIES.map((r, i) => (
-                  <button
-                    key={r.id}
-                    type="button"
-                    className={i === resIndex ? "is-active" : undefined}
-                    aria-label={`Residency ${i + 1}`}
-                    onClick={() => setResIndex(i)}
-                  />
-                ))}
-              </div>
-            ) : null}
+            <div className="programmes__dots">
+              {RESIDENCIES.map((r, i) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  className={i === resIndex ? "is-active" : undefined}
+                  aria-label={`Residency ${i + 1}`}
+                  onClick={() => setResIndex(i)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="programmes__block prog-reveal">
-        <h2>INTERNATIONAL AWARDS</h2>
-        <div className="programmes__awards">
-          {internationalAwards.map((a, i) => (
-            <article key={`intl-${i}`}>
-              <div className="programmes__award-media" aria-hidden />
-              <h3>{a.name}</h3>
-              <p>Artwork: {a.artwork}</p>
-              <p>Institution: {a.institution}</p>
-            </article>
-          ))}
-        </div>
-        <button type="button" className="programmes__more">
-          View MORE →
-        </button>
-      </section>
-
-      <section className="programmes__block prog-reveal">
-        <h2>NATIONAL AWARDS</h2>
-        <div className="programmes__awards">
-          {NATIONAL_AWARDS.map((a) => (
-            <article key={a.id}>
-              <img src="/programmes/award.jpg" alt="" className="programmes__award-media" />
-              <h3>{a.name}</h3>
-              <p>Artwork: {a.artwork}</p>
-              <p>Institution: {a.institution}</p>
-            </article>
-          ))}
-        </div>
-        <button type="button" className="programmes__more">
-          View MORE →
-        </button>
-      </section>
+      {(
+        [
+          ["INTERNATIONAL AWARDS", AWARDS_INTERNATIONAL],
+          ["NATIONAL AWARDS", AWARDS_NATIONAL],
+        ] as const
+      ).map(([heading, awards]) => (
+        <section key={heading} className="programmes__block fig-grid prog-reveal">
+          <h2 className="fig-label">{heading}</h2>
+          <div className="programmes__awards fig-c4-12 fig-sub-3">
+            {awards.map((a) => (
+              <article key={`${heading}-${a.name}`}>
+                <div className="programmes__award-media" aria-hidden />
+                <h3>{a.name}</h3>
+                <p>Artwork : {a.artwork}</p>
+                <p>{a.institution}</p>
+              </article>
+            ))}
+          </div>
+          <CtaLink
+            className="fig-cta-end programmes__more"
+            lines={["View", "MORE"]}
+            spacing={["0.26em", "0.135em"]}
+          />
+        </section>
+      ))}
     </div>
   );
 }

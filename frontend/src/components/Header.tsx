@@ -84,8 +84,16 @@ export function Header() {
   return (
     <header ref={headerRef} className="site-header" data-node-id="6:287">
       <Link to="/" className="site-header__brand" aria-label="Students' Biennale home">
-        <img className="site-header__brand-mark" src="/logo-sb.svg" alt="" />
-        <img className="site-header__brand-text" src="/logo-sb-text.svg" alt="Students' Biennale" />
+        <img
+          className="site-header__brand-logo site-header__brand-logo--full"
+          src="/logo-sb.svg"
+          alt="Students' Biennale"
+        />
+        <img
+          className="site-header__brand-logo site-header__brand-logo--icon"
+          src="/logo-sb-mark.svg"
+          alt="Students' Biennale"
+        />
       </Link>
 
       <Link
@@ -124,8 +132,16 @@ export function Header() {
         rel="noreferrer"
         aria-label="Kochi Biennale Foundation"
       >
-        <img className="site-header__kbf-mark" src="/logo-kbf-mark.svg" alt="" />
-        <img className="site-header__kbf-text" src="/logo-kbf-text.svg" alt="Kochi Biennale Foundation" />
+        <img
+          className="site-header__kbf-logo site-header__kbf-logo--full"
+          src="/logo-kbf.svg"
+          alt="Kochi Biennale Foundation"
+        />
+        <img
+          className="site-header__kbf-logo site-header__kbf-logo--icon"
+          src="/logo-kbf-icon.svg"
+          alt="Kochi Biennale Foundation"
+        />
       </a>
     </header>
   );

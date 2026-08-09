@@ -12,6 +12,10 @@
   box-shadow: none;
   -webkit-user-select: none;
   user-select: none;
+  /* Caption scales off the tile's own width, not the viewport — tiles range
+     roughly 130-560px across tiers/aspects, so a fixed px caption would look
+     right at only one size. */
+  container-type: inline-size;
 }
 
 .canvas-tile.is-dimmed {
@@ -25,6 +29,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
   pointer-events: none;
 }
@@ -44,27 +49,27 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 48px 16px 16px;
+  gap: clamp(3px, 1.6cqw, 6px);
+  padding: clamp(16px, 11cqw, 48px) clamp(10px, 4.5cqw, 16px) clamp(10px, 4.5cqw, 16px);
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
   color: var(--color-text-inverse);
   pointer-events: none;
 }
 
 .canvas-tile__kind {
-  font-size: 11px;
+  font-size: clamp(9px, 2.8cqw, 11px);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0.7;
 }
 
 .canvas-tile__name {
-  font-size: 18px;
+  font-size: clamp(13px, 5.8cqw, 18px);
   font-weight: 600;
   line-height: 1.2;
 }
 
 .canvas-tile__meta {
-  font-size: 13px;
+  font-size: clamp(11px, 3.8cqw, 13px);
   opacity: 0.8;
 }
