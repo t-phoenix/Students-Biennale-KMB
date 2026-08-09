@@ -1,34 +1,36 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { gsap, ScrollTrigger, useGSAP, withMotionPreference } from "../lib/motion";
+import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../lib/motion";
+import { CtaLink } from "../components/CtaLink";
 import { SpotlightModal } from "../components/SpotlightModal";
+import {
+  EDITION_MORE,
+  EDITION_SHORT,
+  SENSING_GROUNDS_NOTE,
+  TEAM_COLS,
+} from "../data/editions";
 import "./Home.css";
 
 const UPDATES = [
   {
     id: "u1",
-    label: "UPDATE 01",
+    edition: "2027–28",
+    label: "Update 01",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
   {
     id: "u2",
-    label: "UPDATE 02",
+    edition: "2027–28",
+    label: "Update 02",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
   {
     id: "u3",
-    label: "UPDATE 03",
+    edition: "2027–28",
+    label: "Update 03",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
 ] as const;
-
-const EDITION_SHORT = `The Students Biennale 2025-26 was realised by bringing together  70 projects under 4 artist duos and and 3 artist's collectives taking on 7 curatorial frameworks which culminates into one exhibition. The programme has successfully been able to achieve this with the participation of more than 200 student artists selected from over 150+ art institutions across the country.
-
-The programme emphasises on collaborative learning, student-led curatorial agency, and interdisciplinary methodologies. Rather than functioning as a static exhibition, the Students' Biennale operates as an evolving framework that facilitates dialogue, experimentation, and collective knowledge production, contributing to the development of emerging practitioners and alternative pedagogical models within contemporary art education.  Artistic works draw upon material practices, embodied knowledge systems, everyday objects, and technological experimentation to reflect on lived experience and systems of power.`;
-
-const EDITION_MORE = `The 2025-26 Students' Biennale programme has emerged under the curatorial mentorship, workshops and reviews by mid-career curators with regional and international experience. These seven curatorial teams comprise of 4 artistic duos - Ashok Vish & Chinar Shah (Karnataka & Telangana), Khursheed Ahmad & Salman Bashir Baba (Himalayan Belt), Savyasachi Anju Prabir & Sukanya Deb (Gujarat, Goa, Rajasthan, Punjab, Delhi, Haryana) Seethal CP & Sudheesh Kottembram (Kerala, Tamil Nadu, Andhra Pradesh) and 3 artists collective -  Anga Art Collective (North eastern states), GABAA (West Bengal, Orissa, Uttar Pradesh, Chhattisgarh) & Secular Art Collective (Maharashtra, Bihar, Jharkhand, Madhya Pradesh).
-
-This edition, titled 'Sensing Grounds' invited students to present ideas, works that are still underprogress, collaborations, and finished works along with material developed during the workshops, resulting in a total of 70 projects. The Students' Biennale opened to the public on Dec 13th 2025 and remained on display until 31st March 2026 across 6 venues in Fort Kochi: Vallabhdas Kanji Ltd. (VKL) Warehouse, BMS Warehouse, Arthshila Kochi, St. Andrews Parish Hall, Space Gallery, and David Hall.`;
 
 const PRESS_LIST = [
   {
@@ -43,32 +45,37 @@ const PRESS_LIST = [
   { title: "The Power of the Peta / Honour", date: "31 Dec 2025" },
 ];
 
-const TEAM_COLS = [
-  [
-    ["Director of Programmes", "Mario D'Souza"],
-    ["Programme Managers", "Mashoor Ali M", "Ananthan Suresh"],
-    ["Programmes Assistants", "Nikhita Thevanoor", "Maanav Jalan"],
-  ],
-  [
-    ["Production Managers", "Harshada Vijay", "DC Charan"],
-    ["Production Assistants", "Hiran Unnikrishnan", "Niyas Issahak"],
-    ["Accounts Manager", "Anzil Muhammed K"],
-  ],
-  [["Social Media and Catalogue", "Mishal MA"]],
-];
-
-function CtaMark() {
-  return (
-    <img className="home-cta__mark" src="/icons/explore.svg" alt="" width={31} height={52} />
-  );
-}
-
 export function Home() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const editionMoreRef = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
-  const [editionOpen, setEditionOpen] = useState(false);
+  const [editionExpanded, setEditionExpanded] = useState(false);
+  const [sensingOpen, setSensingOpen] = useState(false);
   const [progTab, setProgTab] = useState<"Workshops" | "Residencies" | "AWARDS">(
     "Residencies"
+  );
+
+  useGSAP(
+    () => {
+      const el = editionMoreRef.current;
+      if (!el) return;
+      if (prefersReducedMotion()) {
+        gsap.set(el, { height: editionExpanded ? "auto" : 0 });
+        return;
+      }
+      if (editionExpanded) {
+        gsap.set(el, { height: "auto" });
+        const target = el.offsetHeight;
+        gsap.fromTo(
+          el,
+          { height: 0 },
+          { height: target, duration: 0.45, ease: "power2.out" }
+        );
+      } else {
+        gsap.to(el, { height: 0, duration: 0.32, ease: "power2.in" });
+      }
+    },
+    { dependencies: [editionExpanded], scope: rootRef }
   );
 
   useGSAP(
@@ -80,37 +87,12 @@ export function Home() {
 
       withMotionPreference({
         animate: () => {
-          const heroBg = root.querySelector<HTMLElement>(".home-hero__slides");
-          if (heroBg) {
-            gsap.fromTo(
-              heroBg,
-              { scale: 1.06 },
-              {
-                scale: 1,
-                duration: 1.6,
-                ease: "power2.out",
-              }
-            );
-          }
-
-          const credit = root.querySelector(".home-hero__credit");
-          const dots = root.querySelector(".home-hero__dots");
-          gsap.from([credit, dots].filter(Boolean), {
-            autoAlpha: 0,
-            y: 16,
-            duration: 0.9,
-            delay: 0.35,
-            stagger: 0.08,
-            ease: "power3.out",
-          });
-
           gsap.from(".home-hero__card", {
             autoAlpha: 0,
-            y: 28,
-            stagger: 0.1,
-            duration: 0.75,
-            delay: 0.2,
-            ease: "power3.out",
+            stagger: 0.08,
+            duration: 0.45,
+            ease: "power2.out",
+            clearProps: "transform",
           });
 
           const slides = gsap.utils.toArray<HTMLElement>(".home-hero__slide");
@@ -120,9 +102,9 @@ export function Home() {
             const tl = gsap.timeline({ repeat: -1 });
             slides.forEach((el, i) => {
               const next = slides[(i + 1) % slides.length];
-              tl.to({}, { duration: 5 })
-                .to(el, { autoAlpha: 0, duration: 0.85, ease: "power2.inOut" }, ">")
-                .to(next, { autoAlpha: 1, duration: 0.85, ease: "power2.inOut" }, "<")
+              tl.to({}, { duration: 4 })
+                .to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.out" }, ">")
+                .to(next, { autoAlpha: 1, duration: 0.6, ease: "power2.out" }, "<")
                 .call(() => setSlide((i + 1) % slides.length));
             });
             const hero = root.querySelector<HTMLElement>(".home-hero");
@@ -140,53 +122,18 @@ export function Home() {
             };
           }
 
-          // One-shot section reveals — no reverse / no in-out loop
           gsap.utils.toArray<HTMLElement>(".home-section").forEach((section) => {
-            const bits = section.querySelectorAll<HTMLElement>(
-              ".fig-label, .home-edition__body > *, .home-sensing__links > *, .home-sensing__media > *, .home-cta, .home-programmes__banner, .home-programmes__rail button, .home-programmes__thumbs img, .home-press__featured, .home-press__list li, .home-about__intro, .home-about__block, .home-about__team, .home-about__sponsors"
-            );
-            if (!bits.length) return;
-
-            gsap.from(bits, {
+            gsap.from(section, {
               autoAlpha: 0,
-              y: 28,
-              duration: 0.8,
-              stagger: 0.05,
-              ease: "power3.out",
-              scrollTrigger: {
-                trigger: section,
-                start: "top 80%",
-                once: true,
-              },
+              y: 36,
+              duration: 0.65,
+              ease: "power2.out",
+              scrollTrigger: { trigger: section, start: "top 82%", once: true },
             });
           });
-
-          gsap.utils
-            .toArray<HTMLElement>(".home-sensing__wide img, .home-programmes__banner img")
-            .forEach((img) => {
-              gsap.fromTo(
-                img,
-                { yPercent: -3 },
-                {
-                  yPercent: 3,
-                  ease: "none",
-                  scrollTrigger: {
-                    trigger: img.closest("section") ?? img,
-                    start: "top bottom",
-                    end: "bottom top",
-                    scrub: 1,
-                  },
-                }
-              );
-            });
-
-          requestAnimationFrame(() => ScrollTrigger.refresh());
         },
         onReduce: () => {
-          gsap.set(
-            ".home-hero__card, .home-hero__credit, .home-hero__dots, .home-section, .home-reveal, .fig-label, .fig-body",
-            { autoAlpha: 1, y: 0, clearProps: "transform" }
-          );
+          gsap.set(".home-hero__card, .home-section", { autoAlpha: 1, y: 0 });
           gsap.set(".home-hero__slide", { autoAlpha: 0 });
           gsap.set(".home-hero__slide:first-child", { autoAlpha: 1 });
         },
@@ -198,8 +145,8 @@ export function Home() {
   );
 
   return (
-    <div ref={rootRef} className="home fig-page" data-node-id="6:1016">
-      {/* Hero */}
+    <div ref={rootRef} className="home" data-node-id="6:1016">
+      {/* Hero — full viewport width; overlays on 12-col (60 / 20) */}
       <section className="home-hero" aria-label="Hero">
         <div className="home-hero__slides" aria-hidden>
           {[0, 1, 2, 3, 4].map((i) => (
@@ -211,153 +158,179 @@ export function Home() {
             />
           ))}
         </div>
-        <div
-          className="home-hero__stack"
-          data-node-id="17:309"
-          tabIndex={0}
-          aria-label="Edition updates. Hover or focus to expand."
-        >
-          {UPDATES.map((item, i) => (
-            <article
-              key={item.id}
-              className="home-hero__card"
-              style={{ zIndex: UPDATES.length - i }}
-              data-offset={i}
-            >
-              <div className="home-hero__card-inner">
-                <header className="home-hero__card-head">
-                  <h2>{item.label}</h2>
-                  {i > 0 ? (
-                    <span className="home-hero__card-close" aria-hidden>
-                      <img src="/home/close.svg" alt="" width={15.46} height={16} />
-                    </span>
-                  ) : null}
-                </header>
-                <p className="home-hero__card-body">{item.body}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-        <div className="home-hero__credit">
-          <p className="home-hero__artwork">
-            Artwork
-            <br />
-            Name
-          </p>
-          <p className="home-hero__artist">Artist</p>
-          <p className="home-hero__inst">Institution</p>
-        </div>
-        <div className="home-hero__dots" role="tablist" aria-label="Hero slides">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              aria-selected={slide === i}
-              className={slide === i ? "is-active" : undefined}
-              onClick={() => setSlide(i)}
-            />
-          ))}
+
+        {/* Overlay sits on the page grid: update stack runs cols 1–3 plus the trailing
+            gutter (335 at 1440), credit + dots on cols 10–12 (Figma 1:924 / 1:948) */}
+        <div className="home-hero__grid">
+          <div
+            className="home-hero__stack fig-span3-plus-gutter"
+            data-node-id="17:309"
+            tabIndex={0}
+            aria-label="Edition updates. Hover or focus to expand."
+          >
+            {UPDATES.map((item, i) => (
+              <article
+                key={item.id}
+                className="home-hero__card"
+                style={{ zIndex: UPDATES.length - i }}
+                data-offset={i}
+              >
+                <div className="home-hero__card-inner">
+                  <h2 className="home-hero__card-title">{item.label}</h2>
+                  <p className="home-hero__card-body">{item.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="home-hero__meta">
+            <div className="home-hero__credit">
+              <p className="home-hero__artwork">
+                Artwork
+                <br />
+                Name
+              </p>
+              <p className="home-hero__artist">Artist</p>
+              <p className="home-hero__inst">Institution</p>
+            </div>
+            <div className="home-hero__dots" role="tablist" aria-label="Hero slides">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={slide === i}
+                  className={slide === i ? "is-active" : undefined}
+                  onClick={() => setSlide(i)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Edition intro */}
+      <div className="home__main">
+      {/* Edition intro — label cols 1–3, body cols 4–9 (Figma 1:955 / 1:956) */}
       <section id="editions" className="home-section home-edition">
-        <div className="fig-row">
-          <h2 className="fig-label">
+        <div className="fig-grid">
+          <h2 className="fig-label fig-heading">
             Students&apos; Biennale
             <br />
             2025–26
           </h2>
-          <div className="home-edition__body">
+          <div className="home-edition__body fig-c4-9">
             {EDITION_SHORT.split("\n\n").map((p) => (
               <p key={p.slice(0, 40)} className="fig-body">
                 {p}
               </p>
             ))}
+            {/* Expands in place — no modal. This is an interim behaviour and is
+                expected to change later. */}
+            <div ref={editionMoreRef} className="home-edition__more" aria-hidden={!editionExpanded}>
+              {EDITION_MORE.split("\n\n").map((p) => (
+                <p key={p.slice(0, 40)} className="fig-body">
+                  {p}
+                </p>
+              ))}
+            </div>
             <button
               type="button"
-              className="home-text-btn home-reveal"
-              onClick={() => setEditionOpen(true)}
+              className="home-text-btn"
+              aria-expanded={editionExpanded}
+              onClick={() => setEditionExpanded((v) => !v)}
             >
-              Read more...
+              {editionExpanded ? "Read less..." : "Read more..."}
             </button>
           </div>
         </div>
       </section>
 
+      {/* Sensing Grounds — links cols 1–3, wide cols 4–9, side cols 10–12; the peek
+          bleeds into the right margin past col 12 (Figma 1:961) */}
+      <section className="home-section home-sensing">
+        <div className="fig-grid home-sensing__row">
+          <nav className="home-sensing__links fig-rail" aria-label="Edition links">
+            <button
+              type="button"
+              className="fig-subheading"
+              onClick={() => setSensingOpen(true)}
+            >
+              Sensing Grounds
+              <span className="fig-subheading__underline" aria-hidden />
+            </button>
+            <Link to="/editions/2025-26/curators" className="fig-subheading">
+              Curators
+              <span className="fig-subheading__underline" aria-hidden />
+            </Link>
+            <Link to="/editions/2025-26/artworks" className="fig-subheading">
+              Artworks
+              <span className="fig-subheading__underline" aria-hidden />
+            </Link>
+            <Link to="/editions/2025-26/venue" className="fig-subheading">
+              Venues
+              <span className="fig-subheading__underline" aria-hidden />
+            </Link>
+          </nav>
+          <div className="home-sensing__wide fig-c4-9">
+            <img src="/home/sensing-wide.jpg" alt="" />
+          </div>
+          <div className="home-sensing__side fig-c10-12">
+            <img src="/home/sensing-side.jpg" alt="" />
+          </div>
+          <div className="home-sensing__peek" aria-hidden>
+            <img src="/home/sensing-wide.jpg" alt="" />
+          </div>
+        </div>
+        <div className="fig-grid home-sensing__cta">
+          <CtaLink
+            className="fig-cta-end"
+            to="/editions/2025-26/curators"
+            lines={["Explore", "Edition"]}
+            spacing={["0.135em", "0.2em"]}
+          />
+        </div>
+      </section>
+
       <SpotlightModal
-        open={editionOpen}
-        onClose={() => setEditionOpen(false)}
-        title={`Students' Biennale\n2025–26`}
+        open={sensingOpen}
+        onClose={() => setSensingOpen(false)}
+        title={SENSING_GROUNDS_NOTE.title}
       >
-        {[EDITION_SHORT, EDITION_MORE].join("\n\n").split("\n\n").map((p) => (
-          <p key={p.slice(0, 48)}>{p}</p>
-        ))}
-        <div className="spotlight__actions">
-          <Link to="/editions/2025-26/curators" onClick={() => setEditionOpen(false)}>
-            Explore Edition →
-          </Link>
+        <p className="spotlight__attribution">{SENSING_GROUNDS_NOTE.attribution}</p>
+        <div className="spotlight__body--split">
+          {SENSING_GROUNDS_NOTE.paragraphs.map((p) => (
+            <p key={p.slice(0, 48)}>{p}</p>
+          ))}
         </div>
       </SpotlightModal>
 
-      {/* Sensing Grounds explore */}
-      <section className="home-section home-sensing">
-        <div className="home-sensing__row">
-          <nav className="home-sensing__links" aria-label="Edition links">
-            <span>Sensing Grounds</span>
-            <Link to="/editions/2025-26/curators">Curators</Link>
-            <Link to="/editions/2025-26/artworks">Artworks</Link>
-            <Link to="/editions/2025-26/venue">Venues</Link>
-          </nav>
-          <div className="home-sensing__media">
-            <div className="home-sensing__wide">
-              <img src="/home/sensing-wide.jpg" alt="" />
-            </div>
-            <div className="home-sensing__side">
-              <img src="/home/sensing-side.jpg" alt="" />
-            </div>
-            <div className="home-sensing__peek" aria-hidden>
-              <img src="/home/sensing-wide.jpg" alt="" />
-            </div>
-          </div>
-        </div>
-        <Link className="home-cta" to="/editions/2025-26/curators">
-          <span>
-            Explore
-            <br />
-            Edition
-          </span>
-          <CtaMark />
-        </Link>
-      </section>
-
-      {/* Upcoming programmes */}
+      {/* Upcoming programmes — banner cols 4–12, thumbs 3-up at cols 4/7/10 (Figma 1:991) */}
       <section id="programmes" className="home-section home-programmes">
-        <div className="fig-row home-programmes__top">
-          <h2 className="fig-label">
+        <div className="fig-grid home-programmes__top">
+          <h2 className="fig-label fig-heading">
             Upcoming
             <br />
             Programmes
           </h2>
-          <div className="home-programmes__banner">
+          <div className="home-programmes__banner fig-c4-12">
             <img src="/home/programmes-banner.jpg" alt="" />
           </div>
         </div>
-        <div className="fig-row home-programmes__bottom">
-          <div className="home-programmes__rail">
+        <div className="fig-grid home-programmes__bottom">
+          <div className="home-programmes__rail fig-rail">
             {(["Workshops", "Residencies", "AWARDS"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
-                className={progTab === tab ? "is-active" : undefined}
+                className={`fig-subheading${progTab === tab ? " is-selected" : ""}`}
                 onClick={() => setProgTab(tab)}
               >
                 {tab}
+                <span className="fig-subheading__underline" aria-hidden />
               </button>
             ))}
           </div>
-          <div className="home-programmes__thumbs">
+          <div className="home-programmes__thumbs fig-c4-12 fig-sub-3">
             <img src="/home/thumb-workshops.jpg" alt="" />
             <img src="/home/thumb-residencies.jpg" alt="" />
             <img src="/home/thumb-awards.jpg" alt="" />
@@ -365,13 +338,12 @@ export function Home() {
         </div>
       </section>
 
-      {/* Press */}
+      {/* Press — featured image cols 4–6, copy cols 7–12, list cols 4–12 (Figma 1:1005) */}
       <section id="press" className="home-section home-press">
-        <div className="fig-row">
-          <h2 className="fig-label">Press</h2>
-          <div className="home-press__main">
-            <article className="home-press__featured">
-              <img src="/home/press-featured.jpg" alt="" />
+        <div className="fig-grid">
+          <h2 className="fig-label fig-heading">Press</h2>
+          <img className="home-press__featured-img fig-c4-6" src="/home/press-featured.jpg" alt="" />
+          <article className="home-press__featured fig-c7-12">
               <div>
                 <div className="home-press__featured-head">
                   <h3>KBF Announces Curators For Students&apos; Biennale 2025-26</h3>
@@ -388,44 +360,40 @@ export function Home() {
                   Read more...
                 </Link>
               </div>
-            </article>
-            <ul className="home-press__list">
-              {PRESS_LIST.map((item) => (
-                <li key={item.title}>
-                  <Link to="/press">
-                    <span>{item.title}</span>
-                    <time>{item.date}</time>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <Link className="home-cta home-cta--end" to="/press">
-              <span>
-                view
-                <br />
-                more
-              </span>
-              <CtaMark />
-            </Link>
-          </div>
+          </article>
+          <ul className="home-press__list fig-c4-12">
+            {PRESS_LIST.map((item) => (
+              <li key={item.title}>
+                <Link to="/press">
+                  <span>{item.title}</span>
+                  <time>{item.date}</time>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <CtaLink
+            className="fig-cta-end home-press__more"
+            to="/press"
+            lines={["view", "more"]}
+            spacing={["0.26em", "0.135em"]}
+          />
         </div>
       </section>
 
-      {/* About */}
+      {/* About — logos in the label column, copy cols 4–9 (Figma 1:1060) */}
       <section id="about" className="home-section home-about">
-        <div className="fig-row home-about__intro">
-          <h2 className="fig-label">About Us</h2>
-          <div />
+        <div className="fig-grid home-about__intro">
+          <h2 className="fig-label fig-heading">About Us</h2>
         </div>
-        <div className="fig-row home-about__block">
+        <div className="fig-grid home-about__block">
           <img
-            className="home-about__logo-kbf"
+            className="home-about__logo-kbf fig-c1-3"
             src="/home/logo-kbf-about.svg"
             alt="Kochi Biennale Foundation"
             width={217}
             height={68}
           />
-          <p className="fig-body">
+          <p className="fig-body fig-c4-9">
             The Kochi Biennale Foundation (KBF) was established in 2010 as a non-profit, charitable
             trust to promote art, culture, heritage, and education. Every two years, KBF hosts the
             Kochi-Muziris Biennale (KMB), India&apos;s first and largest contemporary art Biennale, in
@@ -435,12 +403,12 @@ export function Home() {
             Foundation.
           </p>
         </div>
-        <div className="fig-row home-about__block">
-          <div className="home-about__logo-sb" aria-label="Students' Biennale">
-            <img src="/home/logo-sb-mark-about.svg" alt="" width={71} height={102} />
-            <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={118} height={47} />
+        <div className="fig-grid home-about__block">
+          <div className="home-about__logo-sb fig-c1-3" aria-label="Students' Biennale">
+            <img src="/home/logo-sb-mark-about.svg" alt="" width={72} height={100} />
+            <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={120} height={48} />
           </div>
-          <div className="home-about__sb-copy">
+          <div className="home-about__sb-copy fig-c4-9">
             <p className="fig-body">
               Established by the Kochi Biennale Foundation in 2014, The Students&apos; Biennale is the
               Kochi Biennale Foundation&apos;s flagship educational initiative and one of the most
@@ -481,13 +449,13 @@ export function Home() {
           </div>
         </div>
 
-        <div className="fig-row home-about__team">
+        <div className="fig-grid home-about__team">
           <h3 className="fig-label fig-label--sub">
             students&apos; biennale
             <br />
             2026-27 Team
           </h3>
-          <div className="home-about__team-cols">
+          <div className="home-about__team-cols fig-c4-12 fig-sub-3">
             {TEAM_COLS.map((col, i) => (
               <div key={i}>
                 {col.map(([role, ...people]) => (
@@ -503,15 +471,16 @@ export function Home() {
           </div>
         </div>
 
-        <div className="fig-row home-about__sponsors">
+        <div className="fig-grid home-about__sponsors">
           <h3 className="fig-label fig-label--sub">sponsors</h3>
-          <div className="home-about__sponsor-grid">
+          <div className="home-about__sponsor-grid fig-c4-12 fig-sub-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="home-about__sponsor" />
             ))}
           </div>
         </div>
       </section>
+      </div>
     </div>
   );
 }

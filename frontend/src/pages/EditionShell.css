@@ -1,61 +1,49 @@
-/* Edition shell — full-bleed, responsive */
+/* Edition shell — rail on cols 1-3, catalogue on cols 4-12
+   (Figma 1:1205 / 1:1574 / 1:1394 / 1:1765) */
 .edition {
-  width: 100%;
-  max-width: none;
-  margin-inline: 0;
-  display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
-  column-gap: clamp(16px, 2.8vw, 40px);
-  padding: clamp(32px, 5vw, 63px) var(--page-pad) 80px;
-  box-sizing: border-box;
+  padding-block: 63px 80px;
   min-height: 60vh;
 }
 
-.edition__rail {
-  text-align: right;
-  min-width: 0;
-}
-
 .edition__rail h1 {
-  margin: 0 0 clamp(32px, 5vw, 72px);
+  margin: 0 0 72px;
   font-size: var(--type-title-size);
-  line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
-  overflow-wrap: anywhere;
 }
 
 .edition__tabs {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  margin-bottom: clamp(32px, 5vw, 72px);
+  margin-bottom: 72px;
   align-items: flex-end;
 }
 
 .edition__tabs a {
   font-size: var(--type-subtitle-size);
-  line-height: var(--type-subtitle-line);
-  font-weight: 500;
   color: var(--color-text-tertiary);
   width: 100%;
   text-align: right;
 }
 
-.edition__tabs a.is-active {
+.edition__tabs a.is-selected {
   color: var(--color-text-primary);
-  border-bottom: 1px solid var(--color-text-primary);
-  padding-bottom: 4px;
 }
 
 .edition__prev {
   margin-top: 40px;
 }
 
-.edition__prev-label {
-  margin: 0 0 20px;
+.edition__prev summary {
+  cursor: pointer;
   font-size: var(--type-subtitle-size);
   font-weight: 500;
   color: var(--color-text-tertiary);
+  list-style: none;
+  margin-bottom: 20px;
+}
+
+.edition__prev summary::-webkit-details-marker {
+  display: none;
 }
 
 .edition__prev ul {
@@ -76,19 +64,24 @@
 .edition__main {
   min-width: 0;
   width: 100%;
-  max-width: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 899px) {
   .edition {
-    grid-template-columns: 1fr;
-    padding: 24px var(--page-pad) 64px;
+    padding-block: 24px 64px;
   }
 
-  .edition__rail,
   .edition__tabs a,
   .edition__prev ul {
     text-align: left;
     align-items: flex-start;
+  }
+
+  .edition__rail h1 {
+    margin-bottom: 32px;
+  }
+
+  .edition__tabs {
+    margin-bottom: 32px;
   }
 }

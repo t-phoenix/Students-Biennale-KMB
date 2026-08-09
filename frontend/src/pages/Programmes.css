@@ -7,18 +7,17 @@
   background: var(--color-primary-dark);
 }
 
+/* Full-bleed hero — Figma 1:2183 is 1440 x 615. */
 .programmes__hero-media {
   display: block;
   width: 100%;
-  max-width: none;
-  margin-inline: 0;
-  height: clamp(280px, 52vh, 560px);
-  object-fit: contain;
+  height: min(615px, 58vh);
+  object-fit: cover;
 }
 
 .programmes__hero-dots {
   position: absolute;
-  right: var(--page-pad);
+  right: var(--grid-margin);
   bottom: 24px;
   display: flex;
   gap: 8px;
@@ -37,30 +36,14 @@
   background: var(--color-neutral-white);
 }
 
+/* Label on cols 1-3, cards and lists on cols 4-12 (Figma 1:2191 / 1:2192). */
 .programmes__block {
-  display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
-  gap: clamp(16px, 2.8vw, 40px);
-  width: 100%;
-  max-width: none;
-  margin-inline: 0;
-  padding: 72px var(--page-pad);
-  box-sizing: border-box;
-}
-
-.programmes__block h1,
-.programmes__block h2 {
-  margin: 0;
-  font-size: var(--type-title-size);
-  line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
+  padding-block: 72px;
+  align-items: start;
 }
 
 .programmes__cards {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
-  grid-column: 2;
+  row-gap: 24px;
 }
 
 .programmes__cards article {
@@ -71,7 +54,7 @@
 
 .programmes__card-media {
   width: 100%;
-  aspect-ratio: 314 / 273;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
   background: var(--color-neutral-gray-mid);
 }
@@ -95,8 +78,7 @@
 }
 
 .programmes__cards button,
-.programmes__res-card button,
-.programmes__more {
+.programmes__res-card button {
   border: 0;
   background: transparent;
   padding: 0;
@@ -112,7 +94,6 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  grid-column: 2;
 }
 
 .programmes__completed li {
@@ -136,25 +117,38 @@
 }
 
 .programmes__more {
-  grid-column: 2;
-  justify-self: end;
-  margin-top: 24px;
-  font-size: var(--type-subtitle-size);
-  text-decoration: none;
+  margin-top: 60px;
 }
 
+/* Full-bleed residency band (Figma 1:2345 — 1440 wide). */
 .programmes__residencies {
   position: relative;
   width: 100%;
-  max-width: none;
   margin: 0 0 40px;
-  min-height: clamp(320px, 50vh, 520px);
+  min-height: 480px;
   overflow: hidden;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 40px var(--page-pad);
+  padding-block: 40px;
+  padding-inline: var(--grid-margin);
   box-sizing: border-box;
+}
+
+/* Figma places this label at x=182 inside the band, not on a grid column. */
+.programmes__residencies-label {
+  position: absolute;
+  top: 24px;
+  left: max(
+    182px,
+    calc((100% - var(--page-max)) / 2 + 182px)
+  );
+  z-index: 1;
+  margin: 0;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+  color: var(--color-text-inverse);
 }
 
 .programmes__res-bg {
@@ -221,17 +215,11 @@
 }
 
 .programmes__awards {
-  grid-column: 2;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 24px;
+  row-gap: 24px;
 }
 
 .programmes__award-media {
-  display: block;
-  width: 100%;
-  aspect-ratio: 315 / 273;
-  object-fit: cover;
+  aspect-ratio: 4 / 3;
   background: var(--color-neutral-gray-mid);
   margin-bottom: 12px;
 }
@@ -248,26 +236,12 @@
   color: var(--color-text-secondary);
 }
 
-@media (max-width: 900px) {
-  .programmes__block,
-  .programmes__cards,
-  .programmes__awards {
-    grid-template-columns: 1fr;
-  }
-
-  .programmes__cards,
-  .programmes__completed,
-  .programmes__awards,
-  .programmes__more {
-    grid-column: 1;
-  }
-
+@media (max-width: 899px) {
   .programmes__block {
-    padding: 40px var(--page-pad);
+    padding-block: 40px;
   }
 
   .programmes__residencies {
-    margin: 0 0 40px;
     justify-content: center;
   }
 }

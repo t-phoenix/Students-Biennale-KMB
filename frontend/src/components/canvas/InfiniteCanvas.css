@@ -17,6 +17,8 @@
   pointer-events: none;
 }
 
+/* X-tiling only — every column shares the same horizontal period, so the
+   whole world can still wrap together on that axis. */
 .infinite-canvas__world {
   position: absolute;
   top: 0;
@@ -24,8 +26,17 @@
   will-change: transform;
 }
 
-.infinite-canvas__seed {
+.infinite-canvas__xcopy {
+  position: absolute;
+  top: 0;
+  height: 100%;
+}
+
+/* Each column wraps vertically on its own period (see data/site.ts), so its
+   transform is set independently — never in sync with the other columns. */
+.infinite-canvas__column {
   position: absolute;
   top: 0;
   left: 0;
+  will-change: transform;
 }

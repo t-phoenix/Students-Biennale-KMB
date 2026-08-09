@@ -1,205 +1,90 @@
+/* Edition overview — Figma 1:2626. */
+
 .edition-overview {
   width: 100%;
-  max-width: none;
-  margin-inline: 0;
+  padding-bottom: 80px;
 }
 
-.eo__hero {
+/* Full-bleed hero (1440 x 820 in Figma). */
+.edition-overview__hero {
   width: 100%;
-  background: var(--color-primary-dark);
-}
-
-.eo__hero-media {
-  display: block;
-  width: 100%;
-  max-width: none;
-  height: clamp(280px, 57vw, 560px);
-  object-fit: cover;
-}
-
-.eo__hero-media--placeholder {
+  height: min(820px, 70vh);
   background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
 }
 
-.eo__row {
-  display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
-  column-gap: clamp(16px, 2.8vw, 40px);
-  padding: clamp(40px, 6vw, 72px) var(--page-pad);
-  box-sizing: border-box;
-  width: 100%;
+.edition-overview__section {
+  padding-top: 80px;
   align-items: start;
 }
 
-.eo__title {
-  text-align: right;
+.edition-overview__title {
+  font-size: var(--type-title-size);
 }
 
-.eo__title-sub {
-  margin-top: 12px;
-  color: var(--color-text-secondary);
+.edition-overview__intro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
-.eo__history {
-  max-width: min(650px, 100%);
-  white-space: pre-line;
+.edition-overview__intro p {
+  margin: 0;
 }
 
-.eo__team {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(24px, 4vw, 64px);
+.edition-overview__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  font-size: var(--type-subtitle-size);
 }
 
-.eo__team-col h3 {
-  margin: 0 0 12px;
+.edition-overview__team {
+  row-gap: 24px;
+}
+
+.edition-overview__role {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
   font-size: var(--type-body-size);
+  line-height: 36px;
+}
+
+.edition-overview__role strong {
   font-weight: 500;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
 
-.eo__team-col ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* Each slot is 3 columns wide, so four fit per row (315 x 260 at 1440). */
+.edition-overview__gallery {
+  padding-top: 80px;
+  row-gap: var(--grid-gutter);
 }
 
-.eo__team-col li,
-.eo__team-col p {
-  margin: 0;
-  font-size: var(--type-body-size);
-  line-height: 1.8;
-}
-
-.eo__team-col--roles {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
-.eo__team-col--roles h3 {
-  margin-bottom: 6px;
-}
-
-.eo__institutions {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  columns: 2;
-  column-gap: clamp(24px, 4vw, 48px);
-}
-
-.eo__institutions li {
-  break-inside: avoid;
-  padding: 10px 0;
-  border-top: 1px solid var(--color-neutral-gray-light);
-  font-size: var(--type-body-size);
-  line-height: 1.5;
-}
-
-.eo__workshops {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.eo__workshop-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.eo__workshop-tile {
-  position: relative;
-  display: block;
+.edition-overview__slot {
+  grid-column: span 3;
   aspect-ratio: 315 / 260;
-  overflow: hidden;
   background: var(--color-neutral-gray-mid);
 }
 
-.eo__workshop-tile img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.edition-overview__nav {
+  padding-top: 60px;
 }
 
-.eo__workshop-tile--more {
-  color: var(--color-text-inverse);
-}
-
-.eo__workshop-tile--more::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  transition: background 0.2s ease;
-}
-
-.eo__workshop-tile--more:hover::after {
-  background: rgba(0, 0, 0, 0.55);
-}
-
-.eo__workshop-more {
-  position: absolute;
-  right: 20px;
-  bottom: 20px;
-  z-index: 1;
-  font-size: var(--type-subtitle-size);
-  font-weight: 500;
-}
-
-.eo__row--next {
-  padding-top: 0;
-  padding-bottom: clamp(24px, 4vw, 40px);
-}
-
-.eo__next-link {
-  justify-self: end;
-  color: var(--color-text-primary);
-}
-
-.eo__closer {
-  width: 100%;
-}
-
-.eo__closer-media {
-  display: block;
-  width: 100%;
-  height: clamp(220px, 35vw, 507px);
-  object-fit: cover;
-}
-
-@media (max-width: 900px) {
-  .eo__row {
-    grid-template-columns: 1fr;
-    row-gap: 20px;
-    padding: 32px var(--page-pad);
+@media (max-width: 899px) {
+  .edition-overview__section,
+  .edition-overview__gallery {
+    padding-top: 40px;
   }
 
-  .eo__title {
-    text-align: left;
+  .edition-overview__slot {
+    grid-column: span 3;
   }
+}
 
-  .eo__team {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-
-  .eo__institutions {
-    columns: 1;
-  }
-
-  .eo__workshop-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .eo__row--next > *:first-child {
-    display: none;
-  }
-
-  .eo__next-link {
-    justify-self: start;
+@media (max-width: 599px) {
+  .edition-overview__slot {
+    grid-column: 1 / -1;
   }
 }

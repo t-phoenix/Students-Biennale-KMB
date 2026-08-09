@@ -8,11 +8,20 @@
   box-sizing: border-box;
 }
 
+html {
+  margin: 0;
+  padding: 0;
+  /* Never reserve a layout gutter for the scrollbar */
+  scrollbar-gutter: auto;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
   overflow-x: clip;
+  width: 100%;
+  max-width: 100%;
 }
 
 body {
@@ -23,10 +32,13 @@ body {
   color: var(--color-text-primary);
   background: var(--color-neutral-white);
   -webkit-font-smoothing: antialiased;
+  /* Content spans the viewport; the bar paints over the right edge */
+  width: 100%;
 }
 
 #root {
-  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
 }
 
 a {
@@ -44,31 +56,44 @@ button {
   cursor: pointer;
 }
 
-/* Thin scrollbar — thumb only, no track */
+/*
+ * Overlay scrollbar — minimal thumb, no track, no reserved column.
+ * Content stays full width; the bar floats over the right edge.
+ */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(27, 23, 28, 0.35) transparent;
+  scrollbar-color: rgba(27, 23, 28, 0.4) transparent;
 }
 
 *::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
+  width: 2px;
+  height: 2px;
+  background: transparent;
 }
 
 *::-webkit-scrollbar-track,
 *::-webkit-scrollbar-track-piece,
 *::-webkit-scrollbar-corner,
 *::-webkit-scrollbar-button {
-  background: transparent;
+  background: transparent !important;
   border: 0;
+  box-shadow: none;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(27, 23, 28, 0.35);
+  background: rgba(27, 23, 28, 0.4);
   border: 0;
   border-radius: 0;
+  background-clip: padding-box;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(27, 23, 28, 0.5);
+  background: rgba(27, 23, 28, 0.55);
+}
+
+/* Prefer classic overlay behaviour where the engine supports it */
+@supports (overflow: overlay) {
+  html {
+    overflow-y: overlay;
+  }
 }

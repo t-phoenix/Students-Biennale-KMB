@@ -3,13 +3,13 @@ import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { DiscoverArtworks } from "./pages/DiscoverArtworks";
 import { EditionShell } from "./pages/EditionShell";
+import { EditionOverview } from "./pages/EditionOverview";
 import {
   ArtistsView,
   ArtworksView,
   CuratorsView,
   VenueView,
 } from "./pages/EditionViews";
-import { EditionOverview } from "./pages/EditionOverview";
 import { Detail } from "./pages/Detail";
 import { Programmes } from "./pages/Programmes";
 import { Press } from "./pages/Press";
@@ -25,13 +25,12 @@ export default function App() {
           <Route path="archive" element={<Navigate to="/artworks" replace />} />
           <Route path="editions" element={<Navigate to={EDITIONS_PATH} replace />} />
           <Route path="editions/:yearId" element={<EditionShell />}>
-            <Route index element={<Navigate to="curators" replace />} />
+            <Route index element={<EditionOverview />} />
             <Route path="curators" element={<CuratorsView />} />
             <Route path="artworks" element={<ArtworksView />} />
             <Route path="artists" element={<ArtistsView />} />
             <Route path="venue" element={<VenueView />} />
           </Route>
-          <Route path="editions/:yearId/about" element={<EditionOverview />} />
           <Route path="editions/:yearId/:kindSeg/:id" element={<Detail />} />
           <Route path="programmes" element={<Programmes />} />
           <Route path="press" element={<Press />} />
