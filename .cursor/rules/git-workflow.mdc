@@ -1,0 +1,15 @@
+---
+description: Git workflow policy - work directly on main, no feature branches
+alwaysApply: true
+---
+
+# Git Workflow: Main Branch Only
+
+This project works exclusively on the `main` branch. Do not create feature/topic branches.
+
+- Always make commits directly on `main`. Do not run `git checkout -b <name>` or `git branch <name>` to create new branches.
+- Before committing, verify the current branch is `main` (`git branch --show-current`). If not, switch to `main` first (after handling any in-progress work).
+- Do not open pull requests for new work; commit and push straight to `main`.
+- Do not create git worktrees on new branches.
+- If asked to review or merge existing PRs from legacy branches, merge into `main` and then delete the source branch (local and remote) to keep the branch list clean.
+- Exception: only create a separate branch if the user explicitly asks for one by name.
