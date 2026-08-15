@@ -42,8 +42,10 @@ export type EditionOverviewData = {
   intro: string[];
   team: readonly (readonly (readonly string[])[])[];
   institutions: string[];
-  /** Number of gallery slots to lay out (Figma shows two rows of four). */
-  gallerySlots: number;
+  /** Full-bleed hero image when available. */
+  heroImage?: string;
+  /** Gallery images (Figma shows two rows of four). */
+  galleryImages: string[];
   /** Year id of the edition that follows this one, for the trailing CTA. */
   nextId?: string;
 };
@@ -158,6 +160,17 @@ const EDITION_2014_INSTITUTIONS = [
   "Government College of Fine Arts, Kumbakonam",
 ];
 
+const EDITION_2014_GALLERY = [
+  "/editions/2014-15/workshop-1.jpg",
+  "/editions/2014-15/workshop-2.jpg",
+  "/editions/2014-15/workshop-3.jpg",
+  "/editions/2014-15/workshop-4.jpg",
+  "/editions/2014-15/workshop-5.jpg",
+  "/editions/2014-15/workshop-6.jpg",
+  "/editions/2014-15/workshop-7.jpg",
+  "/editions/2014-15/workshop-8.jpg",
+];
+
 const ALL_EDITIONS = [LATEST_EDITION.id, ...PREVIOUS_EDITIONS];
 
 /** Unique participating institutions, taken from the artist records we hold. */
@@ -180,7 +193,8 @@ export function getEditionOverview(yearId: string): EditionOverviewData {
       intro: EDITION_2014_INTRO.split("\n\n"),
       team: EDITION_2014_TEAM,
       institutions: EDITION_2014_INSTITUTIONS,
-      gallerySlots: 8,
+      heroImage: "/editions/2014-15/hero.jpg",
+      galleryImages: EDITION_2014_GALLERY,
       nextId,
     };
   }
@@ -188,11 +202,15 @@ export function getEditionOverview(yearId: string): EditionOverviewData {
   return {
     id: yearId,
     title: "Students' Biennale",
-    subtitle: isLatest ? "2025–26" : yearId,
-    intro: isLatest ? [EDITION_SHORT, EDITION_MORE].join("\n\n").split("\n\n") : [],
+    subtitle: isLatest ? "2025–26" : yearId.replace("-", "–"),
+    intro: isLatest
+      ? [EDITION_SHORT, EDITION_MORE].join("\n\n").split("\n\n")
+      : [
+          "Catalogue records for this edition are forthcoming. Explore neighbouring editions from the Previous Editions rail, or continue to the next edition when available.",
+        ],
     team: isLatest ? TEAM_COLS : [],
     institutions: isLatest ? institutionsForLatest() : [],
-    gallerySlots: 8,
+    galleryImages: isLatest ? [] : [],
     nextId,
   };
 }

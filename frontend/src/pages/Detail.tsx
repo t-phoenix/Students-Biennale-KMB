@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
@@ -8,14 +8,21 @@ import {
   CURATOR_ZONES,
   CURATORS,
   VENUES,
+  artworkImages,
   artworksForZone,
   curatorsForArtwork,
+  venueImages,
 } from "../data/site";
 import "./Detail.css";
 
 export function Detail() {
   const { yearId = "2025-26", kindSeg = "artworks", id = "" } = useParams();
   const root = useRef<HTMLDivElement>(null);
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  useEffect(() => {
+    setHeroIndex(0);
+  }, [id, kindSeg]);
 
   const data = useMemo(() => {
     if (kindSeg === "artworks") return { kind: "artwork" as const, item: ARTWORKS.find((a) => a.id === id) };
@@ -54,16 +61,39 @@ export function Detail() {
     );
   }
 
-  /* Artwork Page — Figma 1:569: label cols 1-3, title cols 4-9, year cols 10-12,
-     metadata cols 4-12, description cols 4-9, artists 3-up, NEXT locked to col 12. */
+  /* Artwork Page — Figma 1:3: full-bleed carousel, label cols 1-3, title cols 4-9,
+     year cols 10-12, metadata cols 4-12, description, artists 3-up, NEXT. */
   if (data.kind === "artwork" && data.item) {
     const a = data.item;
     const idx = ARTWORKS.findIndex((x) => x.id === a.id);
     const next = ARTWORKS[(idx + 1) % ARTWORKS.length];
+    const slides = artworkImages(a);
+    const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
+    const curated = curatorsForArtwork(a);
 
     return (
-      <div ref={root} className="detail">
-        <div className="detail__hero detail-reveal" aria-hidden />
+      <div ref={root} className="detail" key={a.id}>
+        <div className="detail__hero detail-reveal">
+          {slide ? (
+            <img src={slide} alt="" className="detail__hero-img" />
+          ) : (
+            <div className="detail__hero-fallback" aria-hidden />
+          )}
+          {slides.length > 1 ? (
+            <div className="detail__hero-dots" role="tablist" aria-label="Artwork images">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === heroIndex}
+                  className={i === heroIndex ? "is-active" : undefined}
+                  onClick={() => setHeroIndex(i)}
+                />
+              ))}
+            </div>
+          ) : null}
+        </div>
 
         <div className="fig-grid detail__section">
           <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
@@ -92,7 +122,11 @@ export function Detail() {
 
         <div className="fig-grid detail__section">
           <p className="fig-label detail__label detail-reveal">Description</p>
-          <p className="fig-c4-9 fig-body detail-reveal">{a.description}</p>
+          <div className="fig-c4-9 fig-body detail-reveal detail__desc">
+            {a.description.split(/\n\n+/).map((para) => (
+              <p key={para.slice(0, 48)}>{para}</p>
+            ))}
+          </div>
         </div>
 
         <div className="fig-grid detail__section">
@@ -105,12 +139,10 @@ export function Detail() {
               </div>
             ))}
           </div>
-          {curatorsForArtwork(a).length ? (
+          {curated.length ? (
             <p className="fig-c4-6 detail__curated-by detail-reveal">
-              Curated by{" "}
-              {curatorsForArtwork(a)
-                .map((c) => c.name)
-                .join(" and ")}
+              <strong>Curated by</strong>
+              {curated.map((c) => c.name).join(" and ")}
             </p>
           ) : null}
         </div>
@@ -130,10 +162,7 @@ export function Detail() {
     );
   }
 
-  /* Curators Page — Figma 1:2484. Curators who curated as a duo/collective share
-     one page; whichever name was clicked is listed first, partner(s) follow.
-     Portrait cols 1-3, name+bio cols 4-9, zone panel cols 10-12 (shown once, next
-     to whichever curator is listed first), then an artworks row and a View MORE. */
+  /* Curators Page — Figma 1:2484. */
   if (data.kind === "curator" && data.item) {
     const c = data.item;
     const zone = CURATOR_ZONES.find((z) => z.curators.some((x) => x.id === c.id));
@@ -153,9 +182,9 @@ export function Detail() {
             >
               {member.image ? (
                 <img
-                  src={member.image}
+                  src={`${member.image}?v=3`}
                   alt=""
-                  style={{ objectPosition: member.focus ?? "50% 20%" }}
+                  style={{ objectPosition: member.focus ?? "center bottom" }}
                 />
               ) : null}
             </div>
@@ -202,7 +231,13 @@ export function Detail() {
             <div className="fig-c4-12 fig-sub-3 detail__cards detail-reveal">
               {artworksForZone(zone.id).map((a) => (
                 <Link key={a.id} to={`/editions/${yearId}/artworks/${a.id}`}>
-                  <span className="detail__cards-media" aria-hidden />
+                  {a.image ? (
+                    <span className="detail__cards-media">
+                      <img src={a.image} alt="" />
+                    </span>
+                  ) : (
+                    <span className="detail__cards-media" aria-hidden />
+                  )}
                   <strong>{a.title}</strong>
                   <span>Venue : {a.venue}</span>
                 </Link>
@@ -245,43 +280,74 @@ export function Detail() {
     );
   }
 
-  /* Venues page — Figma 1:1966: hero cols 1-7, name/links/description cols 8-12,
-     then an artworks row on cols 4-12. */
+  /* Venues page — Figma 1:1428: hero cols 1-7, name/links/description cols 8-12,
+     then artworks at this venue on cols 4-12. */
   if (data.kind === "venue" && data.item) {
     const v = data.item;
+    const slides = venueImages(v);
+    const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
+    const venueWorks = ARTWORKS.filter((a) => a.venue === v.name);
+
     return (
-      <div ref={root} className="detail">
+      <div ref={root} className="detail" key={v.id}>
         <div className="fig-grid detail__section">
-          <div className="detail__venue-hero fig-c1-7 detail-reveal" aria-hidden />
+          <div className="detail__venue-hero fig-c1-7 detail-reveal">
+            {slide ? <img src={slide} alt="" /> : null}
+            {slides.length > 1 ? (
+              <div className="detail__hero-dots detail__hero-dots--venue" role="tablist" aria-label="Venue images">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === heroIndex}
+                    className={i === heroIndex ? "is-active" : undefined}
+                    onClick={() => setHeroIndex(i)}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
           <div className="fig-c8-12 detail__venue-info detail-reveal">
             <h1>{v.name}</h1>
             <p className="detail__venue-links">
-              <a href="https://maps.google.com" target="_blank" rel="noreferrer">
-                Google Map
-              </a>
-              <a href="https://maps.google.com" target="_blank" rel="noreferrer">
-                Virtual Tour
-              </a>
+              {v.mapUrl ? (
+                <a href={v.mapUrl} target="_blank" rel="noreferrer">
+                  Google Map
+                </a>
+              ) : null}
+              {v.tourUrl ? (
+                <a href={v.tourUrl} target="_blank" rel="noreferrer">
+                  Virtual Tour
+                </a>
+              ) : null}
             </p>
-            <p className="fig-body">{v.address}</p>
-            <p className="fig-body">{v.hours}</p>
+            <p className="fig-body detail__venue-desc">{v.description}</p>
           </div>
         </div>
 
-        <div className="fig-grid detail__section">
-          <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
-          <div className="fig-c4-12 fig-sub-3 detail__cards detail-reveal">
-            {ARTWORKS.filter((a) => a.venue === v.name)
-              .slice(0, 3)
-              .map((a) => (
+        {venueWorks.length ? (
+          <div className="fig-grid detail__section">
+            <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
+            <div className="fig-c4-12 fig-sub-3 detail__cards detail-reveal">
+              {venueWorks.slice(0, 3).map((a) => (
                 <Link key={a.id} to={`/editions/${yearId}/artworks/${a.id}`}>
-                  <span className="detail__cards-media" aria-hidden />
+                  {a.image ? (
+                    <span className="detail__cards-media">
+                      <img src={a.image} alt="" />
+                    </span>
+                  ) : (
+                    <span className="detail__cards-media" aria-hidden />
+                  )}
                   <strong>{a.title}</strong>
-                  <span>Venue : {a.venue}</span>
+                  <span>
+                    {a.artists.map((x) => x.name).join(", ")}
+                  </span>
                 </Link>
               ))}
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
@@ -289,7 +355,7 @@ export function Detail() {
           </Link>
           <CtaLink
             className="detail__next"
-            to={`/editions/${yearId}/venue`}
+            to={`/editions/${yearId}/artworks`}
             lines={["View", "MORE"]}
             spacing={["0.26em", "0.135em"]}
           />

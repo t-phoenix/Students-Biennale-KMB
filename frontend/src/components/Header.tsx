@@ -71,8 +71,25 @@ export function Header() {
     { scope: headerRef }
   );
 
-  const goToSection = (hash: HomeSectionId, event: MouseEvent<HTMLAnchorElement>) => {
+  const goToSection = (
+    hash: HomeSectionId,
+    event: MouseEvent<HTMLAnchorElement>,
+    pageMatch?: string
+  ) => {
     event.preventDefault();
+    // Full Programmes / Press pages — not only the Home teaser sections.
+    if (hash === "programmes") {
+      navigate("/programmes");
+      return;
+    }
+    if (hash === "press") {
+      navigate("/press");
+      return;
+    }
+    if (hash === "editions" && pageMatch) {
+      navigate("/editions/2025-26");
+      return;
+    }
     if (onHome) {
       scrollToSection(hash);
       navigate({ pathname: "/", hash }, { replace: true });
@@ -109,7 +126,15 @@ export function Header() {
           <span key={item.hash} style={{ display: "contents" }}>
             {i > 0 ? <span className="site-header__sep">/</span> : null}
             <a
-              href={`/#${item.hash}`}
+              href={
+                item.hash === "programmes"
+                  ? "/programmes"
+                  : item.hash === "press"
+                    ? "/press"
+                    : item.hash === "editions"
+                      ? "/editions/2025-26"
+                      : `/#${item.hash}`
+              }
               data-label={item.hash}
               className={
                 (onHome && activeSection === item.hash) ||
@@ -117,7 +142,7 @@ export function Header() {
                   ? "is-active"
                   : undefined
               }
-              onClick={(e) => goToSection(item.hash, e)}
+              onClick={(e) => goToSection(item.hash, e, item.pageMatch)}
             >
               {item.label}
             </a>

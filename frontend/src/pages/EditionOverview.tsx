@@ -7,7 +7,7 @@ import { LATEST_EDITION } from "../data/site";
 import "./EditionOverview.css";
 
 /**
- * Edition overview — Figma "Previous Editions Page" 1:2626.
+ * Edition overview — Figma "Previous Editions Page" 1:2100.
  * Full-bleed hero, intro on cols 4-9, team and institutions on cols 4-12, and the
  * only 4-up gallery in the file: cols 1-3 / 4-6 / 7-9 / 10-12.
  */
@@ -32,7 +32,13 @@ export function EditionOverview() {
 
   return (
     <div ref={root} className="edition-overview">
-      <div className="edition-overview__hero" aria-hidden />
+      <div className="edition-overview__hero">
+        {edition.heroImage ? (
+          <img src={edition.heroImage} alt="" />
+        ) : (
+          <div className="edition-overview__hero-fallback" aria-hidden />
+        )}
+      </div>
 
       <div className="fig-grid edition-overview__section">
         <h1 className="fig-label fig-heading edition-overview__title edition-overview__reveal">
@@ -40,19 +46,13 @@ export function EditionOverview() {
           <br />
           {edition.subtitle}
         </h1>
-        {edition.intro.length ? (
-          <div className="fig-c4-9 edition-overview__intro edition-overview__reveal">
-            {edition.intro.map((para) => (
-              <p key={para.slice(0, 48)} className="fig-body">
-                {para}
-              </p>
-            ))}
-          </div>
-        ) : (
-          <p className="fig-c4-9 fig-body edition-overview__reveal">
-            Catalogue records for this edition are available in the sections below.
-          </p>
-        )}
+        <div className="fig-c4-9 edition-overview__intro edition-overview__reveal">
+          {edition.intro.map((para) => (
+            <p key={para.slice(0, 48)} className="fig-body">
+              {para}
+            </p>
+          ))}
+        </div>
       </div>
 
       <div className="fig-grid edition-overview__section">
@@ -108,12 +108,15 @@ export function EditionOverview() {
         </div>
       ) : null}
 
-      {/* 4-up gallery across all 12 columns — the one full-width card grid in the file. */}
-      <div className="fig-grid edition-overview__gallery">
-        {Array.from({ length: edition.gallerySlots }).map((_, i) => (
-          <div key={i} className="edition-overview__slot edition-overview__reveal" aria-hidden />
-        ))}
-      </div>
+      {edition.galleryImages.length ? (
+        <div className="fig-grid edition-overview__gallery">
+          {edition.galleryImages.map((src) => (
+            <div key={src} className="edition-overview__slot edition-overview__reveal">
+              <img src={src} alt="" />
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {edition.nextId ? (
         <div className="fig-grid edition-overview__nav">

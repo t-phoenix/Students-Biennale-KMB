@@ -8,7 +8,7 @@ export const PREVIOUS_EDITIONS = [
   "2014-15",
 ] as const;
 
-export const EDITIONS_PATH = `/editions/${LATEST_EDITION.id}/curators`;
+export const EDITIONS_PATH = `/editions/${LATEST_EDITION.id}`;
 
 export type CanvasItem = {
   id: string;
@@ -27,13 +27,8 @@ export type CanvasItem = {
 };
 
 /**
- * Discover Artworks — a masonry scatter, not a grid.
- *
- * Columns have unequal, deterministically-jittered widths; each tile's height
- * comes directly from its own image aspect ratio (only clamped at extremes),
- * so nothing gets stretched or force-cropped toward square. Column bottoms
- * are intentionally ragged. Tuned per viewport tier so mobile isn't just a
- * shrunk desktop grid — see CanvasTier / TIER_CONFIG below.
+ * Discover Artworks — infinite artwork canvas.
+ * Even column rhythm, larger tiles, soft shadow — not a random-size bento.
  */
 export type CanvasTier = "mobile" | "tablet" | "desktop";
 
@@ -53,22 +48,17 @@ export const TIER_CONFIG: Record<
     absMinW: number;
   }
 > = {
-  mobile: { seedW: 780, seedH: 2000, gap: 24, columns: 2, columnJitter: 0.16, minTileH: 90, maxTileH: 380, absMinW: 70 },
-  tablet: { seedW: 1180, seedH: 2300, gap: 32, columns: 3, columnJitter: 0.22, minTileH: 110, maxTileH: 480, absMinW: 85 },
-  desktop: { seedW: 1760, seedH: 2700, gap: 44, columns: 5, columnJitter: 0.28, minTileH: 120, maxTileH: 620, absMinW: 105 },
+  mobile: { seedW: 900, seedH: 2400, gap: 28, columns: 2, columnJitter: 0.04, minTileH: 200, maxTileH: 520, absMinW: 160 },
+  tablet: { seedW: 1400, seedH: 2800, gap: 36, columns: 3, columnJitter: 0.05, minTileH: 240, maxTileH: 640, absMinW: 220 },
+  desktop: { seedW: 2100, seedH: 3200, gap: 48, columns: 4, columnJitter: 0.06, minTileH: 280, maxTileH: 780, absMinW: 280 },
 };
 
-/**
- * How large a tile is allowed to be, as a fraction of its column's width —
- * curators read fine small; artworks are the point, so they get to be big.
- * Each tile also gets its own random position within this range, so no two
- * same-kind tiles end up the same size either.
- */
+/** Artworks fill nearly the full column — slight variance only. */
 const KIND_SCALE: Record<CanvasItem["kind"], [number, number]> = {
-  curator: [0.4, 0.58],
-  artist: [0.52, 0.72],
-  venue: [0.6, 0.8],
-  artwork: [0.8, 1],
+  curator: [0.9, 1],
+  artist: [0.9, 1],
+  venue: [0.9, 1],
+  artwork: [0.92, 1],
 };
 
 export function getCanvasTier(viewportWidth: number): CanvasTier {
@@ -91,16 +81,16 @@ type CanvasDraft = Omit<CanvasItem, "x" | "y" | "width" | "height" | "col"> & {
 
 /** Measured natural dimensions for assets under /public. */
 const IMAGE_NATURAL: Record<string, { w: number; h: number }> = {
-  "/curators/anga.jpg": { w: 4096, h: 2731 },
-  "/curators/ashok.png": { w: 2731, h: 2914 },
+  "/curators/anga.png": { w: 1600, h: 1067 },
+  "/curators/ashok.png": { w: 1500, h: 1600 },
   "/curators/chinar.png": { w: 1204, h: 1600 },
-  "/curators/gabaa.png": { w: 4096, h: 2731 },
+  "/curators/gabaa.png": { w: 1600, h: 1067 },
   "/curators/salman.png": { w: 1552, h: 1190 },
-  "/curators/savyasachi.png": { w: 4096, h: 2725 },
-  "/curators/secular.png": { w: 3709, h: 2967 },
-  "/curators/seethal.png": { w: 2919, h: 3759 },
-  "/curators/sudheesh.png": { w: 1200, h: 1800 },
-  "/curators/sukanya.png": { w: 2248, h: 2396 },
+  "/curators/savyasachi.png": { w: 1600, h: 1064 },
+  "/curators/secular.png": { w: 1600, h: 1280 },
+  "/curators/seethal.png": { w: 1242, h: 1600 },
+  "/curators/sudheesh.png": { w: 1067, h: 1600 },
+  "/curators/sukanya.png": { w: 1501, h: 1600 },
 };
 
 function aspectOf(draft: CanvasDraft): number {
@@ -171,34 +161,13 @@ function placeholderDrafts(): CanvasDraft[] {
   PORTRAIT_IDS.forEach((picId, i) => {
     out.push({
       id: `ph-port-${picId}`,
-      kind: i % 5 === 0 ? "curator" : "artwork",
-      name:
-        i % 5 === 0
-          ? CURATORS[i % Math.max(CURATORS.length, 1)]?.name ?? `Portrait study ${i + 1}`
-          : PLACEHOLDER_TITLES[(i + 3) % PLACEHOLDER_TITLES.length],
-      meta:
-        i % 5 === 0
-          ? CURATORS[i % Math.max(CURATORS.length, 1)]?.region ?? "Sensing Grounds"
-          : PLACEHOLDER_META[(i + 2) % PLACEHOLDER_META.length],
+      kind: "artwork",
+      name: PLACEHOLDER_TITLES[(i + 3) % PLACEHOLDER_TITLES.length],
+      meta: PLACEHOLDER_META[(i + 2) % PLACEHOLDER_META.length],
       image: `https://picsum.photos/id/${picId}/1000/1600`,
       imageW: 1000,
       imageH: 1600,
       bio: "Placeholder portrait study for Discover Artworks layout.",
-    });
-  });
-
-  // Mild near-square set for variety in the bento.
-  const squareIds = [16, 21, 26, 39, 43, 55, 60, 68];
-  squareIds.forEach((picId, i) => {
-    out.push({
-      id: `ph-sq-${picId}`,
-      kind: "artist",
-      name: PLACEHOLDER_TITLES[(i + 7) % PLACEHOLDER_TITLES.length],
-      meta: PLACEHOLDER_META[(i + 1) % PLACEHOLDER_META.length],
-      image: `https://picsum.photos/id/${picId}/1200/1200`,
-      imageW: 1200,
-      imageH: 1200,
-      bio: "Placeholder square study for Discover Artworks layout.",
     });
   });
 
@@ -214,19 +183,21 @@ function withNaturalSize(draft: CanvasDraft): CanvasDraft {
 }
 
 function canvasBase(): CanvasDraft[] {
-  const realCurators = CURATORS.filter((c) => c.image).map((c) =>
+  // Discover Artworks is artworks only — no curators / artists / venues.
+  const realArtworks = ARTWORKS.filter((a) => a.image).map((a) =>
     withNaturalSize({
-      id: `cu-${c.id}`,
-      kind: "curator" as const,
-      name: c.name,
-      meta: c.region,
-      image: c.image,
-      bio: c.note,
+      id: `aw-${a.id}`,
+      kind: "artwork" as const,
+      name: a.title,
+      meta: a.venue,
+      image: a.image,
+      bio: a.description,
+      imageW: 1600,
+      imageH: 1200,
     })
   );
 
-  // Real assets first, then imagined landscape / portrait / square fill.
-  return [...realCurators, ...placeholderDrafts()];
+  return [...realArtworks, ...placeholderDrafts()];
 }
 
 /**
@@ -284,21 +255,14 @@ function packMasonry(
     const aspect = aspectOf(draft);
     const colW = colWidths[col];
 
-    // Size comes from the kind first (curators small, artworks large), then a
-    // per-tile random position within that range — so no two tiles, even of
-    // the same kind, land on the same size.
     const [scaleLo, scaleHi] = KIND_SCALE[draft.kind];
     const scaleT = (pseudoRandom(n * 9 + col * 4) + 1) / 2;
     const scale = scaleLo + (scaleHi - scaleLo) * scaleT;
     const tileW = clamp(Math.round(colW * scale), absMinW, Math.round(colW));
     const tileH = clamp(Math.round(tileW / aspect), minTileH, maxTileH);
 
-    // When a tile is narrower than its column, let it drift left/right/centre
-    // within the leftover space instead of always hugging one edge — reads
-    // as a scatter, not a column of neatly left-aligned boxes.
-    const slack = colW - tileW;
-    const driftT = (pseudoRandom(n * 13 + col * 5) + 1) / 2;
-    const xInCol = slack > 0 ? Math.round(slack * driftT) : 0;
+    // Keep tiles column-aligned for a calm infinite-canvas rhythm.
+    const xInCol = Math.round((colW - tileW) / 2);
 
     items.push({
       id: draft.id,
@@ -329,10 +293,14 @@ export type CanvasPack = {
   colPeriods: number[];
 };
 
-const packCache = new Map<CanvasTier, CanvasPack>();
+const packCache = new Map<string, CanvasPack>();
+
+/** Bust layout cache after packing rules change (dev / HMR safety). */
+const PACK_VERSION = "artworks-only-v2";
 
 export function getCanvasPack(tier: CanvasTier = "desktop"): CanvasPack {
-  let cached = packCache.get(tier);
+  const key = `${PACK_VERSION}:${tier}`;
+  let cached = packCache.get(key);
   if (!cached) {
     const packed = packMasonry(tier);
     cached = {
@@ -341,7 +309,7 @@ export function getCanvasPack(tier: CanvasTier = "desktop"): CanvasPack {
       colWidths: packed.colWidths,
       colPeriods: packed.colPeriods,
     };
-    packCache.set(tier, cached);
+    packCache.set(key, cached);
   }
   return cached;
 }
@@ -386,7 +354,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         note: "Regional mentorship · North & West",
         bio: "Savyasachi Anju Prabir has a background in film and visual anthropology. His practice engages with moving images at the intersections of film, art, and anthropology. He currently teaches film and video communication at the National Institute of Design, Ahmedabad. He has worked as a programmer and jury member for festivals such as the Freiburger Filmforum, Experimenta India, IDA Documentary Awards, and the Alpavirama International Youth Film Festival. His ongoing research explores intergenerational memory, countermapping, and multimodal pedagogy through teaching, filmmaking, and artistic research.",
         image: "/curators/savyasachi.png",
-        focus: "50% 30%",
+        focus: "center bottom",
       },
       {
         id: "sukanya",
@@ -395,7 +363,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         note: "Regional mentorship · North & West",
         bio: "Sukanya Deb is a writer, editor and curator, whose interest lies in the intersections of contemporary art, digital culture, technology and their material propositions. She has worked extensively in programs within the arts sector, which has broadened her interest in generating and experimenting with existing infrastructures for support, collaborative exchange and dissemination. She established Purée Mag in 2024, in order to address critical positions in art and culture. She has been a recipient of Experimenter Generator Grant 2025, Khoj CISA Fellowship 2023, India Foundation for the Arts’ 25x25 Grant, and her writing has been featured in publications such as e-flux Education, STIRworld, ASAP | Art, Write | Art | Connect, AQNB, and others. Since 2022, she has been Programmes Manager at Shared Ecologies, an initiative of the Shyama Foundation.",
         image: "/curators/sukanya.png",
-        focus: "50% 18%",
+        focus: "center bottom",
       },
     ],
   },
@@ -410,7 +378,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         region: "Zone 2",
         note: "te(a)m-plurality — Sensing Grounds curatorial note",
         image: "/curators/gabaa.png",
-        focus: "50% 38%",
+        focus: "center bottom",
       },
     ],
   },
@@ -425,7 +393,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         region: "Zone 3",
         note: "Regional mentorship · South",
         image: "/curators/seethal.png",
-        focus: "50% 16%",
+        focus: "center bottom",
       },
       {
         id: "sudheesh",
@@ -433,7 +401,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         region: "Zone 3",
         note: "Regional mentorship · South",
         image: "/curators/sudheesh.png",
-        focus: "50% 14%",
+        focus: "center bottom",
       },
     ],
   },
@@ -448,9 +416,8 @@ export const CURATOR_ZONES: CuratorZone[] = [
         name: "Anga Art Collective",
         region: "Zone 4",
         note: "Collective mentorship across the Northeast",
-        // No file in images/Curators — using prior asset until original is supplied
-        image: "/curators/anga.jpg",
-        focus: "50% 40%",
+        image: "/curators/anga.png",
+        focus: "center bottom",
       },
     ],
   },
@@ -465,7 +432,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         region: "Zone 5",
         note: "Collective frameworks · Central India",
         image: "/curators/secular.png",
-        focus: "50% 36%",
+        focus: "center bottom",
       },
     ],
   },
@@ -480,7 +447,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         region: "Zone 6",
         note: "Artistic duo · regional frameworks",
         image: "/curators/ashok.png",
-        focus: "50% 16%",
+        focus: "center bottom",
       },
       {
         id: "chinar",
@@ -488,7 +455,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         region: "Zone 6",
         note: "Artistic duo · regional frameworks",
         image: "/curators/chinar.png",
-        focus: "50% 16%",
+        focus: "center bottom",
       },
     ],
   },
@@ -510,7 +477,7 @@ export const CURATOR_ZONES: CuratorZone[] = [
         region: "Zone 7",
         note: "Artistic duo · mountain ecologies",
         image: "/curators/salman.png",
-        focus: "50% 26%",
+        focus: "center bottom",
       },
     ],
   },
@@ -532,6 +499,10 @@ export type ArtworkCard = {
   zoneId?: string;
   /** Medium shown instead of a venue on some catalogue cards. */
   medium?: string;
+  /** Catalogue / card thumbnail when known. */
+  image?: string;
+  /** Detail hero carousel frames; falls back to `[image]` when omitted. */
+  images?: string[];
 };
 
 /**
@@ -547,7 +518,7 @@ export const ARTWORKS: ArtworkCard[] = [
     venue: "VKL Warehouse",
     year: "2025 - 26",
     description:
-      "What absence carries traces the quiet terrain where memory, grief and body entwine. Through soft sculptures, fluid drawings, tender photographs, and stitched traces, the work attends to forms that hover between presence and disappearance.",
+      "What absence carries traces the quiet terrain where memory, grief and body entwine. Through soft sculptures, fluid drawings, tender photographs, and stitched traces, the work attends to forms that hover between presence and disappearance, lives imagined, interrupted, or suspended. Emerging from a subconscious current that precedes language, the pieces gather gestures and stains that echo cellular growths, matrilineal rhythms, and the residues the body carries without speech. Each form reveals how value, grief, and inherited memory are tethered to roles and absences that remain unfulfilled, withheld, or imposed.\n\nWorking intuitively, the sculptures, drawings, photographs, and moving body register what lingers after rupture: textures of care, pressure, hesitation, and loss. They do not illustrate the body but listen to it, allowing fragments, smudges, and soft boundaries to surface as traces of sensation. The work moves between stillness and motion, expanding into elliptical pathways that trace the imperfect orbits of growth, inheritance and becoming. The stitched scars, layered pages and residual images ask how memory persists through matter and whether something can be considered absent if it continues to live through touch, form and feeling.",
     artists: [
       { name: "Ananya Gautam", institution: "National Institute of Design, Ahmedabad" },
       { name: "Annanya Dhanda", institution: "The Maharaja Sayajirao University, Baroda" },
@@ -560,6 +531,8 @@ export const ARTWORKS: ArtworkCard[] = [
     ],
     dimensions: "5 x 15 Feet",
     zoneId: "zone-1",
+    image: "/artworks/absence.jpg",
+    images: ["/artworks/absence-hero.jpg", "/artworks/absence.jpg"],
   },
   {
     id: "rubble",
@@ -571,6 +544,7 @@ export const ARTWORKS: ArtworkCard[] = [
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
     zoneId: "zone-1",
+    image: "/artworks/rubble.jpg",
   },
   {
     id: "panic",
@@ -583,6 +557,7 @@ export const ARTWORKS: ArtworkCard[] = [
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
     zoneId: "zone-1",
+    image: "/artworks/panic.jpg",
   },
   {
     id: "remembers",
@@ -613,6 +588,7 @@ export const ARTWORKS: ArtworkCard[] = [
     artists: [{ name: "Neelam Saini", institution: "Dada Lakhmi Chand State University of Performing and Visual Arts, Rohtak" }],
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
+    image: "/artworks/residual-marks.jpg",
   },
   {
     id: "dar-dara-dariya",
@@ -623,6 +599,7 @@ export const ARTWORKS: ArtworkCard[] = [
     artists: [{ name: "Jyoti", institution: "Government College of Art, Chandigarh" }],
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
+    image: "/artworks/dar-dara-dariya.jpg",
   },
   {
     id: "milk-distributors",
@@ -633,6 +610,7 @@ export const ARTWORKS: ArtworkCard[] = [
     artists: [{ name: "Abhijit Das", institution: "Government College of Art, Chandigarh" }],
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
+    image: "/artworks/milk-distributors.jpg",
   },
   {
     id: "who-is-the-printer",
@@ -679,6 +657,7 @@ export const ARTWORKS: ArtworkCard[] = [
     ],
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
+    image: "/artworks/panopticon.jpg",
   },
   {
     id: "uncanny-rusty-sign",
@@ -692,6 +671,7 @@ export const ARTWORKS: ArtworkCard[] = [
     ],
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
+    image: "/artworks/uncanny-rusty-sign.jpg",
   },
   {
     id: "where-memories-immured",
@@ -705,6 +685,7 @@ export const ARTWORKS: ArtworkCard[] = [
     ],
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
+    image: "/artworks/where-memories-are-immured.jpg",
   },
   {
     id: "labour-of-the-imagined",
@@ -715,6 +696,7 @@ export const ARTWORKS: ArtworkCard[] = [
     artists: [{ name: "Vineetha W", institution: "Students' Biennale" }],
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
+    image: "/artworks/labour-of-the-imagined.jpg",
   },
 ];
 
@@ -729,6 +711,20 @@ export function artworksForZone(zoneId: string): ArtworkCard[] {
   return ARTWORKS.filter((a) => a.zoneId === zoneId);
 }
 
+/** Hero / carousel frames for an artwork detail page. */
+export function artworkImages(artwork: ArtworkCard): string[] {
+  if (artwork.images?.length) return artwork.images;
+  if (artwork.image) return [artwork.image];
+  return [];
+}
+
+/** Hero / carousel frames for a venue detail page. */
+export function venueImages(venue: VenueCard): string[] {
+  if (venue.images?.length) return venue.images;
+  if (venue.image) return [venue.image];
+  return [];
+}
+
 export type VenueCard = {
   id: string;
   name: string;
@@ -736,6 +732,10 @@ export type VenueCard = {
   hours: string;
   /** Venue history shown on the catalogue row and detail page. */
   description: string;
+  /** List-row photo (Figma ~482×300). */
+  image?: string;
+  /** Detail hero carousel; falls back to `[image]` when omitted. */
+  images?: string[];
   mapUrl?: string;
   tourUrl?: string;
 };
@@ -749,7 +749,14 @@ export const VENUES: VenueCard[] = [
     hours: "Open during exhibition hours",
     description:
       "St. Andrew's Parish Hall, located on Elphinstone Road in Fort Kochi, is a British-era structure built in 1845 that reflects the town's colonial religious history. It originally served as a place of worship for Malayalam-speaking Protestant Christians, distinct from the European congregation that prayed at the nearby St. Francis Church. After India's independence in 1947, as the European community left Fort Kochi, the two congregations came together at St. Francis Church, and this building was gradually repurposed into what is now St. Andrew's Parish Hall. Today it functions under St. Francis CSI Church and is regularly used for weddings and community gatherings. For the sixth edition of the Kochi-Muziris Biennale, this hall was repurposed as a cultural venue to host exhibitions from the Students' Biennale and Invitations Programme. It also served as a venue for several KMB public programmes, including workshops, talks, and film screenings, while retaining its historic character.",
+    image: "/venues/st-andrews.jpg",
+    images: [
+      "/venues/st-andrews-hero.jpg",
+      "/venues/st-andrews-2.jpg",
+      "/venues/st-andrews-3.jpg",
+    ],
     mapUrl: "https://maps.google.com/?q=St+Andrews+Parish+Hall+Fort+Kochi",
+    tourUrl: "https://maps.google.com/?q=St+Andrews+Parish+Hall+Fort+Kochi",
   },
   {
     id: "vkl",
@@ -758,7 +765,10 @@ export const VENUES: VenueCard[] = [
     hours: "Open during exhibition hours",
     description:
       "Founded in 1935 by Vallabhdas Vasanji Mariwala, the VKL Warehouse property was once part of the ancestral home of Cochin’s Paliam family in Chendamangalam. In 1952, the property was partitioned under land reform rules and the ownership of the land was then transferred to the Mariwala family and the VKL group in 1971.",
+    image: "/venues/vkl.jpg",
+    images: ["/venues/vkl.jpg"],
     mapUrl: "https://maps.google.com/?q=VKL+Warehouse+Fort+Kochi",
+    tourUrl: "https://maps.google.com/?q=VKL+Warehouse+Fort+Kochi",
   },
   {
     id: "bms",
@@ -767,7 +777,10 @@ export const VENUES: VenueCard[] = [
     hours: "Open during exhibition hours",
     description:
       "Bright's Warehouse (BMS), situated on Bazaar Road in Mattancherry, is one of the historic godowns that reflects Kochi's long-standing role as a major port and trading centre along the Malabar Coast. Built to support the storage and movement of commodities such as spices, coir, timber, and other goods arriving through the nearby harbour, the warehouse formed part of the commercial infrastructure",
+    image: "/venues/bms.jpg",
+    images: ["/venues/bms.jpg"],
     mapUrl: "https://maps.google.com/?q=BMS+Warehouse+Mattancherry",
+    tourUrl: "https://maps.google.com/?q=BMS+Warehouse+Mattancherry",
   },
   {
     id: "arthshila",
@@ -776,7 +789,10 @@ export const VENUES: VenueCard[] = [
     hours: "Open during exhibition hours",
     description:
       "Arthshila symbolises British rule in Kochi. It was a part of the daily life of the British in Kochi at that time as a company that sold food products imported from Britain. On October 20, 1795, Dutch rule in Kochi ended and British rule began. The Portuguese fort established in Kochi in 1503 was demolished in 1663 at the beginning of the subsequent Dutch rule.",
+    image: "/venues/arthshila.jpg",
+    images: ["/venues/arthshila.jpg"],
     mapUrl: "https://maps.google.com/?q=Arthshila+Kochi",
+    tourUrl: "https://maps.google.com/?q=Arthshila+Kochi",
   },
   {
     id: "david-hall",
@@ -785,7 +801,10 @@ export const VENUES: VenueCard[] = [
     hours: "Open during exhibition hours",
     description:
       "Situated on the west side of the parade ground in Fort Kochi, exemplifies Dutch architectural design, characterized by three expansive rooms, a verandah with chat benches, tall walls, wide windows, and adjacent seating areas. The building served as the residence of Henrik van Reed, the Dutch Governor of Kochi from 1669 to 1676",
+    image: "/venues/david-hall.jpg",
+    images: ["/venues/david-hall.jpg"],
     mapUrl: "https://maps.google.com/?q=David+Hall+Fort+Kochi",
+    tourUrl: "https://maps.google.com/?q=David+Hall+Fort+Kochi",
   },
   {
     id: "space",
@@ -794,7 +813,10 @@ export const VENUES: VenueCard[] = [
     hours: "Open during exhibition hours",
     description:
       "During the British administration in the 19th Century, the Indian traders in Kochi wanted to have an association, and there were discussions about the same. The history of the Indian Chamber of Commerce and Industry begins here. In 1897, a movement called \"The Cochin Native Merchants' Association\" was formed.",
+    image: "/venues/space.jpg",
+    images: ["/venues/space.jpg"],
     mapUrl: "https://maps.google.com/?q=Space+Gallery+Fort+Kochi",
+    tourUrl: "https://maps.google.com/?q=Space+Gallery+Fort+Kochi",
   },
 ];
 

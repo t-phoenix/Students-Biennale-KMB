@@ -57,7 +57,7 @@ function Toolbar({
           aria-pressed={view === "grid"}
           aria-label="Grid view"
         >
-          ▦
+          <img src="/icons/grid-view.svg" alt="" width={36} height={36} />
         </button>
         <button
           type="button"
@@ -66,7 +66,7 @@ function Toolbar({
           aria-pressed={view === "list"}
           aria-label="List view"
         >
-          ☰
+          <img src="/icons/list-view.svg" alt="" width={36} height={36} />
         </button>
       </div>
     </div>
@@ -91,11 +91,11 @@ function CuratorPortrait({
       >
         {curator.image ? (
           <img
-            src={curator.image}
+            src={`${curator.image}?v=3`}
             alt=""
             loading="lazy"
             decoding="async"
-            style={{ objectPosition: curator.focus ?? "50% 20%" }}
+            style={{ objectPosition: curator.focus ?? "center bottom" }}
           />
         ) : null}
       </div>
@@ -157,9 +157,9 @@ export function CuratorsView() {
                     >
                       {c.image ? (
                         <img
-                          src={c.image}
+                          src={`${c.image}?v=3`}
                           alt=""
-                          style={{ objectPosition: c.focus ?? "50% 20%" }}
+                          style={{ objectPosition: c.focus ?? "center bottom" }}
                         />
                       ) : null}
                     </div>
@@ -359,37 +359,45 @@ export function VenueView() {
           />
         </label>
       </div>
-      {/* Image 482x300 on cols 4-8, copy + links on cols 9-12 (Figma 718:1326). */}
+      {/* Image 482x300 on cols 4-8, copy + links on cols 9-12 (Figma 1:1223). */}
       <div className="edition-venue-rows">
-        {items.map((v) => (
-          <article key={v.id} className="edition-venue">
-            <div className="edition-venue__media" aria-hidden />
-            <div className="edition-venue__copy">
-              <h3>{v.name}</h3>
-              <p>
-                {v.description}{" "}
-                <Link to={`/editions/${yearId}/venue/${v.id}`}>Read more...</Link>
-              </p>
-              <p className="edition-venue__links">
-                {v.mapUrl ? (
-                  <a href={v.mapUrl} target="_blank" rel="noreferrer">
-                    Google Map
-                  </a>
-                ) : (
-                  <span>Google Map</span>
-                )}
-                <span aria-hidden>/</span>
-                {v.tourUrl ? (
-                  <a href={v.tourUrl} target="_blank" rel="noreferrer">
-                    Virtual Tour
-                  </a>
-                ) : (
-                  <span>Virtual Tour</span>
-                )}
-              </p>
-            </div>
-          </article>
-        ))}
+        {items.map((v) => {
+          const blurb =
+            v.description.length > 280
+              ? `${v.description.slice(0, 280).trimEnd()}…`
+              : v.description;
+          return (
+            <article key={v.id} className="edition-venue">
+              <div className="edition-venue__media">
+                {v.image ? <img src={v.image} alt="" /> : null}
+              </div>
+              <div className="edition-venue__copy">
+                <h3>{v.name}</h3>
+                <p>
+                  {blurb}{" "}
+                  <Link to={`/editions/${yearId}/venue/${v.id}`}>Read more...</Link>
+                </p>
+                <p className="edition-venue__links">
+                  {v.mapUrl ? (
+                    <a href={v.mapUrl} target="_blank" rel="noreferrer">
+                      Google Map
+                    </a>
+                  ) : (
+                    <span>Google Map</span>
+                  )}
+                  <span aria-hidden>/</span>
+                  {v.tourUrl ? (
+                    <a href={v.tourUrl} target="_blank" rel="noreferrer">
+                      Virtual Tour
+                    </a>
+                  ) : (
+                    <span>Virtual Tour</span>
+                  )}
+                </p>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </div>
   );

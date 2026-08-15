@@ -51,9 +51,6 @@ export function Home() {
   const [slide, setSlide] = useState(0);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
-  const [progTab, setProgTab] = useState<"Workshops" | "Residencies" | "AWARDS">(
-    "Residencies"
-  );
 
   useGSAP(
     () => {
@@ -284,7 +281,7 @@ export function Home() {
         <div className="fig-grid home-sensing__cta">
           <CtaLink
             className="fig-cta-end"
-            to="/editions/2025-26/curators"
+            to="/editions/2025-26"
             lines={["Explore", "Edition"]}
             spacing={["0.135em", "0.2em"]}
           />
@@ -318,22 +315,33 @@ export function Home() {
         </div>
         <div className="fig-grid home-programmes__bottom">
           <div className="home-programmes__rail fig-rail">
-            {(["Workshops", "Residencies", "AWARDS"] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                className={`fig-subheading${progTab === tab ? " is-selected" : ""}`}
-                onClick={() => setProgTab(tab)}
+            {(
+              [
+                { label: "Workshops", hash: "workshops" },
+                { label: "Residencies", hash: "residencies" },
+                { label: "AWARDS", hash: "awards" },
+              ] as const
+            ).map((tab) => (
+              <Link
+                key={tab.hash}
+                to={`/programmes#${tab.hash}`}
+                className="fig-subheading"
               >
-                {tab}
+                {tab.label}
                 <span className="fig-subheading__underline" aria-hidden />
-              </button>
+              </Link>
             ))}
           </div>
           <div className="home-programmes__thumbs fig-c4-12 fig-sub-3">
-            <img src="/home/thumb-workshops.jpg" alt="" />
-            <img src="/home/thumb-residencies.jpg" alt="" />
-            <img src="/home/thumb-awards.jpg" alt="" />
+            <Link to="/programmes#workshops">
+              <img src="/home/thumb-workshops.jpg" alt="" />
+            </Link>
+            <Link to="/programmes#residencies">
+              <img src="/home/thumb-residencies.jpg" alt="" />
+            </Link>
+            <Link to="/programmes#awards">
+              <img src="/home/thumb-awards.jpg" alt="" />
+            </Link>
           </div>
         </div>
       </section>

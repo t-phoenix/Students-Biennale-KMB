@@ -1,0 +1,227 @@
+/* Residencies — sticky full-viewport panel; card locked right (Figma 12:2).
+   At 1440: card x=933, w=355 → right inset 152px; vertically centered. */
+
+.residencies-pin {
+  position: relative;
+  width: 100%;
+  /* One viewport of scroll travel per slide so the panel sticks while advancing. */
+  height: calc(var(--residency-slides, 1) * 100dvh);
+}
+
+.residencies-band {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  background: #141414;
+  color: var(--color-text-inverse);
+  touch-action: pan-y;
+}
+
+.residencies-band__label {
+  position: absolute;
+  top: max(24px, calc(var(--nav-height, 72px) * 0.35));
+  left: max(var(--grid-margin), calc((100% - 1440px) / 2 + 182px));
+  z-index: 4;
+  margin: 0;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+  color: var(--color-text-inverse);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.residencies-band__bgs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.residencies-band__bg {
+  position: absolute;
+  inset: -4%;
+  width: 108%;
+  height: 108%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+  will-change: transform, opacity;
+}
+
+.residencies-band__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.92);
+  padding: 12px 8px;
+  cursor: pointer;
+  font-size: 28px;
+  letter-spacing: -0.28em;
+  line-height: 1;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.residencies-band__nav--prev {
+  left: max(16px, calc((100% - 1440px) / 2 + 24px));
+}
+
+.residencies-band__nav--next {
+  right: max(16px, calc((100% - 1440px) / 2 + 24px));
+  letter-spacing: -0.22em;
+}
+
+.residencies-band__nav:hover {
+  color: #fff;
+}
+
+/* Card slot — locked to the right of the full viewport (Figma right inset 152). */
+.residencies-band__card-slot {
+  position: absolute;
+  top: 50%;
+  right: max(var(--grid-margin), calc((100% - 1440px) / 2 + 152px));
+  z-index: 3;
+  transform: translateY(-50%);
+  width: min(355px, calc(100% - 2 * var(--grid-margin)));
+  pointer-events: none;
+}
+
+.residencies-band__card {
+  pointer-events: auto;
+  position: relative;
+  width: 100%;
+  height: min(647px, calc(100dvh - 120px));
+  background: #fff;
+  color: var(--color-text-primary);
+  padding: 36px 20px 28px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  will-change: transform, opacity;
+}
+
+.residencies-band__card h3 {
+  margin: 0 0 22px;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.residencies-band__card dl {
+  margin: 0 0 18px;
+  display: grid;
+  gap: 0;
+}
+
+.residencies-band__card dl > div {
+  display: grid;
+  grid-template-columns: 5.75rem 1fr;
+  column-gap: 10px;
+  font-size: 16px;
+  line-height: 30px;
+}
+
+.residencies-band__card dt {
+  margin: 0;
+  font-weight: 400;
+}
+
+.residencies-band__card dt::after {
+  content: " :";
+}
+
+.residencies-band__card dd {
+  margin: 0;
+}
+
+.residencies-band__card > p {
+  margin: 0 0 18px;
+  font-size: 16px;
+  line-height: 1.7;
+  flex: 1;
+  overflow: auto;
+}
+
+.residencies-band__more {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0 0 28px;
+  font: inherit;
+  font-size: 16px;
+  font-style: italic;
+  text-align: left;
+  cursor: pointer;
+  width: fit-content;
+  color: var(--color-text-primary);
+}
+
+.residencies-band__dots {
+  position: absolute;
+  right: 0;
+  bottom: -36px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.residencies-band__dots button {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.residencies-band__dots button.is-active {
+  background: #fff;
+}
+
+@media (max-width: 899px) {
+  .residencies-pin {
+    height: calc(var(--residency-slides, 1) * 100dvh);
+  }
+
+  .residencies-band__label {
+    left: var(--grid-margin);
+    top: 20px;
+  }
+
+  .residencies-band__card-slot {
+    right: var(--grid-margin);
+    left: var(--grid-margin);
+    width: auto;
+    transform: translateY(-50%);
+  }
+
+  .residencies-band__card {
+    height: auto;
+    max-height: calc(100dvh - 140px);
+    min-height: 0;
+  }
+
+  .residencies-band__nav--prev {
+    left: 8px;
+  }
+
+  .residencies-band__nav--next {
+    right: 8px;
+  }
+
+  .residencies-band__dots {
+    bottom: -28px;
+  }
+}

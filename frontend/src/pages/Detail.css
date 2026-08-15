@@ -19,11 +19,77 @@
   align-items: start;
 }
 
-/* Full-bleed artwork hero (Figma 1:701 — 1440 x 820). */
+/* Full-bleed artwork hero (Figma 1:3 — 1440 x 820). */
 .detail__hero {
+  position: relative;
   width: 100%;
   height: min(820px, 70vh);
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+}
+
+.detail__hero-img,
+.detail__hero-fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+}
+
+.detail__hero-fallback {
   background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
+}
+
+.detail__hero-dots {
+  position: absolute;
+  right: var(--grid-margin);
+  bottom: 24px;
+  display: flex;
+  gap: 8px;
+  z-index: 1;
+}
+
+.detail__hero-dots button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--color-neutral-white);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.detail__hero-dots button.is-active {
+  background: var(--color-neutral-white);
+}
+
+.detail__hero-dots--venue {
+  right: 16px;
+  bottom: 16px;
+}
+
+.detail__hero-dots--venue button {
+  border-color: var(--color-neutral-white);
+}
+
+.detail__desc {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2em;
+}
+
+.detail__desc p {
+  margin: 0;
+}
+
+.detail__curated-by strong {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--color-text-primary);
 }
 
 .detail__label {
@@ -89,19 +155,25 @@
   width: 100%;
   aspect-ratio: 295 / 380;
   overflow: hidden;
-  background: var(--color-neutral-gray-mid);
+  background: #e0e0e0;
   margin-inline-end: var(--grid-gutter);
+  position: relative;
 }
 
 .detail__portrait img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
+  max-width: none;
+  max-height: none;
   object-fit: cover;
+  object-position: center bottom;
   display: block;
 }
 
 .detail__portrait--empty {
-  background: var(--color-neutral-gray-light);
+  background: #e0e0e0;
 }
 
 /* Name + bio flow together as one block so the bio sits right under the name,
@@ -159,9 +231,21 @@
 
 /* Venue hero spans cols 1-7 (762 at 1440); info sits on cols 8-12. */
 .detail__venue-hero {
+  position: relative;
   width: 100%;
   aspect-ratio: 762 / 421;
-  background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+}
+
+.detail__venue-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
 }
 
 .detail__venue-info {
@@ -181,6 +265,10 @@
   margin: 0;
 }
 
+.detail__venue-desc {
+  margin-top: 8px;
+}
+
 .detail__venue-links {
   display: flex;
   gap: 24px;
@@ -197,11 +285,23 @@
 }
 
 .detail__cards-media {
+  position: relative;
   display: block;
   width: 100%;
   aspect-ratio: 315 / 273;
+  overflow: hidden;
   background: var(--color-neutral-gray-mid);
   margin-bottom: 20px;
+}
+
+.detail__cards-media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
 }
 
 .detail__cards strong {

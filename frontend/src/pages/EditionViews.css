@@ -57,16 +57,24 @@
   height: 36px;
   border: 0;
   background: transparent;
-  font-size: 14px;
-  line-height: 1;
+  padding: 0;
   color: var(--color-text-secondary);
   display: grid;
   place-items: center;
+  opacity: 0.45;
+}
+
+.edition-view-toggle button img {
+  width: 36px;
+  height: 36px;
+  display: block;
+  max-width: none;
 }
 
 .edition-view-toggle button.is-active {
-  background: var(--color-primary-dark);
-  color: var(--color-text-inverse);
+  background: transparent;
+  color: var(--color-text-primary);
+  opacity: 1;
 }
 
 /* Zone row: curators on cols 4-9, zone meta on cols 10-12. */
@@ -94,17 +102,19 @@
 
 .edition-zone__meta h4 {
   margin: 0;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
+  font-size: 16px;
+  line-height: normal;
   font-weight: 400;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
   border-bottom: 1px solid var(--color-text-primary);
-  padding-bottom: 1px;
+  padding-bottom: 2px;
 }
 
 .edition-zone__meta p {
   margin: 22px 0 0;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
+  font-size: 16px;
+  line-height: 1.7;
   font-weight: 400;
 }
 
@@ -156,6 +166,15 @@
   width: 100%;
 }
 
+.edition-card--curator h3 {
+  margin: 20px 0 0;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+
 .edition-card h3 {
   margin: 20px 0 0;
   font-size: var(--type-body-size);
@@ -169,34 +188,54 @@
   font-size: var(--type-caption-size);
 }
 
-/* Crop frame — keep intrinsic aspect; cover + clip (never stretch) */
+/* Figma 1:651 — every curator frame is 315×360.
+   Cover crops into the box; never stretch. Source files under /public/curators
+   must keep their native aspect (regenerated from images/Curators). */
 .edition-card__frame {
   width: 100%;
   aspect-ratio: 315 / 360;
   overflow: hidden;
-  background: var(--color-neutral-gray-mid);
+  background: #e0e0e0;
   position: relative;
   flex-shrink: 0;
+  isolation: isolate;
 }
 
 .edition-card__frame img {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   box-sizing: border-box;
   width: 100%;
   height: 100%;
   max-width: none !important;
   max-height: none !important;
-  /* Keep native aspect — crop only; focus via inline object-position */
+  min-width: 0;
+  min-height: 0;
   object-fit: cover !important;
-  object-position: 50% 20%;
+  object-position: center bottom;
   display: block;
+  /* Kill any inherited stretch from width/height attribute fallbacks */
+  aspect-ratio: auto;
 }
 
 .edition-card__frame--placeholder {
-  background:
-    radial-gradient(circle at 50% 38%, transparent 28%, var(--color-neutral-gray-light) 29%),
-    var(--color-neutral-gray-light);
+  background: #e0e0e0;
+}
+
+.edition-card__frame--placeholder::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: 72px;
+  height: 72px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #cfcfcf;
+  box-shadow: 0 48px 0 -8px #cfcfcf;
 }
 
 .edition-card__media {
@@ -263,7 +302,19 @@
 .edition-venue__media {
   width: 100%;
   aspect-ratio: 482 / 300;
+  overflow: hidden;
   background: var(--color-neutral-gray-mid);
+  position: relative;
+}
+
+.edition-venue__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
 }
 
 .edition-venue__copy h3 {
