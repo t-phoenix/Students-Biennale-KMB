@@ -1,9 +1,9 @@
-﻿# Students' Biennale
+﻿# Students' Biennale — KMB
 
 Monorepo for the public site and its Supabase backend.
 
 ```
-students-biennale/
+Students-Biennale-KMB/
 ├── frontend/    # React + Vite (public site)
 ├── database/    # Supabase schema, RLS, storage, seed
 └── backend/     # reserved (import jobs / CMS API later)

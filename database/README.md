@@ -5,7 +5,7 @@ Supabase Postgres is the source of truth. The public site reads with the **anon*
 CLI workdir: either stay at the **repo root** and pass `--workdir database`, **or** `cd database` and omit `--workdir`. Do not combine both — if you are already in `database/`, `--workdir database` looks for `database/database` and fails.
 
 ```bash
-# From repo root (StudentBianalle/)
+# From repo root (Students-Biennale-KMB/)
 supabase --workdir database start
 
 # Or from database/
@@ -263,7 +263,7 @@ Postgres in `config.toml` is **major version 17**. Create the hosted project on 
 
 ### You do manually
 
-1. Create the project in the [dashboard](https://supabase.com/dashboard) — org, name (e.g. `students-biennale`), region, plan. Copy **Project Settings → General → Reference ID**.
+1. Create the project in the [dashboard](https://supabase.com/dashboard) — org, name (e.g. `students-biennale-kmb`), region, plan. Copy **Project Settings → General → Reference ID**.
 2. `supabase login` in a terminal (browser OAuth). One-time per machine.
 3. Auth: add the CMS editor user (email). Then set `app_metadata.role` (SQL in [CMS role](#cms-role)). Sign out/in after.
 4. Auth → URL configuration: add the production frontend origin to **Site URL** and **Redirect URLs**.
