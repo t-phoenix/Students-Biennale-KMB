@@ -30,3 +30,17 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# Content source cache (fetched Google Docs/Drive files)
+content/
+content/.source-cache/
+content/media/
+content/.source-cache/credentials/
+*.json.credentials
+google-oauth-token.json
+google-service-account.json
+client_secret.json
+.venv-content/
+
+scripts/
+SB Website Info/
