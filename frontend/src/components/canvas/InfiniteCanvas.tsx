@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getCanvasPack, getCanvasTier, type CanvasItem } from "../../data/site";
+import { getCanvasPack, getCanvasTier, type ArtworkCard, type CanvasItem } from "../../data/site";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
 
 type Props = {
   query: string;
   onSelect: (item: CanvasItem, el: HTMLButtonElement) => void;
+  artworks?: ArtworkCard[];
+  sourceKey?: string;
 };
 
 /** Horizontal repeat count — all columns share one X period (seedW). */
@@ -41,7 +43,7 @@ function useCanvasTier() {
   return tier;
 }
 
-export function InfiniteCanvas({ query, onSelect }: Props) {
+export function InfiniteCanvas({ query, onSelect, artworks, sourceKey }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   // Column-wrapper elements, keyed "tx-col" — every X-copy has its own set of
@@ -50,7 +52,10 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
   const columnEls = useRef(new Map<string, HTMLDivElement>());
 
   const tier = useCanvasTier();
-  const pack = useMemo(() => getCanvasPack(tier), [tier]);
+  const pack = useMemo(
+    () => getCanvasPack(tier, artworks, sourceKey),
+    [tier, sourceKey, artworks],
+  );
   const { items: pool, seedW, colWidths, colPeriods } = pack;
   const columns = colWidths.length;
   const tileKey = `masonry-${tier}`;
@@ -78,7 +83,9 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
       return (
         item.name.toLowerCase().includes(q) ||
         item.kind.toLowerCase().includes(q) ||
-        item.meta.toLowerCase().includes(q)
+        item.meta.toLowerCase().includes(q) ||
+        (item.tags?.includes(q) ?? false) ||
+        (item.bio?.toLowerCase().includes(q) ?? false)
       );
     },
     [q]

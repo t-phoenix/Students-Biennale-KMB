@@ -293,6 +293,35 @@ export type Database = {
           },
         ]
       }
+      catalogue_snapshots: {
+        Row: {
+          edition_id: string
+          generated_at: string
+          payload: Json
+          search_index: Json
+        }
+        Insert: {
+          edition_id: string
+          generated_at?: string
+          payload: Json
+          search_index?: Json
+        }
+        Update: {
+          edition_id?: string
+          generated_at?: string
+          payload?: Json
+          search_index?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogue_snapshots_edition_id_fkey"
+            columns: ["edition_id"]
+            isOneToOne: true
+            referencedRelation: "editions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       edition_section_items: {
         Row: {
           content_type: string | null

@@ -255,6 +255,14 @@
   background: var(--color-neutral-gray-mid);
   display: block;
   filter: grayscale(1);
+  overflow: hidden;
+}
+
+.edition-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .edition-card__media--portrait {

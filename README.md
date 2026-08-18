@@ -33,7 +33,7 @@ npm run dev                  # http://127.0.0.1:5173
 | `npm run preview` | Serve the production build |
 | `npm run lint` | oxlint |
 
-Pages still use mock data until queries are wired. `src/lib/supabase.ts` is the client for those reads and for a future CMS.
+Pages load the edition catalogue from Supabase (`catalogue_snapshots`) once per tab and cache it in the browser. Search filters that cache — it does not call Postgres on each keystroke. Programmes and Press still use mock data until the CMS is wired. `src/lib/supabase.ts` is the anon client.
 
 ## 2. Database
 

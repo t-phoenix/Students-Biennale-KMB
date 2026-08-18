@@ -4,6 +4,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { getEditionOverview } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
+import { useCatalogue, useEditionCatalogue } from "../lib/catalogue";
 import "./EditionOverview.css";
 
 /**
@@ -14,7 +15,38 @@ import "./EditionOverview.css";
 export function EditionOverview() {
   const { yearId = LATEST_EDITION.id } = useParams();
   const root = useRef<HTMLDivElement>(null);
-  const edition = getEditionOverview(yearId);
+  const fallback = getEditionOverview(yearId);
+  const { catalogue } = useEditionCatalogue(yearId);
+  const { catalogues } = useCatalogue();
+  const yearIds = catalogues.map((row) => row.years);
+  const yearIndex = yearIds.indexOf(yearId);
+  const nextId = yearIndex > 0 ? yearIds[yearIndex - 1] : fallback.nextId;
+  const intro = catalogue.overview
+    ? catalogue.overview.split("\n\n").filter(Boolean)
+    : fallback.intro;
+  const institutions = catalogue.institutions.length
+    ? catalogue.institutions
+    : fallback.institutions;
+  const heroImage = catalogue.heroUrl || fallback.heroImage;
+  const galleryImages = catalogue.galleryUrls.length
+    ? catalogue.galleryUrls
+    : fallback.galleryImages;
+  const edition = {
+    ...fallback,
+    title:
+      catalogue.source === "remote" && catalogue.title
+        ? catalogue.title
+        : fallback.title,
+    intro,
+    institutions,
+    heroImage,
+    galleryImages,
+    nextId,
+    subtitle:
+      catalogue.years === LATEST_EDITION.id || catalogue.isCurrent
+        ? fallback.subtitle
+        : yearId.replace("-", "–"),
+  };
 
   useGSAP(
     () => {
@@ -93,6 +125,13 @@ export function EditionOverview() {
                 ))}
               </div>
             ))}
+          </div>
+        </div>
+      ) : catalogue.teamBody ? (
+        <div className="fig-grid edition-overview__section">
+          <h2 className="fig-label fig-label--sub edition-overview__reveal">THE TEAM</h2>
+          <div className="fig-c4-12 fig-body edition-overview__reveal" style={{ whiteSpace: "pre-line" }}>
+            {catalogue.teamBody}
           </div>
         </div>
       ) : null}

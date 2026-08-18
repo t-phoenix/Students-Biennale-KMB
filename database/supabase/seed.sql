@@ -1,4 +1,5 @@
--- Local smoke-test shells only. Full catalogue arrives via the import job / CMS.
+-- Local smoke-test shells only. After `db reset`, load the real catalogue with:
+--   python3 backend/import_catalogue.py --target local
 -- Applied on `supabase db reset` (see config.toml [db.seed]).
 
 insert into public.editions (id, number, years, title, slug, is_current, published)

@@ -9,6 +9,8 @@ import {
   SENSING_GROUNDS_NOTE,
   TEAM_COLS,
 } from "../data/editions";
+import { LATEST_EDITION } from "../data/site";
+import { useCatalogue } from "../lib/catalogue";
 import "./Home.css";
 
 const UPDATES = [
@@ -62,6 +64,20 @@ export function Home() {
   const [slide, setSlide] = useState(0);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
+  const { current } = useCatalogue();
+  const yearId = current?.years ?? LATEST_EDITION.id;
+  const overviewParas = (current?.overview || `${EDITION_SHORT}\n\n${EDITION_MORE}`)
+    .split("\n\n")
+    .filter(Boolean);
+  const editionShort = overviewParas[0] ?? EDITION_SHORT;
+  const editionMore = overviewParas.slice(1).join("\n\n") || EDITION_MORE;
+  const sensingNote = current?.overallCuratorialNote
+    ? {
+        title: current.title || SENSING_GROUNDS_NOTE.title,
+        attribution: SENSING_GROUNDS_NOTE.attribution,
+        paragraphs: current.overallCuratorialNote.split("\n\n").filter(Boolean),
+      }
+    : SENSING_GROUNDS_NOTE;
 
   useGSAP(
     () => {
@@ -248,10 +264,10 @@ export function Home() {
           <h2 className="fig-label fig-heading">
             Students&apos; Biennale
             <br />
-            2025–26
+            {yearId.replace("-", "–")}
           </h2>
           <div className="home-edition__body fig-c4-9">
-            {EDITION_SHORT.split("\n\n").map((p) => (
+            {editionShort.split("\n\n").map((p) => (
               <p key={p.slice(0, 40)} className="fig-body">
                 {p}
               </p>
@@ -259,7 +275,7 @@ export function Home() {
             {/* Expands in place — no modal. This is an interim behaviour and is
                 expected to change later. */}
             <div ref={editionMoreRef} className="home-edition__more" aria-hidden={!editionExpanded}>
-              {EDITION_MORE.split("\n\n").map((p) => (
+              {editionMore.split("\n\n").map((p) => (
                 <p key={p.slice(0, 40)} className="fig-body">
                   {p}
                 </p>
@@ -287,18 +303,18 @@ export function Home() {
               className="fig-subheading"
               onClick={() => setSensingOpen(true)}
             >
-              Sensing Grounds
+              {sensingNote.title}
               <span className="fig-subheading__underline" aria-hidden />
             </button>
-            <Link to="/editions/2025-26/curators" className="fig-subheading">
+            <Link to={`/editions/${yearId}/curators`} className="fig-subheading">
               Curators
               <span className="fig-subheading__underline" aria-hidden />
             </Link>
-            <Link to="/editions/2025-26/artworks" className="fig-subheading">
+            <Link to={`/editions/${yearId}/artworks`} className="fig-subheading">
               Artworks
               <span className="fig-subheading__underline" aria-hidden />
             </Link>
-            <Link to="/editions/2025-26/venue" className="fig-subheading">
+            <Link to={`/editions/${yearId}/venue`} className="fig-subheading">
               Venues
               <span className="fig-subheading__underline" aria-hidden />
             </Link>
@@ -316,7 +332,7 @@ export function Home() {
         <div className="fig-grid home-sensing__cta">
           <CtaLink
             className="fig-cta-end"
-            to="/editions/2025-26/curators"
+            to={`/editions/${yearId}/curators`}
             lines={["EXPLORE", "EDITION"]}
             spacing={["0.135em", "0.2em"]}
           />
@@ -326,11 +342,11 @@ export function Home() {
       <SpotlightModal
         open={sensingOpen}
         onClose={() => setSensingOpen(false)}
-        title={SENSING_GROUNDS_NOTE.title}
+        title={sensingNote.title}
       >
-        <p className="spotlight__attribution">{SENSING_GROUNDS_NOTE.attribution}</p>
+        <p className="spotlight__attribution">{sensingNote.attribution}</p>
         <div className="spotlight__body--split">
-          {SENSING_GROUNDS_NOTE.paragraphs.map((p) => (
+          {sensingNote.paragraphs.map((p) => (
             <p key={p.slice(0, 48)}>{p}</p>
           ))}
         </div>
