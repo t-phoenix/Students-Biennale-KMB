@@ -316,7 +316,7 @@ export function Home() {
         <div className="fig-grid home-sensing__cta">
           <CtaLink
             className="fig-cta-end"
-            to="/editions/2025-26"
+            to="/editions/2025-26/curators"
             lines={["EXPLORE", "EDITION"]}
             spacing={["0.135em", "0.2em"]}
           />
