@@ -9,16 +9,12 @@ import {
 import "./Header.css";
 
 const NAV: { hash: HomeSectionId; label: string; pageMatch?: string }[] = [
-  { hash: "editions", label: "EDITIONS", pageMatch: "/editions" },
-  { hash: "programmes", label: "programmes", pageMatch: "/programmes" },
-  { hash: "press", label: "press", pageMatch: "/press" },
-  { hash: "about", label: "about" },
+  { hash: "editions", label: "EDITIONS" },
+  { hash: "programmes", label: "PROGRAMMES" },
+  { hash: "press", label: "PRESS" },
+  { hash: "about", label: "ABOUT" },
 ];
 
-function pathMatches(pathname: string, pageMatch?: string) {
-  if (!pageMatch) return false;
-  return pathname === pageMatch || pathname.startsWith(`${pageMatch}/`);
-}
 
 export function Header() {
   const location = useLocation();
@@ -73,23 +69,9 @@ export function Header() {
 
   const goToSection = (
     hash: HomeSectionId,
-    event: MouseEvent<HTMLAnchorElement>,
-    pageMatch?: string
+    event: MouseEvent<HTMLAnchorElement>
   ) => {
     event.preventDefault();
-    // Full Programmes / Press pages — not only the Home teaser sections.
-    if (hash === "programmes") {
-      navigate("/programmes");
-      return;
-    }
-    if (hash === "press") {
-      navigate("/press");
-      return;
-    }
-    if (hash === "editions" && pageMatch) {
-      navigate("/editions/2025-26");
-      return;
-    }
     if (onHome) {
       scrollToSection(hash);
       navigate({ pathname: "/", hash }, { replace: true });
@@ -126,23 +108,14 @@ export function Header() {
           <span key={item.hash} style={{ display: "contents" }}>
             {i > 0 ? <span className="site-header__sep">/</span> : null}
             <a
-              href={
-                item.hash === "programmes"
-                  ? "/programmes"
-                  : item.hash === "press"
-                    ? "/press"
-                    : item.hash === "editions"
-                      ? "/editions/2025-26"
-                      : `/#${item.hash}`
-              }
+              href={`/#${item.hash}`}
               data-label={item.hash}
               className={
-                (onHome && activeSection === item.hash) ||
-                pathMatches(location.pathname, item.pageMatch)
+                onHome && activeSection === item.hash
                   ? "is-active"
                   : undefined
               }
-              onClick={(e) => goToSection(item.hash, e, item.pageMatch)}
+              onClick={(e) => goToSection(item.hash, e)}
             >
               {item.label}
             </a>

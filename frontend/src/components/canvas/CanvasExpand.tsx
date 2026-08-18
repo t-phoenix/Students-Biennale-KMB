@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
+import { ARTWORKS, type CanvasItem } from "../../data/site";
+import { ArtworkDetailBody } from "../ArtworkDetailBody";
+import { CtaLink } from "../CtaLink";
 import { gsap, useGSAP, prefersReducedMotion } from "../../lib/motion";
-import type { CanvasItem } from "../../data/site";
 import "./CanvasExpand.css";
 
 type Props = {
@@ -9,10 +11,20 @@ type Props = {
   onClose: () => void;
 };
 
+/** Real catalog artworks are seeded onto the canvas with id "aw-" + ArtworkCard.id
+ *  (see canvasBase() in data/site.ts); decorative filler tiles use "ph-…" ids and
+ *  have no backing catalog record. */
+function findArtworkForItem(item: CanvasItem) {
+  if (item.kind !== "artwork" || !item.id.startsWith("aw-")) return undefined;
+  const realId = item.id.slice(3);
+  return ARTWORKS.find((a) => a.id === realId);
+}
+
 export function CanvasExpand({ item, origin, onClose }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLButtonElement>(null);
+  const artwork = useMemo(() => findArtworkForItem(item), [item]);
 
   const animateClose = useCallback(() => {
     const sheet = sheetRef.current;
@@ -82,14 +94,33 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
         aria-label="Close"
         onClick={animateClose}
       />
-      <div ref={sheetRef} className="canvas-expand__sheet">
+      <div
+        ref={sheetRef}
+        className={`canvas-expand__sheet${artwork ? " canvas-expand__sheet--artwork" : ""}`}
+      >
         <button type="button" className="canvas-expand__back" onClick={animateClose}>
           BACK
         </button>
-        <p className="canvas-expand__kind">{item.kind}</p>
-        <h2>{item.name}</h2>
-        <p className="canvas-expand__meta">{item.meta}</p>
-        {item.bio ? <p className="canvas-expand__bio">{item.bio}</p> : null}
+        {artwork ? (
+          <>
+            <ArtworkDetailBody artwork={artwork} />
+            <div className="canvas-expand__full-page">
+              <CtaLink
+                variant="next"
+                to={`/editions/2025-26/artworks/${artwork.id}`}
+                lines={["View", "full page"]}
+                spacing={["0.135em", "0.135em"]}
+              />
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="canvas-expand__kind">{item.kind}</p>
+            <h2>{item.name}</h2>
+            <p className="canvas-expand__meta">{item.meta}</p>
+            {item.bio ? <p className="canvas-expand__bio">{item.bio}</p> : null}
+          </>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,113 @@
+.raza-scholarship {
+  width: 100%;
+}
+
+.raza-scholarship__content {
+  margin-bottom: 4rem;
+}
+
+.raza-scholarship__title {
+  font-family: "Degular Variable", sans-serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+}
+
+.raza-scholarship__subtitle {
+  font-family: "Degular Variable", sans-serif;
+  font-size: 16px;
+  color: #545454;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.raza-scholarship__description {
+  margin-bottom: 2rem;
+}
+
+.raza-scholarship__description p {
+  font-family: "Degular Variable", sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #000;
+  margin-bottom: 1rem;
+}
+
+.raza-scholarship__scholars-list {
+  font-family: "Degular Variable", sans-serif;
+  font-size: 16px;
+}
+
+.raza-scholarship__scholars-label {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.raza-scholarship__scholars-text {
+  line-height: 1.7;
+  color: #000;
+}
+
+.raza-scholarship__scholars-section {
+  margin-bottom: 4rem;
+  display: grid;
+  gap: 2rem;
+}
+
+.raza-scholarship__scholar {
+  position: relative;
+}
+
+.raza-scholarship__scholar-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  margin-bottom: 1rem;
+}
+
+.raza-scholarship__scholar-link {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.raza-scholarship__scholar h2 {
+  font-family: "Degular Variable", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #000;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.raza-scholarship__scholar-link:hover h2 {
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .raza-scholarship__title {
+    font-size: 18px;
+  }
+
+  .raza-scholarship__scholars-section {
+    gap: 1.5rem;
+  }
+}

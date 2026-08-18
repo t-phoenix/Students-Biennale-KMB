@@ -29,6 +29,22 @@
   will-change: transform, opacity;
 }
 
+/* Full artwork content brings its own .fig-grid horizontal margin — drop the
+   sheet's own inline padding so the two don't stack. */
+.canvas-expand__sheet--artwork {
+  padding-inline: 0;
+}
+
+.canvas-expand__sheet--artwork .canvas-expand__back {
+  margin-inline: var(--page-pad);
+}
+
+.canvas-expand__full-page {
+  padding: 40px var(--page-pad) 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .canvas-expand__back {
   border: 0;
   background: transparent;
@@ -49,6 +65,7 @@
   margin: 8px 0;
   font-size: clamp(28px, 4vw, 40px);
   font-weight: 600;
+  text-transform: uppercase;
 }
 
 .canvas-expand__meta {

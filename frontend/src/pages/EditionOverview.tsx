@@ -56,22 +56,22 @@ export function EditionOverview() {
       </div>
 
       <div className="fig-grid edition-overview__section">
-        <p className="fig-label fig-label--sub edition-overview__reveal">Catalogue</p>
+        <p className="fig-label fig-label--sub edition-overview__reveal">CATALOGUE</p>
         <nav className="fig-c4-12 edition-overview__links edition-overview__reveal">
           <Link to={`/editions/${yearId}/curators`} className="fig-subheading">
-            Curators
+            CURATORS
             <span className="fig-subheading__underline" aria-hidden />
           </Link>
           <Link to={`/editions/${yearId}/artworks`} className="fig-subheading">
-            Artworks
+            ARTWORKS
             <span className="fig-subheading__underline" aria-hidden />
           </Link>
           <Link to={`/editions/${yearId}/artists`} className="fig-subheading">
-            Artists
+            ARTISTS
             <span className="fig-subheading__underline" aria-hidden />
           </Link>
           <Link to={`/editions/${yearId}/venue`} className="fig-subheading">
-            Venues
+            VENUES
             <span className="fig-subheading__underline" aria-hidden />
           </Link>
         </nav>
@@ -100,7 +100,7 @@ export function EditionOverview() {
       {edition.institutions.length ? (
         <div className="fig-grid edition-overview__section">
           <h2 className="fig-label fig-label--sub edition-overview__reveal">
-            Participating Institutions
+            PARTICIPATING INSTITUTIONS
           </h2>
           <p className="fig-c4-12 fig-body edition-overview__reveal">
             {edition.institutions.join(" · ")}

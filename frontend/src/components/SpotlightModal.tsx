@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { gsap, prefersReducedMotion } from "../lib/motion";
+import { useModalPortal } from "../lib/useModalPortal";
 import "./SpotlightModal.css";
 
 type Props = {
@@ -14,18 +15,13 @@ type Props = {
 export function SpotlightModal({ open, title, onClose, children, labelledById }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const prevFocus = useRef<HTMLElement | null>(null);
   const titleId = useId();
   const labelId = labelledById ?? titleId;
 
+  useModalPortal({ open, onClose, panelRef, initialFocusRef: closeRef });
+
   useEffect(() => {
     if (!open) return;
-
-    prevFocus.current = document.activeElement as HTMLElement | null;
-    document.documentElement.dataset.spotlight = "open";
-    document.body.style.overflow = "hidden";
-    window.dispatchEvent(new CustomEvent("spotlight:change", { detail: { open: true } }));
-
     const panel = panelRef.current;
     const reduce = prefersReducedMotion();
     if (panel && !reduce) {
@@ -37,41 +33,7 @@ export function SpotlightModal({ open, title, onClose, children, labelledById }:
     } else if (panel) {
       gsap.set(panel, { autoAlpha: 1, scale: 1, y: 0 });
     }
-
-    const t = window.setTimeout(() => closeRef.current?.focus(), 30);
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-      if (e.key !== "Tab" || !panel) return;
-      const focusable = panel.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-
-    return () => {
-      window.clearTimeout(t);
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-      delete document.documentElement.dataset.spotlight;
-      window.dispatchEvent(new CustomEvent("spotlight:change", { detail: { open: false } }));
-      prevFocus.current?.focus?.();
-    };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open || typeof document === "undefined") return null;
 

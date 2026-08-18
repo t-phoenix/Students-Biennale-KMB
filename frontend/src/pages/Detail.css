@@ -87,9 +87,15 @@
 
 .detail__curated-by strong {
   display: block;
-  font-weight: 500;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   margin-bottom: 4px;
   color: var(--color-text-primary);
+}
+
+.detail__curated-by strong:hover {
+  font-weight: 500;
 }
 
 .detail__label {
@@ -101,6 +107,7 @@
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
+  text-transform: uppercase;
 }
 
 .detail__year {
@@ -110,22 +117,32 @@
   font-weight: var(--type-title-weight);
 }
 
-/* Stacked label-over-value rows with a rule between, spanning cols 4-12. */
+/* Stacked label-over-value rows with a rule between, spanning cols 4-12
+   (Figma 10:1199 — Venue block flush with its rule at +10px, Materials block
+   with a wider +30px lead-in after the rule). */
 .detail__meta {
   margin: 28px 0 0;
 }
 
 .detail__meta > div {
-  padding: 0 0 18px;
+  padding: 0 0 10px;
   border-bottom: 1px solid var(--color-neutral-gray-light);
-  margin-bottom: 18px;
+  margin-bottom: 30px;
 }
 
+/* Caps labels are Regular by default and step up to Medium on hover — the same
+   convention as .fig-subheading, applied here since these aren't <p> tags. */
 .detail__meta dt {
-  font-size: var(--type-subtitle-size);
-  line-height: var(--type-subtitle-line);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 4px;
+}
+
+.detail__meta dt:hover {
   font-weight: 500;
-  margin-bottom: 8px;
 }
 
 .detail__meta dd {
@@ -135,12 +152,18 @@
 }
 
 .detail__meta dd p {
-  margin: 0;
+  margin: 0 0 10px;
+}
+
+.detail__meta dd p:last-child {
+  margin-bottom: 0;
 }
 
 .detail__artists strong {
   display: block;
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .detail__artists span {
@@ -194,6 +217,7 @@
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   font-weight: 400;
+  text-transform: uppercase;
   border-bottom: 1px solid var(--color-text-primary);
   padding-bottom: 1px;
 }
@@ -221,6 +245,7 @@
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
+  text-transform: uppercase;
 }
 
 .detail__curated-by {
@@ -259,6 +284,7 @@
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
+  text-transform: uppercase;
 }
 
 .detail__venue-info p {

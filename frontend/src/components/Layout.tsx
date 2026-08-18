@@ -5,17 +5,20 @@ import { syncScrollTrigger } from "../lib/motion";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { parseHomeHash, scrollToSection } from "../lib/scrollToSection";
+import { setLenisInstance } from "../lib/lenisSingleton";
 import "./Layout.css";
 
 export function Layout() {
   const location = useLocation();
   const isDiscover = location.pathname === "/artworks";
   const lenisRef = useRef<Lenis | null>(null);
+  const prevPathRef = useRef(location.pathname);
 
   useEffect(() => {
     if (isDiscover) {
       lenisRef.current?.destroy();
       lenisRef.current = null;
+      setLenisInstance(null);
       return;
     }
 
@@ -24,6 +27,7 @@ export function Layout() {
       smoothWheel: true,
     });
     lenisRef.current = lenis;
+    setLenisInstance(lenis);
 
     let raf = 0;
     const loop = (time: number) => {
@@ -45,17 +49,31 @@ export function Layout() {
       cancelAnimationFrame(raf);
       lenis.destroy();
       lenisRef.current = null;
+      setLenisInstance(null);
     };
   }, [isDiscover]);
 
-  // Land at the top of every new page. Skipped when the navigation targets a
-  // Home section (e.g. the nav's "programmes" link goes to "/#programmes"),
-  // since that case scrolls to the section instead, below.
+  // Land at the top of every new page, keyed on location.key (not pathname)
+  // so this also fires when navigating to the same path — e.g. clicking the
+  // logo while already on "/" still resets scroll. Skipped when the
+  // navigation targets a Home section (e.g. the nav's "programmes" link goes
+  // to "/#programmes"), since that case scrolls to the section instead, below.
+  // A real page-to-page change snaps instantly (the content underneath is
+  // changing anyway); staying on the same page and just resetting to top —
+  // e.g. the logo click — animates smoothly instead, since there's nothing
+  // else justifying an abrupt jump.
   useEffect(() => {
     if (location.pathname === "/" && parseHomeHash(location.hash)) return;
+    const samePage = prevPathRef.current === location.pathname;
+    prevPathRef.current = location.pathname;
+
+    if (samePage && lenisRef.current) {
+      lenisRef.current.scrollTo(0);
+      return;
+    }
     window.scrollTo(0, 0);
     lenisRef.current?.scrollTo(0, { immediate: true });
-  }, [location.pathname]);
+  }, [location.pathname, location.key]);
 
   useEffect(() => {
     if (location.pathname !== "/") return;

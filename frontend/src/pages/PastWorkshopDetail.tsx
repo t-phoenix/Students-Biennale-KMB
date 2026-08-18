@@ -1,0 +1,128 @@
+import { useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { CtaLink } from "../components/CtaLink";
+import { GalleryLightbox } from "../components/GalleryLightbox";
+import { PAST_WORKSHOPS } from "../data/site";
+import "./PastWorkshopDetail.css";
+
+export function PastWorkshopDetail() {
+  const { id = "" } = useParams();
+  const root = useRef<HTMLDivElement>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const idx = PAST_WORKSHOPS.findIndex((w) => w.id === id);
+  const workshop = idx >= 0 ? PAST_WORKSHOPS[idx] : undefined;
+  const next = workshop ? PAST_WORKSHOPS[(idx + 1) % PAST_WORKSHOPS.length] : undefined;
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return;
+      gsap.from(".workshop-reveal", {
+        autoAlpha: 0,
+        y: 24,
+        duration: 0.55,
+        stagger: 0.08,
+        ease: "power2.out",
+        clearProps: "opacity,visibility,transform",
+      });
+    },
+    { scope: root, dependencies: [id] }
+  );
+
+  if (!workshop) {
+    return (
+      <div className="past-workshop-detail">
+        <div className="fig-grid past-workshop-detail__section">
+          <Link className="fig-c1-3" to="/programmes/past-workshops">
+            BACK
+          </Link>
+          <p className="fig-c4-12">Workshop not found</p>
+        </div>
+      </div>
+    );
+  }
+
+  const gallery = workshop.galleryImages ?? [];
+
+  return (
+    <div ref={root} className="past-workshop-detail" key={workshop.id}>
+      {workshop.heroImage ? (
+        <div className="past-workshop-detail__hero workshop-reveal">
+          <img src={workshop.heroImage} alt="" className="past-workshop-detail__hero-img" />
+        </div>
+      ) : (
+        <div className="past-workshop-detail__hero past-workshop-detail__hero--fallback workshop-reveal" aria-hidden />
+      )}
+
+      <div className="fig-grid past-workshop-detail__section workshop-reveal">
+        <div className="fig-c4-9">
+          <h1 className="past-workshop-detail__title">{workshop.title}</h1>
+          <div className="past-workshop-detail__meta">
+            <p>
+              <strong>Facilitators:</strong> {workshop.facilitators}
+            </p>
+            {workshop.location ? <p>{workshop.location}</p> : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="fig-grid past-workshop-detail__section workshop-reveal">
+        <div className="fig-c4-9">
+          {workshop.description ? (
+            <div className="past-workshop-detail__description">
+              <p>{workshop.description}</p>
+            </div>
+          ) : (
+            <p className="past-workshop-detail__placeholder">
+              Documentation for this workshop is being archived.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {gallery.length ? (
+        <div className="fig-grid past-workshop-detail__section workshop-reveal">
+          <div className="fig-c4-12">
+            <div className="gallery-grid">
+              {gallery.map((img, i) => (
+                <button
+                  key={img}
+                  className="gallery-item"
+                  onClick={() => setLightboxIndex(i)}
+                  aria-label={`View image ${i + 1}`}
+                  type="button"
+                >
+                  <img src={img} alt="" />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="fig-grid past-workshop-detail__nav">
+        <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
+          BACK
+        </Link>
+        {next ? (
+          <CtaLink
+            className="past-workshop-detail__next"
+            variant="next"
+            to={`/programmes/past-workshops/${next.id}`}
+            lines={["NEXT"]}
+          />
+        ) : null}
+      </div>
+
+      {lightboxIndex !== null ? (
+        <GalleryLightbox
+          images={gallery}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
+      ) : null}
+    </div>
+  );
+}

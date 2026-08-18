@@ -12,8 +12,8 @@ export type CatalogueRow = {
   eyebrow?: string;
   /** Second line under the heading (institution, venue, medium…). */
   sub?: string;
-  /** Where the row's "open" link goes. */
-  href: string;
+  /** Where the row's "open" link goes. Omit for rows with nothing to open. */
+  href?: string;
 };
 
 export type CataloguePreview = {
@@ -64,19 +64,32 @@ export function CatalogueList({
             onMouseEnter={() => setActiveId(row.id)}
             onFocus={() => setActiveId(row.id)}
           >
-            <Link className="catalogue__row-link" to={row.href}>
-              {row.eyebrow ? (
-                <span className="catalogue__row-eyebrow">{row.eyebrow}</span>
-              ) : null}
-              <span className="catalogue__row-title">{row.title}</span>
-              {(row.titles ?? []).map((t) => (
-                <span key={t} className="catalogue__row-title">
-                  {t}
-                </span>
-              ))}
-              {row.sub ? <span className="catalogue__row-sub">{row.sub}</span> : null}
-              <span className="catalogue__row-mark" aria-hidden />
-            </Link>
+            {(() => {
+              const rowContent = (
+                <>
+                  {row.eyebrow ? (
+                    <span className="catalogue__row-eyebrow">{row.eyebrow}</span>
+                  ) : null}
+                  <span className="catalogue__row-title">{row.title}</span>
+                  {(row.titles ?? []).map((t) => (
+                    <span key={t} className="catalogue__row-title">
+                      {t}
+                    </span>
+                  ))}
+                  {row.sub ? <span className="catalogue__row-sub">{row.sub}</span> : null}
+                  <span className="catalogue__row-mark" aria-hidden />
+                </>
+              );
+              return row.href ? (
+                <Link className="catalogue__row-link" to={row.href}>
+                  {rowContent}
+                </Link>
+              ) : (
+                <div className="catalogue__row-link catalogue__row-link--static">
+                  {rowContent}
+                </div>
+              );
+            })()}
           </div>
         ))}
 

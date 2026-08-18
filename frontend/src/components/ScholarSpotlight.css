@@ -1,0 +1,58 @@
+.scholar-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+}
+
+.scholar-spotlight__scrim {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: rgba(27, 23, 28, 0.55);
+  cursor: pointer;
+}
+
+/* No inline padding — ArtworkDetailBody's own .fig-grid sections supply their
+   horizontal margin, and its hero needs to bleed edge-to-edge within this
+   sheet the same way it does on the real artwork page. */
+.scholar-spotlight__sheet {
+  position: fixed;
+  top: var(--header-h, 72px);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  background: var(--color-neutral-white);
+  color: var(--color-text-primary);
+  overflow: auto;
+  padding-block: 40px;
+  will-change: transform, opacity;
+}
+
+.scholar-spotlight__back {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0 var(--page-pad) 24px;
+  font-size: var(--type-caption-size);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.scholar-spotlight__back:hover {
+  opacity: 0.7;
+}
+
+.scholar-spotlight__next {
+  padding: 40px var(--page-pad) 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scholar-spotlight__sheet {
+    transition: none !important;
+  }
+}

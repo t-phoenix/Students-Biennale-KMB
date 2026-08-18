@@ -154,6 +154,7 @@
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   color: var(--color-text-primary);
+  text-transform: uppercase;
 }
 
 .fig-label--sub {

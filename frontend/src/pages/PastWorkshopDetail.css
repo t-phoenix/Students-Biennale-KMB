@@ -1,0 +1,124 @@
+.past-workshop-detail {
+  width: 100%;
+  padding-bottom: 80px;
+}
+
+.past-workshop-detail__hero {
+  position: relative;
+  width: 100%;
+  height: min(560px, 55vh);
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+}
+
+.past-workshop-detail__hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+}
+
+.past-workshop-detail__hero--fallback {
+  background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
+}
+
+.past-workshop-detail__section {
+  padding-top: 48px;
+  align-items: start;
+}
+
+.past-workshop-detail__title {
+  margin: 0 0 16px;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.past-workshop-detail__meta p {
+  margin: 0 0 4px;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-secondary);
+}
+
+.past-workshop-detail__meta strong {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.past-workshop-detail__description p {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+
+.past-workshop-detail__placeholder {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--grid-gutter);
+}
+
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  aspect-ratio: 1;
+}
+
+.gallery-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+.past-workshop-detail__nav {
+  padding-top: 60px;
+  align-items: center;
+}
+
+.past-workshop-detail__back {
+  font-size: var(--type-subtitle-size);
+  align-self: center;
+}
+
+.past-workshop-detail__next {
+  grid-column: 4 / -1;
+  justify-self: end;
+}
+
+@media (max-width: 899px) {
+  .past-workshop-detail__section {
+    padding-top: 32px;
+  }
+
+  .gallery-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .past-workshop-detail__next {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+}

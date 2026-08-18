@@ -136,6 +136,8 @@
   font-size: var(--type-subtitle-size);
   line-height: 20px;
   font-weight: 500;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
 }
 
 .edition-card--artist p {
@@ -143,6 +145,11 @@
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   color: var(--color-text-secondary);
+}
+
+/* Artists with no matching artwork stay non-interactive — nothing to open. */
+.edition-card--static {
+  cursor: default;
 }
 
 /* Artworks — 2-up split of the cols 4-12 band, 482 + 20 + 483 (Figma 1:1574).
@@ -180,6 +187,8 @@
   font-size: var(--type-body-size);
   font-weight: 500;
   line-height: var(--type-body-line);
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
 }
 
 .edition-card p {
@@ -322,6 +331,8 @@
   font-size: var(--type-subtitle-size);
   line-height: 20px;
   font-weight: 500;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
 }
 
 .edition-venue__copy p {

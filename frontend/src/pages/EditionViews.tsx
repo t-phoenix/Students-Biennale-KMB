@@ -7,6 +7,7 @@ import {
   CURATOR_ZONES,
   VENUES,
   curatorsForArtwork,
+  type ArtistCard,
   type CuratorCard,
 } from "../data/site";
 import { CatalogueList } from "../components/CatalogueList";
@@ -169,9 +170,9 @@ export function CuratorsView() {
                 ))}
                 <Link
                   className="curator-panel__more"
-                  to={`/editions/${yearId}/curators/${zone.curators[0]?.id ?? ""}`}
+                  to={`/editions/${yearId}/artworks`}
                 >
-                  Know more...
+                  VIEW ARTWORKS
                 </Link>
               </div>
             );
@@ -281,21 +282,30 @@ export function ArtistsView() {
   );
   useStagger(root, `${view}-${query}`);
 
+  /* Artists have no profile page of their own — their name opens the artwork
+     they're credited on. Artists with no matching artwork stay non-interactive
+     rather than link to a page that doesn't exist. */
+  const workForArtist = (a: ArtistCard) =>
+    ARTWORKS.find((w) => w.artists.some((x) => x.name === a.name));
+
   return (
     <div ref={root} className="edition-view">
       <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
       {view === "list" ? (
         <CatalogueList
-          rows={items.map((a) => ({
-            id: a.id,
-            title: a.name,
-            sub: a.institution,
-            href: `/editions/${yearId}/artists/${a.id}`,
-          }))}
+          rows={items.map((a) => {
+            const work = workForArtist(a);
+            return {
+              id: a.id,
+              title: a.name,
+              sub: a.institution,
+              href: work ? `/editions/${yearId}/artworks/${work.id}` : undefined,
+            };
+          })}
           previewFor={(id) => {
             const a = ARTISTS.find((x) => x.id === id);
             if (!a) return null;
-            const work = ARTWORKS.find((w) => w.artists.some((x) => x.name === a.name));
+            const work = workForArtist(a);
             const curators = work ? curatorsForArtwork(work) : [];
             return {
               title: a.name,
@@ -315,16 +325,28 @@ export function ArtistsView() {
       ) : (
         /* 3-up name + institution blocks on cols 4-6 / 7-9 / 10-12 (Figma 713:297). */
         <div className="edition-grid edition-grid--artists">
-          {items.map((a) => (
-            <Link
-              key={a.id}
-              className="edition-card edition-card--artist"
-              to={`/editions/${yearId}/artists/${a.id}`}
-            >
-              <h3>{a.name}</h3>
-              <p>{a.institution}</p>
-            </Link>
-          ))}
+          {items.map((a) => {
+            const work = workForArtist(a);
+            const body = (
+              <>
+                <h3>{a.name}</h3>
+                <p>{a.institution}</p>
+              </>
+            );
+            return work ? (
+              <Link
+                key={a.id}
+                className="edition-card edition-card--artist"
+                to={`/editions/${yearId}/artworks/${work.id}`}
+              >
+                {body}
+              </Link>
+            ) : (
+              <div key={a.id} className="edition-card edition-card--artist edition-card--static">
+                {body}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

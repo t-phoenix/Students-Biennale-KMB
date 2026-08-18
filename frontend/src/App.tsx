@@ -12,7 +12,10 @@ import {
 } from "./pages/EditionViews";
 import { Detail } from "./pages/Detail";
 import { Programmes } from "./pages/Programmes";
-import { Press } from "./pages/Press";
+import { PastWorkshops } from "./pages/PastWorkshops";
+import { PastWorkshopDetail } from "./pages/PastWorkshopDetail";
+import { RazaScholarship } from "./pages/RazaScholarship";
+import { Residencies } from "./pages/Residencies";
 import { EDITIONS_PATH, LATEST_EDITION } from "./data/site";
 
 export default function App() {
@@ -33,7 +36,14 @@ export default function App() {
           </Route>
           <Route path="editions/:yearId/:kindSeg/:id" element={<Detail />} />
           <Route path="programmes" element={<Programmes />} />
-          <Route path="press" element={<Press />} />
+          <Route path="programmes/past-workshops" element={<PastWorkshops />} />
+          <Route path="programmes/past-workshops/:id" element={<PastWorkshopDetail />} />
+          <Route path="programmes/raza-scholarship" element={<RazaScholarship />} />
+          <Route path="programmes/residencies" element={<Residencies />} />
+          <Route
+            path="press"
+            element={<Navigate to={{ pathname: "/", hash: "press" }} replace />}
+          />
           <Route
             path="about"
             element={<Navigate to={{ pathname: "/", hash: "about" }} replace />}

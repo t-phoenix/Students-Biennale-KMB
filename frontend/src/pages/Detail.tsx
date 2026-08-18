@@ -2,15 +2,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
+import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import {
-  ARTISTS,
   ARTWORKS,
   CURATOR_ZONES,
   CURATORS,
   VENUES,
-  artworkImages,
   artworksForZone,
-  curatorsForArtwork,
   venueImages,
 } from "../data/site";
 import "./Detail.css";
@@ -27,7 +25,6 @@ export function Detail() {
   const data = useMemo(() => {
     if (kindSeg === "artworks") return { kind: "artwork" as const, item: ARTWORKS.find((a) => a.id === id) };
     if (kindSeg === "curators") return { kind: "curator" as const, item: CURATORS.find((c) => c.id === id) };
-    if (kindSeg === "artists") return { kind: "artist" as const, item: ARTISTS.find((a) => a.id === id) };
     if (kindSeg === "venue") return { kind: "venue" as const, item: VENUES.find((v) => v.id === id) };
     return { kind: "unknown" as const, item: undefined };
   }, [kindSeg, id]);
@@ -67,85 +64,10 @@ export function Detail() {
     const a = data.item;
     const idx = ARTWORKS.findIndex((x) => x.id === a.id);
     const next = ARTWORKS[(idx + 1) % ARTWORKS.length];
-    const slides = artworkImages(a);
-    const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
-    const curated = curatorsForArtwork(a);
 
     return (
-      <div ref={root} className="detail" key={a.id}>
-        <div className="detail__hero detail-reveal">
-          {slide ? (
-            <img src={slide} alt="" className="detail__hero-img" />
-          ) : (
-            <div className="detail__hero-fallback" aria-hidden />
-          )}
-          {slides.length > 1 ? (
-            <div className="detail__hero-dots" role="tablist" aria-label="Artwork images">
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === heroIndex}
-                  className={i === heroIndex ? "is-active" : undefined}
-                  onClick={() => setHeroIndex(i)}
-                />
-              ))}
-            </div>
-          ) : null}
-        </div>
-
-        <div className="fig-grid detail__section">
-          <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
-          <h1 className="fig-c4-9 detail__title detail-reveal">{a.title}</h1>
-          <span className="fig-c10-12 detail__year detail-reveal">{a.year}</span>
-
-          <dl className="fig-c4-12 detail__meta detail-reveal">
-            <div>
-              <dt>Venue :</dt>
-              <dd>{a.venue}</dd>
-            </div>
-            <div>
-              <dt>Dimensions :</dt>
-              <dd>{a.dimensions}</dd>
-            </div>
-            <div>
-              <dt>Materials :</dt>
-              <dd>
-                {a.materials.map((m) => (
-                  <p key={m}>{m}</p>
-                ))}
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="fig-grid detail__section">
-          <p className="fig-label detail__label detail-reveal">Description</p>
-          <div className="fig-c4-9 fig-body detail-reveal detail__desc">
-            {a.description.split(/\n\n+/).map((para) => (
-              <p key={para.slice(0, 48)}>{para}</p>
-            ))}
-          </div>
-        </div>
-
-        <div className="fig-grid detail__section">
-          <p className="fig-label fig-subheading detail__label detail-reveal">Artists</p>
-          <div className="fig-c4-12 fig-sub-3 detail__artists detail-reveal">
-            {a.artists.map((artist) => (
-              <div key={artist.name}>
-                <strong>{artist.name}</strong>
-                <span>{artist.institution}</span>
-              </div>
-            ))}
-          </div>
-          {curated.length ? (
-            <p className="fig-c4-6 detail__curated-by detail-reveal">
-              <strong>Curated by</strong>
-              {curated.map((c) => c.name).join(" and ")}
-            </p>
-          ) : null}
-        </div>
+      <div ref={root} className="detail">
+        <ArtworkDetailBody artwork={a} />
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
@@ -256,25 +178,6 @@ export function Detail() {
             lines={["View", "MORE"]}
             spacing={["0.26em", "0.135em"]}
           />
-        </div>
-      </div>
-    );
-  }
-
-  if (data.kind === "artist" && data.item) {
-    const a = data.item;
-    return (
-      <div ref={root} className="detail">
-        <div className="fig-grid detail__section">
-          <p className="fig-label fig-subheading detail__label detail-reveal">Artists</p>
-          <h1 className="fig-c4-9 detail__title detail-reveal">{a.name}</h1>
-          <p className="fig-c4-9 fig-body detail-reveal">{a.institution}</p>
-          <p className="fig-c4-9 fig-body detail-reveal">{a.zone}</p>
-        </div>
-        <div className="fig-grid detail__nav">
-          <Link className="fig-c1-3 detail__back" to={back}>
-            BACK
-          </Link>
         </div>
       </div>
     );

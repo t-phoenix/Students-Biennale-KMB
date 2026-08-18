@@ -32,6 +32,16 @@ const UPDATES = [
   },
 ] as const;
 
+/** Continuous auto-scroll strip, right→left, in the Sensing Grounds row. */
+const SENSING_STRIP_IMAGES = [
+  "/home/sensing-wide.jpg",
+  "/home/sensing-side.jpg",
+  "/artworks/absence.jpg",
+  "/artworks/panopticon.jpg",
+  "/artworks/dar-dara-dariya.jpg",
+  "/artworks/milk-distributors.jpg",
+];
+
 const PRESS_LIST = [
   {
     title: "The Ultimate Guide & Map to the Kochi-Muziris Biennale 2025/26 Venues",
@@ -48,6 +58,7 @@ const PRESS_LIST = [
 export function Home() {
   const rootRef = useRef<HTMLDivElement>(null);
   const editionMoreRef = useRef<HTMLDivElement>(null);
+  const sensingTrackRef = useRef<HTMLDivElement>(null);
   const [slide, setSlide] = useState(0);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
@@ -73,6 +84,30 @@ export function Home() {
       }
     },
     { dependencies: [editionExpanded], scope: rootRef }
+  );
+
+  // Sensing Grounds image strip — continuous right-to-left auto-scroll. The
+  // track renders SENSING_STRIP_IMAGES twice back to back; looping xPercent
+  // from 0 to -50 at a constant rate walks through the first copy and hands
+  // off to the identical second copy exactly where the first left off, so the
+  // loop seam is invisible. Paused (first frame only) under reduced motion.
+  useGSAP(
+    () => {
+      const track = sensingTrackRef.current;
+      if (!track || prefersReducedMotion()) return;
+
+      const tween = gsap.to(track, {
+        xPercent: -50,
+        duration: 28,
+        ease: "none",
+        repeat: -1,
+      });
+
+      return () => {
+        tween.kill();
+      };
+    },
+    { scope: rootRef }
   );
 
   useGSAP(
@@ -236,14 +271,14 @@ export function Home() {
               aria-expanded={editionExpanded}
               onClick={() => setEditionExpanded((v) => !v)}
             >
-              {editionExpanded ? "Read less..." : "Read more..."}
+              {editionExpanded ? "READ LESS..." : "READ MORE..."}
             </button>
           </div>
         </div>
       </section>
 
-      {/* Sensing Grounds — links cols 1–3, wide cols 4–9, side cols 10–12; the peek
-          bleeds into the right margin past col 12 (Figma 1:961) */}
+      {/* Sensing Grounds — links cols 1–3, image strip cols 4–12, contained
+          (no bleed) and auto-scrolling right→left, looping continuously. */}
       <section className="home-section home-sensing">
         <div className="fig-grid home-sensing__row">
           <nav className="home-sensing__links fig-rail" aria-label="Edition links">
@@ -268,21 +303,21 @@ export function Home() {
               <span className="fig-subheading__underline" aria-hidden />
             </Link>
           </nav>
-          <div className="home-sensing__wide fig-c4-9">
-            <img src="/home/sensing-wide.jpg" alt="" />
-          </div>
-          <div className="home-sensing__side fig-c10-12">
-            <img src="/home/sensing-side.jpg" alt="" />
-          </div>
-          <div className="home-sensing__peek" aria-hidden>
-            <img src="/home/sensing-wide.jpg" alt="" />
+          <div className="home-sensing__scroll fig-c4-12">
+            <div ref={sensingTrackRef} className="home-sensing__scroll-track">
+              {[...SENSING_STRIP_IMAGES, ...SENSING_STRIP_IMAGES].map((src, i) => (
+                <div className="home-sensing__scroll-item" key={`${src}-${i}`}>
+                  <img src={src} alt="" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
         <div className="fig-grid home-sensing__cta">
           <CtaLink
             className="fig-cta-end"
             to="/editions/2025-26"
-            lines={["Explore", "Edition"]}
+            lines={["EXPLORE", "EDITION"]}
             spacing={["0.135em", "0.2em"]}
           />
         </div>
@@ -305,9 +340,9 @@ export function Home() {
       <section id="programmes" className="home-section home-programmes">
         <div className="fig-grid home-programmes__top">
           <h2 className="fig-label fig-heading">
-            Upcoming
+            UPCOMING
             <br />
-            Programmes
+            PROGRAMMES
           </h2>
           <div className="home-programmes__banner fig-c4-12">
             <img src="/home/programmes-banner.jpg" alt="" />
@@ -317,8 +352,8 @@ export function Home() {
           <div className="home-programmes__rail fig-rail">
             {(
               [
-                { label: "Workshops", hash: "workshops" },
-                { label: "Residencies", hash: "residencies" },
+                { label: "WORKSHOPS", hash: "workshops" },
+                { label: "RESIDENCIES", hash: "residencies" },
                 { label: "AWARDS", hash: "awards" },
               ] as const
             ).map((tab) => (
@@ -349,7 +384,7 @@ export function Home() {
       {/* Press — featured image cols 4–6, copy cols 7–12, list cols 4–12 (Figma 1:1005) */}
       <section id="press" className="home-section home-press">
         <div className="fig-grid">
-          <h2 className="fig-label fig-heading">Press</h2>
+          <h2 className="fig-label fig-heading">PRESS</h2>
           <img className="home-press__featured-img fig-c4-6" src="/home/press-featured.jpg" alt="" />
           <article className="home-press__featured fig-c7-12">
               <div>
@@ -365,7 +400,7 @@ export function Home() {
                   on an international stage.
                 </p>
                 <Link to="/press?article=kbf-curators" className="home-text-btn">
-                  Read more...
+                  READ MORE...
                 </Link>
               </div>
           </article>
@@ -381,8 +416,8 @@ export function Home() {
           </ul>
           <CtaLink
             className="fig-cta-end home-press__more"
-            to="/press"
-            lines={["view", "more"]}
+            to="/#press"
+            lines={["VIEW", "MORE"]}
             spacing={["0.26em", "0.135em"]}
           />
         </div>
@@ -391,7 +426,7 @@ export function Home() {
       {/* About — logos in the label column, copy cols 4–9 (Figma 1:1060) */}
       <section id="about" className="home-section home-about">
         <div className="fig-grid home-about__intro">
-          <h2 className="fig-label fig-heading">About Us</h2>
+          <h2 className="fig-label fig-heading">ABOUT US</h2>
         </div>
         <div className="fig-grid home-about__block">
           <img

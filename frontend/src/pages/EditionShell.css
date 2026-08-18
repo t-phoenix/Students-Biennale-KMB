@@ -8,6 +8,7 @@
 .edition__rail h1 {
   margin: 0 0 72px;
   font-size: var(--type-title-size);
+  text-transform: uppercase;
 }
 
 .edition__tabs {

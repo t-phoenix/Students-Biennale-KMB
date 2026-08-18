@@ -1,47 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { ResidenciesBand, type ResidencySlide } from "../components/ResidenciesBand";
-import { AWARDS_INTERNATIONAL, AWARDS_NATIONAL, PAST_WORKSHOPS } from "../data/site";
-import { parseProgrammeHash, scrollToId } from "../lib/scrollToSection";
+import { ScholarSpotlight } from "../components/ScholarSpotlight";
+import { AWARDS_INTERNATIONAL, AWARDS_NATIONAL, PAST_WORKSHOPS, RAZA_SCHOLARS } from "../data/site";
 import "./Programmes.css";
 
-/* Upcoming workshops are still Lorem Ipsum in the design itself (Figma 1:1658 /
-   1:1669 / 1:1680) — date and place are genuinely blank, not withheld from us. */
-const WORKSHOPS = [
-  {
-    id: "w1",
-    title: "workshop 01",
-    date: "",
-    place: "",
-    blurb:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
-    image: "/programmes/workshop-1.jpg",
-  },
-  {
-    id: "w2",
-    title: "workshop 02",
-    date: "",
-    place: "",
-    blurb:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
-    image: "/programmes/workshop-2.jpg",
-  },
-  {
-    id: "w3",
-    title: "workshop 03",
-    date: "",
-    place: "",
-    blurb:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
-    image: "/programmes/workshop-3.jpg",
-  },
-];
-
+/* The Residencies band on Figma 10:701 (node 10:998) shows exactly one
+   residency — no other slides exist in the design, so this stays a single-item
+   array rather than inventing additional ones. */
 const RESIDENCY_SLIDES: ResidencySlide[] = [
   {
-    id: "r1",
+    id: "national-residency-2026",
     title: "Students' Biennale National Residency Award Programme",
     host: "KBF",
     period: "10 June – 10 July 2026",
@@ -50,86 +21,44 @@ const RESIDENCY_SLIDES: ResidencySlide[] = [
     copy:
       "As an extension of the Kochi Biennale Foundation's commitment to supporting emerging artistic practices beyond the exhibition period, the Foundation hosted two of the seven recipients of the Students' Biennale Tata Trusts National Awards through the KBF Residency Programme. Held from 10 June to 10 July 2026,",
     image: "/programmes/residency-1.jpg",
+    moreHref: "/programmes/residencies",
+  },
+];
+
+const WORKSHOPS = [
+  {
+    id: "w1",
+    title: "WORKSHOP 01",
+    date: "",
+    place: "",
+    blurb:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
+    image: "/programmes/workshop-1.jpg",
   },
   {
-    id: "r2",
-    title: "Pedagogy Labs Residency",
-    host: "KBF Education",
-    period: "12 Aug – 10 Sep 2025",
-    venue: "Fort Kochi",
-    awardees: "Regional cohorts",
-    copy:
-      "Workshops that treat the classroom as a shared ground for experiment and care, with visiting mentors and peer critique across a month-long studio residency.",
-    image: "/programmes/residency-2.jpg",
+    id: "w2",
+    title: "WORKSHOP 02",
+    date: "",
+    place: "",
+    blurb:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
+    image: "/programmes/workshop-2.jpg",
   },
   {
-    id: "r3",
-    title: "Material Research Residency",
-    host: "KBF",
-    period: "2024",
-    venue: "BMS Warehouse, Mattancherry",
-    awardees: "Selected participants",
-    copy:
-      "A focused residency for collaborative material research with visiting mentors and peer exchange in the historic warehouse precincts of Mattancherry.",
-    image: "/programmes/residency-3.jpg",
-  },
-  {
-    id: "r4",
-    title: "Students' Biennale National Residency Award Programme",
-    host: "KBF",
-    period: "20 June – 15 July 2021",
-    venue: "BRP, ABC, Mattancherry, Kochi, Kerala",
-    awardees: "Residencies, Kochi & Gurgaon (Haryana)",
-    copy:
-      "As an extension of the Kochi Biennale Foundation's commitment to supporting emerging artists, the residency programme offers focused studio time and peer exchange in Fort Kochi.",
-    image: "/programmes/residency-4.jpg",
-  },
-  {
-    id: "r5",
-    title: "Inaugural Residency Exchange",
-    host: "KBF",
-    period: "2015",
-    venue: "Mohammed Ali Warehouse",
-    awardees: "Inaugural cohort",
-    copy:
-      "An early exchange that placed student practitioners inside the Biennale's working sites, establishing the residency as a lasting strand of the Students' Biennale.",
-    image: "/programmes/residency-5.jpg",
+    id: "w3",
+    title: "WORKSHOP 03",
+    date: "",
+    place: "",
+    blurb:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966,",
+    image: "/programmes/workshop-3.jpg",
   },
 ];
 
 export function Programmes() {
   const root = useRef<HTMLDivElement>(null);
-  const location = useLocation();
   const [heroSlide, setHeroSlide] = useState(0);
-
-  useEffect(() => {
-    const id = parseProgrammeHash(location.hash);
-    if (!id) return;
-
-    let cancelled = false;
-    const go = () => {
-      if (!cancelled) scrollToId(id);
-    };
-
-    go();
-    const t1 = window.setTimeout(go, 120);
-    const t2 = window.setTimeout(go, 400);
-    const t3 = window.setTimeout(go, 900);
-
-    const imgs = root.current?.querySelectorAll("img") ?? [];
-    const onLoad = () => go();
-    imgs.forEach((img) => {
-      if (!img.complete) img.addEventListener("load", onLoad, { once: true });
-    });
-
-    return () => {
-      cancelled = true;
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
-      window.clearTimeout(t3);
-      imgs.forEach((img) => img.removeEventListener("load", onLoad));
-    };
-  }, [location.hash, location.pathname]);
+  const [openScholarId, setOpenScholarId] = useState<string | null>(null);
 
   useGSAP(
     () => {
@@ -173,6 +102,7 @@ export function Programmes() {
               aria-selected={heroSlide === i}
               className={heroSlide === i ? "is-active" : undefined}
               onClick={() => setHeroSlide(i)}
+              aria-label={`Slide ${i + 1}`}
             />
           ))}
         </div>
@@ -193,33 +123,56 @@ export function Programmes() {
                 Place : {p.place}
               </p>
               <p>{p.blurb}</p>
-              <button type="button">Know more...</button>
+              <button type="button" className="programmes__card-button">KNOW MORE...</button>
             </article>
           ))}
         </div>
       </section>
 
       <section className="programmes__block fig-grid prog-reveal">
-        <h2 className="fig-label">Past WORKSHOPS</h2>
+        <h2 className="fig-label">PAST WORKSHOPS</h2>
         <ul className="programmes__completed fig-c4-12">
-          {PAST_WORKSHOPS.map((item) => (
-            <li key={item.title}>
-              <div>
-                <span className="programmes__past-title">{item.title}</span>
-                <span className="programmes__past-sub">Facilitators: {item.facilitators}</span>
-              </div>
-              <span>{item.year}</span>
+          {PAST_WORKSHOPS.slice(0, 2).map((item) => (
+            <li key={item.id}>
+              <Link to={`/programmes/past-workshops/${item.id}`}>
+                <div>
+                  <span className="programmes__past-title">{item.title}</span>
+                  <span className="programmes__past-sub">Facilitators: {item.facilitators}</span>
+                </div>
+                <span>{item.year}</span>
+              </Link>
             </li>
           ))}
         </ul>
-        <CtaLink
-          className="fig-cta-end programmes__more"
-          lines={["View", "MORE"]}
-          spacing={["0.26em", "0.135em"]}
-        />
+        <Link to="/programmes/past-workshops" className="fig-cta-end programmes__more">
+          <CtaLink
+            lines={["VIEW", "MORE"]}
+            spacing={["0.26em", "0.135em"]}
+          />
+        </Link>
       </section>
 
-      <ResidenciesBand slides={RESIDENCY_SLIDES} />
+      <section className="programmes__block fig-grid prog-reveal">
+        <Link to="/programmes/raza-scholarship" className="fig-c4-12 programmes__raza-heading">
+          <h2 className="programmes__raza-title">{`Raza - Students' Biennale Scholarship`}</h2>
+        </Link>
+        <div className="programmes__raza-cards fig-c4-12 fig-sub-2">
+          {RAZA_SCHOLARS.map((scholar) => (
+            <article key={scholar.id}>
+              <button
+                type="button"
+                className="programmes__scholar-link"
+                onClick={() => setOpenScholarId(scholar.id)}
+              >
+                <div className="programmes__card-media-wrap">
+                  <img src={scholar.image} alt={scholar.name} className="programmes__card-media" />
+                </div>
+                <h3>{scholar.name}</h3>
+              </button>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <div id="awards">
         {(
@@ -232,24 +185,32 @@ export function Programmes() {
             <h2 className="fig-label">{heading}</h2>
             <div className="programmes__awards fig-c4-12 fig-sub-3">
               {awards.map((a) => (
-                <article key={`${heading}-${a.name}`}>
+                <Link
+                  key={`${heading}-${a.name}`}
+                  className="programmes__award"
+                  to={`/editions/2025-26/artworks/${a.artworkId}`}
+                >
                   <div className="programmes__award-media">
                     <img src="/programmes/award.jpg" alt="" />
                   </div>
                   <h3>{a.name}</h3>
                   <p>Artwork : {a.artwork}</p>
                   <p>{a.institution}</p>
-                </article>
+                </Link>
               ))}
             </div>
             <CtaLink
               className="fig-cta-end programmes__more"
-              lines={["View", "MORE"]}
+              lines={["VIEW", "MORE"]}
               spacing={["0.26em", "0.135em"]}
             />
           </section>
         ))}
       </div>
+
+      <ResidenciesBand slides={RESIDENCY_SLIDES} />
+
+      <ScholarSpotlight scholarId={openScholarId} onClose={() => setOpenScholarId(null)} />
     </div>
   );
 }

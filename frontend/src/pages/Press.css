@@ -16,6 +16,7 @@
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
+  text-transform: uppercase;
 }
 
 .press__meta {

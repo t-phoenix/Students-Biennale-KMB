@@ -698,6 +698,60 @@ export const ARTWORKS: ArtworkCard[] = [
     dimensions: "Dimensions variable",
     image: "/artworks/labour-of-the-imagined.jpg",
   },
+  /* Tata Trusts award winners (Programmes page, Figma 1:1691/1:1692) who aren't
+     otherwise part of the 2025-26 exhibited catalogue — stub records so their
+     award card opens a real page, following the same placeholder pattern used
+     above for entries whose catalogue copy isn't finalised yet. */
+  {
+    id: "staged-narratives-aswathy",
+    title: "Staged Narratives",
+    venue: "Venue to be confirmed",
+    year: "2025 - 26",
+    description: "Catalogue text for this work is being finalised.",
+    artists: [{ name: "Aswathy GS", institution: "Raja Ravi Varma College of Fine Arts, Mavelikkara, Kerala" }],
+    materials: ["Details to follow"],
+    dimensions: "Dimensions variable",
+  },
+  {
+    id: "ginning-justice-kailash",
+    title: "Ginning Justice, 2025",
+    venue: "Venue to be confirmed",
+    year: "2025 - 26",
+    description: "Catalogue text for this work is being finalised.",
+    artists: [{ name: "Kailash Khanjode", institution: "Government College of Art, Nagpur, Maharashtra" }],
+    materials: ["Details to follow"],
+    dimensions: "Dimensions variable",
+  },
+  {
+    id: "ginning-justice-sachin",
+    title: "Ginning Justice, 2025",
+    venue: "Venue to be confirmed",
+    year: "2025 - 26",
+    description: "Catalogue text for this work is being finalised.",
+    artists: [{ name: "Sachin Banne", institution: "Sir J. J. School of Art, Mumbai, Maharashtra" }],
+    materials: ["Details to follow"],
+    dimensions: "Dimensions variable",
+  },
+  {
+    id: "mirage-of-the-three",
+    title: "Mirage of the Three, 2025",
+    venue: "Venue to be confirmed",
+    year: "2025 - 26",
+    description: "Catalogue text for this work is being finalised.",
+    artists: [{ name: "Abhishek Kholapudi", institution: "Suravaram Pratap Reddy Telugu University, Hyderabad" }],
+    materials: ["Details to follow"],
+    dimensions: "Dimensions variable",
+  },
+  {
+    id: "staged-narratives-imran",
+    title: "Staged Narratives",
+    venue: "Venue to be confirmed",
+    year: "2025 - 26",
+    description: "Catalogue text for this work is being finalised.",
+    artists: [{ name: "M. Imran Ahmed", institution: "Government College of Fine Arts, Chennai" }],
+    materials: ["Details to follow"],
+    dimensions: "Dimensions variable",
+  },
 ];
 
 /** Curator names for an artwork, via its curatorial zone. Empty when unassigned. */
@@ -930,30 +984,105 @@ Anga Art Collective leads workshops in the seven north-eastern states and Sikkim
   },
 ];
 
-export type PastWorkshop = { title: string; year: string; facilitators: string };
+export type PastWorkshop = {
+  id: string;
+  title: string;
+  year: string;
+  facilitators: string;
+  location?: string;
+  heroImage?: string;
+  description?: string;
+  galleryImages?: string[];
+};
 
-/** Completed workshops — Figma "Programmes page" 1:1648, Group 54/59/60/61. */
+/** Completed workshops — Figma "Programmes page" 1:1648, Group 54/59/60/61.
+ *  Order matches the page's 2-item preview (Programmes.tsx slices the first two)
+ *  to the exact rows shown in Figma 10:701; "jorahaal-forest" — the one entry with
+ *  full detail-page content from Figma 7:183 — is appended at the end rather than
+ *  disturbing that preview. */
 export const PAST_WORKSHOPS: PastWorkshop[] = [
-  { title: "How to not answer a phone call?", year: "2025", facilitators: "Merv Espina and Sukanya Deb, New Delhi" },
-  { title: "Subverting Failures", year: "2025", facilitators: "Ujjwal Utkarsh, Priyesh Gothwal and Savyasachi Anju Prabir, Jaipur" },
-  { title: "Uncertainties Welcomed", year: "2025", facilitators: "Aditya Joshi & Maksud Ali Mondal, Goa" },
-  { title: "Editing as Meaning Making", year: "2024", facilitators: "Urna Sinha & Varsha Nair, Baroda" },
+  { id: "phone-call", title: "How to not answer a phone call?", year: "2025", facilitators: "Merv Espina and Sukanya Deb, New Delhi" },
+  { id: "subverting-failures", title: "Subverting Failures", year: "2025", facilitators: "Ujjwal Utkarsh, Priyesh Gothwal and Savyasachi Anju Prabir, Jaipur" },
+  { id: "uncertainties-welcomed", title: "Uncertainties Welcomed", year: "2025", facilitators: "Aditya Joshi & Maksud Ali Mondal, Goa" },
+  { id: "editing-as-meaning-making", title: "Editing as Meaning Making", year: "2024", facilitators: "Urna Sinha & Varsha Nair, Baroda" },
+  {
+    id: "jorahaal-forest",
+    title: "Jorahaal, Forest as Pedagogue: a kNOw School Workshop",
+    year: "2025",
+    facilitators: "Jogen Das, Anga Art Collective",
+    location: "Bhalla, Assam, October 2025",
+    heroImage: "/programmes/workshop-detail-hero.jpg",
+    description:
+      "This workshop took place in Gyandeep Puthibharal, a community hall situated in Bhalla village near Rani Reserve Forest, Assam, with selected candidates from the Northeast Indian region for the Students' Biennale. The layered interactive relations of the forest and the paddy, rural and the intruding urbanity, human and non-human elements, and so on provided the context to generate pedagogical questions, methodologies, and their implications for art practices. Participants visited farmer and artist Jogen Das' home-studio, who also guided a walking session across his paddy field and the adjacent Sal Kathoni, the Sal forest. Das guided our attention to the regenerative agency of the forest, where small shrubs and plants, both local and invasive, come together, contradicting the logic of monoculture. Students were encouraged to take photographs, write field notes, draw sketches, record sounds, and collect objects. The workshop screened The Full Moon, a two-channel experimental animated video created by collective member Dhrubajit Sarma, and read two texts, In Praise of Floods by James C Scott and The Mushroom at the End of the World by Anna Lowenhaupt Tsing. The conceptual and historical framings of Zomia, capitalist ruins, and contamination as collaboration were introduced, advancing the workshops' thematic concerns. Two participants—Tokpam Henthoiba and Laishram Niketan—held a musical recitation session with the Manipuri musical instrument, Pena.",
+    galleryImages: [
+      "/programmes/workshop-gallery-1.jpg",
+      "/programmes/workshop-gallery-2.jpg",
+      "/programmes/workshop-gallery-3.jpg",
+      "/programmes/workshop-gallery-4.jpg",
+      "/programmes/workshop-gallery-5.jpg",
+      "/programmes/workshop-gallery-6.jpg",
+      "/programmes/workshop-gallery-7.jpg",
+      "/programmes/workshop-gallery-8.jpg",
+    ],
+  },
 ];
 
-export type AwardWinner = { name: string; artwork: string; institution: string };
+/** Raza - Students' Biennale Scholarship — the two Beaux-Arts de Marseille exchange
+ *  artists (Figma 7:321, 10:1193, 10:1397). Shared by Programmes.tsx and
+ *  RazaScholarship.tsx so the list only exists in one place. */
+export const RAZA_SCHOLARS: { id: string; name: string; image: string }[] = [
+  { id: "kaki-weiss", name: "Kaki Weiss", image: "/programmes/raza-kaki-weiss.jpg" },
+  { id: "nina-durel", name: "Nina Durel", image: "/programmes/raza-nina-durel.jpg" },
+];
+
+/* Figma 10:1193 (Kaki) / 10:1397 (Nina) — both "Artwork Page" frames whose real
+   content isn't finalised yet, so the design itself is Lorem Ipsum. Preserved
+   verbatim (including Kaki's venue being unset in Figma, unlike Nina's "VKL
+   Warehouse", and the description paragraph repeating twice) since matching
+   the two frames exactly was the explicit ask. Shaped as full ArtworkCard
+   records — not a bespoke subset — so the scholar spotlight can render them
+   through the exact same ArtworkDetailBody used by the real artwork pages,
+   rather than a hand-rolled layout that drifts from Figma over time. */
+const RAZA_LOREM =
+  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets. It has survived not only many decades, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised thanks to these sheets and more recently with desktop publishing software like Aldus PageMaker and Microsoft Word including versions of Lorem Ipsum.";
+
+export const RAZA_SCHOLAR_ARTWORKS: ArtworkCard[] = [
+  {
+    id: "kaki-weiss",
+    title: "Lorem Ipsum",
+    venue: "Lorem Ipsum",
+    year: "2025 - 26",
+    description: `${RAZA_LOREM}\n\n${RAZA_LOREM}`,
+    artists: [{ name: "Kaki Weiss", institution: "National Institute of Design, Ahmedabad" }],
+    materials: ["Lorem Ipsum | Variable", "Lorem Ipsum | Variable", "Lorem Ipsum | Variable"],
+    dimensions: "Variable",
+  },
+  {
+    id: "nina-durel",
+    title: "Lorem Ipsum",
+    venue: "VKL Warehouse",
+    year: "2025 - 26",
+    description: `${RAZA_LOREM}\n\n${RAZA_LOREM}`,
+    artists: [{ name: "Nina Durel", institution: "National Institute of Design, Ahmedabad" }],
+    materials: ["Lorem Ipsum | Variable", "Lorem Ipsum | Variable", "Lorem Ipsum | Variable"],
+    dimensions: "Variable",
+  },
+];
+
+export type AwardWinner = { name: string; artwork: string; institution: string; artworkId: string };
 
 /** International Awards — Figma 1:1691 / Group 269-271. */
 export const AWARDS_INTERNATIONAL: AwardWinner[] = [
-  { name: "Aswathy GS", artwork: "Staged Narratives", institution: "Raja Ravi Varma College of Fine Arts, Mavelikkara, Kerala" },
-  { name: "Kailash Khanjode", artwork: "Ginning Justice, 2025", institution: "Government College of Art, Nagpur, Maharashtra" },
-  { name: "Sachin Banne", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra" },
+  { name: "Aswathy GS", artwork: "Staged Narratives", institution: "Raja Ravi Varma College of Fine Arts, Mavelikkara, Kerala", artworkId: "staged-narratives-aswathy" },
+  { name: "Kailash Khanjode", artwork: "Ginning Justice, 2025", institution: "Government College of Art, Nagpur, Maharashtra", artworkId: "ginning-justice-kailash" },
+  { name: "Sachin Banne", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "ginning-justice-sachin" },
 ];
 
 /** National Awards — Figma 1:1692 / Group 276. */
 export const AWARDS_NATIONAL: AwardWinner[] = [
-  { name: "Abhishek Kholapudi", artwork: "Mirage of the Three, 2025", institution: "Suravaram Pratap Reddy Telugu University, Hyderabad" },
-  { name: "Pratik Khurkutiya", artwork: "The quiet beneath the rubble", institution: "The Maharaja Sayajirao University of Baroda" },
-  { name: "M. Imran Ahmed", artwork: "Staged Narratives", institution: "Government College of Fine Arts, Chennai" },
+  { name: "Abhishek Kholapudi", artwork: "Mirage of the Three, 2025", institution: "Suravaram Pratap Reddy Telugu University, Hyderabad", artworkId: "mirage-of-the-three" },
+  { name: "Pratik Khurkutiya", artwork: "The quiet beneath the rubble", institution: "The Maharaja Sayajirao University of Baroda", artworkId: "rubble" },
+  { name: "M. Imran Ahmed", artwork: "Staged Narratives", institution: "Government College of Fine Arts, Chennai", artworkId: "staged-narratives-imran" },
 ];
 
 export type ProgrammeCard = {

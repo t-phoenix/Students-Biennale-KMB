@@ -86,7 +86,8 @@
   margin: 8px 0 0;
   font-size: var(--type-subtitle-size);
   font-weight: 500;
-  text-transform: lowercase;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .programmes__meta {
@@ -101,7 +102,7 @@
   line-height: var(--type-body-line);
 }
 
-.programmes__cards button {
+.programmes__card-button {
   border: 0;
   background: transparent;
   padding: 0;
@@ -111,6 +112,8 @@
   width: fit-content;
   font: inherit;
   cursor: pointer;
+  font-style: italic;
+  text-transform: lowercase;
 }
 
 .programmes__completed {
@@ -120,12 +123,22 @@
 }
 
 .programmes__completed li {
+  border-top: 1px solid var(--color-neutral-gray-light);
+  font-size: var(--type-subtitle-size);
+}
+
+.programmes__completed a {
   display: flex;
   justify-content: space-between;
   gap: 24px;
   padding: 18px 0;
-  border-top: 1px solid var(--color-neutral-gray-light);
-  font-size: var(--type-subtitle-size);
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.programmes__completed a:hover {
+  opacity: 0.65;
 }
 
 .programmes__past-title {
@@ -169,12 +182,95 @@
   margin: 0 0 8px;
   font-size: var(--type-body-size);
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .programmes__awards p {
   margin: 0;
   font-size: var(--type-caption-size);
   color: var(--color-text-secondary);
+}
+
+.programmes__award {
+  display: block;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.programmes__award:hover {
+  opacity: 0.7;
+}
+
+/* Raza heading is the one label in this page that is NOT in the col 1-3 rail —
+   Figma (10:810) sets it at left calc(25%+26px) w-575, i.e. starting at col 4 and
+   running left-aligned across the content columns, because "Raza - Students'
+   Biennale Scholarship" is too long for the narrow rail without breaking into a
+   ladder of single words. */
+.programmes__raza-heading {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.programmes__raza-title {
+  margin: 0;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
+  color: var(--color-text-primary);
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.programmes__raza-heading:hover .programmes__raza-title {
+  opacity: 0.7;
+}
+
+.programmes__raza-cards {
+  row-gap: 24px;
+  margin-top: 24px;
+}
+
+.programmes__raza-cards article {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.programmes__scholar-link {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.programmes__scholar-link:hover {
+  opacity: 0.7;
+}
+
+.programmes__raza-cards h3 {
+  margin: 8px 0 0;
+  font-size: var(--type-subtitle-size);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 @media (max-width: 899px) {
