@@ -3,10 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
-import { artworkImages, venueImages } from "../data/site";
+import { venueImages } from "../data/site";
 import {
   artworksForZoneIn,
-  curatorsForArtworkIn,
   findCard,
   useEditionCatalogue,
 } from "../lib/catalogue";
