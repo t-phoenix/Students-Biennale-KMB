@@ -127,8 +127,8 @@
   color: var(--color-text-primary);
 }
 
-.residencies-band__more:hover {
-  opacity: 0.7;
+.residencies-band__card .residencies-band__more + .residencies-band__more {
+  margin-top: 10px;
 }
 
 @media (max-width: 899px) {

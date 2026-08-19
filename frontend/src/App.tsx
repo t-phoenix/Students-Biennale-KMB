@@ -17,6 +17,7 @@ import { PastWorkshopDetail } from "./pages/PastWorkshopDetail";
 import { RazaScholarship } from "./pages/RazaScholarship";
 import { Residencies } from "./pages/Residencies";
 import { Press } from "./pages/Press";
+import { Admin } from "./pages/admin/Admin";
 import { CatalogueProvider } from "./lib/catalogue";
 import { EDITIONS_PATH, LATEST_EDITION } from "./data/site";
 
@@ -25,6 +26,7 @@ export default function App() {
     <CatalogueProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="admin/*" element={<Admin />} />
           <Route element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="artworks" element={<DiscoverArtworks />} />

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
@@ -11,28 +11,59 @@ import {
 } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
+import { useProgrammes } from "../lib/programmes";
+import { supabase } from "../lib/supabase";
 import "./Home.css";
 
-const UPDATES = [
+const FALLBACK_UPDATES = [
   {
     id: "u1",
-    edition: "2027–28",
     label: "Update 01",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
   {
     id: "u2",
-    edition: "2027–28",
     label: "Update 02",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
   {
     id: "u3",
-    edition: "2027–28",
     label: "Update 03",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
   },
 ] as const;
+
+function useHomeCovers() {
+  const [covers, setCovers] = useState<{ id: string; image_url: string; heading: string | null; body: string | null }[]>([]);
+  useEffect(() => {
+    if (!supabase) return;
+    supabase
+      .from("home_covers")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order")
+      .then(({ data }) => {
+        if (data?.length) setCovers(data);
+      });
+  }, []);
+  return covers;
+}
+
+function useUpdateCards() {
+  const [cards, setCards] = useState<{ id: string; slot: number; heading: string; body: string; image_url: string | null; card_type: string }[]>([]);
+  useEffect(() => {
+    if (!supabase) return;
+    supabase
+      .from("update_cards")
+      .select("*")
+      .eq("active", true)
+      .order("slot")
+      .then(({ data }) => {
+        if (data?.length) setCards(data);
+      });
+  }, []);
+  return cards;
+}
 
 /** Continuous auto-scroll strip, right→left, in the Sensing Grounds row. */
 const SENSING_STRIP_IMAGES = [
@@ -65,6 +96,42 @@ export function Home() {
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
   const { current } = useCatalogue();
+  const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
+    useProgrammes();
+  const dynamicCovers = useHomeCovers();
+  const dynamicCards = useUpdateCards();
+  const covers = dynamicCovers.length
+    ? dynamicCovers
+    : Array.from({ length: 5 }, (_, i) => ({
+        id: `fallback-${i}`,
+        image_url: "/home/hero.jpg",
+        heading: "Artwork Name",
+        body: "Artist · Institution",
+      }));
+  const cards = dynamicCards.length
+    ? dynamicCards.map((c) => ({ id: c.id, label: c.heading, body: c.body }))
+    : [...FALLBACK_UPDATES];
+  const currentCover = covers[slide] ?? covers[0];
+  const creditHeading = (currentCover?.heading || "Artwork Name").trim();
+  const creditParts = creditHeading.split(/\s+/);
+  const creditArtwork =
+    creditParts.length === 2 ? (
+      <>
+        {creditParts[0]}
+        <br />
+        {creditParts[1]}
+      </>
+    ) : (
+      creditHeading
+    );
+  const [creditArtist, creditInst] = (currentCover?.body || "Artist · Institution")
+    .split(/\s*[·|]\s*|\n/)
+    .map((part) => part.trim());
+  const workshopThumb =
+    upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "/home/thumb-workshops.jpg";
+  const residencyThumb = residencies[0]?.heroImage || "/home/thumb-residencies.jpg";
+  const awardsThumb =
+    awardsInternational[0]?.image || awardsNational[0]?.image || "/home/thumb-awards.jpg";
   const yearId = current?.years ?? LATEST_EDITION.id;
   const overviewParas = (current?.overview || `${EDITION_SHORT}\n\n${EDITION_MORE}`)
     .split("\n\n")
@@ -189,7 +256,7 @@ export function Home() {
 
       return () => cleanupHero?.();
     },
-    { scope: rootRef }
+    { scope: rootRef, dependencies: [dynamicCovers.length, dynamicCards.length] }
   );
 
   return (
@@ -197,12 +264,12 @@ export function Home() {
       {/* Hero — full viewport width; overlays on 12-col (60 / 20) */}
       <section className="home-hero" aria-label="Hero">
         <div className="home-hero__slides" aria-hidden>
-          {[0, 1, 2, 3, 4].map((i) => (
+          {covers.map((c) => (
             <img
-              key={i}
+              key={c.id}
               className="home-hero__slide home-hero__bg"
-              src="/home/hero.jpg"
-              alt=""
+              src={c.image_url}
+              alt={c.heading ?? ""}
             />
           ))}
         </div>
@@ -216,11 +283,11 @@ export function Home() {
             tabIndex={0}
             aria-label="Edition updates. Hover or focus to expand."
           >
-            {UPDATES.map((item, i) => (
+            {cards.map((item, i, arr) => (
               <article
                 key={item.id}
                 className="home-hero__card"
-                style={{ zIndex: UPDATES.length - i }}
+                style={{ zIndex: arr.length - i }}
                 data-offset={i}
               >
                 <div className="home-hero__card-inner">
@@ -233,18 +300,14 @@ export function Home() {
 
           <div className="home-hero__meta">
             <div className="home-hero__credit">
-              <p className="home-hero__artwork">
-                Artwork
-                <br />
-                Name
-              </p>
-              <p className="home-hero__artist">Artist</p>
-              <p className="home-hero__inst">Institution</p>
+              <p className="home-hero__artwork">{creditArtwork}</p>
+              <p className="home-hero__artist">{creditArtist || "Artist"}</p>
+              <p className="home-hero__inst">{creditInst || "Institution"}</p>
             </div>
             <div className="home-hero__dots" role="tablist" aria-label="Hero slides">
-              {[0, 1, 2, 3, 4].map((i) => (
+              {covers.map((cover, i) => (
                 <button
-                  key={i}
+                  key={cover.id}
                   type="button"
                   role="tab"
                   aria-selected={slide === i}
@@ -385,13 +448,13 @@ export function Home() {
           </div>
           <div className="home-programmes__thumbs fig-c4-12 fig-sub-3">
             <Link to="/programmes#workshops">
-              <img src="/home/thumb-workshops.jpg" alt="" />
+              <img src={workshopThumb} alt="" />
             </Link>
             <Link to="/programmes#residencies">
-              <img src="/home/thumb-residencies.jpg" alt="" />
+              <img src={residencyThumb} alt="" />
             </Link>
             <Link to="/programmes#awards">
-              <img src="/home/thumb-awards.jpg" alt="" />
+              <img src={awardsThumb} alt="" />
             </Link>
           </div>
         </div>

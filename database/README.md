@@ -27,7 +27,8 @@ database/
         ├── 20260813074904_search_rpc.sql
         ├── 20260813074905_storage_buckets.sql
         ├── 20260815135642_restrict_cms_writes_and_import_idempotency.sql
-        └── 20260817183430_catalogue_snapshots.sql
+        ├── 20260817183430_catalogue_snapshots.sql
+        └── 20260819150000_home_cms_tables.sql
 ```
 
 | Bucket | Public | Use |

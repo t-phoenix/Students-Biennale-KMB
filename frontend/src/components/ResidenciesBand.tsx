@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import "./ResidenciesBand.css";
@@ -29,7 +29,8 @@ type Props = {
 export function ResidenciesBand({ slides }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLImageElement>(null);
-  const slide = slides[0];
+  const [index, setIndex] = useState(0);
+  const slide = slides[index] ?? slides[0];
 
   useGSAP(
     () => {
@@ -55,6 +56,9 @@ export function ResidenciesBand({ slides }: Props) {
   );
 
   if (!slide) return null;
+
+  const hasNext = slides.length > 1;
+  const goNext = () => setIndex((current) => (current + 1) % slides.length);
 
   return (
     <section
@@ -94,6 +98,11 @@ export function ResidenciesBand({ slides }: Props) {
           <Link to={slide.moreHref} className="residencies-band__more">
             Learn more...
           </Link>
+          {hasNext ? (
+            <button type="button" className="residencies-band__more" onClick={goNext}>
+              Next
+            </button>
+          ) : null}
         </div>
       </div>
     </section>

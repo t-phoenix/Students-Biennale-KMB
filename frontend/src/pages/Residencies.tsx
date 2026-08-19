@@ -32,7 +32,7 @@ export function Residencies() {
         const gallery = residency.galleryImages;
         const lightboxOpen = activeId === residency.id ? lightboxIndex : null;
         return (
-          <section key={residency.id}>
+          <section key={residency.id} id={residency.slug}>
             <div className="residencies__hero residency-reveal">
               <img src={residency.heroImage} alt="" className="residencies__hero-img" />
             </div>

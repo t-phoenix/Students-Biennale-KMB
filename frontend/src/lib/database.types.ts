@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.15"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -464,6 +469,39 @@ export type Database = {
         }
         Relationships: []
       }
+      home_covers: {
+        Row: {
+          active: boolean
+          body: string | null
+          created_at: string
+          heading: string | null
+          id: string
+          image_url: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          heading?: string | null
+          id?: string
+          image_url: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          heading?: string | null
+          id?: string
+          image_url?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       import_sources: {
         Row: {
           entity_id: string | null
@@ -854,6 +892,42 @@ export type Database = {
           },
         ]
       }
+      update_cards: {
+        Row: {
+          active: boolean
+          body: string
+          card_type: string
+          created_at: string
+          heading: string
+          id: string
+          image_url: string | null
+          slot: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          card_type?: string
+          created_at?: string
+          heading: string
+          id?: string
+          image_url?: string | null
+          slot: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          card_type?: string
+          created_at?: string
+          heading?: string
+          id?: string
+          image_url?: string | null
+          slot?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       venues: {
         Row: {
           history: string | null
@@ -1198,4 +1272,3 @@ export const Constants = {
     },
   },
 } as const
-

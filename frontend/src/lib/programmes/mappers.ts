@@ -158,6 +158,17 @@ export function parseAwardees(body: string | null): { name: string; artwork: str
   return winners;
 }
 
+export function serializeAwardees(
+  heading: string,
+  winners: { name: string; artwork: string; institution: string }[],
+): string {
+  const lines = winners.map((winner) => {
+    const core = `- ${winner.name} — ${winner.artwork}`;
+    return winner.institution ? `${core} (${winner.institution})` : core;
+  });
+  return `${heading}\n\n${lines.join("\n")}`;
+}
+
 function levenshtein(a: string, b: string): number {
   if (a === b) return 0;
   const rows = a.length + 1;
@@ -332,7 +343,7 @@ function mapResidency(row: ProgrammeRow, assets: ProgrammeAsset[]): ResidencyPro
     description: meta.description,
     heroImage: cover || "/programmes/residency-1.jpg",
     galleryImages: gallery.length ? gallery : RESIDENCY_GALLERY,
-    moreHref: "/programmes/residencies",
+    moreHref: `/programmes/residencies#${row.slug}`,
   };
 }
 

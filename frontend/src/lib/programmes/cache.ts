@@ -3,7 +3,7 @@ import { FALLBACK_PROGRAMMES } from "./fallbacks";
 import { mapProgrammes } from "./mappers";
 import type { MappedProgrammes, ProgrammeAsset, ProgrammeRow } from "./types";
 
-const STORAGE_KEY = "sb-programmes-v1";
+const STORAGE_KEY = "sb-programmes-v2";
 const PROGRAMME_SELECT =
   "id, subtype, state, title, slug, summary, body, dates, place, sort_order, published, programme_facilitators(display_name, sort_order)";
 
@@ -42,20 +42,32 @@ async function fetchAssets(): Promise<ProgrammeAsset[]> {
   if (!supabase) return [];
   const { data, error } = await supabase
     .from("asset_links")
-    .select("entity_id, role, assets(public_url, variant, sort_order, status)")
+    .select("entity_id, role, assets(public_url, storage_path, variant, sort_order, status)")
     .eq("entity_type", "programme");
   if (error) return [];
 
   const out: ProgrammeAsset[] = [];
   for (const link of data ?? []) {
-    const asset = (link as { assets?: { public_url: string | null; variant: string; sort_order: number; status: string } | null })
-      .assets;
-    if (!asset?.public_url || asset.status !== "ready") continue;
-    if (asset.variant === "original") continue;
+    const asset = (link as {
+      assets?: {
+        public_url: string | null;
+        storage_path: string | null;
+        variant: string;
+        sort_order: number;
+        status: string;
+      } | null;
+    }).assets;
+    if (!asset || asset.status === "failed") continue;
+    const url =
+      asset.public_url ||
+      (asset.storage_path?.startsWith("http") || asset.storage_path?.startsWith("/")
+        ? asset.storage_path
+        : null);
+    if (!url) continue;
     out.push({
       entityId: (link as { entity_id: string }).entity_id,
       role: (link as { role: string }).role,
-      url: asset.public_url,
+      url,
       sortOrder: asset.sort_order ?? 0,
     });
   }
