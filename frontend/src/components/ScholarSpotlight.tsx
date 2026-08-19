@@ -4,13 +4,34 @@ import { gsap, prefersReducedMotion } from "../lib/motion";
 import { useModalPortal } from "../lib/useModalPortal";
 import { ArtworkDetailBody } from "./ArtworkDetailBody";
 import { CtaLink } from "./CtaLink";
-import { RAZA_SCHOLARS, RAZA_SCHOLAR_ARTWORKS } from "../data/site";
+import type { ArtworkCard } from "../data/site";
+import { RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../lib/programmes/fallbacks";
+import type { RazaScholar } from "../lib/programmes/types";
 import "./ScholarSpotlight.css";
 
 type Props = {
   scholarId: string | null;
+  scholars?: RazaScholar[];
   onClose: () => void;
 };
+
+const RAZA_LOREM =
+  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets. It has survived not only many decades, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised thanks to these sheets and more recently with desktop publishing software like Aldus PageMaker and Microsoft Word including versions of Lorem Ipsum.";
+
+function placeholderArtwork(scholar: RazaScholar): ArtworkCard {
+  const known = RAZA_SCHOLAR_ARTWORKS.find((artwork) => artwork.id === scholar.id);
+  if (known) return { ...known, artists: [{ name: scholar.name, institution: known.artists[0]?.institution ?? "" }] };
+  return {
+    id: scholar.id,
+    title: "Lorem Ipsum",
+    venue: "Lorem Ipsum",
+    year: "2025 - 26",
+    description: `${RAZA_LOREM}\n\n${RAZA_LOREM}`,
+    artists: [{ name: scholar.name, institution: "" }],
+    materials: ["Lorem Ipsum | Variable", "Lorem Ipsum | Variable", "Lorem Ipsum | Variable"],
+    dimensions: "Variable",
+  };
+}
 
 /** Raza scholar detail, shown as a spotlight rather than a routed page —
  *  full Figma 10:1193 (Kaki) / 10:1397 (Nina) content (hero, venue,
@@ -18,7 +39,7 @@ type Props = {
  *  ArtworkDetailBody the real artwork pages use, not a stripped-down
  *  substitute. NEXT swaps which scholar is shown in place, since there's no
  *  route to navigate to. */
-export function ScholarSpotlight({ scholarId, onClose }: Props) {
+export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [activeId, setActiveId] = useState(scholarId);
@@ -46,10 +67,10 @@ export function ScholarSpotlight({ scholarId, onClose }: Props) {
 
   if (!open || typeof document === "undefined") return null;
 
-  const idx = RAZA_SCHOLARS.findIndex((s) => s.id === activeId);
-  const scholar = idx >= 0 ? RAZA_SCHOLARS[idx] : undefined;
-  const artwork = scholar ? RAZA_SCHOLAR_ARTWORKS.find((a) => a.id === scholar.id) : undefined;
-  const next = scholar ? RAZA_SCHOLARS[(idx + 1) % RAZA_SCHOLARS.length] : undefined;
+  const idx = scholars.findIndex((s) => s.id === activeId);
+  const scholar = idx >= 0 ? scholars[idx] : undefined;
+  const artwork = scholar ? placeholderArtwork(scholar) : undefined;
+  const next = scholar && scholars.length > 1 ? scholars[(idx + 1) % scholars.length] : undefined;
 
   if (!scholar || !artwork) return null;
 

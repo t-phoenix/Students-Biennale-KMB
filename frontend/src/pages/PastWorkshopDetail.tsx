@@ -3,17 +3,14 @@ import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { GalleryLightbox } from "../components/GalleryLightbox";
-import { PAST_WORKSHOPS } from "../data/site";
+import { usePastWorkshop } from "../lib/programmes";
 import "./PastWorkshopDetail.css";
 
 export function PastWorkshopDetail() {
   const { id = "" } = useParams();
   const root = useRef<HTMLDivElement>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-
-  const idx = PAST_WORKSHOPS.findIndex((w) => w.id === id);
-  const workshop = idx >= 0 ? PAST_WORKSHOPS[idx] : undefined;
-  const next = workshop ? PAST_WORKSHOPS[(idx + 1) % PAST_WORKSHOPS.length] : undefined;
+  const { workshop, next, status } = usePastWorkshop(id);
 
   useGSAP(
     () => {
@@ -27,7 +24,7 @@ export function PastWorkshopDetail() {
         clearProps: "opacity,visibility,transform",
       });
     },
-    { scope: root, dependencies: [id] }
+    { scope: root, dependencies: [id, workshop?.id] }
   );
 
   if (!workshop) {
@@ -37,13 +34,17 @@ export function PastWorkshopDetail() {
           <Link className="fig-c1-3" to="/programmes/past-workshops">
             BACK
           </Link>
-          <p className="fig-c4-12">Workshop not found</p>
+          <p className="fig-c4-12">{status === "loading" ? "Loading…" : "Workshop not found"}</p>
         </div>
       </div>
     );
   }
 
   const gallery = workshop.galleryImages ?? [];
+  const descriptionParas = (workshop.description ?? "")
+    .split(/\n\s*\n/)
+    .map((part) => part.trim())
+    .filter(Boolean);
 
   return (
     <div ref={root} className="past-workshop-detail" key={workshop.id}>
@@ -69,9 +70,11 @@ export function PastWorkshopDetail() {
 
       <div className="fig-grid past-workshop-detail__section workshop-reveal">
         <div className="fig-c4-9">
-          {workshop.description ? (
+          {descriptionParas.length ? (
             <div className="past-workshop-detail__description">
-              <p>{workshop.description}</p>
+              {descriptionParas.map((paragraph) => (
+                <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+              ))}
             </div>
           ) : (
             <p className="past-workshop-detail__placeholder">

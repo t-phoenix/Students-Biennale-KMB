@@ -786,18 +786,28 @@ export function artworksForZone(zoneId: string): ArtworkCard[] {
   return ARTWORKS.filter((a) => a.zoneId === zoneId);
 }
 
+function uniqueMedia(...values: Array<string | string[] | null | undefined>): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const list = Array.isArray(value) ? value : value ? [value] : [];
+    for (const url of list) {
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      out.push(url);
+    }
+  }
+  return out;
+}
+
 /** Hero / carousel frames for an artwork detail page. */
 export function artworkImages(artwork: ArtworkCard): string[] {
-  if (artwork.images?.length) return artwork.images;
-  if (artwork.image) return [artwork.image];
-  return [];
+  return uniqueMedia(artwork.images, artwork.image);
 }
 
 /** Hero / carousel frames for a venue detail page. */
 export function venueImages(venue: VenueCard): string[] {
-  if (venue.images?.length) return venue.images;
-  if (venue.image) return [venue.image];
-  return [];
+  return uniqueMedia(venue.images, venue.image);
 }
 
 export type VenueCard = {

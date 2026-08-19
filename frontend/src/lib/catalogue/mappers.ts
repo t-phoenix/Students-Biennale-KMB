@@ -81,6 +81,20 @@ function localCuratorImage(
   return {};
 }
 
+function uniqueUrls(...values: Array<string | string[] | null | undefined>): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const list = Array.isArray(value) ? value : value ? [value] : [];
+    for (const url of list) {
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      out.push(url);
+    }
+  }
+  return out;
+}
+
 function localArtworkByTitle(title: string): ArtworkCard | undefined {
   const needle = title.trim().toLowerCase();
   return ARTWORKS.find(
@@ -145,10 +159,8 @@ function mapArtwork(
     .find((z) => z.id === artwork.zone_id)
     ?.curators.map((c) => c.name)
     .join(" ");
-  const image = artwork.cover_url || local?.image;
-  const images = artwork.gallery_urls?.length
-    ? artwork.gallery_urls
-    : local?.images;
+  const images = uniqueUrls(artwork.cover_url, artwork.gallery_urls, local?.image, local?.images);
+  const image = images[0];
   return {
     id: artwork.id,
     slug: artwork.slug,
@@ -191,14 +203,21 @@ function mapVenue(venue: SnapshotVenue, index: SearchIndexEntry[]): VenueCard {
   const staticVenue = VENUES.find(
     (row) => row.name.toLowerCase() === venue.name.toLowerCase() || (key && row.id === key),
   );
-  const images = venue.gallery_urls?.length ? venue.gallery_urls : local?.images ?? staticVenue?.images;
+  const images = uniqueUrls(
+    venue.cover_url,
+    venue.gallery_urls,
+    local?.image,
+    local?.images,
+    staticVenue?.image,
+    staticVenue?.images,
+  );
   return {
     id: venue.id,
     name: venue.name,
     address: local?.address || staticVenue?.address || "",
     hours: staticVenue?.hours || "Open during exhibition hours",
     description: venue.history || staticVenue?.description || "",
-    image: venue.cover_url || local?.image || staticVenue?.image,
+    image: images[0],
     images,
     mapUrl: venue.map_url || staticVenue?.mapUrl,
     tourUrl: venue.virtual_tour_url || staticVenue?.tourUrl,

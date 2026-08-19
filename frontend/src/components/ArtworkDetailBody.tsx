@@ -13,11 +13,12 @@ type Props = {
 export function ArtworkDetailBody({ artwork: a }: Props) {
   const [heroIndex, setHeroIndex] = useState(0);
 
+  const slides = artworkImages(a);
+
   useEffect(() => {
     setHeroIndex(0);
-  }, [a.id]);
+  }, [a.id, slides.length]);
 
-  const slides = artworkImages(a);
   const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
   const curated = curatorsForArtwork(a);
 
@@ -25,17 +26,18 @@ export function ArtworkDetailBody({ artwork: a }: Props) {
     <div key={a.id}>
       <div className="detail__hero detail-reveal">
         {slide ? (
-          <img src={slide} alt="" className="detail__hero-img" />
+          <img key={slide} src={slide} alt="" className="detail__hero-img" />
         ) : (
           <div className="detail__hero-fallback" aria-hidden />
         )}
         {slides.length > 1 ? (
           <div className="detail__hero-dots" role="tablist" aria-label="Artwork images">
-            {slides.map((_, i) => (
+            {slides.map((url, i) => (
               <button
-                key={i}
+                key={url}
                 type="button"
                 role="tab"
+                aria-label={`Image ${i + 1} of ${slides.length}`}
                 aria-selected={i === heroIndex}
                 className={i === heroIndex ? "is-active" : undefined}
                 onClick={() => setHeroIndex(i)}
