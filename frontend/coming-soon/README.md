@@ -14,8 +14,7 @@ Static full-bleed looping video for the public domain. Deployed as a **separate 
 
 - **Root Directory:** `frontend/coming-soon`
 - **Framework:** Other
-- **Build Command:** _(empty)_
-- **Output Directory:** `.`
+- **Install / Build / Output:** leave dashboard **Override** off so [`vercel.json`](vercel.json) applies (skip install/build, output `.`). If Override is on with the monorepo `npm install --prefix frontend` command, the build fails looking for `frontend/coming-soon/frontend/package.json` — turn Override off or clear those fields.
 - **Production Branch:** `main`
 - Attach the **public custom domain only** to this project (not the full-site project) until launch
 

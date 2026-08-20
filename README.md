@@ -109,7 +109,7 @@ Sign out/in so the JWT refreshes. The CMS client is still the anon key plus that
 Static site in [`frontend/coming-soon/`](frontend/coming-soon/) (looping video, no Vite build).
 
 1. In Vercel: **Add New Project** → same GitHub repo → set **Root Directory** to `frontend/coming-soon`
-2. Framework Preset: **Other** · Build Command: leave empty · Output Directory: `.` (or leave default for static)
+2. Framework Preset: **Other**. In Build & Development Settings, leave **Override** off so [`frontend/coming-soon/vercel.json`](frontend/coming-soon/vercel.json) skips install/build (do not reuse the monorepo `npm install --prefix frontend` command)
 3. Deploy from `main`. Confirm `https://<coming-soon-project>.vercel.app` shows the full-bleed looping video
 4. Settings → **Domains** → add your apex (and `www` if needed). Vercel shows the exact DNS records
 5. At your DNS registrar, add what Vercel lists (typical: apex **A** → `76.76.21.21`; `www` **CNAME** → `cname.vercel-dns.com`)

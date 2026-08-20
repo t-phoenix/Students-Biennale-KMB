@@ -1,4 +1,8 @@
 {
+  "framework": null,
+  "installCommand": "echo 'No install (static coming-soon)'",
+  "buildCommand": "echo 'No build (static coming-soon)'",
+  "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
