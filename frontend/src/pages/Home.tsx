@@ -193,6 +193,35 @@ export function Home() {
     { scope: rootRef }
   );
 
+  // Section reveals must not re-run when CMS covers/cards arrive. A second
+  // gsap.from() mid-tween records the current (low) opacity as the destination,
+  // which leaves the page washed out.
+  useGSAP(
+    () => {
+      withMotionPreference({
+        animate: () => {
+          gsap.utils.toArray<HTMLElement>(".home-section").forEach((section) => {
+            gsap.fromTo(
+              section,
+              { autoAlpha: 0, y: 36 },
+              {
+                autoAlpha: 1,
+                y: 0,
+                duration: 0.65,
+                ease: "power2.out",
+                scrollTrigger: { trigger: section, start: "top 82%", once: true },
+              }
+            );
+          });
+        },
+        onReduce: () => {
+          gsap.set(".home-section", { autoAlpha: 1, y: 0 });
+        },
+      });
+    },
+    { scope: rootRef }
+  );
+
   useGSAP(
     () => {
       const root = rootRef.current;
@@ -202,13 +231,17 @@ export function Home() {
 
       withMotionPreference({
         animate: () => {
-          gsap.from(".home-hero__card", {
-            autoAlpha: 0,
-            stagger: 0.08,
-            duration: 0.45,
-            ease: "power2.out",
-            clearProps: "transform",
-          });
+          gsap.fromTo(
+            ".home-hero__card",
+            { autoAlpha: 0 },
+            {
+              autoAlpha: 1,
+              stagger: 0.08,
+              duration: 0.45,
+              ease: "power2.out",
+              overwrite: true,
+            }
+          );
 
           const slides = gsap.utils.toArray<HTMLElement>(".home-hero__slide");
           if (slides.length) {
@@ -236,19 +269,9 @@ export function Home() {
               hero?.removeEventListener("focusout", play);
             };
           }
-
-          gsap.utils.toArray<HTMLElement>(".home-section").forEach((section) => {
-            gsap.from(section, {
-              autoAlpha: 0,
-              y: 36,
-              duration: 0.65,
-              ease: "power2.out",
-              scrollTrigger: { trigger: section, start: "top 82%", once: true },
-            });
-          });
         },
         onReduce: () => {
-          gsap.set(".home-hero__card, .home-section", { autoAlpha: 1, y: 0 });
+          gsap.set(".home-hero__card", { autoAlpha: 1 });
           gsap.set(".home-hero__slide", { autoAlpha: 0 });
           gsap.set(".home-hero__slide:first-child", { autoAlpha: 1 });
         },
@@ -256,7 +279,11 @@ export function Home() {
 
       return () => cleanupHero?.();
     },
-    { scope: rootRef, dependencies: [dynamicCovers.length, dynamicCards.length] }
+    {
+      scope: rootRef,
+      dependencies: [dynamicCovers.length, dynamicCards.length],
+      revertOnUpdate: true,
+    }
   );
 
   return (
