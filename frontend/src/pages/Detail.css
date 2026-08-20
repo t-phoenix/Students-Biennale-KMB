@@ -82,7 +82,10 @@
   top: 24px;
   z-index: 3;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
+  max-width: min(60vw, 420px);
 }
 
 .detail__hero-dots button {

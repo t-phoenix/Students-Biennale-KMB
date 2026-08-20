@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.15"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -293,6 +298,35 @@ export type Database = {
           },
         ]
       }
+      catalogue_snapshots: {
+        Row: {
+          edition_id: string
+          generated_at: string
+          payload: Json
+          search_index: Json
+        }
+        Insert: {
+          edition_id: string
+          generated_at?: string
+          payload: Json
+          search_index?: Json
+        }
+        Update: {
+          edition_id?: string
+          generated_at?: string
+          payload?: Json
+          search_index?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catalogue_snapshots_edition_id_fkey"
+            columns: ["edition_id"]
+            isOneToOne: true
+            referencedRelation: "editions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       edition_section_items: {
         Row: {
           content_type: string | null
@@ -432,6 +466,39 @@ export type Database = {
           title?: string | null
           updated_at?: string
           years?: string
+        }
+        Relationships: []
+      }
+      home_covers: {
+        Row: {
+          active: boolean
+          body: string | null
+          created_at: string
+          heading: string | null
+          id: string
+          image_url: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          heading?: string | null
+          id?: string
+          image_url: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string | null
+          created_at?: string
+          heading?: string | null
+          id?: string
+          image_url?: string
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -825,6 +892,42 @@ export type Database = {
           },
         ]
       }
+      update_cards: {
+        Row: {
+          active: boolean
+          body: string
+          card_type: string
+          created_at: string
+          heading: string
+          id: string
+          image_url: string | null
+          slot: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          card_type?: string
+          created_at?: string
+          heading: string
+          id?: string
+          image_url?: string | null
+          slot: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          card_type?: string
+          created_at?: string
+          heading?: string
+          id?: string
+          image_url?: string | null
+          slot?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       venues: {
         Row: {
           history: string | null
@@ -1169,4 +1272,3 @@ export const Constants = {
     },
   },
 } as const
-

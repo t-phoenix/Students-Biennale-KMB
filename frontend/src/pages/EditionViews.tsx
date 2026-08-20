@@ -1,15 +1,12 @@
 import { useMemo, useRef, useState, type RefObject } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { type CuratorCard } from "../data/site";
 import {
-  ARTISTS,
-  ARTWORKS,
-  CURATOR_ZONES,
-  VENUES,
-  curatorsForArtwork,
-  type ArtistCard,
-  type CuratorCard,
-} from "../data/site";
+  curatorsForArtworkIn,
+  matchesQuery,
+  useEditionCatalogue,
+} from "../lib/catalogue";
 import { CatalogueList } from "../components/CatalogueList";
 import "./EditionViews.css";
 
@@ -74,6 +71,30 @@ function Toolbar({
   );
 }
 
+function Forthcoming({
+  catalogue,
+  kind,
+}: {
+  catalogue?: { sections: { section_key: string; body?: string | null }[]; teamBody: string | null };
+  kind?: "curators" | "artworks" | "artists" | "venues";
+}) {
+  const body =
+    (kind && catalogue?.sections.find((s) => s.section_key === kind)?.body) ||
+    (kind === "curators" ? catalogue?.teamBody : null);
+  if (body) {
+    return (
+      <div className="fig-body" style={{ whiteSpace: "pre-line", margin: "1.5rem 0" }}>
+        {body}
+      </div>
+    );
+  }
+  return (
+    <p className="fig-body" style={{ margin: "1.5rem 0" }}>
+      Catalogue records for this edition are forthcoming.
+    </p>
+  );
+}
+
 function CuratorPortrait({
   curator,
   yearId,
@@ -107,32 +128,30 @@ function CuratorPortrait({
 
 export function CuratorsView() {
   const { yearId = "2025-26" } = useParams();
+  const { catalogue } = useEditionCatalogue(yearId);
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
 
   const zones = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return CURATOR_ZONES;
-    return CURATOR_ZONES.map((zone) => ({
-      ...zone,
-      curators: zone.curators.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.region.toLowerCase().includes(q) ||
-          zone.label.toLowerCase().includes(q) ||
-          zone.states.toLowerCase().includes(q)
-      ),
-    })).filter((z) => z.curators.length > 0);
-  }, [query]);
+    return catalogue.zones
+      .map((zone) => ({
+        ...zone,
+        curators: zone.curators.filter((c) =>
+          matchesQuery(query, c.searchText, c.name, c.region, zone.label, zone.states),
+        ),
+      }))
+      .filter((z) => z.curators.length > 0);
+  }, [catalogue.zones, query]);
 
-  useStagger(root, `${view}-${query}`);
+  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
 
   return (
     <div ref={root} className="edition-view">
       <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
-      {view === "list" ? (
-        /* Rows are zones — zone label plus every curator in it (Figma 636:1865). */
+      {!catalogue.zones.length ? (
+        <Forthcoming catalogue={catalogue} kind="curators" />
+      ) : view === "list" ? (
         <CatalogueList
           pageSize={8}
           rows={zones.map((z) => ({
@@ -143,7 +162,7 @@ export function CuratorsView() {
             href: `/editions/${yearId}/curators/${z.curators[0]?.id ?? ""}`,
           }))}
           renderPreview={(zoneId) => {
-            const zone = CURATOR_ZONES.find((z) => z.id === zoneId);
+            const zone = catalogue.zones.find((z) => z.id === zoneId);
             if (!zone) return null;
             return (
               <div className="curator-panel">
@@ -201,25 +220,25 @@ export function CuratorsView() {
 
 export function ArtworksView() {
   const { yearId = "2025-26" } = useParams();
+  const { catalogue } = useEditionCatalogue(yearId);
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const items = useMemo(
     () =>
-      ARTWORKS.filter(
-        (a) =>
-          !query ||
-          a.title.toLowerCase().includes(query.toLowerCase()) ||
-          a.venue.toLowerCase().includes(query.toLowerCase())
+      catalogue.artworks.filter((a) =>
+        matchesQuery(query, a.searchText, a.title, a.venue, ...a.artists.map((x) => x.name)),
       ),
-    [query]
+    [catalogue.artworks, query],
   );
-  useStagger(root, `${view}-${query}`);
+  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
 
   return (
     <div ref={root} className="edition-view">
       <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
-      {view === "list" ? (
+      {!catalogue.artworks.length ? (
+        <Forthcoming catalogue={catalogue} kind="artworks" />
+      ) : view === "list" ? (
         <CatalogueList
           rows={items.map((a) => ({
             id: a.id,
@@ -228,12 +247,13 @@ export function ArtworksView() {
             href: `/editions/${yearId}/artworks/${a.id}`,
           }))}
           previewFor={(id) => {
-            const a = ARTWORKS.find((x) => x.id === id);
+            const a = catalogue.artworks.find((x) => x.id === id);
             if (!a) return null;
-            const curators = curatorsForArtwork(a);
+            const curators = curatorsForArtworkIn(a, catalogue.zones);
             return {
               title: a.title,
               year: a.year,
+              image: a.image || a.images?.[0],
               fields: [
                 { label: "Venue :", values: [a.venue] },
                 { label: "Artist :", values: a.artists.map((x) => x.name) },
@@ -254,7 +274,9 @@ export function ArtworksView() {
               className="edition-card"
               to={`/editions/${yearId}/artworks/${a.id}`}
             >
-              <div className="edition-card__media edition-card__media--art" aria-hidden />
+              <div className="edition-card__media edition-card__media--art" aria-hidden>
+                {a.image ? <img src={a.image} alt="" loading="lazy" decoding="async" /> : null}
+              </div>
               <h3>{a.title}</h3>
               <p>{a.medium ? a.medium : `Venue : ${a.venue}`}</p>
             </Link>
@@ -267,31 +289,31 @@ export function ArtworksView() {
 
 export function ArtistsView() {
   const { yearId = "2025-26" } = useParams();
+  const { catalogue } = useEditionCatalogue(yearId);
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const items = useMemo(
     () =>
-      ARTISTS.filter(
-        (a) =>
-          !query ||
-          a.name.toLowerCase().includes(query.toLowerCase()) ||
-          a.institution.toLowerCase().includes(query.toLowerCase())
+      catalogue.artists.filter((a) =>
+        matchesQuery(query, a.searchText, a.name, a.institution, a.zone),
       ),
-    [query]
+    [catalogue.artists, query],
   );
-  useStagger(root, `${view}-${query}`);
+  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
 
   /* Artists have no profile page of their own — their name opens the artwork
      they're credited on. Artists with no matching artwork stay non-interactive
      rather than link to a page that doesn't exist. */
-  const workForArtist = (a: ArtistCard) =>
-    ARTWORKS.find((w) => w.artists.some((x) => x.name === a.name));
+  const workForArtist = (a: { name: string }) =>
+    catalogue.artworks.find((w) => w.artists.some((x) => x.name === a.name || x.name.toLowerCase() === a.name.toLowerCase()));
 
   return (
     <div ref={root} className="edition-view">
       <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
-      {view === "list" ? (
+      {!catalogue.artists.length ? (
+        <Forthcoming catalogue={catalogue} kind="artists" />
+      ) : view === "list" ? (
         <CatalogueList
           rows={items.map((a) => {
             const work = workForArtist(a);
@@ -303,16 +325,18 @@ export function ArtistsView() {
             };
           })}
           previewFor={(id) => {
-            const a = ARTISTS.find((x) => x.id === id);
+            const a = catalogue.artists.find((x) => x.id === id);
             if (!a) return null;
             const work = workForArtist(a);
-            const curators = work ? curatorsForArtwork(work) : [];
+            const curators = work ? curatorsForArtworkIn(work, catalogue.zones) : [];
             return {
-              title: a.name,
+              title: work?.title ?? a.name,
+              year: work?.year,
+              image: work?.image || work?.images?.[0],
               fields: [
                 { label: "School :", values: [a.institution] },
-                { label: "Zone :", values: [a.zone] },
-                ...(work ? [{ label: "Artwork :", values: [work.title] }] : []),
+                ...(work ? [{ label: "Venue :", values: [work.venue] }] : [{ label: "Zone :", values: [a.zone] }]),
+                { label: "Artist :", values: [a.name] },
                 ...(curators.length
                   ? [{ label: "Curator :", values: curators.map((c) => c.name) }]
                   : []),
@@ -323,7 +347,6 @@ export function ArtistsView() {
           }}
         />
       ) : (
-        /* 3-up name + institution blocks on cols 4-6 / 7-9 / 10-12 (Figma 713:297). */
         <div className="edition-grid edition-grid--artists">
           {items.map((a) => {
             const work = workForArtist(a);
@@ -355,25 +378,25 @@ export function ArtistsView() {
 
 export function VenueView() {
   const { yearId = "2025-26" } = useParams();
+  const { catalogue } = useEditionCatalogue(yearId);
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"grid" | "list">("grid");
   const items = useMemo(
     () =>
-      VENUES.filter(
-        (v) =>
-          !query ||
-          v.name.toLowerCase().includes(query.toLowerCase()) ||
-          v.address.toLowerCase().includes(query.toLowerCase())
+      catalogue.venues.filter((v) =>
+        matchesQuery(query, v.searchText, v.name, v.address, v.description),
       ),
-    [query]
+    [catalogue.venues, query],
   );
-  useStagger(root, `${view}-${query}`);
+  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
 
   return (
     <div ref={root} className="edition-view">
       <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
-      {view === "list" ? (
+      {!catalogue.venues.length ? (
+        <Forthcoming catalogue={catalogue} kind="venues" />
+      ) : view === "list" ? (
         <CatalogueList
           rows={items.map((v) => ({
             id: v.id,
@@ -382,7 +405,7 @@ export function VenueView() {
             href: `/editions/${yearId}/venue/${v.id}`,
           }))}
           previewFor={(id) => {
-            const v = VENUES.find((x) => x.id === id);
+            const v = items.find((x) => x.id === id);
             if (!v) return null;
             return {
               title: v.name,

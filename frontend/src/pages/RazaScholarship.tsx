@@ -1,12 +1,13 @@
 import { useRef, useState } from "react";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
-import { RAZA_SCHOLARS } from "../data/site";
+import { useProgrammes } from "../lib/programmes";
 import "./RazaScholarship.css";
 
 export function RazaScholarship() {
   const root = useRef<HTMLDivElement>(null);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
+  const { raza } = useProgrammes();
 
   useGSAP(
     () => {
@@ -27,45 +28,35 @@ export function RazaScholarship() {
     <div ref={root} className="raza-scholarship">
       <div className="fig-grid raza-scholarship__content raza-reveal">
         <div className="fig-c4-9">
-          <h1 className="raza-scholarship__title">Students' Biennale 2025–26 x Beaux Arts de Marseille</h1>
-          <p className="raza-scholarship__subtitle">te(a)m-plurality, curatorial note by GABAA</p>
+          <h1 className="raza-scholarship__title">{raza.title}</h1>
+          <p className="raza-scholarship__subtitle">{raza.subtitle}</p>
 
           <div className="raza-scholarship__description">
-            <p>
-              This edition of the Students' Biennale marks a renewed commitment to international exchange through a
-              collaboration between the Kochi Biennale Foundation and Beaux-Arts de Marseille, supported by Institut
-              Français and the Raza Foundation. The partnership invites two Master Practice students from Beaux-Arts de
-              Marseille to develop and present new work as part of the Students' Biennale, situating their artistic
-              practices within the unique cultural and social contexts of the Kochi-Muziris Biennale. Their time in
-              Kochi allows them to create, install, and refine their projects in dialogue with local environments, peers,
-              and the wider cohort of participating student artists from across India.
-            </p>
-            <p>
-              An open call was established among the Master Practice students from Beaux Arts de Marseille, following
-              which a jury was conducted. The two selected artist-participants who exhibited their work at the 6th
-              Students' Biennale edition were:
-            </p>
+            {raza.intro.map((paragraph) => (
+              <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+            ))}
           </div>
         </div>
 
         <div className="fig-c10-12">
           <div className="raza-scholarship__scholars-list">
-            <p className="raza-scholarship__scholars-label">Kaki Weiss</p>
-            <p className="raza-scholarship__scholars-label">Nina Durel</p>
-            <p className="raza-scholarship__scholars-text">
-              This collaboration is envisioned as a two-way exchange. Once the Students' Biennale opened, a dedicated
-              jury selected two student artists from among the overall exhibited projects from across institutions in
-              India to undertake a residency at Beaux-Arts de Marseille in the 2026–27 academic year. Through this
-              reciprocal model, the programme fosters long-term artistic relationships, new pedagogical encounters, and
-              pathways for expanded learning across geographies.
-            </p>
+            {raza.scholars.map((scholar) => (
+              <p key={scholar.id} className="raza-scholarship__scholars-label">
+                {scholar.name}
+              </p>
+            ))}
+            {raza.closing.map((paragraph) => (
+              <p key={paragraph.slice(0, 48)} className="raza-scholarship__scholars-text">
+                {paragraph}
+              </p>
+            ))}
           </div>
         </div>
       </div>
 
       <div className="fig-grid raza-reveal">
         <div className="raza-scholarship__scholars-section fig-c4-12 fig-sub-2">
-          {RAZA_SCHOLARS.map((scholar) => (
+          {raza.scholars.map((scholar) => (
             <div className="raza-scholarship__scholar" key={scholar.id}>
               <img src={scholar.image} alt="" className="raza-scholarship__scholar-image" />
               <button
@@ -80,7 +71,11 @@ export function RazaScholarship() {
         </div>
       </div>
 
-      <ScholarSpotlight scholarId={openScholarId} onClose={() => setOpenScholarId(null)} />
+      <ScholarSpotlight
+        scholarId={openScholarId}
+        scholars={raza.scholars}
+        onClose={() => setOpenScholarId(null)}
+      />
     </div>
   );
 }

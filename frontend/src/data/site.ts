@@ -17,6 +17,7 @@ export type CanvasItem = {
   meta: string;
   image?: string;
   bio?: string;
+  tags?: string;
   x: number;
   y: number;
   width: number;
@@ -191,21 +192,30 @@ function withNaturalSize(draft: CanvasDraft): CanvasDraft {
   return { ...draft, imageW: natural.w, imageH: natural.h };
 }
 
-function canvasBase(): CanvasDraft[] {
-  // Discover Artworks is artworks only — no curators / artists / venues.
-  const realArtworks = ARTWORKS.filter((a) => a.image).map((a) =>
+function artworkDrafts(artworks: ArtworkCard[]): CanvasDraft[] {
+  return artworks.map((artwork) =>
     withNaturalSize({
-      id: `aw-${a.id}`,
+      id: `aw-${artwork.id}`,
       kind: "artwork" as const,
-      name: a.title,
-      meta: a.venue,
-      image: a.image,
-      bio: a.description,
-      imageW: 1600,
-      imageH: 1200,
-    })
+      name: artwork.title,
+      meta: artwork.venue ? `${artwork.venue}${artwork.year ? ` · ${artwork.year}` : ""}` : artwork.year,
+      image: artwork.image,
+      bio: artwork.description,
+      tags: artwork.searchText,
+      imageW: artwork.imageWidth ?? (artwork.image ? 1600 : undefined),
+      imageH: artwork.imageHeight ?? (artwork.image ? 1200 : undefined),
+    }),
   );
+}
 
+function canvasBase(artworks?: ArtworkCard[]): CanvasDraft[] {
+  if (artworks) {
+    const realArtworks = artworkDrafts(artworks);
+    const withImages = realArtworks.filter((row) => row.image);
+    if (withImages.length >= 12) return realArtworks;
+    return [...realArtworks, ...placeholderDrafts()];
+  }
+  const realArtworks = artworkDrafts(ARTWORKS.filter((a) => a.image));
   return [...realArtworks, ...placeholderDrafts()];
 }
 
@@ -221,13 +231,14 @@ function canvasBase(): CanvasDraft[] {
  * column repeats at a different Y, so no seam ever lines up across columns.
  */
 function packMasonry(
-  tier: CanvasTier
+  tier: CanvasTier,
+  artworks?: ArtworkCard[],
 ): { items: CanvasItem[]; colWidths: number[]; colPeriods: number[] } {
   const config = TIER_CONFIG[tier];
   const { seedW, seedH, gap, gapJitter, columns, columnJitter, minTileH, maxTileH, absMinW } = config;
   const gapLo = gap * (1 - gapJitter);
   const gapHi = gap * (1 + gapJitter);
-  const base = canvasBase();
+  const base = canvasBase(artworks);
 
   // Jittered column widths, renormalized to exactly fill seedW.
   const inner = seedW - gap * (columns + 1);
@@ -296,6 +307,7 @@ function packMasonry(
       meta: draft.meta,
       image: draft.image,
       bio: draft.bio,
+      tags: draft.tags,
       x: Math.round(colX[col] + xInCol),
       y: Math.round(colHeights[col] + tileGap),
       width: tileW,
@@ -323,11 +335,15 @@ const packCache = new Map<string, CanvasPack>();
 /** Bust layout cache after packing rules change (dev / HMR safety). */
 const PACK_VERSION = "artworks-only-v11-tighter-gap";
 
-export function getCanvasPack(tier: CanvasTier = "desktop"): CanvasPack {
-  const key = `${PACK_VERSION}:${tier}`;
+export function getCanvasPack(
+  tier: CanvasTier = "desktop",
+  artworks?: ArtworkCard[],
+  sourceKey = "static",
+): CanvasPack {
+  const key = `${PACK_VERSION}:${tier}:${sourceKey}`;
   let cached = packCache.get(key);
   if (!cached) {
-    const packed = packMasonry(tier);
+    const packed = packMasonry(tier, artworks);
     cached = {
       items: packed.items,
       seedW: TIER_CONFIG[tier].seedW,
@@ -349,6 +365,7 @@ export type CuratorCard = {
   image?: string;
   /** CSS object-position — keeps heads framed in the 315×360 crop */
   focus?: string;
+  searchText?: string;
 };
 
 export type CuratorZone = {
@@ -512,6 +529,7 @@ export const CURATORS: CuratorCard[] = CURATOR_ZONES.flatMap((z) => z.curators);
 
 export type ArtworkCard = {
   id: string;
+  slug?: string;
   title: string;
   venue: string;
   year: string;
@@ -528,6 +546,9 @@ export type ArtworkCard = {
   image?: string;
   /** Detail hero carousel frames; falls back to `[image]` when omitted. */
   images?: string[];
+  imageWidth?: number;
+  imageHeight?: number;
+  searchText?: string;
 };
 
 /**
@@ -790,18 +811,28 @@ export function artworksForZone(zoneId: string): ArtworkCard[] {
   return ARTWORKS.filter((a) => a.zoneId === zoneId);
 }
 
+function uniqueMedia(...values: Array<string | string[] | null | undefined>): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const value of values) {
+    const list = Array.isArray(value) ? value : value ? [value] : [];
+    for (const url of list) {
+      if (!url || seen.has(url)) continue;
+      seen.add(url);
+      out.push(url);
+    }
+  }
+  return out;
+}
+
 /** Hero / carousel frames for an artwork detail page. */
 export function artworkImages(artwork: ArtworkCard): string[] {
-  if (artwork.images?.length) return artwork.images;
-  if (artwork.image) return [artwork.image];
-  return [];
+  return uniqueMedia(artwork.images, artwork.image);
 }
 
 /** Hero / carousel frames for a venue detail page. */
 export function venueImages(venue: VenueCard): string[] {
-  if (venue.images?.length) return venue.images;
-  if (venue.image) return [venue.image];
-  return [];
+  return uniqueMedia(venue.images, venue.image);
 }
 
 export type VenueCard = {
@@ -817,6 +848,7 @@ export type VenueCard = {
   images?: string[];
   mapUrl?: string;
   tourUrl?: string;
+  searchText?: string;
 };
 
 /** The six edition venues, in the order and with the copy from Figma 718:1326. */
@@ -899,7 +931,13 @@ export const VENUES: VenueCard[] = [
   },
 ];
 
-export type ArtistCard = { id: string; name: string; institution: string; zone: string };
+export type ArtistCard = {
+  id: string;
+  name: string;
+  institution: string;
+  zone: string;
+  searchText?: string;
+};
 
 /**
  * Participating artists, in the reading order of the Figma "Edition Page_Grid_Artists"

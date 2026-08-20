@@ -25,7 +25,10 @@ database/
         ├── 20260813074902_initial_schema.sql
         ├── 20260813074903_rls_cms_policies.sql
         ├── 20260813074904_search_rpc.sql
-        └── 20260813074905_storage_buckets.sql
+        ├── 20260813074905_storage_buckets.sql
+        ├── 20260815135642_restrict_cms_writes_and_import_idempotency.sql
+        ├── 20260817183430_catalogue_snapshots.sql
+        └── 20260819150000_home_cms_tables.sql
 ```
 
 | Bucket | Public | Use |
@@ -196,7 +199,9 @@ supabase --workdir database link --project-ref <project-ref>
 supabase --workdir database db push
 ```
 
-`db push` applies migrations to the linked remote. It does **not** run `seed.sql` — seed is local-only. Production data comes from the import job or CMS.
+`db push` applies migrations to the linked remote. It does **not** run `seed.sql` — seed is local-only. Production catalogue data is loaded with `python3 backend/import_catalogue.py --target linked` (see [backend/README.md](../backend/README.md)).
+
+CMS can edit programmes, press, about, and assets. Editions, artworks, curators, and venues are import-owned.
 
 ## CMS role
 
@@ -220,9 +225,9 @@ Copy `frontend/.env.example` → `frontend/.env.local`:
 | `VITE_SUPABASE_URL` | `http://127.0.0.1:54321` | Project Settings → API → URL |
 | `VITE_SUPABASE_ANON_KEY` | `supabase status` | Project Settings → API → anon / publishable key |
 
-Public reads: `supabase.from('artworks').select(...)` and `supabase.rpc('search_entities', { q, filter_edition_id, result_limit })`.
+Public reads: one `supabase.from('catalogue_snapshots').select('edition_id, payload, search_index, generated_at')` per tab (cached in `sessionStorage`). Edition and Discover search filter that pack in the browser. Do not call `search_entities` on keystroke.
 
-CMS writes: `createClient` with the **anon** key, then `signIn`; RLS allows writes only when `app_metadata.role` is `cms` or `admin`.
+CMS writes: `createClient` with the **anon** key, then `signIn`. RLS allows writes only when `app_metadata.role` is `cms` or `admin`, and only on programmes, press, about, and assets. Catalogue tables and `catalogue_snapshots` are import-owned.
 
 ## New migrations
 
@@ -250,7 +255,8 @@ After linking: drop `--local` (uses the remote schema).
 | Empty API / 404 on tables | Grants + RLS. Cloud does not auto-expose new tables. |
 | Writes return 0 rows | Missing SELECT policy, or JWT role not `cms`/`admin`. Refresh the session. |
 | Storage upsert fails | Policies need INSERT + SELECT + UPDATE. |
-| Search returns nothing | Query length ≥ 2; `search_entries` must be populated. |
+| Search returns nothing | Query length ≥ 2; `search_entries` must be populated. The public site searches cached `catalogue_snapshots`, not this RPC. |
+| Empty edition catalogue | Import writes `catalogue_snapshots`. Run `python3 backend/import_catalogue.py --target local` after `db reset`. |
 | Advisor warnings | `supabase --workdir database db advisors` |
 | SQL / API logs | `supabase --workdir database logs db` / `logs api` |
 | Auth emails (local) | http://127.0.0.1:54324 |
@@ -268,7 +274,7 @@ Postgres in `config.toml` is **major version 17**. Create the hosted project on 
 3. Auth: add the CMS editor user (email). Then set `app_metadata.role` (SQL in [CMS role](#cms-role)). Sign out/in after.
 4. Auth → URL configuration: add the production frontend origin to **Site URL** and **Redirect URLs**.
 5. Frontend host (Vercel etc.): set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` only. Never `service_role` / `VITE_*` secret keys.
-6. Catalogue content: import job or CMS. Seed editions stay local unless you choose to insert them yourself.
+6. Catalogue content: `python3 backend/import_catalogue.py --target linked` (see [backend/README.md](../backend/README.md)). Seed editions stay local-only.
 
 ### CLI can automate (after login + project exists)
 
@@ -277,6 +283,7 @@ From **repo root**:
 ```bash
 supabase --workdir database link --project-ref <project-ref>
 supabase --workdir database db push
+python3 backend/import_catalogue.py --target linked
 supabase --workdir database db advisors          # optional check
 supabase --workdir database migration list       # local vs remote
 ```

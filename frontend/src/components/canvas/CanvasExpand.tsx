@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { ARTWORKS, type CanvasItem } from "../../data/site";
+import { type CanvasItem } from "../../data/site";
+import { findCard, useAllArtworks } from "../../lib/catalogue";
 import { ArtworkDetailBody } from "../ArtworkDetailBody";
 import { CtaLink } from "../CtaLink";
 import { gsap, useGSAP, prefersReducedMotion } from "../../lib/motion";
@@ -11,20 +12,22 @@ type Props = {
   onClose: () => void;
 };
 
-/** Real catalog artworks are seeded onto the canvas with id "aw-" + ArtworkCard.id
- *  (see canvasBase() in data/site.ts); decorative filler tiles use "ph-…" ids and
- *  have no backing catalog record. */
-function findArtworkForItem(item: CanvasItem) {
-  if (item.kind !== "artwork" || !item.id.startsWith("aw-")) return undefined;
-  const realId = item.id.slice(3);
-  return ARTWORKS.find((a) => a.id === realId);
+/** Canvas tiles are seeded as "aw-" + ArtworkCard.id; tiled copies append
+ *  "__c{col}-{n}". Decorative filler tiles use "ph-…" ids. */
+function canvasArtworkId(itemId: string): string | undefined {
+  if (!itemId.startsWith("aw-")) return undefined;
+  return itemId.slice(3).replace(/__c\d+-\d+$/, "");
 }
 
 export function CanvasExpand({ item, origin, onClose }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLButtonElement>(null);
-  const artwork = useMemo(() => findArtworkForItem(item), [item]);
+  const { artworks } = useAllArtworks();
+  const artwork = useMemo(() => {
+    const id = canvasArtworkId(item.id);
+    return id ? findCard(artworks, id) : undefined;
+  }, [artworks, item.id]);
 
   // FLIP transform that makes the full-size sheet exactly overlay the
   // clicked tile's position/size — computed once on open, reused in reverse

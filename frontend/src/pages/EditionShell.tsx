@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useMatch, useParams } from "react-router-dom";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
+import { useCatalogue } from "../lib/catalogue";
 import "./EditionShell.css";
 
 const TABS = [
@@ -12,6 +13,15 @@ const TABS = [
 export function EditionShell() {
   const { yearId = LATEST_EDITION.id } = useParams();
   const isOverview = Boolean(useMatch("/editions/:yearId"));
+  const { catalogues, current } = useCatalogue();
+  const previous = catalogues
+    .filter((row) => !row.isCurrent && row.years !== yearId)
+    .map((row) => row.years);
+  const previousYears = previous.length ? previous : PREVIOUS_EDITIONS.filter((y) => y !== yearId);
+  const headingYears =
+    yearId === (current?.years ?? LATEST_EDITION.id)
+      ? (current?.years ?? LATEST_EDITION.id).replace("-", "–")
+      : yearId.replace("-", "–");
 
   // The edition overview is a full-width page in Figma — it owns its own layout and
   // does not sit beside the catalogue rail.
@@ -23,7 +33,7 @@ export function EditionShell() {
         <h1 className="fig-heading">
           Students&apos; Biennale
           <br />
-          {yearId === LATEST_EDITION.id ? "2025–26" : yearId}
+          {headingYears}
         </h1>
         <nav className="edition__tabs" aria-label="Edition catalogues">
           {TABS.map((tab) => (
@@ -42,7 +52,7 @@ export function EditionShell() {
         <details className="edition__prev">
           <summary>Previous EDITIONS</summary>
           <ul>
-            {PREVIOUS_EDITIONS.map((y) => (
+            {previousYears.map((y) => (
               <li key={y}>
                 <NavLink
                   to={`/editions/${y}`}

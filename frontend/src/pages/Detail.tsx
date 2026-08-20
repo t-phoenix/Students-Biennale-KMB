@@ -3,18 +3,17 @@ import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
+import { venueImages } from "../data/site";
 import {
-  ARTWORKS,
-  CURATOR_ZONES,
-  CURATORS,
-  VENUES,
-  artworksForZone,
-  venueImages,
-} from "../data/site";
+  artworksForZoneIn,
+  findCard,
+  useEditionCatalogue,
+} from "../lib/catalogue";
 import "./Detail.css";
 
 export function Detail() {
   const { yearId = "2025-26", kindSeg = "artworks", id = "" } = useParams();
+  const { catalogue } = useEditionCatalogue(yearId);
   const root = useRef<HTMLDivElement>(null);
   const [heroIndex, setHeroIndex] = useState(0);
 
@@ -23,11 +22,16 @@ export function Detail() {
   }, [id, kindSeg]);
 
   const data = useMemo(() => {
-    if (kindSeg === "artworks") return { kind: "artwork" as const, item: ARTWORKS.find((a) => a.id === id) };
-    if (kindSeg === "curators") return { kind: "curator" as const, item: CURATORS.find((c) => c.id === id) };
-    if (kindSeg === "venue") return { kind: "venue" as const, item: VENUES.find((v) => v.id === id) };
+    if (kindSeg === "artworks")
+      return { kind: "artwork" as const, item: findCard(catalogue.artworks, id) };
+    if (kindSeg === "curators")
+      return { kind: "curator" as const, item: findCard(catalogue.curators, id) };
+    if (kindSeg === "artists")
+      return { kind: "artist" as const, item: findCard(catalogue.artists, id) };
+    if (kindSeg === "venue")
+      return { kind: "venue" as const, item: findCard(catalogue.venues, id) };
     return { kind: "unknown" as const, item: undefined };
-  }, [kindSeg, id]);
+  }, [kindSeg, id, catalogue]);
 
   useGSAP(
     () => {
@@ -58,12 +62,13 @@ export function Detail() {
     );
   }
 
-  /* Artwork Page — Figma 1:3: full-bleed carousel, label cols 1-3, title cols 4-9,
-     year cols 10-12, metadata cols 4-12, description, artists 3-up, NEXT. */
   if (data.kind === "artwork" && data.item) {
     const a = data.item;
-    const idx = ARTWORKS.findIndex((x) => x.id === a.id);
-    const next = ARTWORKS[(idx + 1) % ARTWORKS.length];
+    const idx = catalogue.artworks.findIndex((x) => x.id === a.id);
+    const next =
+      idx >= 0 && catalogue.artworks.length
+        ? catalogue.artworks[(idx + 1) % catalogue.artworks.length]
+        : undefined;
 
     return (
       <div ref={root} className="detail">
@@ -76,7 +81,7 @@ export function Detail() {
           <CtaLink
             className="detail__next"
             variant="next"
-            to={`/editions/${yearId}/artworks/${next.id}`}
+            to={`/editions/${yearId}/artworks/${(next ?? a).id}`}
             lines={["NEXT"]}
           />
         </div>
@@ -84,10 +89,9 @@ export function Detail() {
     );
   }
 
-  /* Curators Page — Figma 1:2484. */
   if (data.kind === "curator" && data.item) {
     const c = data.item;
-    const zone = CURATOR_ZONES.find((z) => z.curators.some((x) => x.id === c.id));
+    const zone = catalogue.zones.find((z) => z.curators.some((x) => x.id === c.id));
     const members = zone ? [c, ...zone.curators.filter((x) => x.id !== c.id)] : [c];
 
     return (
@@ -147,11 +151,11 @@ export function Detail() {
           </div>
         ) : null}
 
-        {zone && artworksForZone(zone.id).length ? (
+        {zone && artworksForZoneIn(catalogue.artworks, zone.id).length ? (
           <div className="fig-grid detail__section">
             <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
             <div className="fig-c4-12 fig-sub-3 detail__cards detail-reveal">
-              {artworksForZone(zone.id).map((a) => (
+              {artworksForZoneIn(catalogue.artworks, zone.id).map((a) => (
                 <Link key={a.id} to={`/editions/${yearId}/artworks/${a.id}`}>
                   {a.image ? (
                     <span className="detail__cards-media">
@@ -183,13 +187,11 @@ export function Detail() {
     );
   }
 
-  /* Venues page — Figma 1:1428: hero cols 1-7, name/links/description cols 8-12,
-     then artworks at this venue on cols 4-12. */
   if (data.kind === "venue" && data.item) {
     const v = data.item;
     const slides = venueImages(v);
     const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
-    const venueWorks = ARTWORKS.filter((a) => a.venue === v.name);
+    const venueWorks = catalogue.artworks.filter((a) => a.venue === v.name || a.venue === v.id);
 
     return (
       <div ref={root} className="detail" key={v.id}>

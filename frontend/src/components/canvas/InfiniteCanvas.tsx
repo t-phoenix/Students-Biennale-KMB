@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getCanvasPack, getCanvasTier, type CanvasItem } from "../../data/site";
+import { getCanvasPack, getCanvasTier, type ArtworkCard, type CanvasItem } from "../../data/site";
 import { gsap, prefersReducedMotion, useGSAP } from "../../lib/motion";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
@@ -11,6 +11,8 @@ type Props = {
    *  ambient drift and idle zoom pause so the space isn't drifting/zoomed
    *  out from under the user when they come back to it. */
   paused?: boolean;
+  artworks?: ArtworkCard[];
+  sourceKey?: string;
 };
 
 /** Horizontal repeat count — all columns share one X period (seedW). */
@@ -56,7 +58,7 @@ function useCanvasTier() {
   return tier;
 }
 
-export function InfiniteCanvas({ query, onSelect, paused = false }: Props) {
+export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sourceKey }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const zoomRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
@@ -66,7 +68,10 @@ export function InfiniteCanvas({ query, onSelect, paused = false }: Props) {
   const columnEls = useRef(new Map<string, HTMLDivElement>());
 
   const tier = useCanvasTier();
-  const pack = useMemo(() => getCanvasPack(tier), [tier]);
+  const pack = useMemo(
+    () => getCanvasPack(tier, artworks, sourceKey),
+    [tier, sourceKey, artworks],
+  );
   const { items: pool, seedW, colWidths, colPeriods } = pack;
   const columns = colWidths.length;
   const tileKey = `masonry-${tier}`;
@@ -145,7 +150,9 @@ export function InfiniteCanvas({ query, onSelect, paused = false }: Props) {
       return (
         item.name.toLowerCase().includes(q) ||
         item.kind.toLowerCase().includes(q) ||
-        item.meta.toLowerCase().includes(q)
+        item.meta.toLowerCase().includes(q) ||
+        (item.tags?.includes(q) ?? false) ||
+        (item.bio?.toLowerCase().includes(q) ?? false)
       );
     },
     [q]

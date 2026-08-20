@@ -30,6 +30,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+/supabase/.temp/
+scripts/__pycache__/
+__pycache__/
 
 # Content source cache (fetched Google Docs/Drive files)
 content/

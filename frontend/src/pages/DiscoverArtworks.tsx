@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import type { CanvasItem } from "../data/site";
 import { InfiniteCanvas } from "../components/canvas/InfiniteCanvas";
 import { CanvasExpand } from "../components/canvas/CanvasExpand";
+import { useAllArtworks } from "../lib/catalogue";
 import "./DiscoverArtworks.css";
 
 type ExpandState = {
@@ -12,6 +13,9 @@ type ExpandState = {
 export function DiscoverArtworks() {
   const [query, setQuery] = useState("");
   const [expand, setExpand] = useState<ExpandState | null>(null);
+  const { artworks, catalogues } = useAllArtworks();
+  const sourceKey =
+    catalogues.map((row) => `${row.years}:${row.generatedAt}`).join("|") || "static";
 
   const onSelect = useCallback((item: CanvasItem, el: HTMLButtonElement) => {
     setExpand({ item, origin: el.getBoundingClientRect() });
@@ -37,7 +41,13 @@ export function DiscoverArtworks() {
         </label>
       </div>
       <div className="discover__stage">
-        <InfiniteCanvas query={query} onSelect={onSelect} paused={Boolean(expand)} />
+        <InfiniteCanvas
+          query={query}
+          onSelect={onSelect}
+          paused={Boolean(expand)}
+          artworks={artworks}
+          sourceKey={sourceKey}
+        />
       </div>
       {expand ? (
         <CanvasExpand

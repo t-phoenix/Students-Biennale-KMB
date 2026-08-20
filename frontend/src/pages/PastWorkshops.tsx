@@ -1,11 +1,12 @@
 import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
-import { PAST_WORKSHOPS } from "../data/site";
+import { useProgrammes } from "../lib/programmes";
 import "./PastWorkshops.css";
 
 export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
+  const { pastWorkshops } = useProgrammes();
 
   useGSAP(
     () => {
@@ -19,7 +20,7 @@ export function PastWorkshops() {
         clearProps: "opacity,visibility,transform",
       });
     },
-    { scope: root }
+    { scope: root, dependencies: [pastWorkshops.map((item) => item.id).join("|")] }
   );
 
   return (
@@ -27,7 +28,7 @@ export function PastWorkshops() {
       <div className="fig-grid past-workshops__section past-workshops-reveal">
         <h1 className="fig-label fig-subheading">PAST WORKSHOPS</h1>
         <ul className="past-workshops__list fig-c4-12">
-          {PAST_WORKSHOPS.map((item) => {
+          {pastWorkshops.map((item) => {
             const isOpen = Boolean(item.description);
             return (
               <li key={item.id} className={isOpen ? "is-open" : undefined}>
