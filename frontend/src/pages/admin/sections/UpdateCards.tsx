@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
+import { swapUpdateCardSlots } from "../../../lib/admin/reorder";
 import { FormField } from "../../../components/admin/FormField";
-import { ImageUpload } from "../../../components/admin/ImageUpload";
+import { MoveButtons } from "../../../components/admin/MoveButtons";
 import type { SectionProps } from "./types";
 
 interface Card {
@@ -9,7 +10,8 @@ interface Card {
   slot: number;
   heading: string;
   body: string;
-  image_url: string | null;
+  link_url: string | null;
+  link_external: boolean;
   card_type: string;
   active: boolean;
 }
@@ -17,7 +19,7 @@ interface Card {
 const CARD_TYPES = ["general", "programmes", "news"] as const;
 
 export function UpdateCards({ notify, confirm }: SectionProps) {
-  const { rows, loading, create, update, remove } = useSupabaseCrud<Card>(
+  const { rows, loading, create, update, remove, reload } = useSupabaseCrud<Card>(
     "update_cards",
     { orderBy: "slot" },
   );
@@ -28,12 +30,17 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
     if (!editing?.heading || !editing?.body) return;
     setBusy(true);
     try {
+      const payload = {
+        ...editing,
+        link_url: editing.link_url?.trim() || null,
+      };
       if (editing.id) {
-        const { id, ...patch } = editing;
+        const id = editing.id;
+        const { id: _rowId, ...patch } = payload;
         await update(id, patch);
         notify("success", "Card updated");
       } else {
-        await create(editing as never);
+        await create(payload as never);
         notify("success", "Card created");
       }
       setEditing(null);
@@ -51,6 +58,18 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
       notify("success", "Card deleted");
     } catch (e: unknown) {
       notify("error", e instanceof Error ? e.message : "Failed to delete");
+    }
+  };
+
+  const move = async (row: Card, delta: -1 | 1) => {
+    const index = rows.findIndex((r) => r.id === row.id);
+    const neighbor = rows[index + delta];
+    if (!neighbor) return;
+    try {
+      await swapUpdateCardSlots(row, neighbor);
+      await reload();
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to reorder");
     }
   };
 
@@ -77,7 +96,8 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
                 slot: nextSlot,
                 heading: "",
                 body: "",
-                image_url: "",
+                link_url: "",
+                link_external: false,
                 card_type: "general",
                 active: true,
               });
@@ -89,8 +109,9 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
       </div>
 
       <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 16 }}>
-        Max 3 update cards on the home page. Each has a heading (30–60 chars) and
-        body (80–140 chars).
+        Max 3 update cards on the home page. Each has a heading (30–60 chars), body (80–140
+        chars), and an optional link. Internal links use site paths like /programmes; external
+        links open in a new tab.
       </p>
 
       {editing && (
@@ -146,10 +167,25 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
             multiline
             placeholder="15–25 words"
           />
-          <ImageUpload
-            value={editing.image_url ?? ""}
-            onChange={(v) => setEditing({ ...editing, image_url: v })}
+          <FormField
+            label="Link URL"
+            value={editing.link_url ?? ""}
+            onChange={(v) => setEditing({ ...editing, link_url: v })}
+            placeholder="/programmes or https://example.com"
           />
+          <div className="adm-field">
+            <label className="adm-field__label">
+              <input
+                type="checkbox"
+                checked={editing.link_external ?? false}
+                onChange={(e) =>
+                  setEditing({ ...editing, link_external: e.target.checked })
+                }
+                style={{ marginRight: 8 }}
+              />
+              Open link in new tab (external)
+            </label>
+          </div>
           <div className="adm-form-actions">
             <button className="adm-btn adm-btn--primary" onClick={save} disabled={busy}>
               {busy ? "Saving…" : editing.id ? "Update" : "Create"}
@@ -171,11 +207,12 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
               <th>Type</th>
               <th>Heading</th>
               <th>Body</th>
+              <th>Link</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r, i) => (
               <tr key={r.id}>
                 <td>{r.slot}</td>
                 <td>{r.card_type}</td>
@@ -183,8 +220,10 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
                 <td style={{ maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis" }}>
                   {r.body}
                 </td>
+                <td>{r.link_url || "—"}</td>
                 <td>
                   <div className="adm-table__actions">
+                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
                     <button
                       className="adm-btn adm-btn--secondary adm-btn--small"
                       onClick={() => setEditing({ ...r })}

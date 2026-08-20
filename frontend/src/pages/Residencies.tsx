@@ -27,6 +27,11 @@ export function Residencies() {
 
   return (
     <div ref={root} className="residencies">
+      {residencies.length === 0 ? (
+        <p className="fig-grid" style={{ padding: "48px var(--grid-margin)" }}>
+          No residencies published yet.
+        </p>
+      ) : null}
       {residencies.map((residency) => {
         const descriptionParas = residency.description.split(/\n\s*\n/).filter(Boolean);
         const gallery = residency.galleryImages;
@@ -42,14 +47,30 @@ export function Residencies() {
                 <h1 className="residencies__title">{residency.title}</h1>
                 <div className="residencies__meta">
                   <dl>
-                    <dt>Host:</dt>
-                    <dd>{residency.host}</dd>
-                    <dt>Period:</dt>
-                    <dd>{residency.period}</dd>
-                    <dt>Venue:</dt>
-                    <dd>{residency.venue}</dd>
-                    <dt>Awardees:</dt>
-                    <dd>{residency.awardees}</dd>
+                    {residency.host ? (
+                      <>
+                        <dt>Host:</dt>
+                        <dd>{residency.host}</dd>
+                      </>
+                    ) : null}
+                    {residency.period ? (
+                      <>
+                        <dt>Period:</dt>
+                        <dd>{residency.period}</dd>
+                      </>
+                    ) : null}
+                    {residency.venue ? (
+                      <>
+                        <dt>Venue:</dt>
+                        <dd>{residency.venue}</dd>
+                      </>
+                    ) : null}
+                    {residency.awardees ? (
+                      <>
+                        <dt>Awardees:</dt>
+                        <dd>{residency.awardees}</dd>
+                      </>
+                    ) : null}
                   </dl>
                 </div>
               </div>

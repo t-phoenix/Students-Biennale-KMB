@@ -8,7 +8,6 @@ import { UpdateCards } from "./sections/UpdateCards";
 import { Workshops } from "./sections/Workshops";
 import { ResidenciesSection } from "./sections/Residencies";
 import { Awards } from "./sections/Awards";
-import { ProgrammeImages } from "./sections/ProgrammeImages";
 import { PressItems } from "./sections/PressItems";
 import "./Admin.css";
 
@@ -18,7 +17,6 @@ const NAV = [
   { key: "workshops", label: "Workshops" },
   { key: "residencies", label: "Residencies" },
   { key: "awards", label: "Awards" },
-  { key: "images", label: "Programme Images" },
   { key: "press", label: "Press" },
 ] as const;
 
@@ -76,7 +74,6 @@ export function Admin() {
         {section === "workshops" && <Workshops {...sectionProps} />}
         {section === "residencies" && <ResidenciesSection {...sectionProps} />}
         {section === "awards" && <Awards {...sectionProps} />}
-        {section === "images" && <ProgrammeImages {...sectionProps} />}
         {section === "press" && <PressItems {...sectionProps} />}
       </main>
 

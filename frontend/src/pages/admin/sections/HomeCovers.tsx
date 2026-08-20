@@ -2,18 +2,27 @@ import { useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
+import { MoveButtons } from "../../../components/admin/MoveButtons";
 import type { SectionProps } from "./types";
 
 interface Cover {
   id: string;
   image_url: string;
-  heading: string | null;
-  body: string | null;
+  artwork_name: string | null;
+  artist: string | null;
+  institution: string | null;
   sort_order: number;
   active: boolean;
 }
 
-const EMPTY = { image_url: "", heading: "", body: "", sort_order: 0, active: true };
+const EMPTY = {
+  image_url: "",
+  artwork_name: "",
+  artist: "",
+  institution: "",
+  sort_order: 0,
+  active: true,
+};
 
 export function HomeCovers({ notify, confirm }: SectionProps) {
   const { rows, loading, create, update, remove } = useSupabaseCrud<Cover>(
@@ -44,12 +53,22 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
   };
 
   const handleDelete = async (row: Cover) => {
-    if (!(await confirm(`Delete cover "${row.heading || "Untitled"}"?`))) return;
+    if (!(await confirm(`Delete cover "${row.artwork_name || "Untitled"}"?`))) return;
     try {
       await remove(row.id);
       notify("success", "Cover deleted");
     } catch (e: unknown) {
       notify("error", e instanceof Error ? e.message : "Failed to delete");
+    }
+  };
+
+  const move = async (row: Cover, delta: -1 | 1) => {
+    const next = row.sort_order + delta;
+    if (next < 0 || next >= rows.length) return;
+    try {
+      await update(row.id, { sort_order: next });
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to reorder");
     }
   };
 
@@ -67,14 +86,16 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
         <h2 className="adm-section__title">Home Covers</h2>
         <button
           className="adm-btn adm-btn--primary"
-          onClick={() => setEditing({ ...EMPTY })}
+          onClick={() => setEditing({ ...EMPTY, sort_order: 0 })}
         >
           + Add Cover
         </button>
       </div>
 
       <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 16 }}>
-        3 to 8 images for the hero slideshow. Each displays for 3–5 seconds.
+        3 to 8 images for the hero slideshow. Each displays for 3–5 seconds. Artwork name, artist,
+        and institution map to the three credit lines on the home hero. Sort order is 0-based:
+        saving at 0 inserts at the front and shifts the rest down. Use Up/Down to swap.
       </p>
 
       {editing && (
@@ -83,27 +104,35 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
             value={editing.image_url ?? ""}
             onChange={(v) => setEditing({ ...editing, image_url: v })}
           />
+          <FormField
+            label="Artwork Name"
+            value={editing.artwork_name ?? ""}
+            onChange={(v) => setEditing({ ...editing, artwork_name: v })}
+            maxLength={50}
+            placeholder="As shown on the hero"
+            required
+          />
           <div className="adm-form-row">
             <FormField
-              label="Heading"
-              value={editing.heading ?? ""}
-              onChange={(v) => setEditing({ ...editing, heading: v })}
-              maxLength={50}
-              placeholder="5–8 words"
+              label="Artist"
+              value={editing.artist ?? ""}
+              onChange={(v) => setEditing({ ...editing, artist: v })}
+              maxLength={80}
+              placeholder="Artist name"
             />
             <FormField
-              label="Body"
-              value={editing.body ?? ""}
-              onChange={(v) => setEditing({ ...editing, body: v })}
+              label="Institution"
+              value={editing.institution ?? ""}
+              onChange={(v) => setEditing({ ...editing, institution: v })}
               maxLength={100}
-              placeholder="10–15 words"
+              placeholder="College or institution"
             />
           </div>
           <FormField
             label="Sort Order"
             value={String(editing.sort_order ?? 0)}
             onChange={(v) =>
-              setEditing({ ...editing, sort_order: parseInt(v) || 0 })
+              setEditing({ ...editing, sort_order: Number.isNaN(parseInt(v, 10)) ? 0 : parseInt(v, 10) })
             }
             type="number"
           />
@@ -128,27 +157,30 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
           <thead>
             <tr>
               <th>Image</th>
-              <th>Heading</th>
-              <th>Body</th>
+              <th>Artwork</th>
+              <th>Artist</th>
+              <th>Institution</th>
               <th>Order</th>
               <th>Active</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r, i) => (
               <tr key={r.id}>
                 <td>
                   {r.image_url && (
                     <img src={r.image_url} alt="" className="adm-table__thumb" />
                   )}
                 </td>
-                <td>{r.heading || "—"}</td>
-                <td>{r.body || "—"}</td>
+                <td>{r.artwork_name || "—"}</td>
+                <td>{r.artist || "—"}</td>
+                <td>{r.institution || "—"}</td>
                 <td>{r.sort_order}</td>
                 <td>{r.active ? "Yes" : "No"}</td>
                 <td>
                   <div className="adm-table__actions">
+                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
                     <button
                       className="adm-btn adm-btn--secondary adm-btn--small"
                       onClick={() => setEditing({ ...r })}

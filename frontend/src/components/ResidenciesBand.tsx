@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import "./ResidenciesBand.css";
@@ -28,17 +28,32 @@ type Props = {
  */
 export function ResidenciesBand({ slides }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
-  const bgRef = useRef<HTMLImageElement>(null);
+  const bgWrapRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
-  const slide = slides[index] ?? slides[0];
+  const safeIndex = slides.length ? Math.min(index, slides.length - 1) : 0;
+  const slide = slides[safeIndex];
+
+  useEffect(() => {
+    setIndex((current) => (slides.length ? Math.min(current, slides.length - 1) : 0));
+  }, [slides.length]);
+
+  useEffect(() => {
+    for (const item of slides) {
+      if (!item.image) continue;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = item.image;
+      void img.decode?.().catch(() => undefined);
+    }
+  }, [slides]);
 
   useGSAP(
     () => {
-      const bg = bgRef.current;
-      if (!bg || prefersReducedMotion()) return;
+      const wrap = bgWrapRef.current;
+      if (!wrap || prefersReducedMotion()) return;
 
       gsap.fromTo(
-        bg,
+        wrap,
         { yPercent: -12 },
         {
           yPercent: 12,
@@ -52,13 +67,13 @@ export function ResidenciesBand({ slides }: Props) {
         }
       );
     },
-    { scope: sectionRef, dependencies: [slide?.id] }
+    { scope: sectionRef, dependencies: [slides.length] }
   );
 
   if (!slide) return null;
 
-  const hasNext = slides.length > 1;
-  const goNext = () => setIndex((current) => (current + 1) % slides.length);
+  const hasMany = slides.length > 1;
+  const goToSlide = (next: number) => setIndex(next);
 
   return (
     <section
@@ -69,42 +84,71 @@ export function ResidenciesBand({ slides }: Props) {
     >
       <h2 className="residencies-band__label">Residencies</h2>
 
-      <div className="residencies-band__bg-wrap" aria-hidden>
-        <img ref={bgRef} src={slide.image} alt="" className="residencies-band__bg" draggable={false} />
+      <div ref={bgWrapRef} className="residencies-band__bg-wrap" aria-hidden>
+        {slides.map((item, i) => (
+          <img
+            key={item.id}
+            src={item.image}
+            alt=""
+            className={`residencies-band__bg${i === safeIndex ? " is-active" : ""}`}
+            draggable={false}
+            loading="eager"
+            decoding="async"
+          />
+        ))}
       </div>
 
       <div className="residencies-band__card-slot">
         <div className="residencies-band__card">
           <h3>{slide.title}</h3>
           <dl>
-            <div>
-              <dt>Host</dt>
-              <dd>{slide.host}</dd>
-            </div>
-            <div>
-              <dt>Period</dt>
-              <dd>{slide.period}</dd>
-            </div>
-            <div>
-              <dt>Venue</dt>
-              <dd>{slide.venue}</dd>
-            </div>
-            <div>
-              <dt>Awardees</dt>
-              <dd>{slide.awardees}</dd>
-            </div>
+            {slide.host ? (
+              <div>
+                <dt>Host</dt>
+                <dd>{slide.host}</dd>
+              </div>
+            ) : null}
+            {slide.period ? (
+              <div>
+                <dt>Period</dt>
+                <dd>{slide.period}</dd>
+              </div>
+            ) : null}
+            {slide.venue ? (
+              <div>
+                <dt>Venue</dt>
+                <dd>{slide.venue}</dd>
+              </div>
+            ) : null}
+            {slide.awardees ? (
+              <div>
+                <dt>Awardees</dt>
+                <dd>{slide.awardees}</dd>
+              </div>
+            ) : null}
           </dl>
-          <p>{slide.copy}</p>
+          {slide.copy ? <p>{slide.copy}</p> : null}
           <Link to={slide.moreHref} className="residencies-band__more">
             Learn more...
           </Link>
-          {hasNext ? (
-            <button type="button" className="residencies-band__more" onClick={goNext}>
-              Next
-            </button>
-          ) : null}
         </div>
       </div>
+
+      {hasMany ? (
+        <div className="residencies-band__dots" role="tablist" aria-label="Residency slides">
+          {slides.map((item, i) => (
+            <button
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={safeIndex === i}
+              aria-label={item.title}
+              className={safeIndex === i ? "is-active" : undefined}
+              onClick={() => goToSlide(i)}
+            />
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }

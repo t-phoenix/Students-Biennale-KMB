@@ -58,7 +58,14 @@
   max-width: none;
   object-fit: cover;
   display: block;
-  will-change: transform;
+  opacity: 0;
+  visibility: visible;
+  transition: opacity 0.6s ease;
+  will-change: opacity;
+}
+
+.residencies-band__bg.is-active {
+  opacity: 1;
 }
 
 /* Card slot — locked to the right of the full band (Figma right inset 152). */
@@ -123,8 +130,12 @@
   margin: 0 0 18px;
   font-size: 16px;
   line-height: 1.7;
-  flex: 1;
-  overflow: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 12;
 }
 
 .residencies-band__more {
@@ -145,6 +156,38 @@
 
 .residencies-band__card .residencies-band__more + .residencies-band__more {
   margin-top: 10px;
+}
+
+.residencies-band__dots {
+  position: absolute;
+  right: max(var(--grid-margin), calc((100% - 1440px) / 2 + 152px));
+  bottom: 36px;
+  z-index: 4;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+
+.residencies-band__dots button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--color-neutral-white);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.residencies-band__dots button.is-active {
+  background: var(--color-neutral-white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .residencies-band__bg {
+    transition: none;
+  }
 }
 
 @media (max-width: 899px) {
@@ -171,5 +214,10 @@
   .residencies-band__card {
     height: auto;
     max-height: none;
+  }
+
+  .residencies-band__dots {
+    right: var(--grid-margin);
+    bottom: 24px;
   }
 }

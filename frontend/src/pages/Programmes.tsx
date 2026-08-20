@@ -12,18 +12,15 @@ export function Programmes() {
   const root = useRef<HTMLDivElement>(null);
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
+  const [pastWorkshopsExpanded, setPastWorkshopsExpanded] = useState(false);
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
 
-  // The one workshop with real content (description/heroImage) leads the
-  // preview so its "half open" treatment is actually visible here, not just
-  // on the full listing — a plain slice(0, 2) would miss it since it's kept
-  // at the end of PAST_WORKSHOPS.
-  const pastWorkshopsPreview = (() => {
-    const rich = pastWorkshops.find((w) => w.description);
-    const rest = pastWorkshops.filter((w) => w !== rich);
-    return (rich ? [rich, ...rest] : pastWorkshops).slice(0, 2);
-  })();
+  const PAST_WORKSHOPS_PREVIEW = 5;
+  const visiblePastWorkshops = pastWorkshopsExpanded
+    ? pastWorkshops
+    : pastWorkshops.slice(0, PAST_WORKSHOPS_PREVIEW);
+  const canTogglePastWorkshops = pastWorkshops.length > PAST_WORKSHOPS_PREVIEW;
 
   useGSAP(
     () => {
@@ -89,7 +86,9 @@ export function Programmes() {
                   Place : {p.place}
                 </p>
                 <p>{p.blurb}</p>
-                <button type="button" className="programmes__card-button">KNOW MORE...</button>
+                <button type="button" className="programmes__card-button">
+                  KNOW MORE...
+                </button>
               </article>
             ))}
           </div>
@@ -101,7 +100,7 @@ export function Programmes() {
       <section className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
         <ul className="programmes__completed fig-c4-12">
-          {pastWorkshopsPreview.map((item) => {
+          {visiblePastWorkshops.map((item) => {
             const isOpen = Boolean(item.description);
             return (
               <li key={item.id} className={isOpen ? "is-open" : undefined}>
@@ -130,12 +129,17 @@ export function Programmes() {
             );
           })}
         </ul>
-        <Link to="/programmes/past-workshops" className="fig-cta-end programmes__more">
+        {canTogglePastWorkshops ? (
           <CtaLink
-            lines={["VIEW", "MORE"]}
+            className="fig-cta-end programmes__more"
+            lines={pastWorkshopsExpanded ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
             spacing={["0.26em", "0.135em"]}
+            onClick={() => setPastWorkshopsExpanded((open) => !open)}
+            ariaLabel={
+              pastWorkshopsExpanded ? "View fewer past workshops" : "View more past workshops"
+            }
           />
-        </Link>
+        ) : null}
       </section>
 
       {/* Order: International Awards, with Raza Scholarship nested right after
@@ -146,16 +150,23 @@ export function Programmes() {
           <div className="programmes__awards fig-c4-12 fig-sub-3">
             {awardsInternational.map((a) => (
               <Link
-                key={`international-${a.name}`}
+                key={a.id ?? `international-${a.name}-${a.artwork}`}
                 className="programmes__award"
                 to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`}
               >
                 <div className="programmes__award-media">
                   <img src={a.image || "/programmes/award.jpg"} alt="" />
                 </div>
-                <h3>{a.name}</h3>
+                <h3>
+                  {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                </h3>
                 <p>Artwork : {a.artwork}</p>
-                <p>{a.institution}</p>
+                <p>
+                  {a.artists?.length
+                    ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                      a.institution
+                    : a.institution}
+                </p>
               </Link>
             ))}
           </div>
@@ -193,16 +204,23 @@ export function Programmes() {
           <div className="programmes__awards fig-c4-12 fig-sub-3">
             {awardsNational.map((a) => (
               <Link
-                key={`national-${a.name}`}
+                key={a.id ?? `national-${a.name}-${a.artwork}`}
                 className="programmes__award"
                 to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`}
               >
                 <div className="programmes__award-media">
                   <img src={a.image || "/programmes/award.jpg"} alt="" />
                 </div>
-                <h3>{a.name}</h3>
+                <h3>
+                  {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                </h3>
                 <p>Artwork : {a.artwork}</p>
-                <p>{a.institution}</p>
+                <p>
+                  {a.artists?.length
+                    ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                      a.institution
+                    : a.institution}
+                </p>
               </Link>
             ))}
           </div>

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
+import { swapSortOrder } from "../../../lib/admin/reorder";
 import { loadProgrammeImage, upsertProgrammeCover } from "../../../lib/admin/programmeAssets";
+import { refreshProgrammes } from "../../../lib/programmes/cache";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
+import { MoveButtons } from "../../../components/admin/MoveButtons";
 import type { SectionProps } from "./types";
 
 interface Programme {
@@ -58,9 +61,9 @@ export function Workshops({ notify, confirm }: SectionProps) {
     };
   }, [rows]);
 
-  const openEdit = async (row?: Programme) => {
+  const openEdit = async (row?: Programme, defaultState: "upcoming" | "past" = "upcoming") => {
     if (!row) {
-      setEditing({ ...EMPTY });
+      setEditing({ ...EMPTY, state: defaultState });
       return;
     }
     const image =
@@ -85,6 +88,7 @@ export function Workshops({ notify, confirm }: SectionProps) {
       }
       if (_image) await upsertProgrammeCover(savedId, _image, "cover");
       await reload();
+      await refreshProgrammes();
       notify("success", editing.id ? "Workshop updated" : "Workshop created");
       setEditing(null);
     } catch (e: unknown) {
@@ -98,9 +102,23 @@ export function Workshops({ notify, confirm }: SectionProps) {
     if (!(await confirm(`Delete workshop "${row.title}"?`))) return;
     try {
       await remove(row.id);
+      await refreshProgrammes();
       notify("success", "Workshop deleted");
     } catch (e: unknown) {
       notify("error", e instanceof Error ? e.message : "Failed to delete");
+    }
+  };
+
+  const move = async (list: Programme[], row: Programme, delta: -1 | 1) => {
+    const index = list.findIndex((r) => r.id === row.id);
+    const neighbor = list[index + delta];
+    if (!neighbor) return;
+    try {
+      await swapSortOrder("programmes", row, neighbor);
+      await reload();
+      await refreshProgrammes();
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to reorder");
     }
   };
 
@@ -108,14 +126,58 @@ export function Workshops({ notify, confirm }: SectionProps) {
     return <div className="adm-loader"><div className="adm-spinner" /></div>;
   }
 
+  const upcoming = rows.filter((r) => r.state === "upcoming");
+  const past = rows.filter((r) => r.state !== "upcoming");
+
+  const renderTable = (label: string, list: Programme[], defaultState: "upcoming" | "past") => (
+    <div style={{ marginBottom: 32 }}>
+      <div className="adm-section__header">
+        <h3 style={{ fontSize: 18, fontWeight: 500 }}>{label}</h3>
+        <button
+          className="adm-btn adm-btn--secondary adm-btn--small"
+          onClick={() => openEdit(undefined, defaultState)}
+        >
+          + Add {defaultState === "upcoming" ? "upcoming" : "past"}
+        </button>
+      </div>
+      {list.length === 0 ? (
+        <div className="adm-empty">No {label.toLowerCase()} yet.</div>
+      ) : (
+        <table className="adm-table">
+          <thead>
+            <tr><th>Image</th><th>Title</th><th>Dates</th><th>Place</th><th></th></tr>
+          </thead>
+          <tbody>
+            {list.map((r, i) => (
+              <tr key={r.id}>
+                <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
+                <td>{r.title}</td>
+                <td>{r.dates || "—"}</td>
+                <td>{r.place || "—"}</td>
+                <td>
+                  <div className="adm-table__actions">
+                    <MoveButtons index={i} total={list.length} onMove={(delta) => move(list, r, delta)} />
+                    <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>Edit</button>
+                    <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+
   return (
     <div className="adm-section">
       <div className="adm-section__header">
         <h2 className="adm-section__title">Workshops</h2>
-        <button className="adm-btn adm-btn--primary" onClick={() => openEdit()}>
-          + Add Workshop
-        </button>
       </div>
+      <p className="adm-help">
+        Upcoming workshops appear under UPCOMING WORKSHOPS. Past workshops appear under PAST
+        WORKSHOPS (first five on `/programmes`, with View more / View less to expand in place).
+      </p>
 
       {editing && (
         <div className="adm-card">
@@ -144,32 +206,8 @@ export function Workshops({ notify, confirm }: SectionProps) {
         </div>
       )}
 
-      {rows.length === 0 && !editing ? (
-        <div className="adm-empty">No workshops yet.</div>
-      ) : (
-        <table className="adm-table">
-          <thead>
-            <tr><th>Image</th><th>Title</th><th>State</th><th>Dates</th><th>Place</th><th></th></tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id}>
-                <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
-                <td>{r.title}</td>
-                <td>{r.state}</td>
-                <td>{r.dates || "—"}</td>
-                <td>{r.place || "—"}</td>
-                <td>
-                  <div className="adm-table__actions">
-                    <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>Edit</button>
-                    <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>Delete</button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+      {renderTable("Upcoming workshops", upcoming, "upcoming")}
+      {renderTable("Past workshops", past, "past")}
     </div>
   );
 }

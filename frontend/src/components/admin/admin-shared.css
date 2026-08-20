@@ -73,6 +73,13 @@
   font-size: 12px;
 }
 
+.adm-btn--icon {
+  min-width: 28px;
+  padding-inline: 8px;
+  font-size: 14px;
+  line-height: 1;
+}
+
 /* ── Form Fields ── */
 
 .adm-field {
@@ -294,4 +301,130 @@
   border-radius: 4px;
   outline: none;
   background: var(--color-neutral-white);
+}
+
+/* ── Searchable select ── */
+
+.adm-search-select__trigger {
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+}
+
+.adm-search-select__placeholder,
+.adm-search-select__meta {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+.adm-search-select__panel {
+  margin-top: 6px;
+  border: 1px solid var(--color-neutral-gray-mid);
+  border-radius: 4px;
+  padding: 8px;
+  background: var(--color-neutral-white);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.adm-search-select__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.adm-search-select__option {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  padding: 8px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font: inherit;
+}
+
+.adm-search-select__option small {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.adm-search-select__option:hover,
+.adm-search-select__option.is-active {
+  background: var(--color-neutral-gray-light);
+}
+
+.adm-search-select__empty {
+  padding: 10px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.adm-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+
+.adm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--color-neutral-gray-light);
+  font-size: 13px;
+}
+
+.adm-chip button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--color-text-secondary);
+}
+
+.adm-help {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+  margin: 0 0 16px;
+}
+
+.adm-preview {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-neutral-gray-light);
+  border-radius: 6px;
+  margin-bottom: 16px;
+  background: var(--color-neutral-gray-light);
+}
+
+.adm-preview img {
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #ddd;
+}
+
+.adm-preview__title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.adm-preview__meta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }

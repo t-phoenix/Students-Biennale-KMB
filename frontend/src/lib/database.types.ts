@@ -227,6 +227,90 @@ export type Database = {
           },
         ]
       }
+      award_winner_artists: {
+        Row: {
+          award_winner_id: string
+          created_at: string
+          id: string
+          person_id: string
+          sort_order: number
+        }
+        Insert: {
+          award_winner_id: string
+          created_at?: string
+          id?: string
+          person_id: string
+          sort_order?: number
+        }
+        Update: {
+          award_winner_id?: string
+          created_at?: string
+          id?: string
+          person_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_winner_artists_award_winner_id_fkey"
+            columns: ["award_winner_id"]
+            isOneToOne: false
+            referencedRelation: "award_winners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_winner_artists_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      award_winners: {
+        Row: {
+          active: boolean
+          artwork_id: string
+          created_at: string
+          id: string
+          programme_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          artwork_id: string
+          created_at?: string
+          id?: string
+          programme_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          artwork_id?: string
+          created_at?: string
+          id?: string
+          programme_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "award_winners_artwork_id_fkey"
+            columns: ["artwork_id"]
+            isOneToOne: false
+            referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_winners_programme_id_fkey"
+            columns: ["programme_id"]
+            isOneToOne: false
+            referencedRelation: "programmes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       assets: {
         Row: {
           alt_text: string | null
@@ -472,31 +556,34 @@ export type Database = {
       home_covers: {
         Row: {
           active: boolean
-          body: string | null
+          artist: string | null
+          artwork_name: string | null
           created_at: string
-          heading: string | null
           id: string
           image_url: string
+          institution: string | null
           sort_order: number
           updated_at: string
         }
         Insert: {
           active?: boolean
-          body?: string | null
+          artist?: string | null
+          artwork_name?: string | null
           created_at?: string
-          heading?: string | null
           id?: string
           image_url: string
+          institution?: string | null
           sort_order?: number
           updated_at?: string
         }
         Update: {
           active?: boolean
-          body?: string | null
+          artist?: string | null
+          artwork_name?: string | null
           created_at?: string
-          heading?: string | null
           id?: string
           image_url?: string
+          institution?: string | null
           sort_order?: number
           updated_at?: string
         }
@@ -678,8 +765,10 @@ export type Database = {
       }
       programmes: {
         Row: {
+          awardees: string | null
           body: string | null
           dates: string | null
+          host: string | null
           id: string
           place: string | null
           published: boolean
@@ -691,8 +780,10 @@ export type Database = {
           title: string
         }
         Insert: {
+          awardees?: string | null
           body?: string | null
           dates?: string | null
+          host?: string | null
           id: string
           place?: string | null
           published?: boolean
@@ -704,8 +795,10 @@ export type Database = {
           title: string
         }
         Update: {
+          awardees?: string | null
           body?: string | null
           dates?: string | null
+          host?: string | null
           id?: string
           place?: string | null
           published?: boolean
@@ -901,6 +994,8 @@ export type Database = {
           heading: string
           id: string
           image_url: string | null
+          link_external: boolean
+          link_url: string | null
           slot: number
           updated_at: string
         }
@@ -912,6 +1007,8 @@ export type Database = {
           heading: string
           id?: string
           image_url?: string | null
+          link_external?: boolean
+          link_url?: string | null
           slot: number
           updated_at?: string
         }
@@ -923,6 +1020,8 @@ export type Database = {
           heading?: string
           id?: string
           image_url?: string | null
+          link_external?: boolean
+          link_url?: string | null
           slot?: number
           updated_at?: string
         }

@@ -19,43 +19,46 @@ import { Residencies } from "./pages/Residencies";
 import { Press } from "./pages/Press";
 import { Admin } from "./pages/admin/Admin";
 import { CatalogueProvider } from "./lib/catalogue";
+import { HomeCmsProvider } from "./lib/homeCms";
 import { EDITIONS_PATH, LATEST_EDITION } from "./data/site";
 
 export default function App() {
   return (
     <CatalogueProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="admin/*" element={<Admin />} />
-          <Route element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="artworks" element={<DiscoverArtworks />} />
-            <Route path="archive" element={<Navigate to="/artworks" replace />} />
-            <Route path="editions" element={<Navigate to={EDITIONS_PATH} replace />} />
-            <Route path="editions/:yearId" element={<EditionShell />}>
-              <Route index element={<EditionOverview />} />
-              <Route path="curators" element={<CuratorsView />} />
-              <Route path="artworks" element={<ArtworksView />} />
-              <Route path="artists" element={<ArtistsView />} />
-              <Route path="venue" element={<VenueView />} />
+        <HomeCmsProvider>
+          <Routes>
+            <Route path="admin/*" element={<Admin />} />
+            <Route element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="artworks" element={<DiscoverArtworks />} />
+              <Route path="archive" element={<Navigate to="/artworks" replace />} />
+              <Route path="editions" element={<Navigate to={EDITIONS_PATH} replace />} />
+              <Route path="editions/:yearId" element={<EditionShell />}>
+                <Route index element={<EditionOverview />} />
+                <Route path="curators" element={<CuratorsView />} />
+                <Route path="artworks" element={<ArtworksView />} />
+                <Route path="artists" element={<ArtistsView />} />
+                <Route path="venue" element={<VenueView />} />
+              </Route>
+              <Route path="editions/:yearId/:kindSeg/:id" element={<Detail />} />
+              <Route path="programmes" element={<Programmes />} />
+              <Route path="programmes/past-workshops" element={<PastWorkshops />} />
+              <Route path="programmes/past-workshops/:id" element={<PastWorkshopDetail />} />
+              <Route path="programmes/raza-scholarship" element={<RazaScholarship />} />
+              <Route path="programmes/residencies" element={<Residencies />} />
+              <Route path="press" element={<Press />} />
+              <Route
+                path="about"
+                element={<Navigate to={{ pathname: "/", hash: "about" }} replace />}
+              />
+              <Route
+                path="*"
+                element={<Navigate to="/" replace state={{ from: LATEST_EDITION.id }} />}
+              />
             </Route>
-            <Route path="editions/:yearId/:kindSeg/:id" element={<Detail />} />
-            <Route path="programmes" element={<Programmes />} />
-            <Route path="programmes/past-workshops" element={<PastWorkshops />} />
-            <Route path="programmes/past-workshops/:id" element={<PastWorkshopDetail />} />
-            <Route path="programmes/raza-scholarship" element={<RazaScholarship />} />
-            <Route path="programmes/residencies" element={<Residencies />} />
-            <Route path="press" element={<Press />} />
-            <Route
-              path="about"
-              element={<Navigate to={{ pathname: "/", hash: "about" }} replace />}
-            />
-            <Route
-              path="*"
-              element={<Navigate to="/" replace state={{ from: LATEST_EDITION.id }} />}
-            />
-          </Route>
-        </Routes>
+          </Routes>
+        </HomeCmsProvider>
       </BrowserRouter>
     </CatalogueProvider>
   );

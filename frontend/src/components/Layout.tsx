@@ -4,7 +4,7 @@ import Lenis from "lenis";
 import { syncScrollTrigger } from "../lib/motion";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { parseHomeHash, scrollToSection } from "../lib/scrollToSection";
+import { parseHomeHash, parseProgrammeHash, scrollToId, scrollToSection } from "../lib/scrollToSection";
 import { setLenisInstance } from "../lib/lenisSingleton";
 import "./Layout.css";
 
@@ -56,14 +56,11 @@ export function Layout() {
   // Land at the top of every new page, keyed on location.key (not pathname)
   // so this also fires when navigating to the same path — e.g. clicking the
   // logo while already on "/" still resets scroll. Skipped when the
-  // navigation targets a Home section (e.g. the nav's "programmes" link goes
-  // to "/#programmes"), since that case scrolls to the section instead, below.
-  // A real page-to-page change snaps instantly (the content underneath is
-  // changing anyway); staying on the same page and just resetting to top —
-  // e.g. the logo click — animates smoothly instead, since there's nothing
-  // else justifying an abrupt jump.
+  // navigation targets a Home or Programmes section hash, since those cases
+  // scroll to the section instead, below.
   useEffect(() => {
     if (location.pathname === "/" && parseHomeHash(location.hash)) return;
+    if (location.pathname === "/programmes" && parseProgrammeHash(location.hash)) return;
     const samePage = prevPathRef.current === location.pathname;
     prevPathRef.current = location.pathname;
 
@@ -80,6 +77,18 @@ export function Layout() {
     const id = parseHomeHash(location.hash);
     if (!id) return;
     requestAnimationFrame(() => scrollToSection(id));
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (location.pathname !== "/programmes") return;
+    const id = parseProgrammeHash(location.hash);
+    if (!id) return;
+    // Programmes content may still be mounting; retry once after paint.
+    const run = () => scrollToId(id);
+    requestAnimationFrame(() => {
+      run();
+      requestAnimationFrame(run);
+    });
   }, [location.pathname, location.hash]);
 
   return (

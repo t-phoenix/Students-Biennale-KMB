@@ -1,11 +1,11 @@
 import { isSupabaseConfigured, supabase } from "../supabase";
 import { FALLBACK_PROGRAMMES } from "./fallbacks";
 import { mapProgrammes } from "./mappers";
-import type { MappedProgrammes, ProgrammeAsset, ProgrammeRow } from "./types";
+import type { AwardWinnerRow, MappedProgrammes, ProgrammeAsset, ProgrammeRow } from "./types";
 
-const STORAGE_KEY = "sb-programmes-v2";
+const STORAGE_KEY = "sb-programmes-v11";
 const PROGRAMME_SELECT =
-  "id, subtype, state, title, slug, summary, body, dates, place, sort_order, published, programme_facilitators(display_name, sort_order)";
+  "id, subtype, state, title, slug, summary, body, dates, place, host, awardees, sort_order, published, programme_facilitators(display_name, sort_order)";
 
 let memory: MappedProgrammes | null = null;
 let inflight: Promise<MappedProgrammes> | null = null;
@@ -81,10 +81,83 @@ async function fetchRows(): Promise<ProgrammeRow[]> {
   return (data ?? []).filter(isProgrammeRow);
 }
 
+async function fetchAwardWinners(): Promise<AwardWinnerRow[]> {
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("award_winners")
+    .select(
+      "id, programme_id, artwork_id, sort_order, active, artworks(title), award_winner_artists(person_id, sort_order, people(name))",
+    )
+    .eq("active", true)
+    .order("sort_order");
+  if (error) return [];
+
+  const artworkIds = [...new Set((data ?? []).map((row) => row.artwork_id).filter(Boolean))];
+  const institutionByKey = new Map<string, string>();
+  if (artworkIds.length) {
+    const { data: contributors } = await supabase
+      .from("artwork_contributors")
+      .select("artwork_id, person_id, institution_name, display_name")
+      .in("artwork_id", artworkIds);
+    for (const row of contributors ?? []) {
+      if (row.person_id && row.institution_name) {
+        institutionByKey.set(`${row.artwork_id}:${row.person_id}`, row.institution_name);
+      }
+    }
+  }
+
+  return (data ?? []).map((row) => {
+    const artworksRel = (row as { artworks?: { title: string } | { title: string }[] | null }).artworks;
+    const artworkTitle = Array.isArray(artworksRel)
+      ? artworksRel[0]?.title ?? null
+      : artworksRel?.title ?? null;
+
+    const artists = (
+      (
+        row as {
+          award_winner_artists?: {
+            person_id: string;
+            sort_order: number;
+            people?: { name: string } | { name: string }[] | null;
+          }[];
+        }
+      ).award_winner_artists ?? []
+    )
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((artist) => {
+        const peopleRel = artist.people;
+        const name = Array.isArray(peopleRel)
+          ? peopleRel[0]?.name ?? ""
+          : peopleRel?.name ?? "";
+        return {
+          person_id: artist.person_id,
+          name,
+          institution: institutionByKey.get(`${row.artwork_id}:${artist.person_id}`) ?? null,
+          sort_order: artist.sort_order,
+        };
+      });
+
+    return {
+      id: row.id,
+      programme_id: row.programme_id,
+      artwork_id: row.artwork_id,
+      artwork_title: artworkTitle,
+      sort_order: row.sort_order,
+      active: row.active,
+      artists,
+    };
+  });
+}
+
 async function fetchMapped(): Promise<MappedProgrammes> {
-  const [rows, assets] = await Promise.all([fetchRows(), fetchAssets()]);
+  const [rows, assets, awardWinners] = await Promise.all([
+    fetchRows(),
+    fetchAssets(),
+    fetchAwardWinners(),
+  ]);
   if (!rows.length) return FALLBACK_PROGRAMMES;
-  return mapProgrammes(rows, assets);
+  return mapProgrammes(rows, assets, awardWinners);
 }
 
 export function peekProgrammes(): MappedProgrammes | null {

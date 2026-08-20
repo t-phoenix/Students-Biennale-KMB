@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
+import { swapSortOrder } from "../../../lib/admin/reorder";
 import {
   loadProgrammeImage,
   loadProgrammeImages,
   replaceProgrammeGallery,
   upsertProgrammeCover,
 } from "../../../lib/admin/programmeAssets";
+import { refreshProgrammes } from "../../../lib/programmes/cache";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
+import { MoveButtons } from "../../../components/admin/MoveButtons";
 import type { SectionProps } from "./types";
 
 interface Programme {
@@ -16,9 +19,10 @@ interface Programme {
   slug: string;
   subtype: string;
   state: string;
+  host: string | null;
   dates: string | null;
   place: string | null;
-  summary: string | null;
+  awardees: string | null;
   body: string | null;
   published: boolean;
   sort_order: number | null;
@@ -29,9 +33,10 @@ const EMPTY: Partial<Programme> & { _image?: string; _gallery?: string[] } = {
   slug: "",
   subtype: "residency",
   state: "past",
+  host: "",
   dates: "",
   place: "",
-  summary: "",
+  awardees: "",
   body: "",
   published: true,
   sort_order: 0,
@@ -83,12 +88,23 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
       const { _image, _gallery, ...data } = editing;
       if (!data.slug) data.slug = data.title!.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
       const savedId = data.id ?? `programme-${data.slug}`;
-      if (data.id) {
-        const { id: rowId, ...patch } = data;
+      const payload = {
+        ...data,
+        // Shared programmes.state column is required by DB; residencies don't use upcoming/past UX.
+        state: "past" as const,
+        subtype: "residency",
+        host: data.host?.trim() || null,
+        dates: data.dates?.trim() || null,
+        place: data.place?.trim() || null,
+        awardees: data.awardees?.trim() || null,
+        body: data.body?.trim() || null,
+      };
+      if (payload.id) {
+        const { id: rowId, ...patch } = payload;
         await update(rowId, patch);
       } else {
-        data.id = savedId;
-        await create(data as never);
+        payload.id = savedId;
+        await create(payload as never);
       }
       if (_image) {
         await upsertProgrammeCover(savedId, _image, "cover");
@@ -96,7 +112,8 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
       }
       if (_gallery) await replaceProgrammeGallery(savedId, _gallery.filter(Boolean));
       await reload();
-      notify("success", data.id && editing.id ? "Residency updated" : "Residency created");
+      await refreshProgrammes();
+      notify("success", editing.id ? "Residency updated" : "Residency created");
       setEditing(null);
     } catch (e: unknown) {
       notify("error", e instanceof Error ? e.message : "Failed to save");
@@ -109,14 +126,32 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
     if (!(await confirm(`Delete residency "${row.title}"?`))) return;
     try {
       await remove(row.id);
+      await refreshProgrammes();
       notify("success", "Residency deleted");
     } catch (e: unknown) {
       notify("error", e instanceof Error ? e.message : "Failed to delete");
     }
   };
 
+  const move = async (row: Programme, delta: -1 | 1) => {
+    const index = rows.findIndex((r) => r.id === row.id);
+    const neighbor = rows[index + delta];
+    if (!neighbor) return;
+    try {
+      await swapSortOrder("programmes", row, neighbor);
+      await reload();
+      await refreshProgrammes();
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to reorder");
+    }
+  };
+
   if (loading) {
-    return <div className="adm-loader"><div className="adm-spinner" /></div>;
+    return (
+      <div className="adm-loader">
+        <div className="adm-spinner" />
+      </div>
+    );
   }
 
   return (
@@ -127,24 +162,59 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
           + Add Residency
         </button>
       </div>
+      <p className="adm-help">
+        All residencies appear in the `/programmes#residencies` band and on the detail page. Title,
+        Host, Period, Venue, and Awardees show in the meta block; Description fills the card teaser
+        and full page body.
+      </p>
 
       {editing && (
         <div className="adm-card">
-          <FormField label="Title" value={editing.title ?? ""} onChange={(v) => setEditing({ ...editing, title: v })} required />
-          <FormField label="Slug" value={editing.slug ?? ""} onChange={(v) => setEditing({ ...editing, slug: v })} placeholder="Auto-generated from title" />
+          <FormField
+            label="Title"
+            value={editing.title ?? ""}
+            onChange={(v) => setEditing({ ...editing, title: v })}
+            required
+          />
+          <FormField
+            label="Slug"
+            value={editing.slug ?? ""}
+            onChange={(v) => setEditing({ ...editing, slug: v })}
+            placeholder="Auto-generated from title"
+          />
+          <FormField
+            label="Host"
+            value={editing.host ?? ""}
+            onChange={(v) => setEditing({ ...editing, host: v })}
+            placeholder="e.g. KBF"
+          />
           <div className="adm-form-row">
-            <div className="adm-field">
-              <label className="adm-field__label">State</label>
-              <select className="adm-select" value={editing.state ?? "upcoming"} onChange={(e) => setEditing({ ...editing, state: e.target.value })}>
-                <option value="upcoming">Upcoming</option>
-                <option value="past">Past</option>
-              </select>
-            </div>
-            <FormField label="Period / Dates" value={editing.dates ?? ""} onChange={(v) => setEditing({ ...editing, dates: v })} placeholder="e.g. Jan–Mar 2027" />
+            <FormField
+              label="Period"
+              value={editing.dates ?? ""}
+              onChange={(v) => setEditing({ ...editing, dates: v })}
+              placeholder="e.g. 10 June – 10 July 2026"
+            />
+            <FormField
+              label="Venue"
+              value={editing.place ?? ""}
+              onChange={(v) => setEditing({ ...editing, place: v })}
+              placeholder="e.g. SMS Hall, Mattancherry"
+            />
           </div>
-          <FormField label="Venue" value={editing.place ?? ""} onChange={(v) => setEditing({ ...editing, place: v })} />
-          <FormField label="Summary" value={editing.summary ?? ""} onChange={(v) => setEditing({ ...editing, summary: v })} multiline />
-          <FormField label="Body" value={editing.body ?? ""} onChange={(v) => setEditing({ ...editing, body: v })} multiline />
+          <FormField
+            label="Awardees"
+            value={editing.awardees ?? ""}
+            onChange={(v) => setEditing({ ...editing, awardees: v })}
+            placeholder="e.g. Name & Name"
+          />
+          <FormField
+            label="Description"
+            value={editing.body ?? ""}
+            onChange={(v) => setEditing({ ...editing, body: v })}
+            multiline
+            placeholder="Full residency description (separate paragraphs with a blank line)"
+          />
           <label className="adm-field__label">Cover / hero</label>
           <ImageUpload value={editing._image ?? ""} onChange={(v) => setEditing({ ...editing, _image: v })} />
           <label className="adm-field__label">Gallery</label>
@@ -170,7 +240,9 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
             <button className="adm-btn adm-btn--primary" onClick={save} disabled={busy}>
               {busy ? "Saving…" : editing.id ? "Update" : "Create"}
             </button>
-            <button className="adm-btn adm-btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
+            <button className="adm-btn adm-btn--ghost" onClick={() => setEditing(null)}>
+              Cancel
+            </button>
           </div>
         </div>
       )}
@@ -180,20 +252,32 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
       ) : (
         <table className="adm-table">
           <thead>
-            <tr><th>Image</th><th>Title</th><th>Period</th><th>Venue</th><th>Published</th><th></th></tr>
+            <tr>
+              <th>Image</th>
+              <th>Title</th>
+              <th>Host</th>
+              <th>Period</th>
+              <th>Awardees</th>
+              <th></th>
+            </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r, i) => (
               <tr key={r.id}>
                 <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
                 <td>{r.title}</td>
+                <td>{r.host || "—"}</td>
                 <td>{r.dates || "—"}</td>
-                <td>{r.place || "—"}</td>
-                <td>{r.published ? "Yes" : "No"}</td>
+                <td>{r.awardees || "—"}</td>
                 <td>
                   <div className="adm-table__actions">
-                    <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>Edit</button>
-                    <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>Delete</button>
+                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
+                    <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>
+                      Edit
+                    </button>
+                    <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>
+                      Delete
+                    </button>
                   </div>
                 </td>
               </tr>

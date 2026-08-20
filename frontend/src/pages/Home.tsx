@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useRef, useState, useCallback } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { SpotlightModal } from "../components/SpotlightModal";
@@ -11,8 +11,8 @@ import {
 } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
+import { useHomeCms } from "../lib/homeCms";
 import { useProgrammes } from "../lib/programmes";
-import { supabase } from "../lib/supabase";
 import "./Home.css";
 
 const FALLBACK_UPDATES = [
@@ -33,36 +33,32 @@ const FALLBACK_UPDATES = [
   },
 ] as const;
 
-function useHomeCovers() {
-  const [covers, setCovers] = useState<{ id: string; image_url: string; heading: string | null; body: string | null }[]>([]);
-  useEffect(() => {
-    if (!supabase) return;
-    supabase
-      .from("home_covers")
-      .select("*")
-      .eq("active", true)
-      .order("sort_order")
-      .then(({ data }) => {
-        if (data?.length) setCovers(data);
-      });
-  }, []);
-  return covers;
-}
+function buildHeroTimeline(
+  slides: HTMLElement[],
+  startIndex: number,
+  onSlideChange: (index: number) => void,
+  tlRef: { current: gsap.core.Timeline | null },
+) {
+  tlRef.current?.kill();
+  gsap.killTweensOf(slides);
+  gsap.set(slides, { opacity: 0, visibility: "visible" });
+  gsap.set(slides[startIndex], { opacity: 1 });
+  onSlideChange(startIndex);
 
-function useUpdateCards() {
-  const [cards, setCards] = useState<{ id: string; slot: number; heading: string; body: string; image_url: string | null; card_type: string }[]>([]);
-  useEffect(() => {
-    if (!supabase) return;
-    supabase
-      .from("update_cards")
-      .select("*")
-      .eq("active", true)
-      .order("slot")
-      .then(({ data }) => {
-        if (data?.length) setCards(data);
-      });
-  }, []);
-  return cards;
+  const tl = gsap.timeline({ repeat: -1 });
+  const len = slides.length;
+  for (let step = 0; step < len; step++) {
+    const i = (startIndex + step) % len;
+    const el = slides[i];
+    const next = slides[(i + 1) % len];
+    const nextIdx = (i + 1) % len;
+    tl.to({}, { duration: 4 })
+      .to(el, { opacity: 0, duration: 0.6, ease: "power2.out" }, ">")
+      .to(next, { opacity: 1, duration: 0.6, ease: "power2.out" }, "<")
+      .call(() => onSlideChange(nextIdx));
+  }
+  tlRef.current = tl;
+  return tl;
 }
 
 /** Continuous auto-scroll strip, right→left, in the Sensing Grounds row. */
@@ -89,30 +85,40 @@ const PRESS_LIST = [
 ];
 
 export function Home() {
+  const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
   const editionMoreRef = useRef<HTMLDivElement>(null);
   const sensingTrackRef = useRef<HTMLDivElement>(null);
+  const heroTlRef = useRef<gsap.core.Timeline | null>(null);
+  const slidesRef = useRef<HTMLElement[]>([]);
+  const slideIndexRef = useRef(0);
   const [slide, setSlide] = useState(0);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();
-  const dynamicCovers = useHomeCovers();
-  const dynamicCards = useUpdateCards();
+  const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
   const covers = dynamicCovers.length
     ? dynamicCovers
     : Array.from({ length: 5 }, (_, i) => ({
         id: `fallback-${i}`,
         image_url: "/home/hero.jpg",
-        heading: "Artwork Name",
-        body: "Artist · Institution",
+        artwork_name: "Artwork Name",
+        artist: "Artist",
+        institution: "Institution",
       }));
-  const cards = dynamicCards.length
-    ? dynamicCards.map((c) => ({ id: c.id, label: c.heading, body: c.body }))
+  const cards = cmsCards.length
+    ? cmsCards.map((c) => ({
+        id: c.id,
+        label: c.heading,
+        body: c.body,
+        href: c.link_url?.trim() || null,
+        external: c.link_external,
+      }))
     : [...FALLBACK_UPDATES];
   const currentCover = covers[slide] ?? covers[0];
-  const creditHeading = (currentCover?.heading || "Artwork Name").trim();
+  const creditHeading = (currentCover?.artwork_name || "Artwork Name").trim();
   const creditParts = creditHeading.split(/\s+/);
   const creditArtwork =
     creditParts.length === 2 ? (
@@ -124,9 +130,8 @@ export function Home() {
     ) : (
       creditHeading
     );
-  const [creditArtist, creditInst] = (currentCover?.body || "Artist · Institution")
-    .split(/\s*[·|]\s*|\n/)
-    .map((part) => part.trim());
+  const creditArtist = (currentCover?.artist || "Artist").trim();
+  const creditInst = (currentCover?.institution || "Institution").trim();
   const workshopThumb =
     upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "/home/thumb-workshops.jpg";
   const residencyThumb = residencies[0]?.heroImage || "/home/thumb-residencies.jpg";
@@ -145,6 +150,46 @@ export function Home() {
         paragraphs: current.overallCuratorialNote.split("\n\n").filter(Boolean),
       }
     : SENSING_GROUNDS_NOTE;
+
+  const goToSlide = useCallback((index: number) => {
+    const slides = slidesRef.current;
+    if (!slides.length || index < 0 || index >= slides.length) return;
+    if (index === slideIndexRef.current) return;
+
+    heroTlRef.current?.pause();
+    gsap.killTweensOf(slides);
+
+    const prev = slideIndexRef.current;
+    gsap.set(slides, { visibility: "visible" });
+
+    if (prefersReducedMotion()) {
+      gsap.set(slides, { opacity: 0 });
+      gsap.set(slides[index], { opacity: 1 });
+    } else {
+      slides.forEach((el, i) => {
+        if (i !== prev && i !== index) gsap.set(el, { opacity: 0 });
+      });
+      gsap.set(slides[prev], { opacity: 1 });
+      gsap.set(slides[index], { opacity: 0 });
+      gsap.to(slides[prev], { opacity: 0, duration: 0.35, ease: "power2.out", overwrite: true });
+      gsap.to(slides[index], { opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
+    }
+
+    slideIndexRef.current = index;
+    setSlide(index);
+  }, []);
+
+  const openCard = useCallback(
+    (href: string | null | undefined, external?: boolean) => {
+      if (!href) return;
+      if (external || /^https?:\/\//i.test(href)) {
+        window.open(href, "_blank", "noopener,noreferrer");
+        return;
+      }
+      navigate(href.startsWith("/") ? href : `/${href}`);
+    },
+    [navigate],
+  );
 
   useGSAP(
     () => {
@@ -244,25 +289,33 @@ export function Home() {
           );
 
           const slides = gsap.utils.toArray<HTMLElement>(".home-hero__slide");
+          slidesRef.current = slides;
           if (slides.length) {
-            gsap.set(slides, { autoAlpha: 0 });
-            gsap.set(slides[0], { autoAlpha: 1 });
-            const tl = gsap.timeline({ repeat: -1 });
-            slides.forEach((el, i) => {
-              const next = slides[(i + 1) % slides.length];
-              tl.to({}, { duration: 4 })
-                .to(el, { autoAlpha: 0, duration: 0.6, ease: "power2.out" }, ">")
-                .to(next, { autoAlpha: 1, duration: 0.6, ease: "power2.out" }, "<")
-                .call(() => setSlide((i + 1) % slides.length));
-            });
+            slideIndexRef.current = 0;
+            const tl = buildHeroTimeline(slides, 0, (index) => {
+              slideIndexRef.current = index;
+              setSlide(index);
+            }, heroTlRef);
             const hero = root.querySelector<HTMLElement>(".home-hero");
             const pause = () => tl.pause();
-            const play = () => tl.play();
+            const play = () => {
+              buildHeroTimeline(
+                slidesRef.current,
+                slideIndexRef.current,
+                (index) => {
+                  slideIndexRef.current = index;
+                  setSlide(index);
+                },
+                heroTlRef,
+              );
+            };
             hero?.addEventListener("pointerenter", pause);
             hero?.addEventListener("pointerleave", play);
             hero?.addEventListener("focusin", pause);
             hero?.addEventListener("focusout", play);
             cleanupHero = () => {
+              heroTlRef.current?.kill();
+              heroTlRef.current = null;
               hero?.removeEventListener("pointerenter", pause);
               hero?.removeEventListener("pointerleave", play);
               hero?.removeEventListener("focusin", pause);
@@ -272,8 +325,8 @@ export function Home() {
         },
         onReduce: () => {
           gsap.set(".home-hero__card", { autoAlpha: 1 });
-          gsap.set(".home-hero__slide", { autoAlpha: 0 });
-          gsap.set(".home-hero__slide:first-child", { autoAlpha: 1 });
+          gsap.set(".home-hero__slide", { opacity: 0, visibility: "visible" });
+          gsap.set(".home-hero__slide:first-child", { opacity: 1 });
         },
       });
 
@@ -281,7 +334,7 @@ export function Home() {
     },
     {
       scope: rootRef,
-      dependencies: [dynamicCovers.length, dynamicCards.length],
+      dependencies: [dynamicCovers.length, cmsCards.length],
       revertOnUpdate: true,
     }
   );
@@ -296,7 +349,10 @@ export function Home() {
               key={c.id}
               className="home-hero__slide home-hero__bg"
               src={c.image_url}
-              alt={c.heading ?? ""}
+              alt={c.artwork_name ?? ""}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
             />
           ))}
         </div>
@@ -313,9 +369,14 @@ export function Home() {
             {cards.map((item, i, arr) => (
               <article
                 key={item.id}
-                className="home-hero__card"
+                className={`home-hero__card${"href" in item && item.href ? " home-hero__card--linked" : ""}`}
                 style={{ zIndex: arr.length - i }}
                 data-offset={i}
+                onClick={
+                  "href" in item && item.href
+                    ? () => openCard(item.href, "external" in item ? item.external : false)
+                    : undefined
+                }
               >
                 <div className="home-hero__card-inner">
                   <h2 className="home-hero__card-title">{item.label}</h2>
@@ -339,7 +400,7 @@ export function Home() {
                   role="tab"
                   aria-selected={slide === i}
                   className={slide === i ? "is-active" : undefined}
-                  onClick={() => setSlide(i)}
+                  onClick={() => goToSlide(i)}
                 />
               ))}
             </div>

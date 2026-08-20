@@ -13,8 +13,37 @@ export type UpcomingWorkshop = {
   image: string;
 };
 
+export type AwardArtist = {
+  name: string;
+  institution: string;
+  personId?: string;
+};
+
 export type AwardWinnerCard = AwardWinner & {
   image: string;
+  id?: string;
+  artists?: AwardArtist[];
+  year?: string;
+  venue?: string;
+  dimensions?: string;
+  materials?: string[];
+  description?: string;
+  curator?: string;
+};
+
+export type AwardWinnerRow = {
+  id: string;
+  programme_id: string;
+  artwork_id: string;
+  artwork_title: string | null;
+  sort_order: number;
+  active: boolean;
+  artists: {
+    person_id: string;
+    name: string;
+    institution: string | null;
+    sort_order: number;
+  }[];
 };
 
 export type RazaScholar = {
@@ -70,6 +99,8 @@ export type ProgrammeRow = {
   body: string | null;
   dates: string | null;
   place: string | null;
+  host: string | null;
+  awardees: string | null;
   sort_order: number | null;
   published: boolean;
   programme_facilitators: ProgrammeFacilitatorRow[] | null;

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
+import { swapSortOrder } from "../../../lib/admin/reorder";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
+import { MoveButtons } from "../../../components/admin/MoveButtons";
 import type { SectionProps } from "./types";
 
 interface PressItem {
@@ -29,9 +31,9 @@ const EMPTY: Partial<PressItem> & { _image?: string } = {
 };
 
 export function PressItems({ notify, confirm }: SectionProps) {
-  const { rows, loading, create, update, remove } = useSupabaseCrud<PressItem>(
+  const { rows, loading, create, update, remove, reload } = useSupabaseCrud<PressItem>(
     "press_items",
-    { orderBy: "published_at" },
+    { orderBy: "sort_order" },
   );
   const [editing, setEditing] = useState<(Partial<PressItem> & { _image?: string }) | null>(null);
   const [busy, setBusy] = useState(false);
@@ -43,6 +45,7 @@ export function PressItems({ notify, confirm }: SectionProps) {
       const { _image, ...data } = editing;
       void _image;
       if (!data.slug) data.slug = data.title!.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+      if (data.sort_order == null) data.sort_order = rows.length;
       if (data.id) {
         const { id, ...patch } = data;
         await update(id, patch);
@@ -70,6 +73,18 @@ export function PressItems({ notify, confirm }: SectionProps) {
     }
   };
 
+  const move = async (row: PressItem, delta: -1 | 1) => {
+    const index = rows.findIndex((r) => r.id === row.id);
+    const neighbor = rows[index + delta];
+    if (!neighbor) return;
+    try {
+      await swapSortOrder("press_items", row, neighbor);
+      await reload();
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to reorder");
+    }
+  };
+
   if (loading) {
     return <div className="adm-loader"><div className="adm-spinner" /></div>;
   }
@@ -78,10 +93,17 @@ export function PressItems({ notify, confirm }: SectionProps) {
     <div className="adm-section">
       <div className="adm-section__header">
         <h2 className="adm-section__title">Press</h2>
-        <button className="adm-btn adm-btn--primary" onClick={() => setEditing({ ...EMPTY })}>
+        <button
+          className="adm-btn adm-btn--primary"
+          onClick={() => setEditing({ ...EMPTY, sort_order: rows.length })}
+        >
           + Add Article
         </button>
       </div>
+
+      <p style={{ fontSize: 13, color: "var(--color-text-secondary)", marginBottom: 16 }}>
+        Use Up / Down to set the display order on the site.
+      </p>
 
       {editing && (
         <div className="adm-card">
@@ -108,16 +130,18 @@ export function PressItems({ notify, confirm }: SectionProps) {
       ) : (
         <table className="adm-table">
           <thead>
-            <tr><th>Title</th><th>Date</th><th>Published</th><th></th></tr>
+            <tr><th>Title</th><th>Date</th><th>Order</th><th>Published</th><th></th></tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
+            {rows.map((r, i) => (
               <tr key={r.id}>
                 <td>{r.title}</td>
                 <td>{r.published_at ? new Date(r.published_at).toLocaleDateString() : "—"}</td>
+                <td>{r.sort_order ?? "—"}</td>
                 <td>{r.published ? "Yes" : "No"}</td>
                 <td>
                   <div className="adm-table__actions">
+                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
                     <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => setEditing({ ...r, _image: "" })}>Edit</button>
                     <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>Delete</button>
                   </div>
