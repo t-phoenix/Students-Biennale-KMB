@@ -93,14 +93,35 @@ Sign out/in so the JWT refreshes. The CMS client is still the anon key plus that
 3. `supabase --workdir database db push`
 4. Create the CMS user and set `app_metadata.role` as above.
 
-**Frontend** (Vercel or equivalent)
+**Frontend — full site** (Vercel project 1 · internal / preview)
 
-1. Root directory: `frontend`
+1. Root directory: `frontend` (or repo root using root [`vercel.json`](vercel.json))
 2. Build: `npm run build` · output: `dist`
 3. Env: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` only
-4. Auth redirect URLs must include the production origin
+4. Auth redirect URLs must include every origin you use (see launch flip below)
+5. **Do not** attach the public custom domain here while coming-soon is live
+6. Share the Production URL `https://<project>.vercel.app` with the team (Deployments tab). Optional: Settings → Deployment Protection → protect **Preview** deployments only
 
 `service_role` belongs in a private worker or GitHub Actions secret for imports — never a `VITE_` / `NEXT_PUBLIC_` variable.
+
+**Frontend — coming soon** (Vercel project 2 · public custom domain)
+
+Static site in [`frontend/coming-soon/`](frontend/coming-soon/) (looping video, no Vite build).
+
+1. In Vercel: **Add New Project** → same GitHub repo → set **Root Directory** to `frontend/coming-soon`
+2. Framework Preset: **Other** · Build Command: leave empty · Output Directory: `.` (or leave default for static)
+3. Deploy from `main`. Confirm `https://<coming-soon-project>.vercel.app` shows the full-bleed looping video
+4. Settings → **Domains** → add your apex (and `www` if needed). Vercel shows the exact DNS records
+5. At your DNS registrar, add what Vercel lists (typical: apex **A** → `76.76.21.21`; `www` **CNAME** → `cname.vercel-dns.com`)
+6. Wait until the domain shows SSL **Valid**, then smoke-test: custom domain = video; full-site `*.vercel.app` = React app
+
+**Launch flip** (when the full site should own the public domain)
+
+1. Remove the custom domain from the coming-soon Vercel project (or delete that project)
+2. Add the same domain on the full-site Vercel project
+3. DNS usually stays unchanged if both projects are on Vercel; re-check SSL Valid
+4. In Supabase Auth → URL configuration, allow the production domain (and keep `*.vercel.app` if still used)
+5. Stop deploying / archive the coming-soon project when finished
 
 ## What is not in git
 
