@@ -316,7 +316,7 @@ export function Home() {
         <div className="fig-grid home-sensing__cta">
           <CtaLink
             className="fig-cta-end"
-            to="/editions/2025-26/curators"
+            to="/editions/2025-26"
             lines={["EXPLORE", "EDITION"]}
             spacing={["0.135em", "0.2em"]}
           />
@@ -353,8 +353,8 @@ export function Home() {
             {(
               [
                 { label: "WORKSHOPS", hash: "workshops" },
-                { label: "RESIDENCIES", hash: "residencies" },
                 { label: "AWARDS", hash: "awards" },
+                { label: "RESIDENCIES", hash: "residencies" },
               ] as const
             ).map((tab) => (
               <Link
@@ -371,11 +371,11 @@ export function Home() {
             <Link to="/programmes#workshops">
               <img src="/home/thumb-workshops.jpg" alt="" />
             </Link>
-            <Link to="/programmes#residencies">
-              <img src="/home/thumb-residencies.jpg" alt="" />
-            </Link>
             <Link to="/programmes#awards">
               <img src="/home/thumb-awards.jpg" alt="" />
+            </Link>
+            <Link to="/programmes#residencies">
+              <img src="/home/thumb-residencies.jpg" alt="" />
             </Link>
           </div>
         </div>
@@ -390,7 +390,7 @@ export function Home() {
               <div>
                 <div className="home-press__featured-head">
                   <h3>KBF Announces Curators For Students&apos; Biennale 2025-26</h3>
-                  <time>4 dec 2025</time>
+                  <time>4 Dec 2025</time>
                 </div>
                 <p>
                   The Kochi Biennale Foundation (KBF) has announced the curators for Students&apos;

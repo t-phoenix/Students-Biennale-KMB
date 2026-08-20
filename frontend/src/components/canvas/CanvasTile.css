@@ -13,12 +13,23 @@
   -webkit-user-select: none;
   user-select: none;
   container-type: inline-size;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  transition: box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .canvas-tile:hover {
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px) scale(1.02);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-tile {
+    transition: none;
+  }
+
+  .canvas-tile:hover {
+    transform: none;
+  }
 }
 
 .canvas-tile.is-dimmed {

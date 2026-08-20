@@ -63,31 +63,20 @@ export function RazaScholarship() {
         </div>
       </div>
 
-      <div className="fig-grid raza-scholarship__scholars-section raza-reveal">
-        <div className="fig-c4-9">
-          <div className="raza-scholarship__scholar">
-            <img src={RAZA_SCHOLARS[0].image} alt="" className="raza-scholarship__scholar-image" />
-            <button
-              type="button"
-              className="raza-scholarship__scholar-link"
-              onClick={() => setOpenScholarId(RAZA_SCHOLARS[0].id)}
-            >
-              <h2>{RAZA_SCHOLARS[0].name}</h2>
-            </button>
-          </div>
-        </div>
-
-        <div className="fig-c10-12">
-          <div className="raza-scholarship__scholar">
-            <img src={RAZA_SCHOLARS[1].image} alt="" className="raza-scholarship__scholar-image" />
-            <button
-              type="button"
-              className="raza-scholarship__scholar-link"
-              onClick={() => setOpenScholarId(RAZA_SCHOLARS[1].id)}
-            >
-              <h2>{RAZA_SCHOLARS[1].name}</h2>
-            </button>
-          </div>
+      <div className="fig-grid raza-reveal">
+        <div className="raza-scholarship__scholars-section fig-c4-12 fig-sub-2">
+          {RAZA_SCHOLARS.map((scholar) => (
+            <div className="raza-scholarship__scholar" key={scholar.id}>
+              <img src={scholar.image} alt="" className="raza-scholarship__scholar-image" />
+              <button
+                type="button"
+                className="raza-scholarship__scholar-link"
+                onClick={() => setOpenScholarId(scholar.id)}
+              >
+                <h2>{scholar.name}</h2>
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 

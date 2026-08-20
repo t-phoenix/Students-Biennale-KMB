@@ -36,9 +36,9 @@
 }
 
 .site-header__discover {
-  font-size: 14px;
+  font-size: 18px;
   line-height: var(--type-caption-line);
-  font-weight: 400;
+  font-weight: 500;
   text-transform: uppercase;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -59,7 +59,7 @@
 
 .site-header__nav a,
 .site-header__sep {
-  font-size: 14px;
+  font-size: 18px;
   line-height: var(--type-caption-line);
   font-weight: 400;
   text-transform: uppercase;

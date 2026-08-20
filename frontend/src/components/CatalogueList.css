@@ -42,7 +42,7 @@
 
 .catalogue__row-title {
   grid-column: 1;
-  font-size: var(--type-subtitle-size);
+  font-size: 18px;
   line-height: 21px;
   font-weight: 500;
   letter-spacing: 1.6px;
@@ -56,18 +56,38 @@
   color: var(--color-text-secondary);
 }
 
-/* Small chevron at the row's right edge (Figma Group 112, ~16px square). */
+/* "+" / "-" toggle mark at the row's right edge — two bars forming a plus;
+   the vertical bar collapses to leave a minus when the row is active. */
 .catalogue__row-mark {
   grid-column: 2;
   grid-row: 1 / -1;
   align-self: center;
+  position: relative;
   width: 16px;
   height: 16px;
-  border-top: 1px solid var(--color-text-primary);
-  border-right: 1px solid var(--color-text-primary);
-  transform: rotate(45deg);
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease;
+}
+
+.catalogue__row-mark::before,
+.catalogue__row-mark::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: var(--color-text-primary);
+  transform: translate(-50%, -50%);
+  transition: transform 0.2s ease;
+}
+
+.catalogue__row-mark::before {
+  width: 14px;
+  height: 1px;
+}
+
+.catalogue__row-mark::after {
+  width: 1px;
+  height: 14px;
 }
 
 .catalogue__row.is-active .catalogue__row-mark,
@@ -76,8 +96,10 @@
   opacity: 1;
 }
 
-.catalogue__row-link:hover .catalogue__row-mark {
-  transform: rotate(45deg) translate(2px, -2px);
+.catalogue__row.is-active .catalogue__row-mark::after,
+.catalogue__row-link:hover .catalogue__row-mark::after,
+.catalogue__row-link:focus-visible .catalogue__row-mark::after {
+  transform: translate(-50%, -50%) scaleY(0);
 }
 
 .catalogue__row-link--static {

@@ -26,6 +26,12 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
   const backdropRef = useRef<HTMLButtonElement>(null);
   const artwork = useMemo(() => findArtworkForItem(item), [item]);
 
+  // FLIP transform that makes the full-size sheet exactly overlay the
+  // clicked tile's position/size — computed once on open, reused in reverse
+  // on close, so the sheet visibly grows out of and shrinks back into the
+  // very tile the user clicked, not just a generic fade/scale.
+  const flip = useRef({ x: 0, y: 0, scaleX: 1, scaleY: 1 });
+
   const animateClose = useCallback(() => {
     const sheet = sheetRef.current;
     const backdrop = backdropRef.current;
@@ -35,8 +41,19 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
     }
     gsap
       .timeline({ onComplete: onClose })
-      .to(backdrop, { autoAlpha: 0, duration: 0.2 }, 0)
-      .to(sheet, { autoAlpha: 0, scale: 0.92, duration: 0.28, ease: "power2.in" }, 0);
+      .to(backdrop, { autoAlpha: 0, duration: 0.25 }, 0)
+      .to(
+        sheet,
+        {
+          x: flip.current.x,
+          y: flip.current.y,
+          scaleX: flip.current.scaleX,
+          scaleY: flip.current.scaleY,
+          duration: 0.45,
+          ease: "power2.in",
+        },
+        0
+      );
   }, [onClose]);
 
   useGSAP(
@@ -46,22 +63,25 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
       if (!sheet || !backdrop) return;
 
       if (prefersReducedMotion()) {
-        gsap.set([sheet, backdrop], { autoAlpha: 1, scale: 1 });
+        gsap.set([sheet, backdrop], { autoAlpha: 1, x: 0, y: 0, scaleX: 1, scaleY: 1 });
         return;
       }
 
-      const cx = origin.left + origin.width / 2;
-      const cy = origin.top + origin.height / 2;
-      gsap.set(sheet, {
-        autoAlpha: 0,
-        scale: 0.85,
-        transformOrigin: `${cx}px ${cy}px`,
-      });
+      // Measure the sheet at its natural full-size layout, then compute the
+      // transform that shrinks it down onto the origin tile's exact rect.
+      const final = sheet.getBoundingClientRect();
+      const scaleX = origin.width / final.width;
+      const scaleY = origin.height / final.height;
+      const x = origin.left + origin.width / 2 - (final.left + final.width / 2);
+      const y = origin.top + origin.height / 2 - (final.top + final.height / 2);
+      flip.current = { x, y, scaleX, scaleY };
+
+      gsap.set(sheet, { transformOrigin: "50% 50%", autoAlpha: 1, x, y, scaleX, scaleY });
       gsap.set(backdrop, { autoAlpha: 0 });
       gsap
         .timeline()
         .to(backdrop, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 0)
-        .to(sheet, { autoAlpha: 1, scale: 1, duration: 0.45, ease: "power3.out" }, 0);
+        .to(sheet, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.55, ease: "power3.out" }, 0);
     },
     { dependencies: [item.id, origin], scope: rootRef }
   );

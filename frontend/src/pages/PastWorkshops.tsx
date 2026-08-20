@@ -25,19 +25,36 @@ export function PastWorkshops() {
   return (
     <div ref={root} className="past-workshops">
       <div className="fig-grid past-workshops__section past-workshops-reveal">
-        <h1 className="fig-label">PAST WORKSHOPS</h1>
+        <h1 className="fig-label fig-subheading">PAST WORKSHOPS</h1>
         <ul className="past-workshops__list fig-c4-12">
-          {PAST_WORKSHOPS.map((item) => (
-            <li key={item.id}>
-              <Link to={`/programmes/past-workshops/${item.id}`}>
-                <div>
-                  <span className="past-workshops__title">{item.title}</span>
-                  <span className="past-workshops__sub">Facilitators: {item.facilitators}</span>
-                </div>
-                <span className="past-workshops__year">{item.year}</span>
-              </Link>
-            </li>
-          ))}
+          {PAST_WORKSHOPS.map((item) => {
+            const isOpen = Boolean(item.description);
+            return (
+              <li key={item.id} className={isOpen ? "is-open" : undefined}>
+                <Link to={`/programmes/past-workshops/${item.id}`}>
+                  {isOpen && item.heroImage ? (
+                    <span className="past-workshops__thumb">
+                      <img src={item.heroImage} alt="" />
+                    </span>
+                  ) : null}
+                  <span className="past-workshops__body">
+                    <span className="past-workshops__row-head">
+                      <span className="past-workshops__title">{item.title}</span>
+                      <span className="past-workshops__year">{item.year}</span>
+                    </span>
+                    <span className="past-workshops__sub">Facilitators: {item.facilitators}</span>
+                    {isOpen ? (
+                      <span className="past-workshops__snippet">
+                        {item.description!.length > 220
+                          ? `${item.description!.slice(0, 220).trimEnd()}…`
+                          : item.description}
+                      </span>
+                    ) : null}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

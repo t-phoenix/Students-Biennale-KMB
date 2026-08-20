@@ -95,13 +95,11 @@ export function Header() {
         />
       </Link>
 
-      <Link
-        ref={discoverRef}
-        to="/artworks"
-        className={`site-header__discover${location.pathname === "/artworks" ? " is-active" : ""}`}
-      >
-        [Discover Artworks]
-      </Link>
+      {location.pathname === "/artworks" ? null : (
+        <Link ref={discoverRef} to="/artworks" className="site-header__discover">
+          [Discover Artworks]
+        </Link>
+      )}
 
       <nav className="site-header__nav" aria-label="Primary">
         {NAV.map((item, i) => (

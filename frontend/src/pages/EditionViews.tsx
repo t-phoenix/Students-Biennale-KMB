@@ -357,6 +357,7 @@ export function VenueView() {
   const { yearId = "2025-26" } = useParams();
   const root = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"grid" | "list">("grid");
   const items = useMemo(
     () =>
       VENUES.filter(
@@ -367,60 +368,79 @@ export function VenueView() {
       ),
     [query]
   );
-  useStagger(root, query);
+  useStagger(root, `${view}-${query}`);
 
   return (
     <div ref={root} className="edition-view">
-      <div className="edition-toolbar fig-band-9">
-        <label className="edition-search">
-          <span className="sr-only">Search venues</span>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search"
-          />
-        </label>
-      </div>
-      {/* Image 482x300 on cols 4-8, copy + links on cols 9-12 (Figma 1:1223). */}
-      <div className="edition-venue-rows">
-        {items.map((v) => {
-          const blurb =
-            v.description.length > 280
-              ? `${v.description.slice(0, 280).trimEnd()}…`
-              : v.description;
-          return (
-            <article key={v.id} className="edition-venue">
-              <div className="edition-venue__media">
-                {v.image ? <img src={v.image} alt="" /> : null}
-              </div>
-              <div className="edition-venue__copy">
-                <h3>{v.name}</h3>
-                <p>
-                  {blurb}{" "}
-                  <Link to={`/editions/${yearId}/venue/${v.id}`}>Read more...</Link>
-                </p>
-                <p className="edition-venue__links">
-                  {v.mapUrl ? (
-                    <a href={v.mapUrl} target="_blank" rel="noreferrer">
-                      Google Map
-                    </a>
-                  ) : (
-                    <span>Google Map</span>
-                  )}
-                  <span aria-hidden>/</span>
-                  {v.tourUrl ? (
-                    <a href={v.tourUrl} target="_blank" rel="noreferrer">
-                      Virtual Tour
-                    </a>
-                  ) : (
-                    <span>Virtual Tour</span>
-                  )}
-                </p>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+      <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
+      {view === "list" ? (
+        <CatalogueList
+          rows={items.map((v) => ({
+            id: v.id,
+            title: v.name,
+            sub: v.address,
+            href: `/editions/${yearId}/venue/${v.id}`,
+          }))}
+          previewFor={(id) => {
+            const v = VENUES.find((x) => x.id === id);
+            if (!v) return null;
+            return {
+              title: v.name,
+              image: v.image,
+              fields: [{ label: "Address :", values: [v.address] }],
+              note: v.description,
+              noteHref: `/editions/${yearId}/venue/${v.id}`,
+            };
+          }}
+        />
+      ) : (
+        /* Media + copy share the toolbar's 9-col band (cols 1-8), leaving
+           col 9 clear under the grid/list toggle. */
+        <div className="edition-venue-rows">
+          {items.map((v) => {
+            const blurb =
+              v.description.length > 600
+                ? `${v.description.slice(0, 600).trimEnd()}…`
+                : v.description;
+            return (
+              <article key={v.id} className="edition-venue">
+                <div className="edition-venue__media">
+                  {v.image ? <img src={v.image} alt="" /> : null}
+                </div>
+                <div className="edition-venue__copy">
+                  <Link to={`/editions/${yearId}/venue/${v.id}`}>
+                    <h3>{v.name}</h3>
+                  </Link>
+                  <p>{blurb}</p>
+                  <Link
+                    className="edition-venue__more"
+                    to={`/editions/${yearId}/venue/${v.id}`}
+                  >
+                    Read more...
+                  </Link>
+                  <p className="edition-venue__links">
+                    {v.mapUrl ? (
+                      <a href={v.mapUrl} target="_blank" rel="noreferrer">
+                        Google Map
+                      </a>
+                    ) : (
+                      <span>Google Map</span>
+                    )}
+                    <span aria-hidden>/</span>
+                    {v.tourUrl ? (
+                      <a href={v.tourUrl} target="_blank" rel="noreferrer">
+                        Virtual Tour
+                      </a>
+                    ) : (
+                      <span>Virtual Tour</span>
+                    )}
+                  </p>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

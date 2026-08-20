@@ -23,12 +23,18 @@ export function ArtworkDetailBody({ artwork: a }: Props) {
 
   return (
     <div key={a.id}>
-      <div className="detail__hero detail-reveal">
+      <div className="detail__hero detail__hero--cover detail-reveal">
         {slide ? (
           <img src={slide} alt="" className="detail__hero-img" />
         ) : (
           <div className="detail__hero-fallback" aria-hidden />
         )}
+        <div className="detail__hero-scrim" aria-hidden />
+        <div className="fig-grid detail__hero-caption">
+          <p className="fig-label fig-subheading detail__label detail-reveal">Artworks Title</p>
+          <h1 className="fig-c4-9 detail__title detail-reveal">{a.title}</h1>
+          <span className="fig-c10-12 detail__year detail-reveal">{a.year}</span>
+        </div>
         {slides.length > 1 ? (
           <div className="detail__hero-dots" role="tablist" aria-label="Artwork images">
             {slides.map((_, i) => (
@@ -46,10 +52,6 @@ export function ArtworkDetailBody({ artwork: a }: Props) {
       </div>
 
       <div className="fig-grid detail__section">
-        <p className="fig-label fig-subheading detail__label detail-reveal">Artworks Title</p>
-        <h1 className="fig-c4-9 detail__title detail-reveal">{a.title}</h1>
-        <span className="fig-c10-12 detail__year detail-reveal">{a.year}</span>
-
         <dl className="fig-c4-12 detail__meta detail-reveal">
           <div>
             <dt>Venue :</dt>

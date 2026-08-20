@@ -21,12 +21,12 @@ export function DiscoverArtworks() {
     <div className="discover">
       <div className="discover__search">
         <label className="discover__search-field">
-          <span className="sr-only">Search Discover Artworks</span>
           <input
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search…"
+            placeholder="Search Artworks"
+            aria-label="Search Artworks"
             autoComplete="off"
           />
           {query ? (
@@ -37,7 +37,7 @@ export function DiscoverArtworks() {
         </label>
       </div>
       <div className="discover__stage">
-        <InfiniteCanvas query={query} onSelect={onSelect} />
+        <InfiniteCanvas query={query} onSelect={onSelect} paused={Boolean(expand)} />
       </div>
       {expand ? (
         <CanvasExpand

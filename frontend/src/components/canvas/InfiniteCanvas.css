@@ -17,6 +17,15 @@
   pointer-events: none;
 }
 
+/* Idle-gated ambient zoom lives here, entirely separate from the pan
+   (translate) logic below — scale only, anchored to the viewport center. */
+.infinite-canvas__zoom {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
 /* X-tiling only — every column shares the same horizontal period, so the
    whole world can still wrap together on that axis. */
 .infinite-canvas__world {

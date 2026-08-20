@@ -2,6 +2,12 @@
   width: 100%;
 }
 
+/* Matches Sensing Grounds/Curators/Artworks/Venues exactly — fig-label
+   alone defaults to title-size (26px), wrong for this subheading style. */
+.past-workshops h1.fig-subheading {
+  font-size: var(--type-subtitle-size);
+}
+
 .past-workshops__section {
   padding-top: 81px;
   padding-bottom: 80px;
@@ -24,18 +30,52 @@
 
 .past-workshops__list a {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 24px;
   padding: 18px 0;
   text-decoration: none;
   color: inherit;
-  font-size: var(--type-subtitle-size);
   transition: opacity 0.2s ease;
+}
+
+/* "Half open" row — the one workshop with real content (thumbnail + a
+   description snippet) reads larger than the plain single-line rows. */
+.past-workshops__list li.is-open a {
+  align-items: flex-start;
+  padding: 24px 0;
 }
 
 .past-workshops__list a:hover {
   opacity: 0.65;
+}
+
+.past-workshops__thumb {
+  flex-shrink: 0;
+  display: block;
+  width: 160px;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+}
+
+.past-workshops__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.past-workshops__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.past-workshops__row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
+  font-size: var(--type-subtitle-size);
 }
 
 .past-workshops__title {
@@ -49,6 +89,15 @@
   color: var(--color-text-secondary);
 }
 
+.past-workshops__snippet {
+  display: block;
+  margin-top: 12px;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-secondary);
+  max-width: 68ch;
+}
+
 .past-workshops__year {
   flex-shrink: 0;
   color: var(--color-text-secondary);
@@ -58,5 +107,9 @@
 @media (max-width: 899px) {
   .past-workshops__section {
     padding-top: 40px;
+  }
+
+  .past-workshops__thumb {
+    width: 96px;
   }
 }

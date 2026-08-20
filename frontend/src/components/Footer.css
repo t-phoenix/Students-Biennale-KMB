@@ -18,15 +18,32 @@
 
 .site-footer__brand p {
   margin: 0 0 var(--spacing-md);
-  font-size: var(--type-caption-size);
+  font-size: 14px;
   line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
   max-width: 28ch;
 }
 
+.site-footer__credit {
+  margin-top: var(--spacing-xl) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  color: var(--color-text-primary) !important;
+}
+
+.site-footer__credit span {
+  display: block;
+  margin-top: 4px;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
 .site-footer__col h3 {
   margin: 0 0 var(--spacing-xl);
-  font-size: var(--type-caption-size);
+  font-size: 14px;
   line-height: var(--type-caption-line);
   font-weight: 600;
   text-transform: uppercase;
@@ -35,7 +52,7 @@
 
 .site-footer__col a {
   display: block;
-  font-size: var(--type-caption-size);
+  font-size: 14px;
   line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-md);

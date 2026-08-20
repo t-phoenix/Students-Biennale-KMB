@@ -12,15 +12,31 @@
   color: var(--color-text-inverse);
 }
 
+/* Scrim band behind the heading so it reads cleanly against the photo
+   underneath instead of just sitting directly on top of it. */
+.residencies-band::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 240px;
+  z-index: 1;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}
+
+/* Matches Sensing Grounds/Curators/Artworks/Venues exactly (20px, Regular,
+   1.1px tracking) — only the color/shadow/positioning differ, since this one
+   sits over a photo instead of a plain background. */
 .residencies-band__label {
   position: absolute;
   top: max(24px, calc(var(--nav-height, 72px) * 0.35));
   left: max(var(--grid-margin), calc((100% - 1440px) / 2 + 182px));
   z-index: 4;
   margin: 0;
-  font-size: var(--type-title-size);
-  line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
+  font-size: var(--type-subtitle-size);
+  line-height: 1.2;
+  font-weight: 400;
+  letter-spacing: 0.055em;
   text-transform: uppercase;
   color: var(--color-text-inverse);
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);

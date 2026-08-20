@@ -44,7 +44,12 @@ export function EditionShell() {
           <ul>
             {PREVIOUS_EDITIONS.map((y) => (
               <li key={y}>
-                <NavLink to={`/editions/${y}`}>{y}</NavLink>
+                <NavLink
+                  to={`/editions/${y}`}
+                  className={({ isActive }) => (isActive ? "is-selected" : undefined)}
+                >
+                  {y}
+                </NavLink>
               </li>
             ))}
           </ul>

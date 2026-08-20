@@ -43,13 +43,46 @@
   background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
 }
 
+/* Artwork page cover — genuinely full-screen, with the title/year overlaid
+   at its base (a scrim behind for legibility) so the details below read as
+   a direct continuation of the cover rather than a separate block. */
+.detail__hero--cover {
+  height: 100vh;
+  height: 100dvh;
+}
+
+.detail__hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.68), transparent 45%);
+  pointer-events: none;
+}
+
+.detail__hero-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 48px;
+  z-index: 2;
+  align-items: end;
+}
+
+.detail__hero-caption .detail__label {
+  color: var(--color-text-inverse);
+}
+
+.detail__hero-caption .detail__title,
+.detail__hero-caption .detail__year {
+  color: var(--color-text-inverse);
+}
+
 .detail__hero-dots {
   position: absolute;
   right: var(--grid-margin);
-  bottom: 24px;
+  top: 24px;
+  z-index: 3;
   display: flex;
   gap: 8px;
-  z-index: 1;
 }
 
 .detail__hero-dots button {
@@ -176,6 +209,7 @@
 .detail__portrait {
   justify-self: end;
   width: 100%;
+  max-width: 295px;
   aspect-ratio: 295 / 380;
   overflow: hidden;
   background: #e0e0e0;
@@ -332,9 +366,12 @@
 
 .detail__cards strong {
   display: block;
-  font-size: var(--type-body-size);
+  margin-top: 20px;
+  font-size: 18px;
   line-height: var(--type-body-line);
   font-weight: 500;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
 }
 
 .detail__cards span:not(.detail__cards-media) {

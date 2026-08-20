@@ -39,6 +39,7 @@
   font-size: var(--type-subtitle-size);
   font-weight: 500;
   color: var(--color-text-tertiary);
+  text-transform: uppercase;
   list-style: none;
   margin-bottom: 20px;
 }
@@ -60,6 +61,11 @@
 .edition__prev a {
   font-size: var(--type-subtitle-size);
   color: var(--color-text-secondary);
+}
+
+.edition__prev a.is-selected {
+  color: var(--color-text-primary);
+  font-weight: 500;
 }
 
 .edition__main {

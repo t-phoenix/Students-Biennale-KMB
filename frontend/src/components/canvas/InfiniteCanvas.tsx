@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCanvasPack, getCanvasTier, type CanvasItem } from "../../data/site";
+import { gsap, prefersReducedMotion, useGSAP } from "../../lib/motion";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
 
 type Props = {
   query: string;
   onSelect: (item: CanvasItem, el: HTMLButtonElement) => void;
+  /** True while something (e.g. the expand overlay) covers the canvas —
+   *  ambient drift and idle zoom pause so the space isn't drifting/zoomed
+   *  out from under the user when they come back to it. */
+  paused?: boolean;
 };
 
 /** Horizontal repeat count — all columns share one X period (seedW). */
@@ -14,8 +19,18 @@ const REPEAT_X = 3;
 const REPEAT_Y = 3;
 const DRAG_THRESHOLD = 5;
 
+/** How far a released flick glides, as a multiplier on its exit velocity. */
+const THROW_DISTANCE_MULT = 14;
+/** Idle time before the canvas begins its organic zoom-out. */
+const IDLE_ZOOM_DELAY = 1000;
+const ZOOM_OUT_SCALE = 0.86;
+
 function wrap(n: number, size: number) {
   return ((n % size) + size) % size;
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
 }
 
 /** Re-tier on real viewport-width crossings only, not every pixel of resize. */
@@ -41,8 +56,9 @@ function useCanvasTier() {
   return tier;
 }
 
-export function InfiniteCanvas({ query, onSelect }: Props) {
+export function InfiniteCanvas({ query, onSelect, paused = false }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const zoomRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   // Column-wrapper elements, keyed "tx-col" — every X-copy has its own set of
   // column wrappers, but wrappers sharing the same col index always get the
@@ -70,6 +86,57 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
   const last = useRef({ x: 0, y: 0, t: 0 });
   const origin = useRef({ x: 0, y: 0 });
   const raf = useRef(0);
+
+  // Buttery release glide — a GSAP-authored ease replaces per-frame friction
+  // decay, so momentum reads as a deliberately-curved deceleration rather
+  // than a mechanical multiply-by-0.94 stop.
+  const glideTween = useRef<gsap.core.Tween | null>(null);
+
+  // Ambient auto-pan — the canvas never sits fully still. Direction/speed
+  // itself glides to a new slow target every 10-16s, so the drift reads as
+  // alive rather than a constant conveyor-belt vector.
+  const ambient = useRef({ vx: 0, vy: 0 });
+  const ambientWanderTimeout = useRef<number | undefined>(undefined);
+
+  // Idle-gated organic zoom-out, with a fast smooth reset on any interaction.
+  const zoomScale = useRef({ value: 1 });
+  const zoomTween = useRef<gsap.core.Tween | null>(null);
+  const zoomedOut = useRef(false);
+  const lastInteractionAt = useRef(performance.now());
+
+  const applyZoom = useCallback(() => {
+    const el = zoomRef.current;
+    if (el) el.style.transform = `scale(${zoomScale.current.value})`;
+  }, []);
+
+  const resetZoom = useCallback(() => {
+    zoomedOut.current = false;
+    zoomTween.current?.kill();
+    zoomTween.current = gsap.to(zoomScale.current, {
+      value: 1,
+      duration: 0.5,
+      ease: "power2.out",
+      onUpdate: applyZoom,
+    });
+  }, [applyZoom]);
+
+  const startZoomOut = useCallback(() => {
+    zoomedOut.current = true;
+    zoomTween.current?.kill();
+    zoomTween.current = gsap.to(zoomScale.current, {
+      value: ZOOM_OUT_SCALE,
+      duration: 3.5,
+      ease: "sine.inOut",
+      onUpdate: applyZoom,
+    });
+  }, [applyZoom]);
+
+  /** Mark a real user interaction — resets the idle-zoom clock and, if the
+   *  canvas is currently zoomed out (or mid-zoom), smoothly snaps it back. */
+  const registerInteraction = useCallback(() => {
+    lastInteractionAt.current = performance.now();
+    if (zoomedOut.current || zoomScale.current.value !== 1) resetZoom();
+  }, [resetZoom]);
 
   const q = query.trim().toLowerCase();
   const matches = useCallback(
@@ -112,24 +179,52 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
     applyTransform();
   }, [applyTransform]);
 
+  // Ambient wander: pick a new slow drift target on a randomized cadence,
+  // easing to it rather than snapping — that's what reads as "living" rather
+  // than mechanical. Runs once for the component's lifetime.
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+
+    const wander = () => {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 3 + Math.random() * 5;
+      gsap.to(ambient.current, {
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        duration: 4 + Math.random() * 2,
+        ease: "sine.inOut",
+      });
+      ambientWanderTimeout.current = window.setTimeout(wander, 10000 + Math.random() * 6000);
+    };
+    // Start drifting almost immediately rather than waiting out the first
+    // full idle cycle.
+    ambientWanderTimeout.current = window.setTimeout(wander, 600);
+
+    return () => window.clearTimeout(ambientWanderTimeout.current);
+  }, []);
+
   useEffect(() => {
     const step = () => {
-      if (!dragging.current) {
-        const vx = vel.current.x;
-        const vy = vel.current.y;
-        if (Math.abs(vx) > 0.05 || Math.abs(vy) > 0.05) {
-          offset.current.x += vx;
-          offset.current.y += vy;
-          vel.current.x *= 0.94;
-          vel.current.y *= 0.94;
-          applyTransform();
+      if (!dragging.current && !paused) {
+        offset.current.x += ambient.current.vx / 60;
+        offset.current.y += ambient.current.vy / 60;
+        applyTransform();
+
+        if (!zoomedOut.current && performance.now() - lastInteractionAt.current > IDLE_ZOOM_DELAY) {
+          startZoomOut();
         }
       }
       raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf.current);
-  }, [applyTransform]);
+  }, [applyTransform, paused, startZoomOut]);
+
+  // Coming back from a paused state (e.g. closing the expand overlay)
+  // shouldn't immediately trigger a zoom-out — give the user a fresh window.
+  useEffect(() => {
+    if (!paused) lastInteractionAt.current = performance.now();
+  }, [paused]);
 
   useEffect(() => {
     if (!q) return;
@@ -147,6 +242,8 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
+      glideTween.current?.kill();
+      registerInteraction();
       dragging.current = true;
       didDrag.current = false;
       suppressClick.current = false;
@@ -194,10 +291,27 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
       } catch {
         /* ignore */
       }
+
+      const speed = Math.hypot(vel.current.x, vel.current.y);
+      if (speed > 0.4 && !prefersReducedMotion()) {
+        const targetX = offset.current.x + vel.current.x * THROW_DISTANCE_MULT;
+        const targetY = offset.current.y + vel.current.y * THROW_DISTANCE_MULT;
+        const duration = clamp(0.5 + speed * 0.03, 0.5, 1.4);
+        glideTween.current?.kill();
+        glideTween.current = gsap.to(offset.current, {
+          x: targetX,
+          y: targetY,
+          duration,
+          ease: "power3.out",
+          onUpdate: applyTransform,
+        });
+      }
     };
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      glideTween.current?.kill();
+      registerInteraction();
       offset.current.x -= e.deltaX;
       offset.current.y -= e.deltaY;
       vel.current = { x: 0, y: 0 };
@@ -217,7 +331,36 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
       window.removeEventListener("pointercancel", onPointerUp);
       root.removeEventListener("wheel", onWheel);
     };
-  }, [applyTransform]);
+  }, [applyTransform, registerInteraction]);
+
+  // Entrance "whoa" moment — tiles stagger into place from a random order
+  // (not a mechanical sweep) while the whole field gently arrives from a
+  // slight zoom-out. Runs once; skipped under reduced motion.
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) {
+        zoomScale.current.value = 1;
+        applyZoom();
+        return;
+      }
+      zoomScale.current.value = 0.92;
+      applyZoom();
+      gsap.to(zoomScale.current, {
+        value: 1,
+        duration: 1.3,
+        ease: "power2.out",
+        onUpdate: applyZoom,
+      });
+      gsap.from(".canvas-tile", {
+        opacity: 0,
+        scale: 0.9,
+        duration: 0.9,
+        ease: "power2.out",
+        stagger: { each: 0.015, from: "random", amount: 1.1 },
+      });
+    },
+    { scope: rootRef, dependencies: [] }
+  );
 
   const handleSelect = (item: CanvasItem, el: HTMLButtonElement) => {
     if (suppressClick.current) {
@@ -233,41 +376,43 @@ export function InfiniteCanvas({ query, onSelect }: Props) {
 
   return (
     <div ref={rootRef} className="infinite-canvas" aria-label="Discover Artworks canvas">
-      <div
-        ref={worldRef}
-        className="infinite-canvas__world"
-        style={{ width: seedW * REPEAT_X, height: "100%" }}
-      >
-        {xCopies.map((tx) => (
-          <div
-            key={`${tileKey}-x${tx}`}
-            className="infinite-canvas__xcopy"
-            style={{ left: tx * seedW, width: seedW }}
-          >
-            {colIndexes.map((col) => (
-              <div
-                key={`${tileKey}-x${tx}-c${col}`}
-                ref={(el) => {
-                  const key = `${tx}-${col}`;
-                  if (el) columnEls.current.set(key, el);
-                  else columnEls.current.delete(key);
-                }}
-                className="infinite-canvas__column"
-              >
-                {yCopies.map((ty) =>
-                  itemsByCol[col].map((item) => (
-                    <CanvasTile
-                      key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
-                      item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriods[col] }}
-                      dimmed={Boolean(q) && !matches(item)}
-                      onSelect={handleSelect}
-                    />
-                  ))
-                )}
-              </div>
-            ))}
-          </div>
-        ))}
+      <div ref={zoomRef} className="infinite-canvas__zoom">
+        <div
+          ref={worldRef}
+          className="infinite-canvas__world"
+          style={{ width: seedW * REPEAT_X, height: "100%" }}
+        >
+          {xCopies.map((tx) => (
+            <div
+              key={`${tileKey}-x${tx}`}
+              className="infinite-canvas__xcopy"
+              style={{ left: tx * seedW, width: seedW }}
+            >
+              {colIndexes.map((col) => (
+                <div
+                  key={`${tileKey}-x${tx}-c${col}`}
+                  ref={(el) => {
+                    const key = `${tx}-${col}`;
+                    if (el) columnEls.current.set(key, el);
+                    else columnEls.current.delete(key);
+                  }}
+                  className="infinite-canvas__column"
+                >
+                  {yCopies.map((ty) =>
+                    itemsByCol[col].map((item) => (
+                      <CanvasTile
+                        key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
+                        item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriods[col] }}
+                        dimmed={Boolean(q) && !matches(item)}
+                        onSelect={handleSelect}
+                      />
+                    ))
+                  )}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

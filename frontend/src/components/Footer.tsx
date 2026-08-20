@@ -8,6 +8,13 @@ export function Footer() {
         <img src="/logo-kbf-text.svg" alt="Kochi Biennale Foundation" />
         <p>Kochi Biennale Foundation, Indian Chamber Centenary Building, Kochi.</p>
         <p>© Kochi Biennale Foundation</p>
+        <p className="site-footer__credit">
+          Web Design and Services
+          <span>Abhinil Agarwal</span>
+          <span>Anand Peter</span>
+          <span>Prajesh MP</span>
+          <span>Vishnulal CR</span>
+        </p>
       </div>
       <div className="site-footer__col">
         <h3>KBF</h3>

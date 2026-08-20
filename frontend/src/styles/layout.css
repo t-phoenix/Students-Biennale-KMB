@@ -169,7 +169,7 @@
   font-weight: 500;
   text-transform: uppercase;
   line-height: 1.2;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.055em;
 }
 
 /* Subheadings — Sensing Grounds, Curators, Artworks/Artists, Venues,
@@ -180,7 +180,7 @@
   font-weight: 400;
   text-transform: uppercase;
   line-height: 1.2;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.055em;
   position: relative;
 }
 

@@ -16,14 +16,20 @@
   border: 0;
 }
 
-/* Search fills cols 4-11 (872 at 1440); toggles sit on col 12. */
+/* Search fills the row, toggle sits at the end. column-gap is doubled to
+   var(--grid-gutter) so the line-to-icons gap matches the rail-to-content
+   gap on the left (fig-label/fig-rail's own gutter + the grid's column-gap) —
+   a plain single gutter plus the toggle's justify-self:end slack landed close
+   by coincidence at one viewport width but drifted at others. */
 .edition-toolbar {
   align-items: end;
   margin-bottom: 48px;
+  grid-template-columns: 1fr auto;
+  column-gap: calc(var(--grid-gutter) * 2);
 }
 
 .edition-search {
-  grid-column: 1 / span 8;
+  grid-column: 1;
   border-bottom: 1px solid var(--color-text-primary);
 }
 
@@ -45,7 +51,7 @@
 }
 
 .edition-view-toggle {
-  grid-column: 9 / span 1;
+  grid-column: 2;
   justify-self: end;
   display: flex;
   gap: 0;
@@ -88,12 +94,19 @@
   align-items: start;
 }
 
+/* Tile size reduced 20% by shrinking the whole grid container (not the
+   individual cards) so both 1fr columns stay proportionally sized with no
+   leftover dead space — shrinking a card inside an unchanged-width track
+   left slack only on one side and blew the image-to-image gap out past the
+   real column-gap. row-gap matches column-gap and the portrait-to-name
+   margin (20px, all three) so every gap in the grid reads as one unit. */
 .edition-zone__grid {
   grid-column: 1 / span 6;
+  width: 80%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: var(--grid-gutter);
-  row-gap: 60px;
+  column-gap: 20px;
+  row-gap: 20px;
 }
 
 .edition-zone__meta {
@@ -133,7 +146,7 @@
 
 .edition-card--artist h3 {
   margin: 0;
-  font-size: var(--type-subtitle-size);
+  font-size: 18px;
   line-height: 20px;
   font-weight: 500;
   letter-spacing: 1.8px;
@@ -173,18 +186,23 @@
   width: 100%;
 }
 
-.edition-card--curator h3 {
+/* Matches the CURATORS rail label's resting style exactly (20px, Regular,
+   0.055em) — not the rail's own is-selected/hover 500-weight state.
+   Doubled selector (.edition-card.edition-card--curator) since a single
+   class + type selector ties with ".edition-card h3" below at equal
+   specificity, letting source order silently pick the generic rule. */
+.edition-card.edition-card--curator h3 {
   margin: 20px 0 0;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: normal;
-  letter-spacing: 1.8px;
+  font-size: var(--type-subtitle-size);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.055em;
   text-transform: uppercase;
 }
 
 .edition-card h3 {
   margin: 20px 0 0;
-  font-size: var(--type-body-size);
+  font-size: 18px;
   font-weight: 500;
   line-height: var(--type-body-line);
   letter-spacing: 1.6px;
@@ -301,19 +319,35 @@
   gap: 20px;
 }
 
+/* Same 9-column band the toolbar above it uses (search cols 1-8, icons col
+   9) — media and copy occupy cols 1-8 so copy's right edge lands before the
+   grid/list toggle's column, not underneath it. */
 .edition-venue {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(9, minmax(0, 1fr));
   column-gap: var(--grid-gutter);
-  align-items: start;
+  align-items: stretch;
 }
 
 .edition-venue__media {
+  grid-column: 1 / span 4;
   width: 100%;
   aspect-ratio: 482 / 300;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
   position: relative;
+}
+
+.edition-venue__copy {
+  grid-column: 5 / span 4;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.edition-venue__copy > a {
+  color: inherit;
+  text-decoration: none;
 }
 
 .edition-venue__media img {
@@ -341,19 +375,25 @@
   line-height: var(--type-body-line);
 }
 
-.edition-venue__copy p a {
+.edition-venue__more {
+  display: block;
+  margin-top: 12px;
   font-style: italic;
+  font-size: var(--type-body-size);
   color: var(--color-text-secondary);
 }
 
-.edition-venue__copy p a:hover {
+.edition-venue__more:hover {
   color: var(--color-text-primary);
 }
 
-.edition-venue__links {
+/* Beats ".edition-venue__copy p"'s margin:0 (it's a <p> too) so the
+   auto margin that pins this to the bottom actually takes effect. */
+.edition-venue__copy p.edition-venue__links {
   display: flex;
   gap: 8px;
-  margin-top: 30px;
+  margin-top: auto;
+  padding-top: 30px;
 }
 
 .edition-venue__links a,
