@@ -153,52 +153,64 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
       {rows.length === 0 && !editing ? (
         <div className="adm-empty">No covers yet. Add your first hero image.</div>
       ) : (
-        <table className="adm-table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Artwork</th>
-              <th>Artist</th>
-              <th>Institution</th>
-              <th>Order</th>
-              <th>Active</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.id}>
-                <td>
-                  {r.image_url && (
-                    <img src={r.image_url} alt="" className="adm-table__thumb" />
-                  )}
-                </td>
-                <td>{r.artwork_name || "—"}</td>
-                <td>{r.artist || "—"}</td>
-                <td>{r.institution || "—"}</td>
-                <td>{r.sort_order}</td>
-                <td>{r.active ? "Yes" : "No"}</td>
-                <td>
-                  <div className="adm-table__actions">
-                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
-                    <button
-                      className="adm-btn adm-btn--secondary adm-btn--small"
-                      onClick={() => setEditing({ ...r })}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="adm-btn adm-btn--danger adm-btn--small"
-                      onClick={() => handleDelete(r)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
+        <div className="adm-table-wrap">
+          <table className="adm-table">
+            <thead>
+              <tr>
+                <th className="adm-table__cell--meta">Image</th>
+                <th>Artwork</th>
+                <th>Artist</th>
+                <th>Institution</th>
+                <th className="adm-table__cell--num">Order</th>
+                <th className="adm-table__cell--meta">Active</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.id}>
+                  <td>
+                    {r.image_url && (
+                      <img src={r.image_url} alt="" className="adm-table__thumb" />
+                    )}
+                  </td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">
+                      {r.artwork_name || "—"}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.artist || "—"}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">
+                      {r.institution || "—"}
+                    </div>
+                  </td>
+                  <td>{r.sort_order}</td>
+                  <td>{r.active ? "Yes" : "No"}</td>
+                  <td>
+                    <div className="adm-table__actions">
+                      <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
+                      <button
+                        className="adm-btn adm-btn--secondary adm-btn--small"
+                        onClick={() => setEditing({ ...r })}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="adm-btn adm-btn--danger adm-btn--small"
+                        onClick={() => handleDelete(r)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

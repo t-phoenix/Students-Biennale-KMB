@@ -128,28 +128,55 @@ export function PressItems({ notify, confirm }: SectionProps) {
       {rows.length === 0 && !editing ? (
         <div className="adm-empty">No press items yet.</div>
       ) : (
-        <table className="adm-table">
-          <thead>
-            <tr><th>Title</th><th>Date</th><th>Order</th><th>Published</th><th></th></tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.id}>
-                <td>{r.title}</td>
-                <td>{r.published_at ? new Date(r.published_at).toLocaleDateString() : "—"}</td>
-                <td>{r.sort_order ?? "—"}</td>
-                <td>{r.published ? "Yes" : "No"}</td>
-                <td>
-                  <div className="adm-table__actions">
-                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
-                    <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => setEditing({ ...r, _image: "" })}>Edit</button>
-                    <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>Delete</button>
-                  </div>
-                </td>
+        <div className="adm-table-wrap">
+          <table className="adm-table adm-table--press">
+            <colgroup>
+              <col className="adm-col--title" />
+              <col className="adm-col--date" />
+              <col className="adm-col--order" />
+              <col className="adm-col--pub" />
+              <col className="adm-col--actions" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Date</th>
+                <th>Order</th>
+                <th>Published</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.id}>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.title}</div>
+                  </td>
+                  <td>{r.published_at ? new Date(r.published_at).toLocaleDateString() : "—"}</td>
+                  <td>{r.sort_order ?? "—"}</td>
+                  <td>{r.published ? "Yes" : "No"}</td>
+                  <td>
+                    <div className="adm-table__actions">
+                      <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
+                      <button
+                        className="adm-btn adm-btn--secondary adm-btn--small"
+                        onClick={() => setEditing({ ...r, _image: "" })}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="adm-btn adm-btn--danger adm-btn--small"
+                        onClick={() => handleDelete(r)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

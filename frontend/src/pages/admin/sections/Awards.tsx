@@ -422,68 +422,80 @@ export function Awards({ notify, confirm }: SectionProps) {
         {rows.length === 0 ? (
           <div className="adm-empty">No {label.toLowerCase()} yet.</div>
         ) : (
-          <table className="adm-table">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Artwork</th>
-                <th>Artists</th>
-                <th>Venue</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((winner, i) => (
-                <tr key={winner.id}>
-                  <td>
-                    {winner.image ? (
-                      <img src={winner.image} alt="" className="adm-table__thumb" />
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-                  <td>
-                    <strong>{winner.artworkTitle}</strong>
-                    {winner.year ? <div style={{ fontSize: 12 }}>{winner.year}</div> : null}
-                  </td>
-                  <td>
-                    {winner.artists.map((artist) => (
-                      <div key={`${artist.name}-${artist.institution}`}>
-                        {artist.name}
-                        {artist.institution ? (
-                          <div style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
-                            {artist.institution}
-                          </div>
-                        ) : null}
-                      </div>
-                    ))}
-                  </td>
-                  <td>{winner.venue || "—"}</td>
-                  <td>
-                    <div className="adm-table__actions">
-                      <MoveButtons
-                        index={i}
-                        total={rows.length}
-                        onMove={(delta) => moveWinner(rows, winner, delta)}
-                      />
-                      <button
-                        className="adm-btn adm-btn--secondary adm-btn--small"
-                        onClick={() => openEdit(winner)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="adm-btn adm-btn--danger adm-btn--small"
-                        onClick={() => handleDelete(winner)}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+          <div className="adm-table-wrap">
+            <table className="adm-table">
+              <thead>
+                <tr>
+                  <th className="adm-table__cell--meta">Image</th>
+                  <th>Artwork</th>
+                  <th>Artists</th>
+                  <th>Venue</th>
+                  <th></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((winner, i) => (
+                  <tr key={winner.id}>
+                    <td>
+                      {winner.image ? (
+                        <img src={winner.image} alt="" className="adm-table__thumb" />
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      <div className="adm-table__clamp adm-table__clamp--2">
+                        <strong>{winner.artworkTitle}</strong>
+                      </div>
+                      {winner.year ? (
+                        <div style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+                          {winner.year}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td>
+                      {winner.artists.map((artist) => (
+                        <div key={`${artist.name}-${artist.institution}`}>
+                          {artist.name}
+                          {artist.institution ? (
+                            <div style={{ fontSize: 12, color: "var(--color-text-secondary)" }}>
+                              {artist.institution}
+                            </div>
+                          ) : null}
+                        </div>
+                      ))}
+                    </td>
+                    <td>
+                      <div className="adm-table__clamp adm-table__clamp--2">
+                        {winner.venue || "—"}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="adm-table__actions">
+                        <MoveButtons
+                          index={i}
+                          total={rows.length}
+                          onMove={(delta) => moveWinner(rows, winner, delta)}
+                        />
+                        <button
+                          className="adm-btn adm-btn--secondary adm-btn--small"
+                          onClick={() => openEdit(winner)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="adm-btn adm-btn--danger adm-btn--small"
+                          onClick={() => handleDelete(winner)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     );

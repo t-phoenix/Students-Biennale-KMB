@@ -143,28 +143,42 @@ export function Workshops({ notify, confirm }: SectionProps) {
       {list.length === 0 ? (
         <div className="adm-empty">No {label.toLowerCase()} yet.</div>
       ) : (
-        <table className="adm-table">
-          <thead>
-            <tr><th>Image</th><th>Title</th><th>Dates</th><th>Place</th><th></th></tr>
-          </thead>
-          <tbody>
-            {list.map((r, i) => (
-              <tr key={r.id}>
-                <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
-                <td>{r.title}</td>
-                <td>{r.dates || "—"}</td>
-                <td>{r.place || "—"}</td>
-                <td>
-                  <div className="adm-table__actions">
-                    <MoveButtons index={i} total={list.length} onMove={(delta) => move(list, r, delta)} />
-                    <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>Edit</button>
-                    <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>Delete</button>
-                  </div>
-                </td>
+        <div className="adm-table-wrap">
+          <table className="adm-table">
+            <thead>
+              <tr>
+                <th className="adm-table__cell--meta">Image</th>
+                <th>Title</th>
+                <th className="adm-table__cell--date">Dates</th>
+                <th>Place</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {list.map((r, i) => (
+                <tr key={r.id}>
+                  <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.title}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__ellipsis">{r.dates || "—"}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.place || "—"}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__actions">
+                      <MoveButtons index={i} total={list.length} onMove={(delta) => move(list, r, delta)} />
+                      <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>Edit</button>
+                      <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

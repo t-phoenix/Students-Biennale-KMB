@@ -1,12 +1,15 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import "../../components/admin/admin-shared.css";
+import { ThemeToggle } from "../../components/admin/ThemeToggle";
 
 interface Props {
   onSignIn: (email: string, password: string) => Promise<void>;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
 }
 
-export function Login({ onSignIn }: Props) {
+export function Login({ onSignIn, theme, onToggleTheme }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,9 +29,19 @@ export function Login({ onSignIn }: Props) {
   };
 
   return (
-    <div className="adm-login">
+    <div className="adm-login" data-theme={theme}>
+      <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+
       <form className="adm-login__form" onSubmit={handleSubmit}>
-        <h1 className="adm-login__title">Students' Biennale CMS</h1>
+        <div className="adm-login__brand">
+          <img
+            className="adm-login__brand-logo"
+            src="/logo-sb-mark.svg"
+            alt="Students' Biennale"
+          />
+          <span className="adm-login__brand-mark">CMS</span>
+        </div>
+        <h1 className="adm-login__title">Students' Biennale</h1>
         <p className="adm-login__sub">Sign in with your team account</p>
 
         {error && <div className="adm-login__error">{error}</div>}
@@ -57,6 +70,7 @@ export function Login({ onSignIn }: Props) {
         </div>
 
         <button
+          type="submit"
           className="adm-btn adm-btn--primary"
           style={{ width: "100%", marginTop: 8 }}
           disabled={loading}

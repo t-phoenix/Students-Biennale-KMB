@@ -200,48 +200,68 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
       {rows.length === 0 && !editing ? (
         <div className="adm-empty">No update cards yet.</div>
       ) : (
-        <table className="adm-table">
-          <thead>
-            <tr>
-              <th>Slot</th>
-              <th>Type</th>
-              <th>Heading</th>
-              <th>Body</th>
-              <th>Link</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.id}>
-                <td>{r.slot}</td>
-                <td>{r.card_type}</td>
-                <td>{r.heading}</td>
-                <td style={{ maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {r.body}
-                </td>
-                <td>{r.link_url || "—"}</td>
-                <td>
-                  <div className="adm-table__actions">
-                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
-                    <button
-                      className="adm-btn adm-btn--secondary adm-btn--small"
-                      onClick={() => setEditing({ ...r })}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="adm-btn adm-btn--danger adm-btn--small"
-                      onClick={() => handleDelete(r)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
+        <div className="adm-table-wrap">
+          <table className="adm-table adm-table--cards">
+            <colgroup>
+              <col className="adm-col--slot" />
+              <col className="adm-col--type" />
+              <col className="adm-col--heading" />
+              <col className="adm-col--body" />
+              <col className="adm-col--link" />
+              <col className="adm-col--actions" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Slot</th>
+                <th>Type</th>
+                <th>Heading</th>
+                <th>Body</th>
+                <th>Link</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.id}>
+                  <td>{r.slot}</td>
+                  <td>{r.card_type}</td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.heading}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__clamp">{r.body}</div>
+                  </td>
+                  <td>
+                    {r.link_url ? (
+                      <span className="adm-table__link" title={r.link_url}>
+                        {r.link_url}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+                  <td>
+                    <div className="adm-table__actions">
+                      <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
+                      <button
+                        className="adm-btn adm-btn--secondary adm-btn--small"
+                        onClick={() => setEditing({ ...r })}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="adm-btn adm-btn--danger adm-btn--small"
+                        onClick={() => handleDelete(r)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

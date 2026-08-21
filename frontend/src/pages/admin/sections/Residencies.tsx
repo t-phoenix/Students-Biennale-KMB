@@ -250,40 +250,50 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
       {rows.length === 0 && !editing ? (
         <div className="adm-empty">No residencies yet.</div>
       ) : (
-        <table className="adm-table">
-          <thead>
-            <tr>
-              <th>Image</th>
-              <th>Title</th>
-              <th>Host</th>
-              <th>Period</th>
-              <th>Awardees</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={r.id}>
-                <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
-                <td>{r.title}</td>
-                <td>{r.host || "—"}</td>
-                <td>{r.dates || "—"}</td>
-                <td>{r.awardees || "—"}</td>
-                <td>
-                  <div className="adm-table__actions">
-                    <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
-                    <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>
-                      Edit
-                    </button>
-                    <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>
-                      Delete
-                    </button>
-                  </div>
-                </td>
+        <div className="adm-table-wrap">
+          <table className="adm-table">
+            <thead>
+              <tr>
+                <th className="adm-table__cell--meta">Image</th>
+                <th>Title</th>
+                <th>Host</th>
+                <th className="adm-table__cell--date">Period</th>
+                <th>Awardees</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.id}>
+                  <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.title}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.host || "—"}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__ellipsis">{r.dates || "—"}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__clamp adm-table__clamp--2">{r.awardees || "—"}</div>
+                  </td>
+                  <td>
+                    <div className="adm-table__actions">
+                      <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
+                      <button className="adm-btn adm-btn--secondary adm-btn--small" onClick={() => openEdit(r)}>
+                        Edit
+                      </button>
+                      <button className="adm-btn adm-btn--danger adm-btn--small" onClick={() => handleDelete(r)}>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
