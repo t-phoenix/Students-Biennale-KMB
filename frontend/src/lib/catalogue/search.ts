@@ -1,10 +1,18 @@
 import type { MappedCatalogue, SearchIndexEntry } from "./types";
 
-/** Client-side tagged filter. Does not call Postgres. */
+/** Client-side tagged filter. Does not call Postgres.
+ *  Matches when any alphanumeric token in the parts starts with the query
+ *  (prefix), so "raja" hits "Rajat" / "Rajasthan" but not mid-token "Maharaja".
+ */
 export function matchesQuery(query: string, ...parts: Array<string | null | undefined>): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return parts.some((part) => (part ?? "").toLowerCase().includes(q));
+  return parts.some((part) => {
+    const text = (part ?? "").toLowerCase();
+    if (!text) return false;
+    const tokens = text.split(/[^a-z0-9]+/).filter(Boolean);
+    return tokens.some((token) => token.startsWith(q));
+  });
 }
 
 export function searchBlob(entry: SearchIndexEntry): string {
@@ -108,7 +116,7 @@ function matchIndexEntries(
   for (const entry of entries) {
     for (const field of TAGGED_FIELDS) {
       const value = entry[field];
-      if (typeof value === "string" && value.toLowerCase().includes(q)) {
+      if (typeof value === "string" && matchesQuery(q, value)) {
         hits.push({ matchedField: field, matchedSnippet: value, entry });
         break;
       }
@@ -333,9 +341,9 @@ export function searchEditionCatalog(
 
   for (const curator of current.curators) {
     const zone = current.zones.find((z) => z.curators.some((c) => c.id === curator.id));
-    if (
-      !matchesQuery(q, curator.searchText, curator.name, curator.region, zone?.label, zone?.states)
-    ) {
+    // Curators match visible identity fields only — not zone geography lists
+    // (e.g. "Rajasthan" inside states must not surface Zone 1 curators for "raja").
+    if (!matchesQuery(q, curator.name, curator.region, zone?.label)) {
       continue;
     }
     pushHit(results.curators, seen, {
@@ -351,15 +359,14 @@ export function searchEditionCatalog(
   }
 
   for (const artwork of current.artworks) {
+    // Artworks match title/venue/artist names — institutions belong under Artists.
     if (
       !matchesQuery(
         q,
-        artwork.searchText,
         artwork.title,
         artwork.venue,
         artwork.year,
         ...artwork.artists.map((x) => x.name),
-        ...artwork.artists.map((x) => x.institution),
       )
     ) {
       continue;

@@ -149,17 +149,13 @@ function mapZone(zone: SnapshotZone): CuratorZone {
 function mapArtwork(
   artwork: SnapshotArtwork,
   years: string,
-  zones: CuratorZone[],
+  _zones: CuratorZone[],
   index: SearchIndexEntry[],
 ): ArtworkCard {
   const local = localArtworkByTitle(artwork.title);
   const materials = artwork.contributors
     .map((c) => c.materials)
     .filter((value): value is string => Boolean(value));
-  const curatorNames = zones
-    .find((z) => z.id === artwork.zone_id)
-    ?.curators.map((c) => c.name)
-    .join(" ");
   const images = uniqueUrls(artwork.cover_url, artwork.gallery_urls, local?.image, local?.images);
   const image = images[0];
   return {
@@ -192,9 +188,7 @@ function mapArtwork(
       artwork.venue_name,
       artwork.slug,
       years,
-      curatorNames,
       ...artwork.contributors.map((c) => c.display_name),
-      ...artwork.contributors.map((c) => c.institution_name),
     ),
   };
 }
@@ -244,6 +238,8 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
     name: artist.name,
     institution: artist.institution || "",
     zone: artist.zone_label || "",
+    // Artist search is scoped to artist-owned fields only. Related artwork
+    // titles/venues stay searchable under Artworks / Venues, not Artists.
     searchText: taggedText(
       index,
       artist.id,
@@ -251,9 +247,6 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
       artist.institution,
       artist.zone_label,
       years,
-      ...artworks
-        .filter((a) => a.artists.some((x) => x.name === artist.name))
-        .flatMap((a) => [a.title, a.venue]),
     ),
   }));
   const venues = (payload.venues ?? []).map((venue) => mapVenue(venue, index, years));
@@ -266,7 +259,9 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
   const curators = zones.flatMap((z) =>
     z.curators.map((c) => ({
       ...c,
-      searchText: taggedText(index, c.id, c.name, c.region, z.label, z.states, years),
+      // Name + zone label only — do not index geographic state lists (or index
+      // blobs that embed them), or queries like "raja" match "Rajasthan".
+      searchText: [c.name, c.region, z.label, years].filter(Boolean).join(" ").toLowerCase(),
     })),
   );
 
@@ -307,7 +302,7 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
 function withSearch(card: ArtworkCard): ArtworkCard {
   return {
     ...card,
-    searchText: [card.title, card.venue, card.year, ...card.artists.map((a) => `${a.name} ${a.institution}`)]
+    searchText: [card.title, card.venue, card.year, ...card.artists.map((a) => a.name)]
       .join(" ")
       .toLowerCase(),
   };
@@ -318,7 +313,7 @@ export function staticCurrentCatalogue(): MappedCatalogue {
     ...z,
     curators: z.curators.map((c) => ({
       ...c,
-      searchText: [c.name, c.region, z.label, z.states].join(" ").toLowerCase(),
+      searchText: [c.name, c.region, z.label].join(" ").toLowerCase(),
     })),
   }));
   const artworks = ARTWORKS.map(withSearch);
