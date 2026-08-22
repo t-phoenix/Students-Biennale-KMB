@@ -1,7 +1,10 @@
 import { NavLink, Outlet, useMatch, useParams } from "react-router-dom";
+import { EditionSearchResultsPanel } from "../components/EditionSearchResults";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
+import { EditionSearchProvider, useEditionSearch } from "./EditionSearchContext";
 import "./EditionShell.css";
+import "./EditionViews.css";
 
 const TABS = [
   { to: "curators", label: "CURATORS" },
@@ -10,9 +13,62 @@ const TABS = [
   { to: "venue", label: "Venues" },
 ] as const;
 
-export function EditionShell() {
+function EditionSearchToolbar() {
+  const { query, setQuery, view, setView, isSearching } = useEditionSearch();
+
+  return (
+    <div className="edition-toolbar fig-band-9">
+      <label className="edition-search">
+        <span className="sr-only">Search</span>
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search"
+        />
+      </label>
+      {!isSearching ? (
+        <div className="edition-view-toggle" role="group" aria-label="View mode">
+          <button
+            type="button"
+            className={view === "grid" ? "is-active" : undefined}
+            onClick={() => setView("grid")}
+            aria-pressed={view === "grid"}
+            aria-label="Grid view"
+          >
+            <img src="/icons/grid-view.svg" alt="" width={36} height={36} />
+          </button>
+          <button
+            type="button"
+            className={view === "list" ? "is-active" : undefined}
+            onClick={() => setView("list")}
+            aria-pressed={view === "list"}
+            aria-label="List view"
+          >
+            <img src="/icons/list-view.svg" alt="" width={36} height={36} />
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function EditionCatalogueMain() {
+  const { isSearching, query, results } = useEditionSearch();
+
+  return (
+    <div className="edition-view">
+      <EditionSearchToolbar />
+      {isSearching ? (
+        <EditionSearchResultsPanel query={query} results={results} />
+      ) : (
+        <Outlet />
+      )}
+    </div>
+  );
+}
+
+function EditionShellLayout() {
   const { yearId = LATEST_EDITION.id } = useParams();
-  const isOverview = Boolean(useMatch("/editions/:yearId"));
   const { catalogues, current } = useCatalogue();
   const previous = catalogues
     .filter((row) => !row.isCurrent && row.years !== yearId)
@@ -22,10 +78,6 @@ export function EditionShell() {
     yearId === (current?.years ?? LATEST_EDITION.id)
       ? (current?.years ?? LATEST_EDITION.id).replace("-", "–")
       : yearId.replace("-", "–");
-
-  // The edition overview is a full-width page in Figma — it owns its own layout and
-  // does not sit beside the catalogue rail.
-  if (isOverview) return <Outlet />;
 
   return (
     <div className="edition fig-grid" data-node-id="6:1310">
@@ -66,8 +118,20 @@ export function EditionShell() {
         </details>
       </aside>
       <div className="edition__main fig-c4-12">
-        <Outlet />
+        <EditionCatalogueMain />
       </div>
     </div>
+  );
+}
+
+export function EditionShell() {
+  const isOverview = Boolean(useMatch("/editions/:yearId"));
+
+  if (isOverview) return <Outlet />;
+
+  return (
+    <EditionSearchProvider>
+      <EditionShellLayout />
+    </EditionSearchProvider>
   );
 }

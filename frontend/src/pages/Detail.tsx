@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
+import { HighlightText } from "../components/HighlightText";
 import { venueImages } from "../data/site";
 import {
   artworksForZoneIn,
@@ -13,6 +14,8 @@ import "./Detail.css";
 
 export function Detail() {
   const { yearId = "2025-26", kindSeg = "artworks", id = "" } = useParams();
+  const [searchParams] = useSearchParams();
+  const highlight = searchParams.get("highlight") ?? "";
   const { catalogue } = useEditionCatalogue(yearId);
   const root = useRef<HTMLDivElement>(null);
   const [heroIndex, setHeroIndex] = useState(0);
@@ -72,7 +75,7 @@ export function Detail() {
 
     return (
       <div ref={root} className="detail">
-        <ArtworkDetailBody artwork={a} />
+        <ArtworkDetailBody artwork={a} highlightQuery={highlight} />
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
@@ -117,9 +120,13 @@ export function Detail() {
 
             <div className="fig-c4-9 detail__curator-copy detail-reveal">
               {i === 0 ? (
-                <h1 className="detail__title">{member.name}</h1>
+                <h1 className="detail__title">
+                  <HighlightText text={member.name} query={highlight} />
+                </h1>
               ) : (
-                <h2 className="detail__title">{member.name}</h2>
+                <h2 className="detail__title">
+                  <HighlightText text={member.name} query={highlight} />
+                </h2>
               )}
               <p className="fig-body">{member.bio ?? member.note}</p>
             </div>
@@ -214,7 +221,9 @@ export function Detail() {
             ) : null}
           </div>
           <div className="fig-c8-12 detail__venue-info detail-reveal">
-            <h1>{v.name}</h1>
+            <h1>
+              <HighlightText text={v.name} query={highlight} />
+            </h1>
             <p className="detail__venue-links">
               {v.mapUrl ? (
                 <a href={v.mapUrl} target="_blank" rel="noreferrer">

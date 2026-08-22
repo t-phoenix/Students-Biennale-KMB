@@ -11,6 +11,7 @@ import {
   type CuratorZone,
   type VenueCard,
 } from "../../data/site";
+import { getEditionSearchTags, searchIndexFromTags } from "../../data/editions";
 import { taggedText } from "./search";
 import type {
   MappedCatalogue,
@@ -190,6 +191,7 @@ function mapArtwork(
       artwork.title,
       artwork.venue_name,
       artwork.slug,
+      years,
       curatorNames,
       ...artwork.contributors.map((c) => c.display_name),
       ...artwork.contributors.map((c) => c.institution_name),
@@ -197,7 +199,11 @@ function mapArtwork(
   };
 }
 
-function mapVenue(venue: SnapshotVenue, index: SearchIndexEntry[]): VenueCard {
+function mapVenue(
+  venue: SnapshotVenue,
+  index: SearchIndexEntry[],
+  years?: string,
+): VenueCard {
   const key = venueLocalKey(venue.id, venue.name);
   const local = key ? VENUE_LOCAL[key] : undefined;
   const staticVenue = VENUES.find(
@@ -221,7 +227,7 @@ function mapVenue(venue: SnapshotVenue, index: SearchIndexEntry[]): VenueCard {
     images,
     mapUrl: venue.map_url || staticVenue?.mapUrl,
     tourUrl: venue.virtual_tour_url || staticVenue?.tourUrl,
-    searchText: taggedText(index, venue.id, venue.name, venue.history, local?.address),
+    searchText: taggedText(index, venue.id, venue.name, local?.address || staticVenue?.address, years),
   };
 }
 
@@ -244,12 +250,13 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
       artist.name,
       artist.institution,
       artist.zone_label,
+      years,
       ...artworks
         .filter((a) => a.artists.some((x) => x.name === artist.name))
         .flatMap((a) => [a.title, a.venue]),
     ),
   }));
-  const venues = (payload.venues ?? []).map((venue) => mapVenue(venue, index));
+  const venues = (payload.venues ?? []).map((venue) => mapVenue(venue, index, years));
   const institutions = [
     ...new Set(artists.map((a) => a.institution).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b));
@@ -259,7 +266,7 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
   const curators = zones.flatMap((z) =>
     z.curators.map((c) => ({
       ...c,
-      searchText: taggedText(index, c.id, c.name, c.region, z.label, z.states, z.noteBody),
+      searchText: taggedText(index, c.id, c.name, c.region, z.label, z.states, years),
     })),
   );
 
@@ -273,6 +280,12 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
     overallCuratorialNote: payload.edition.overall_curatorial_note ?? null,
     isCurrent: payload.edition.is_current,
     heroUrl: payload.edition.hero_url ?? null,
+    heroUrls: (() => {
+      const fromList = payload.edition.hero_urls ?? [];
+      if (fromList.length) return fromList;
+      const single = payload.edition.hero_url;
+      return single ? [single] : [];
+    })(),
     galleryUrls: payload.edition.gallery_urls ?? [],
     sections: payload.sections ?? [],
     zones: zones.map((z) => ({
@@ -315,7 +328,7 @@ export function staticCurrentCatalogue(): MappedCatalogue {
   }));
   const venues = VENUES.map((v) => ({
     ...v,
-    searchText: [v.name, v.address, v.description].join(" ").toLowerCase(),
+    searchText: [v.name, v.address].join(" ").toLowerCase(),
   }));
   return {
     editionId: `edition-${LATEST_EDITION.id}`,
@@ -327,6 +340,7 @@ export function staticCurrentCatalogue(): MappedCatalogue {
     overallCuratorialNote: null,
     isCurrent: true,
     heroUrl: null,
+    heroUrls: [],
     galleryUrls: [],
     sections: [],
     zones,
@@ -368,6 +382,7 @@ export function mapLiveEdition(
     overallCuratorialNote: edition.overall_curatorial_note ?? null,
     isCurrent: edition.is_current,
     heroUrl: null,
+    heroUrls: [],
     galleryUrls: [],
     sections,
     zones: [],
@@ -384,16 +399,20 @@ export function mapLiveEdition(
 }
 
 export function emptyEditionCatalogue(years: string, number: number): MappedCatalogue {
+  const tags = getEditionSearchTags(years);
+  const searchIndex = searchIndexFromTags(years, tags);
+  const staticHero = years === "2014-15" ? "/editions/2014-15/hero.jpg" : null;
   return {
     editionId: `edition-${years}`,
     years,
     number,
-    title: "Students' Biennale",
+    title: tags.title || "Students' Biennale",
     slug: years,
     overview: null,
     overallCuratorialNote: null,
     isCurrent: years === LATEST_EDITION.id,
-    heroUrl: null,
+    heroUrl: staticHero,
+    heroUrls: staticHero ? [staticHero] : [],
     galleryUrls: [],
     sections: [],
     zones: [],
@@ -401,8 +420,8 @@ export function emptyEditionCatalogue(years: string, number: number): MappedCata
     artworks: [],
     artists: [],
     venues: [],
-    institutions: [],
-    searchIndex: [],
+    institutions: tags.institutions,
+    searchIndex,
     generatedAt: "static",
     source: "static",
     teamBody: null,
@@ -417,8 +436,30 @@ export function mergeCatalogues(remote: MappedCatalogue[]): MappedCatalogue[] {
     byYears.set(LATEST_EDITION.id, fallback);
   }
   for (const [i, years] of PREVIOUS_EDITIONS.entries()) {
-    if (!byYears.has(years)) {
+    const existing = byYears.get(years);
+    if (!existing) {
       byYears.set(years, emptyEditionCatalogue(years, 5 - i));
+      continue;
+    }
+    // Sparse remote packs: always merge tag-based search index for cross-edition search.
+    if (existing.artworks.length === 0 && existing.zones.length === 0) {
+      const seeded = emptyEditionCatalogue(years, existing.number || 5 - i);
+      const heroUrls =
+        existing.heroUrls.length > 0
+          ? existing.heroUrls
+          : seeded.heroUrls.length
+            ? seeded.heroUrls
+            : existing.heroUrl
+              ? [existing.heroUrl]
+              : [];
+      byYears.set(years, {
+        ...existing,
+        title: existing.title || seeded.title,
+        heroUrl: existing.heroUrl || seeded.heroUrl || heroUrls[0] || null,
+        heroUrls,
+        institutions: existing.institutions.length ? existing.institutions : seeded.institutions,
+        searchIndex: seeded.searchIndex.length ? seeded.searchIndex : existing.searchIndex,
+      });
     }
   }
   return [...byYears.values()].sort((a, b) => b.number - a.number);

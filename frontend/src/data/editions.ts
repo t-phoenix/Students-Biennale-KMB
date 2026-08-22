@@ -1,4 +1,6 @@
+import editionSearchTagsData from "./edition-search-tags.json";
 import { ARTISTS, LATEST_EDITION, PREVIOUS_EDITIONS } from "./site";
+import type { SearchIndexEntry } from "../lib/catalogue/types";
 
 export const EDITION_SHORT = `The Students Biennale 2025-26 was realised by bringing together  70 projects under 4 artist duos and and 3 artist's collectives taking on 7 curatorial frameworks which culminates into one exhibition. The programme has successfully been able to achieve this with the participation of more than 200 student artists selected from over 150+ art institutions across the country.
 
@@ -44,6 +46,8 @@ export type EditionOverviewData = {
   institutions: string[];
   /** Full-bleed hero image when available. */
   heroImage?: string;
+  /** Cover carousel frames (3–5); falls back to [heroImage] when omitted. */
+  heroImages?: string[];
   /** Gallery images (Figma shows two rows of four). */
   galleryImages: string[];
   /** Year id of the edition that follows this one, for the trailing CTA. */
@@ -171,11 +175,163 @@ const EDITION_2014_GALLERY = [
   "/editions/2014-15/workshop-8.jpg",
 ];
 
+const EDITION_2014_VENUES = ["Mohammed Ali Warehouse", "KVA Brothers"];
+
 const ALL_EDITIONS = [LATEST_EDITION.id, ...PREVIOUS_EDITIONS];
 
 /** Unique participating institutions, taken from the artist records we hold. */
 function institutionsForLatest(): string[] {
   return [...new Set(ARTISTS.map((a) => a.institution))].sort((a, b) => a.localeCompare(b));
+}
+
+/** Short searchable names for sparse previous editions (no long-form prose). */
+export type EditionSearchTags = {
+  curators: string[];
+  artists: string[];
+  artworks: string[];
+  venues: string[];
+  institutions: string[];
+  title: string;
+};
+
+function namesFromTeam(
+  team: readonly (readonly (readonly string[])[])[],
+  roles: string[],
+): string[] {
+  const want = new Set(roles.map((r) => r.toLowerCase()));
+  const out: string[] = [];
+  for (const col of team) {
+    for (const row of col) {
+      const [role, ...people] = row;
+      if (!role || !want.has(role.toLowerCase())) continue;
+      for (const person of people) {
+        if (person) out.push(person);
+      }
+    }
+  }
+  return out;
+}
+
+export function getEditionSearchTags(yearId: string): EditionSearchTags {
+  const fromJson = (editionSearchTagsData as Record<string, EditionSearchTags & { title: string }>)[
+    yearId
+  ];
+  if (fromJson) {
+    return {
+      title: fromJson.title || "Students' Biennale",
+      curators: fromJson.curators ?? [],
+      artists: fromJson.artists ?? [],
+      artworks: fromJson.artworks ?? [],
+      venues: fromJson.venues ?? [],
+      institutions: fromJson.institutions ?? [],
+    };
+  }
+  if (yearId === "2014-15") {
+    return {
+      title: "Students' Biennale",
+      curators: namesFromTeam(EDITION_2014_TEAM, [
+        "Curators",
+        "Curatorial Advisor",
+        "Project Advisor",
+        "Director of Programmes",
+        "Programme Coordinator",
+        "Advisors",
+      ]),
+      artists: [],
+      artworks: [],
+      venues: [...EDITION_2014_VENUES],
+      institutions: [...EDITION_2014_INSTITUTIONS],
+    };
+  }
+  return {
+    title: "Students' Biennale",
+    curators: [],
+    artists: [],
+    artworks: [],
+    venues: [],
+    institutions: [],
+  };
+}
+
+/** Build a compact search_index from short edition tags (client-side bridge). */
+export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): SearchIndexEntry[] {
+  const route = `/editions/${yearId}`;
+  const entries: SearchIndexEntry[] = [
+    {
+      entity_type: "edition",
+      entity_id: `edition-${yearId}`,
+      title: tags.title,
+      subtitle: `Students' Biennale ${yearId}`,
+      route,
+      field_title: tags.title,
+      field_curator: tags.curators.join(", ") || undefined,
+      field_artist: tags.artists.join(", ") || undefined,
+      field_venue: tags.venues.join(", ") || undefined,
+      field_institution: tags.institutions.join(", ") || undefined,
+      field_edition: yearId,
+    },
+  ];
+  for (const name of tags.curators) {
+    entries.push({
+      entity_type: "person",
+      entity_id: `credit-curator-${yearId}-${name}`,
+      title: name,
+      subtitle: `Curator · ${yearId}`,
+      route,
+      field_title: name,
+      field_curator: name,
+      field_edition: yearId,
+    });
+  }
+  for (const name of tags.artists) {
+    entries.push({
+      entity_type: "person",
+      entity_id: `credit-artist-${yearId}-${name}`,
+      title: name,
+      subtitle: `Artist · ${yearId}`,
+      route,
+      field_title: name,
+      field_artist: name,
+      field_edition: yearId,
+    });
+  }
+  for (const name of tags.venues) {
+    entries.push({
+      entity_type: "venue",
+      entity_id: `credit-venue-${yearId}-${name}`,
+      title: name,
+      subtitle: `Venue · ${yearId}`,
+      route,
+      field_title: name,
+      field_venue: name,
+      field_edition: yearId,
+    });
+  }
+  for (const name of tags.artworks) {
+    entries.push({
+      entity_type: "artwork",
+      entity_id: `credit-artwork-${yearId}-${name}`,
+      title: name,
+      subtitle: `Independent project · ${yearId}`,
+      route,
+      field_title: name,
+      field_artist: name,
+      field_edition: yearId,
+    });
+  }
+  for (const name of tags.institutions) {
+    entries.push({
+      entity_type: "institution",
+      entity_id: `credit-institution-${yearId}-${name}`,
+      title: name,
+      subtitle: `Institution · ${yearId}`,
+      route,
+      field_title: name,
+      field_institution: name,
+      field_edition: yearId,
+    });
+  }
+  return entries;
 }
 
 export function getEditionOverview(yearId: string): EditionOverviewData {
@@ -194,6 +350,7 @@ export function getEditionOverview(yearId: string): EditionOverviewData {
       team: EDITION_2014_TEAM,
       institutions: EDITION_2014_INSTITUTIONS,
       heroImage: "/editions/2014-15/hero.jpg",
+      heroImages: ["/editions/2014-15/hero.jpg"],
       galleryImages: EDITION_2014_GALLERY,
       nextId,
     };

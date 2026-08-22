@@ -151,8 +151,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
         item.name.toLowerCase().includes(q) ||
         item.kind.toLowerCase().includes(q) ||
         item.meta.toLowerCase().includes(q) ||
-        (item.tags?.includes(q) ?? false) ||
-        (item.bio?.toLowerCase().includes(q) ?? false)
+        (item.tags?.includes(q) ?? false)
       );
     },
     [q]

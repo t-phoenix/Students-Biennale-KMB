@@ -1,16 +1,18 @@
 import { useEffect, useState } from "react";
 import { artworkImages, curatorsForArtwork, type ArtworkCard } from "../data/site";
+import { HighlightText } from "./HighlightText";
 import "../pages/Detail.css";
 
 type Props = {
   artwork: ArtworkCard;
+  highlightQuery?: string;
 };
 
 /** Shared artwork content — hero carousel through artists/curated-by — reused by
  *  the standalone artwork page (Detail.tsx) and the Discover Artworks canvas
  *  expand overlay (CanvasExpand.tsx). Page-level chrome (BACK/NEXT nav) stays
  *  with each caller since it differs by context. */
-export function ArtworkDetailBody({ artwork: a }: Props) {
+export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   const [heroIndex, setHeroIndex] = useState(0);
 
   const slides = artworkImages(a);
@@ -33,7 +35,9 @@ export function ArtworkDetailBody({ artwork: a }: Props) {
         <div className="detail__hero-scrim" aria-hidden />
         <div className="fig-grid detail__hero-caption">
           <p className="fig-label fig-subheading detail__label detail-reveal">Artworks Title</p>
-          <h1 className="fig-c4-9 detail__title detail-reveal">{a.title}</h1>
+          <h1 className="fig-c4-9 detail__title detail-reveal">
+            <HighlightText text={a.title} query={highlightQuery} />
+          </h1>
           <span className="fig-c10-12 detail__year detail-reveal">{a.year}</span>
         </div>
         {slides.length > 1 ? (
@@ -57,7 +61,9 @@ export function ArtworkDetailBody({ artwork: a }: Props) {
         <dl className="fig-c4-12 detail__meta detail-reveal">
           <div>
             <dt>Venue :</dt>
-            <dd>{a.venue}</dd>
+            <dd>
+              <HighlightText text={a.venue} query={highlightQuery} />
+            </dd>
           </div>
           <div>
             <dt>Dimensions :</dt>
@@ -88,8 +94,12 @@ export function ArtworkDetailBody({ artwork: a }: Props) {
         <div className="fig-c4-12 fig-sub-3 detail__artists detail-reveal">
           {a.artists.map((artist, i) => (
             <div key={`${i}-${artist.name}`}>
-              <strong>{artist.name}</strong>
-              <span>{artist.institution}</span>
+              <strong>
+                <HighlightText text={artist.name} query={highlightQuery} />
+              </strong>
+              <span>
+                <HighlightText text={artist.institution} query={highlightQuery} />
+              </span>
             </div>
           ))}
         </div>

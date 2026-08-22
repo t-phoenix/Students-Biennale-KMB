@@ -1,13 +1,10 @@
-import { useMemo, useRef, useState, type RefObject } from "react";
+import { useRef, type RefObject } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { type CuratorCard } from "../data/site";
-import {
-  curatorsForArtworkIn,
-  matchesQuery,
-  useEditionCatalogue,
-} from "../lib/catalogue";
+import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { CatalogueList } from "../components/CatalogueList";
+import { useEditionSearch } from "./EditionSearchContext";
 import "./EditionViews.css";
 
 function useStagger(ref: RefObject<HTMLElement | null>, dep: string) {
@@ -22,52 +19,7 @@ function useStagger(ref: RefObject<HTMLElement | null>, dep: string) {
         ease: "power2.out",
       });
     },
-    { scope: ref, dependencies: [dep] }
-  );
-}
-
-function Toolbar({
-  query,
-  setQuery,
-  view,
-  setView,
-}: {
-  query: string;
-  setQuery: (v: string) => void;
-  view: "grid" | "list";
-  setView: (v: "grid" | "list") => void;
-}) {
-  return (
-    <div className="edition-toolbar fig-band-9">
-      <label className="edition-search">
-        <span className="sr-only">Search</span>
-        <input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search"
-        />
-      </label>
-      <div className="edition-view-toggle" role="group" aria-label="View mode">
-        <button
-          type="button"
-          className={view === "grid" ? "is-active" : undefined}
-          onClick={() => setView("grid")}
-          aria-pressed={view === "grid"}
-          aria-label="Grid view"
-        >
-          <img src="/icons/grid-view.svg" alt="" width={36} height={36} />
-        </button>
-        <button
-          type="button"
-          className={view === "list" ? "is-active" : undefined}
-          onClick={() => setView("list")}
-          aria-pressed={view === "list"}
-          aria-label="List view"
-        >
-          <img src="/icons/list-view.svg" alt="" width={36} height={36} />
-        </button>
-      </div>
-    </div>
+    { scope: ref, dependencies: [dep] },
   );
 }
 
@@ -95,13 +47,7 @@ function Forthcoming({
   );
 }
 
-function CuratorPortrait({
-  curator,
-  yearId,
-}: {
-  curator: CuratorCard;
-  yearId: string;
-}) {
+function CuratorPortrait({ curator, yearId }: { curator: CuratorCard; yearId: string }) {
   return (
     <Link
       className="edition-card edition-card--curator"
@@ -129,32 +75,19 @@ function CuratorPortrait({
 export function CuratorsView() {
   const { yearId = "2025-26" } = useParams();
   const { catalogue } = useEditionCatalogue(yearId);
+  const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState<"grid" | "list">("grid");
 
-  const zones = useMemo(() => {
-    return catalogue.zones
-      .map((zone) => ({
-        ...zone,
-        curators: zone.curators.filter((c) =>
-          matchesQuery(query, c.searchText, c.name, c.region, zone.label, zone.states),
-        ),
-      }))
-      .filter((z) => z.curators.length > 0);
-  }, [catalogue.zones, query]);
-
-  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
+  useStagger(root, `${view}-${catalogue.editionId}`);
 
   return (
-    <div ref={root} className="edition-view">
-      <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
+    <div ref={root} className="edition-view__content">
       {!catalogue.zones.length ? (
         <Forthcoming catalogue={catalogue} kind="curators" />
       ) : view === "list" ? (
         <CatalogueList
           pageSize={8}
-          rows={zones.map((z) => ({
+          rows={catalogue.zones.map((z) => ({
             id: z.id,
             eyebrow: z.label,
             title: z.curators[0]?.name ?? z.label,
@@ -187,10 +120,7 @@ export function CuratorsView() {
                     {c.bio ? <p>{c.bio}</p> : null}
                   </article>
                 ))}
-                <Link
-                  className="curator-panel__more"
-                  to={`/editions/${yearId}/artworks`}
-                >
+                <Link className="curator-panel__more" to={`/editions/${yearId}/artworks`}>
                   VIEW ARTWORKS
                 </Link>
               </div>
@@ -199,7 +129,7 @@ export function CuratorsView() {
         />
       ) : (
         <div className="edition-zones">
-          {zones.map((zone) => (
+          {catalogue.zones.map((zone) => (
             <section key={zone.id} className="edition-zone fig-band-9">
               <div className="edition-zone__grid">
                 {zone.curators.map((c) => (
@@ -221,26 +151,18 @@ export function CuratorsView() {
 export function ArtworksView() {
   const { yearId = "2025-26" } = useParams();
   const { catalogue } = useEditionCatalogue(yearId);
+  const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState<"grid" | "list">("grid");
-  const items = useMemo(
-    () =>
-      catalogue.artworks.filter((a) =>
-        matchesQuery(query, a.searchText, a.title, a.venue, ...a.artists.map((x) => x.name)),
-      ),
-    [catalogue.artworks, query],
-  );
-  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
+
+  useStagger(root, `${view}-${catalogue.editionId}`);
 
   return (
-    <div ref={root} className="edition-view">
-      <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
+    <div ref={root} className="edition-view__content">
       {!catalogue.artworks.length ? (
         <Forthcoming catalogue={catalogue} kind="artworks" />
       ) : view === "list" ? (
         <CatalogueList
-          rows={items.map((a) => ({
+          rows={catalogue.artworks.map((a) => ({
             id: a.id,
             title: a.title,
             sub: a.medium ?? `Venue : ${a.venue}`,
@@ -268,7 +190,7 @@ export function ArtworksView() {
         />
       ) : (
         <div className="edition-grid edition-grid--art">
-          {items.map((a) => (
+          {catalogue.artworks.map((a) => (
             <Link
               key={a.id}
               className="edition-card"
@@ -290,32 +212,23 @@ export function ArtworksView() {
 export function ArtistsView() {
   const { yearId = "2025-26" } = useParams();
   const { catalogue } = useEditionCatalogue(yearId);
+  const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState<"grid" | "list">("grid");
-  const items = useMemo(
-    () =>
-      catalogue.artists.filter((a) =>
-        matchesQuery(query, a.searchText, a.name, a.institution, a.zone),
-      ),
-    [catalogue.artists, query],
-  );
-  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
 
-  /* Artists have no profile page of their own — their name opens the artwork
-     they're credited on. Artists with no matching artwork stay non-interactive
-     rather than link to a page that doesn't exist. */
+  useStagger(root, `${view}-${catalogue.editionId}`);
+
   const workForArtist = (a: { name: string }) =>
-    catalogue.artworks.find((w) => w.artists.some((x) => x.name === a.name || x.name.toLowerCase() === a.name.toLowerCase()));
+    catalogue.artworks.find((w) =>
+      w.artists.some((x) => x.name === a.name || x.name.toLowerCase() === a.name.toLowerCase()),
+    );
 
   return (
-    <div ref={root} className="edition-view">
-      <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
+    <div ref={root} className="edition-view__content">
       {!catalogue.artists.length ? (
         <Forthcoming catalogue={catalogue} kind="artists" />
       ) : view === "list" ? (
         <CatalogueList
-          rows={items.map((a) => {
+          rows={catalogue.artists.map((a) => {
             const work = workForArtist(a);
             return {
               id: a.id,
@@ -335,7 +248,9 @@ export function ArtistsView() {
               image: work?.image || work?.images?.[0],
               fields: [
                 { label: "School :", values: [a.institution] },
-                ...(work ? [{ label: "Venue :", values: [work.venue] }] : [{ label: "Zone :", values: [a.zone] }]),
+                ...(work
+                  ? [{ label: "Venue :", values: [work.venue] }]
+                  : [{ label: "Zone :", values: [a.zone] }]),
                 { label: "Artist :", values: [a.name] },
                 ...(curators.length
                   ? [{ label: "Curator :", values: curators.map((c) => c.name) }]
@@ -348,7 +263,7 @@ export function ArtistsView() {
         />
       ) : (
         <div className="edition-grid edition-grid--artists">
-          {items.map((a) => {
+          {catalogue.artists.map((a) => {
             const work = workForArtist(a);
             const body = (
               <>
@@ -379,33 +294,25 @@ export function ArtistsView() {
 export function VenueView() {
   const { yearId = "2025-26" } = useParams();
   const { catalogue } = useEditionCatalogue(yearId);
+  const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
-  const [query, setQuery] = useState("");
-  const [view, setView] = useState<"grid" | "list">("grid");
-  const items = useMemo(
-    () =>
-      catalogue.venues.filter((v) =>
-        matchesQuery(query, v.searchText, v.name, v.address, v.description),
-      ),
-    [catalogue.venues, query],
-  );
-  useStagger(root, `${view}-${query}-${catalogue.editionId}`);
+
+  useStagger(root, `${view}-${catalogue.editionId}`);
 
   return (
-    <div ref={root} className="edition-view">
-      <Toolbar query={query} setQuery={setQuery} view={view} setView={setView} />
+    <div ref={root} className="edition-view__content">
       {!catalogue.venues.length ? (
         <Forthcoming catalogue={catalogue} kind="venues" />
       ) : view === "list" ? (
         <CatalogueList
-          rows={items.map((v) => ({
+          rows={catalogue.venues.map((v) => ({
             id: v.id,
             title: v.name,
             sub: v.address,
             href: `/editions/${yearId}/venue/${v.id}`,
           }))}
           previewFor={(id) => {
-            const v = items.find((x) => x.id === id);
+            const v = catalogue.venues.find((x) => x.id === id);
             if (!v) return null;
             return {
               title: v.name,
@@ -417,10 +324,8 @@ export function VenueView() {
           }}
         />
       ) : (
-        /* Media + copy share the toolbar's 9-col band (cols 1-8), leaving
-           col 9 clear under the grid/list toggle. */
         <div className="edition-venue-rows">
-          {items.map((v) => {
+          {catalogue.venues.map((v) => {
             const blurb =
               v.description.length > 600
                 ? `${v.description.slice(0, 600).trimEnd()}…`
@@ -435,10 +340,7 @@ export function VenueView() {
                     <h3>{v.name}</h3>
                   </Link>
                   <p>{blurb}</p>
-                  <Link
-                    className="edition-venue__more"
-                    to={`/editions/${yearId}/venue/${v.id}`}
-                  >
+                  <Link className="edition-venue__more" to={`/editions/${yearId}/venue/${v.id}`}>
                     Read more...
                   </Link>
                   <p className="edition-venue__links">

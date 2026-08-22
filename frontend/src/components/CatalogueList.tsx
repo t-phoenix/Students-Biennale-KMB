@@ -5,13 +5,13 @@ import "./CatalogueList.css";
 export type CatalogueRow = {
   id: string;
   /** Row heading (artwork title, artist name, venue name…). */
-  title: string;
+  title: ReactNode;
   /** Extra heading lines — curator duos list both names in one row. */
-  titles?: string[];
+  titles?: ReactNode[];
   /** Small label above the heading (e.g. "Zone 1"). */
-  eyebrow?: string;
+  eyebrow?: ReactNode;
   /** Second line under the heading (institution, venue, medium…). */
-  sub?: string;
+  sub?: ReactNode;
   /** Where the row's "open" link goes. Omit for rows with nothing to open. */
   href?: string;
 };
@@ -71,8 +71,8 @@ export function CatalogueList({
                     <span className="catalogue__row-eyebrow">{row.eyebrow}</span>
                   ) : null}
                   <span className="catalogue__row-title">{row.title}</span>
-                  {(row.titles ?? []).map((t) => (
-                    <span key={t} className="catalogue__row-title">
+                  {(row.titles ?? []).map((t, i) => (
+                    <span key={i} className="catalogue__row-title">
                       {t}
                     </span>
                   ))}

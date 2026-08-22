@@ -457,3 +457,128 @@
     align-items: stretch;
   }
 }
+
+/* Tagged search highlight */
+.edition-view mark {
+  background: color-mix(in srgb, var(--color-text-primary) 18%, transparent);
+  color: inherit;
+  padding: 0 0.05em;
+}
+
+.edition-card--meta {
+  display: block;
+  max-width: 28rem;
+  text-decoration: none;
+  color: inherit;
+  margin: 1.5rem 0;
+}
+
+.edition-card__media--meta {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.edition-card__media--meta img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.edition-card__meta-eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.edition-card__meta-role {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.edition-card__meta-snippet {
+  margin: 0.5rem 0 0;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+}
+
+.edition-search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin-top: 0.5rem;
+}
+
+.edition-search-section__title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.edition-search-section__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.edition-search-hit {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.edition-search-hit--row {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+}
+
+.edition-search-hit__thumb {
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
+}
+
+.edition-search-hit__thumb--empty {
+  background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+}
+
+.edition-search-hit__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.edition-search-hit__copy h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.edition-search-hit__eyebrow {
+  margin: 0 0 0.2rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.edition-search-hit__copy p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.edition-search-empty {
+  margin: 1.5rem 0;
+}

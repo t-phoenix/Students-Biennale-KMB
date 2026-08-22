@@ -1,6 +1,9 @@
-/* Detail pages — Artwork 1:569, Curators 1:2484, Venues 1:1966.
-   Horizontal placement comes entirely from .fig-grid spans; this file only owns
-   vertical rhythm and the look of each block. */
+/* Tagged search highlight (from ?highlight= query param) */
+.detail mark {
+  background: color-mix(in srgb, var(--color-text-primary) 18%, transparent);
+  color: inherit;
+  padding: 0 0.05em;
+}
 
 .detail {
   width: 100%;

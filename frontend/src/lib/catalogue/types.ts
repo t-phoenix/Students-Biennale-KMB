@@ -115,6 +115,7 @@ export type SnapshotPayload = {
     is_current: boolean;
     published: boolean;
     hero_url?: string | null;
+    hero_urls?: string[];
     gallery_urls?: string[];
   };
   sections: SnapshotSection[];
@@ -141,6 +142,8 @@ export type MappedCatalogue = {
   overallCuratorialNote: string | null;
   isCurrent: boolean;
   heroUrl: string | null;
+  /** Cover carousel frames (previous editions); first matches heroUrl when present. */
+  heroUrls: string[];
   galleryUrls: string[];
   sections: SnapshotSection[];
   zones: CuratorZone[];

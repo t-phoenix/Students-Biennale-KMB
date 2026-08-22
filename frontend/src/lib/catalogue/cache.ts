@@ -3,7 +3,7 @@ import type { Json } from "../database.types";
 import { mapLiveEdition, mapSnapshot, mergeCatalogues } from "./mappers";
 import type { MappedCatalogue, SearchIndexEntry, SnapshotPayload, SnapshotRow, SnapshotSection } from "./types";
 
-const STORAGE_KEY = "sb-catalogue-v4";
+const STORAGE_KEY = "sb-catalogue-v5";
 const SELECT_FULL = "edition_id, payload, search_index, generated_at";
 const SELECT_META = "edition_id, generated_at";
 

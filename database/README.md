@@ -227,6 +227,8 @@ Copy `frontend/.env.example` → `frontend/.env.local`:
 
 Public reads: one `supabase.from('catalogue_snapshots').select('edition_id, payload, search_index, generated_at')` per tab (cached in `sessionStorage`). Edition and Discover search filter that pack in the browser. Do not call `search_entities` on keystroke.
 
+**Tagged search only:** client filters use short fields (artist / artwork / curator / venue names, institutions, zone labels, edition year/title, venue address). Bios, descriptions, histories, and curatorial notes are not searchable. Previous editions without a full catalogue get name tags parsed from `peopleAndCredits` into `search_index` on import; re-run `python3 scripts/import_catalogue.py --target linked` (or `local`) after pulling content so snapshots refresh. Sparse editions show a general edition card with the matched name highlighted.
+
 CMS writes: `createClient` with the **anon** key, then `signIn`. RLS allows writes only when `app_metadata.role` is `cms` or `admin`, and only on programmes, press, about, and assets. Catalogue tables and `catalogue_snapshots` are import-owned.
 
 ## New migrations
@@ -256,7 +258,7 @@ After linking: drop `--local` (uses the remote schema).
 | Writes return 0 rows | Missing SELECT policy, or JWT role not `cms`/`admin`. Refresh the session. |
 | Storage upsert fails | Policies need INSERT + SELECT + UPDATE. |
 | Search returns nothing | Query length ≥ 2; `search_entries` must be populated. The public site searches cached `catalogue_snapshots`, not this RPC. |
-| Empty edition catalogue | Import writes `catalogue_snapshots`. Run `python3 backend/import_catalogue.py --target local` after `db reset`. |
+| Empty edition catalogue | Import writes `catalogue_snapshots`. Run `python3 scripts/import_catalogue.py --target local` after `db reset`. |
 | Advisor warnings | `supabase --workdir database db advisors` |
 | SQL / API logs | `supabase --workdir database logs db` / `logs api` |
 | Auth emails (local) | http://127.0.0.1:54324 |
