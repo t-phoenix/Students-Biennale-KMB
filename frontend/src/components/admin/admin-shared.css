@@ -163,6 +163,13 @@
   letter-spacing: 0.04em;
 }
 
+.adm-field__hint {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 6px 0 0;
+  line-height: 1.4;
+}
+
 /* ── Toast ── */
 
 .adm-toast-stack {
@@ -358,6 +365,154 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* ── Hero credit visibility toggles (T / A / I) ── */
+
+.adm-credit-vis {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.adm-credit-vis--compact {
+  gap: 4px;
+}
+
+.adm-credit-vis__btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1.5px solid color-mix(in srgb, var(--credit-accent, #888) 55%, transparent);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--credit-accent, #888);
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.12s ease;
+}
+
+.adm-credit-vis--compact .adm-credit-vis__btn {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+}
+
+.adm-credit-vis__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.adm-credit-vis__btn.is-on {
+  background: var(--credit-accent, #888);
+  border-color: var(--credit-accent, #888);
+  color: #fff;
+}
+
+.adm-credit-vis__btn.is-off {
+  opacity: 0.38;
+  border-style: dashed;
+}
+
+.adm-credit-vis__btn.is-off .adm-credit-vis__letter {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+}
+
+.adm-credit-vis__btn.is-empty:not(.is-on) {
+  opacity: 0.28;
+}
+
+.adm-credit-vis__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.adm-credit-vis__tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 20;
+  width: max-content;
+  max-width: 200px;
+  padding: 6px 9px;
+  border: 1px solid var(--color-neutral-black);
+  background: var(--color-neutral-white);
+  color: var(--color-text-primary);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.adm-credit-vis__tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -4px;
+  border: 4px solid transparent;
+  border-top-color: var(--color-neutral-black);
+}
+
+.adm-credit-vis__btn:hover:not(:disabled) .adm-credit-vis__tip,
+.adm-credit-vis__btn:focus-visible .adm-credit-vis__tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.adm-form-row--credit {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+}
+
+@media (max-width: 640px) {
+  .adm-form-row--credit {
+    grid-template-columns: 1fr;
+  }
+}
+
+.adm-field__vis-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: var(--spacing-xl);
+}
+
+.adm-field__vis-row .adm-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.adm-table__cell--vis {
+  width: 88px;
+}
+
+.adm-table__text-off {
+  opacity: 0.42;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
 }
 
 .adm-table__link {

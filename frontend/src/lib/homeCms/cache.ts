@@ -1,7 +1,7 @@
 import { isSupabaseConfigured, supabase } from "../supabase";
 import type { HomeCms, HomeCover, HomeUpdateCard } from "./types";
 
-const STORAGE_KEY = "sb-home-cms-v1";
+const STORAGE_KEY = "sb-home-cms-v3";
 
 let memory: HomeCms | null = null;
 let inflight: Promise<HomeCms> | null = null;
@@ -55,6 +55,9 @@ function preloadUrl(url: string) {
 
 function preloadCmsImages(data: HomeCms) {
   for (const cover of data.covers) preloadUrl(cover.image_url);
+  for (const card of data.cards) {
+    if (card.image_url) preloadUrl(card.image_url);
+  }
 }
 
 async function fetchHomeCms(): Promise<HomeCms> {
@@ -63,11 +66,19 @@ async function fetchHomeCms(): Promise<HomeCms> {
   const [coversRes, cardsRes] = await Promise.all([
     supabase
       .from("home_covers")
-      .select("id, image_url, artwork_name, artist, institution")
+      .select(
+        "id, image_url, artwork_name, artist, institution, show_artwork_name, show_artist, show_institution",
+      )
       .eq("active", true)
       .order("sort_order")
       .order("created_at"),
-    supabase.from("update_cards").select("id, slot, heading, body, link_url, link_external, card_type").eq("active", true).order("slot"),
+    supabase
+      .from("update_cards")
+      .select(
+        "id, slot, heading, body, detail_body, image_url, link_url, link_external, link_label, link_target_kind, link_target_id, card_type",
+      )
+      .eq("active", true)
+      .order("slot"),
   ]);
 
   if (coversRes.error) throw coversRes.error;

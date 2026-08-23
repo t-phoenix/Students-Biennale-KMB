@@ -562,6 +562,9 @@ export type Database = {
           id: string
           image_url: string
           institution: string | null
+          show_artwork_name: boolean
+          show_artist: boolean
+          show_institution: boolean
           sort_order: number
           updated_at: string
         }
@@ -573,6 +576,9 @@ export type Database = {
           id?: string
           image_url: string
           institution?: string | null
+          show_artwork_name?: boolean
+          show_artist?: boolean
+          show_institution?: boolean
           sort_order?: number
           updated_at?: string
         }
@@ -584,6 +590,9 @@ export type Database = {
           id?: string
           image_url?: string
           institution?: string | null
+          show_artwork_name?: boolean
+          show_artist?: boolean
+          show_institution?: boolean
           sort_order?: number
           updated_at?: string
         }
@@ -991,10 +1000,14 @@ export type Database = {
           body: string
           card_type: string
           created_at: string
+          detail_body: string | null
           heading: string
           id: string
           image_url: string | null
           link_external: boolean
+          link_label: string | null
+          link_target_id: string | null
+          link_target_kind: string | null
           link_url: string | null
           slot: number
           updated_at: string
@@ -1004,10 +1017,14 @@ export type Database = {
           body: string
           card_type?: string
           created_at?: string
+          detail_body?: string | null
           heading: string
           id?: string
           image_url?: string | null
           link_external?: boolean
+          link_label?: string | null
+          link_target_id?: string | null
+          link_target_kind?: string | null
           link_url?: string | null
           slot: number
           updated_at?: string
@@ -1017,10 +1034,14 @@ export type Database = {
           body?: string
           card_type?: string
           created_at?: string
+          detail_body?: string | null
           heading?: string
           id?: string
           image_url?: string | null
           link_external?: boolean
+          link_label?: string | null
+          link_target_id?: string | null
+          link_target_kind?: string | null
           link_url?: string | null
           slot?: number
           updated_at?: string

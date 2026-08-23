@@ -6,6 +6,7 @@ interface Props {
   onChange: (v: string) => void;
   maxLength?: number;
   multiline?: boolean;
+  rows?: number;
   type?: string;
   placeholder?: string;
   required?: boolean;
@@ -17,6 +18,7 @@ export function FormField({
   onChange,
   maxLength,
   multiline,
+  rows = 4,
   type = "text",
   placeholder,
   required,
@@ -35,7 +37,7 @@ export function FormField({
           onChange={(e) => onChange(e.target.value)}
           maxLength={maxLength}
           placeholder={placeholder}
-          rows={4}
+          rows={rows}
         />
       ) : (
         <input

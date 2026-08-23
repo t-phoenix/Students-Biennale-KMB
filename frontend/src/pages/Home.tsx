@@ -4,6 +4,10 @@ import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../li
 import { CtaLink } from "../components/CtaLink";
 import { SpotlightModal } from "../components/SpotlightModal";
 import {
+  UpdateCardSpotlight,
+  type ActiveUpdateCard,
+} from "../components/UpdateCardSpotlight";
+import {
   EDITION_MORE,
   EDITION_SHORT,
   SENSING_GROUNDS_NOTE,
@@ -12,26 +16,55 @@ import {
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
 import { useHomeCms } from "../lib/homeCms";
+import { heroCreditVisible } from "../lib/homeCms/credits";
+import {
+  defaultCtaLabel,
+  type UpdateCardMode,
+} from "../lib/homeCms/updateCardLinks";
 import { useProgrammes } from "../lib/programmes";
 import "./Home.css";
 
-const FALLBACK_UPDATES = [
+const FALLBACK_UPDATES: ActiveUpdateCard[] = [
   {
     id: "u1",
-    label: "Update 01",
+    mode: "content",
+    heading: "Update 01",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
+    detailBody:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966.",
+    imageUrl: null,
+    href: null,
+    ctaLabel: null,
   },
   {
     id: "u2",
-    label: "Update 02",
+    mode: "content",
+    heading: "Update 02",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
+    detailBody:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966.",
+    imageUrl: null,
+    href: null,
+    ctaLabel: null,
   },
   {
     id: "u3",
-    label: "Update 03",
+    mode: "content",
+    heading: "Update 03",
     body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
+    detailBody:
+      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966.",
+    imageUrl: null,
+    href: null,
+    ctaLabel: null,
   },
-] as const;
+];
+
+function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
+  if (value === "internal" || value === "external" || value === "content") return value;
+  if (value === "programmes" || value === "news") return "internal";
+  return "content";
+}
 
 function buildHeroTimeline(
   slides: HTMLElement[],
@@ -95,6 +128,7 @@ export function Home() {
   const [slide, setSlide] = useState(0);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
+  const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();
@@ -104,21 +138,37 @@ export function Home() {
     : Array.from({ length: 5 }, (_, i) => ({
         id: `fallback-${i}`,
         image_url: "/home/hero.jpg",
-        artwork_name: "Artwork Name",
-        artist: "Artist",
-        institution: "Institution",
+        artwork_name: null,
+        artist: null,
+        institution: null,
+        show_artwork_name: false,
+        show_artist: false,
+        show_institution: false,
       }));
-  const cards = cmsCards.length
-    ? cmsCards.map((c) => ({
-        id: c.id,
-        label: c.heading,
-        body: c.body,
-        href: c.link_url?.trim() || null,
-        external: c.link_external,
-      }))
+  const cards: ActiveUpdateCard[] = cmsCards.length
+    ? cmsCards.map((c) => {
+        const mode = normalizeCardMode(c.card_type);
+        const href = c.link_url?.trim() || null;
+        return {
+          id: c.id,
+          mode,
+          heading: c.heading,
+          body: c.body,
+          detailBody: c.detail_body,
+          imageUrl: c.image_url,
+          href,
+          ctaLabel: c.link_label || defaultCtaLabel(mode),
+        };
+      })
     : [...FALLBACK_UPDATES];
   const currentCover = covers[slide] ?? covers[0];
-  const creditHeading = (currentCover?.artwork_name || "Artwork Name").trim();
+  const showArtwork = heroCreditVisible(currentCover?.show_artwork_name, currentCover?.artwork_name);
+  const showArtist = heroCreditVisible(currentCover?.show_artist, currentCover?.artist);
+  const showInstitution = heroCreditVisible(
+    currentCover?.show_institution,
+    currentCover?.institution,
+  );
+  const creditHeading = (currentCover?.artwork_name ?? "").trim();
   const creditParts = creditHeading.split(/\s+/);
   const creditArtwork =
     creditParts.length === 2 ? (
@@ -130,8 +180,9 @@ export function Home() {
     ) : (
       creditHeading
     );
-  const creditArtist = (currentCover?.artist || "Artist").trim();
-  const creditInst = (currentCover?.institution || "Institution").trim();
+  const creditArtist = (currentCover?.artist ?? "").trim();
+  const creditInst = (currentCover?.institution ?? "").trim();
+  const showCredits = showArtwork || showArtist || showInstitution;
   const workshopThumb =
     upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "/home/thumb-workshops.jpg";
   const residencyThumb = residencies[0]?.heroImage || "/home/thumb-residencies.jpg";
@@ -179,10 +230,16 @@ export function Home() {
     setSlide(index);
   }, []);
 
-  const openCard = useCallback(
-    (href: string | null | undefined, external?: boolean) => {
+  const openCard = useCallback((card: ActiveUpdateCard) => {
+    setActiveCard(card);
+  }, []);
+
+  const confirmCardNavigate = useCallback(
+    (card: ActiveUpdateCard) => {
+      const href = card.href?.trim();
       if (!href) return;
-      if (external || /^https?:\/\//i.test(href)) {
+      setActiveCard(null);
+      if (card.mode === "external" || /^https?:\/\//i.test(href)) {
         window.open(href, "_blank", "noopener,noreferrer");
         return;
       }
@@ -369,17 +426,22 @@ export function Home() {
             {cards.map((item, i, arr) => (
               <article
                 key={item.id}
-                className={`home-hero__card${"href" in item && item.href ? " home-hero__card--linked" : ""}`}
+                className="home-hero__card home-hero__card--interactive"
                 style={{ zIndex: arr.length - i }}
                 data-offset={i}
-                onClick={
-                  "href" in item && item.href
-                    ? () => openCard(item.href, "external" in item ? item.external : false)
-                    : undefined
-                }
+                role="button"
+                tabIndex={0}
+                aria-label={`${item.heading}. Open update.`}
+                onClick={() => openCard(item)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openCard(item);
+                  }
+                }}
               >
                 <div className="home-hero__card-inner">
-                  <h2 className="home-hero__card-title">{item.label}</h2>
+                  <h2 className="home-hero__card-title">{item.heading}</h2>
                   <p className="home-hero__card-body">{item.body}</p>
                 </div>
               </article>
@@ -387,11 +449,13 @@ export function Home() {
           </div>
 
           <div className="home-hero__meta">
-            <div className="home-hero__credit">
-              <p className="home-hero__artwork">{creditArtwork}</p>
-              <p className="home-hero__artist">{creditArtist || "Artist"}</p>
-              <p className="home-hero__inst">{creditInst || "Institution"}</p>
-            </div>
+            {showCredits ? (
+              <div className="home-hero__credit">
+                {showArtwork ? <p className="home-hero__artwork">{creditArtwork}</p> : null}
+                {showArtist ? <p className="home-hero__artist">{creditArtist}</p> : null}
+                {showInstitution ? <p className="home-hero__inst">{creditInst}</p> : null}
+              </div>
+            ) : null}
             <div className="home-hero__dots" role="tablist" aria-label="Hero slides">
               {covers.map((cover, i) => (
                 <button
@@ -502,6 +566,12 @@ export function Home() {
           ))}
         </div>
       </SpotlightModal>
+
+      <UpdateCardSpotlight
+        card={activeCard}
+        onClose={() => setActiveCard(null)}
+        onConfirmNavigate={confirmCardNavigate}
+      />
 
       {/* Upcoming programmes — banner cols 4–12, thumbs 3-up at cols 4/7/10 (Figma 1:991) */}
       <section id="programmes" className="home-section home-programmes">

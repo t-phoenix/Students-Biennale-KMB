@@ -93,12 +93,15 @@
     box-shadow var(--stack-dur) var(--stack-ease);
 }
 
-.home-hero__card--linked[data-offset="0"] {
+.home-hero__card--linked[data-offset="0"],
+.home-hero__card--interactive[data-offset="0"] {
   cursor: pointer;
 }
 
 .home-hero__stack:hover .home-hero__card--linked,
-.home-hero__stack:focus-within .home-hero__card--linked {
+.home-hero__stack:focus-within .home-hero__card--linked,
+.home-hero__stack:hover .home-hero__card--interactive,
+.home-hero__stack:focus-within .home-hero__card--interactive {
   cursor: pointer;
 }
 
