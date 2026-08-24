@@ -661,7 +661,7 @@ export function Home() {
                   <h3>KBF Announces Curators For Students&apos; Biennale 2025-26</h3>
                   <time>4 Dec 2025</time>
                 </div>
-                <p>
+                <p className="fig-body">
                   The Kochi Biennale Foundation (KBF) has announced the curators for Students&apos;
                   Biennale, a key educational initiative of the Kochi Biennale Foundation for budding
                   young artists. The programme works with state-funded art colleges across India,

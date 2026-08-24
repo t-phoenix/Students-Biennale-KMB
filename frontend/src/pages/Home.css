@@ -357,11 +357,14 @@
   font-style: italic;
   color: var(--color-text-secondary);
   width: fit-content;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
 }
 
-.home-press__featured .home-text-btn {
+.home-text-btn:hover {
   color: var(--color-text-primary);
-  margin-top: 12px;
 }
 
 /* Sensing */
@@ -495,15 +498,21 @@
   margin-bottom: 48px;
 }
 
+.home-press__featured > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
 /* gap is a real reserved column (not just space-between leftover) so a
    long single-line title can't crowd the date the way it did at 16px —
    it wraps within its own flexible width instead. */
 .home-press__featured-head {
   display: flex;
   justify-content: space-between;
-  gap: 48px;
+  gap: 32px;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .home-press__featured-head h3 {
@@ -531,8 +540,6 @@
 
 .home-press__featured p {
   margin: 0;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
 }
 
 .home-press__list {
