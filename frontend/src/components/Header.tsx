@@ -1,34 +1,17 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import {
+  scrollToSection,
   type HomeSectionId,
   parseHomeHash,
-  scrollToSection,
 } from "../lib/scrollToSection";
 import "./Header.css";
 
-type NavItem = {
-  label: string;
-  /** Home section hash — used for in-page scroll when `to` is absent. */
-  hash?: HomeSectionId;
-  /** Full page route — takes precedence over hash navigation. */
-  to?: string;
-};
-
-const NAV: NavItem[] = [
-  { hash: "editions", label: "EDITIONS" },
-  { to: "/programmes", label: "PROGRAMMES" },
+const NAV: { hash: HomeSectionId; label: string; to?: string }[] = [
+  { hash: "editions", label: "EDITIONS", to: "/editions/2025-26/curators" },
+  { hash: "programmes", label: "PROGRAMMES", to: "/programmes" },
   { hash: "press", label: "PRESS" },
   { hash: "about", label: "ABOUT" },
-];
-
-/** Home sections still observed for scroll-spy (includes programmes band). */
-const HOME_SECTION_IDS: HomeSectionId[] = [
-  "editions",
-  "programmes",
-  "press",
-  "about",
 ];
 
 export function Header() {
@@ -36,20 +19,21 @@ export function Header() {
   const navigate = useNavigate();
   const onHome = location.pathname === "/";
   const [activeSection, setActiveSection] = useState<HomeSectionId | null>(null);
-  const discoverRef = useRef<HTMLAnchorElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!onHome) {
-      setActiveSection(null);
-      return;
-    }
+    setMenuOpen(false);
+  }, [location.pathname, location.hash]);
+
+  useEffect(() => {
+    if (!onHome) return;
     const fromHash = parseHomeHash(location.hash);
     if (fromHash) setActiveSection(fromHash);
 
-    const sections = HOME_SECTION_IDS.map((id) => document.getElementById(id)).filter(
-      (el): el is HTMLElement => Boolean(el)
-    );
+    const sections = NAV.filter((n) => !n.to || n.hash === "programmes")
+      .map((n) => document.getElementById(n.hash))
+      .filter((el): el is HTMLElement => Boolean(el));
     if (!sections.length) return;
 
     const observer = new IntersectionObserver(
@@ -57,79 +41,67 @@ export function Header() {
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        const top = visible[0]?.target;
-        if (top?.id) setActiveSection(top.id as HomeSectionId);
+        if (visible[0]?.target.id) {
+          setActiveSection(visible[0].target.id as HomeSectionId);
+        }
       },
-      { rootMargin: "-30% 0px -45% 0px", threshold: [0.1, 0.25, 0.5] }
+      { rootMargin: "-20% 0px -60% 0px", threshold: [0, 0.25, 0.5, 0.75, 1] }
     );
-    sections.forEach((el) => observer.observe(el));
+
+    sections.forEach((s) => observer.observe(s));
     return () => observer.disconnect();
   }, [onHome, location.hash]);
 
-  useGSAP(
-    () => {
-      const el = discoverRef.current;
-      if (!el || prefersReducedMotion()) return;
-      const enter = () => gsap.to(el, { scale: 1.04, autoAlpha: 1, duration: 0.2, ease: "power2.out" });
-      const leave = () => gsap.to(el, { scale: 1, duration: 0.2, ease: "power2.out" });
-      el.addEventListener("pointerenter", enter);
-      el.addEventListener("pointerleave", leave);
-      return () => {
-        el.removeEventListener("pointerenter", enter);
-        el.removeEventListener("pointerleave", leave);
-      };
-    },
-    { scope: headerRef }
-  );
-
-  const goToSection = (
-    hash: HomeSectionId,
-    event: MouseEvent<HTMLAnchorElement>
-  ) => {
-    event.preventDefault();
+  const goToSection = (hash: HomeSectionId, e: React.MouseEvent) => {
+    e.preventDefault();
+    setMenuOpen(false);
     if (onHome) {
       scrollToSection(hash);
-      navigate({ pathname: "/", hash }, { replace: true });
       return;
     }
     navigate({ pathname: "/", hash });
-  };
-
-  const isNavActive = (item: NavItem) => {
-    if (item.to) return location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
-    return onHome && item.hash != null && activeSection === item.hash;
   };
 
   return (
     <header ref={headerRef} className="site-header" data-node-id="6:287">
       <Link to="/" className="site-header__brand" aria-label="Students' Biennale home">
         <img
-          className="site-header__brand-logo site-header__brand-logo--full"
-          src="/logo-sb.svg"
+          src="/logo-sb-word.png"
           alt="Students' Biennale"
+          className="site-header__logo-word"
         />
         <img
-          className="site-header__brand-logo site-header__brand-logo--icon"
-          src="/logo-sb-mark.svg"
-          alt="Students' Biennale"
+          src="/logo-sb-mark.png"
+          alt=""
+          aria-hidden="true"
+          className="site-header__logo-mark"
         />
       </Link>
 
-      {location.pathname === "/artworks" ? null : (
-        <Link ref={discoverRef} to="/artworks" className="site-header__discover">
-          [Discover Artworks]
-        </Link>
-      )}
+      <button
+        type="button"
+        className={`site-header__burger ${menuOpen ? "is-open" : ""}`}
+        aria-label={menuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((o) => !o)}
+      >
+        <span />
+        <span />
+      </button>
 
       <nav className="site-header__nav" aria-label="Primary">
         {NAV.map((item, i) => (
-          <span key={item.to ?? item.hash} style={{ display: "contents" }}>
+          <span key={item.hash} style={{ display: "contents" }}>
             {i > 0 ? <span className="site-header__sep">/</span> : null}
             {item.to ? (
               <Link
                 to={item.to}
-                data-label={item.to.replace(/^\//, "")}
-                className={isNavActive(item) ? "is-active" : undefined}
+                data-label={item.hash}
+                className={
+                  location.pathname.startsWith(item.to) || (item.hash === "editions" && location.pathname.startsWith("/editions"))
+                    ? "is-active"
+                    : undefined
+                }
               >
                 {item.label}
               </Link>
@@ -137,8 +109,12 @@ export function Header() {
               <a
                 href={`/#${item.hash}`}
                 data-label={item.hash}
-                className={isNavActive(item) ? "is-active" : undefined}
-                onClick={(e) => goToSection(item.hash!, e)}
+                className={
+                  onHome && activeSection === item.hash
+                    ? "is-active"
+                    : undefined
+                }
+                onClick={(e) => goToSection(item.hash, e)}
               >
                 {item.label}
               </a>
@@ -147,24 +123,41 @@ export function Header() {
         ))}
       </nav>
 
-      <a
-        className="site-header__kbf"
-        href="https://kochimuzirisbiennale.org/"
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Kochi Biennale Foundation"
-      >
-        <img
-          className="site-header__kbf-logo site-header__kbf-logo--full"
-          src="/logo-kbf.svg"
-          alt="Kochi Biennale Foundation"
-        />
-        <img
-          className="site-header__kbf-logo site-header__kbf-logo--icon"
-          src="/logo-kbf-icon.svg"
-          alt="Kochi Biennale Foundation"
-        />
-      </a>
+      <div className={`site-header__drawer ${menuOpen ? "is-open" : ""}`}>
+        <nav className="site-header__drawer-nav" aria-label="Mobile">
+          {NAV.map((item) => (
+            item.to ? (
+              <Link
+                key={item.hash}
+                to={item.to}
+                data-label={item.hash}
+                className={
+                  location.pathname.startsWith(item.to) || (item.hash === "editions" && location.pathname.startsWith("/editions"))
+                    ? "is-active"
+                    : undefined
+                }
+                onClick={() => setMenuOpen(false)}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <a
+                key={item.hash}
+                href={`/#${item.hash}`}
+                data-label={item.hash}
+                className={
+                  onHome && activeSection === item.hash
+                    ? "is-active"
+                    : undefined
+                }
+                onClick={(e) => goToSection(item.hash, e)}
+              >
+                {item.label}
+              </a>
+            )
+          ))}
+        </nav>
+      </div>
     </header>
   );
 }

@@ -102,15 +102,15 @@
    margin (20px, all three) so every gap in the grid reads as one unit. */
 .edition-zone__grid {
   grid-column: 1 / span 6;
-  width: 80%;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 20px;
-  row-gap: 20px;
+  row-gap: 60px;
 }
 
 .edition-zone__meta {
   grid-column: 7 / span 3;
+  padding-left: var(--grid-gutter);
 }
 
 .edition-zone__meta h4 {
@@ -246,6 +246,13 @@
   display: block;
   /* Kill any inherited stretch from width/height attribute fallbacks */
   aspect-ratio: auto;
+  filter: grayscale(1);
+  transition: filter 0.3s ease;
+}
+
+.edition-card--curator:hover .edition-card__frame img,
+.edition-card--curator:focus-visible .edition-card__frame img {
+  filter: grayscale(0);
 }
 
 .edition-card__frame--placeholder {
@@ -428,6 +435,7 @@
 
   .edition-zone__meta {
     order: -1;
+    padding-left: 0;
   }
 
   .edition-view-toggle {

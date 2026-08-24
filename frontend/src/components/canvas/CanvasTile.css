@@ -1,89 +1,49 @@
 .canvas-tile {
   position: absolute;
-  display: block;
+  top: 0;
+  left: 0;
+  margin: 0;
   padding: 0;
-  text-align: left;
-  cursor: pointer;
   border: 0;
-  background: #fff;
-  color: var(--color-text-primary);
+  background: transparent;
+  cursor: pointer;
   overflow: hidden;
-  border-radius: 0;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
-  -webkit-user-select: none;
-  user-select: none;
-  container-type: inline-size;
-  transition: box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  text-align: left;
+  outline: none;
+  contain: layout paint;
+  will-change: transform;
 }
 
-.canvas-tile:hover {
-  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-6px) scale(1.02);
+.canvas-tile:focus-visible {
+  outline: 2px solid var(--color-primary-dark);
+  outline-offset: 2px;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .canvas-tile {
-    transition: none;
-  }
+.canvas-tile__media {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 0.35s ease;
+  pointer-events: none;
+}
 
-  .canvas-tile:hover {
-    transform: none;
-  }
+.canvas-tile:hover .canvas-tile__media,
+.canvas-tile:focus-visible .canvas-tile__media {
+  transform: scale(1.03);
 }
 
 .canvas-tile.is-dimmed {
   opacity: 0.18;
-  pointer-events: none;
-  box-shadow: none;
-}
-
-.canvas-tile__media {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
-  object-position: center;
-  display: block;
+  filter: grayscale(100%);
   pointer-events: none;
 }
 
 .canvas-tile__media--empty {
   background: linear-gradient(
-    145deg,
-    var(--color-neutral-gray-mid),
-    var(--color-neutral-gray-light)
+    135deg,
+    var(--color-primary-dark),
+    var(--color-neutral-gray-dark)
   );
-}
-
-.canvas-tile__caption {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(3px, 1.4cqw, 6px);
-  padding: clamp(28px, 14cqw, 56px) clamp(12px, 4.5cqw, 18px) clamp(12px, 4.5cqw, 18px);
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.58), transparent 70%);
-  color: var(--color-text-inverse);
-  pointer-events: none;
-}
-
-.canvas-tile__kind {
-  display: none;
-}
-
-.canvas-tile__name {
-  font-size: clamp(14px, 5.2cqw, 20px);
-  font-weight: 500;
-  line-height: 1.25;
-  letter-spacing: 0.02em;
-}
-
-.canvas-tile__meta {
-  font-size: clamp(11px, 3.4cqw, 13px);
-  opacity: 0.82;
 }

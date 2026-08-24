@@ -7,12 +7,13 @@ import "./SpotlightModal.css";
 type Props = {
   open: boolean;
   title: string;
+  attribution?: ReactNode;
   onClose: () => void;
   children: ReactNode;
   labelledById?: string;
 };
 
-export function SpotlightModal({ open, title, onClose, children, labelledById }: Props) {
+export function SpotlightModal({ open, title, attribution, onClose, children, labelledById }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
@@ -62,14 +63,17 @@ export function SpotlightModal({ open, title, onClose, children, labelledById }:
           ×
         </button>
         <div className="spotlight__layout">
-          <h2 id={labelId} className="spotlight__title">
-            {title.split("\n").map((line, i, arr) => (
-              <span key={`${line}-${i}`}>
-                {line}
-                {i < arr.length - 1 ? <br /> : null}
-              </span>
-            ))}
-          </h2>
+          <div className="spotlight__label">
+            <h2 id={labelId} className="spotlight__title">
+              {title.split("\n").map((line, i, arr) => (
+                <span key={`${line}-${i}`}>
+                  {line}
+                  {i < arr.length - 1 ? <br /> : null}
+                </span>
+              ))}
+            </h2>
+            {attribution ? <p className="spotlight__attribution">{attribution}</p> : null}
+          </div>
           <div className="spotlight__body">{children}</div>
         </div>
       </div>

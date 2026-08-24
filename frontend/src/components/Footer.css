@@ -18,7 +18,7 @@
 
 .site-footer__brand p {
   margin: 0 0 var(--spacing-md);
-  font-size: 14px;
+  font-size: var(--type-caption-size);
   line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
   max-width: 28ch;
@@ -43,7 +43,7 @@
 
 .site-footer__col h3 {
   margin: 0 0 var(--spacing-xl);
-  font-size: 14px;
+  font-size: var(--type-caption-size);
   line-height: var(--type-caption-line);
   font-weight: 600;
   text-transform: uppercase;
@@ -52,7 +52,7 @@
 
 .site-footer__col a {
   display: block;
-  font-size: 14px;
+  font-size: var(--type-caption-size);
   line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
   margin-bottom: var(--spacing-md);
