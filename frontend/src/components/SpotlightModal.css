@@ -3,8 +3,10 @@
   inset: 0;
   z-index: 300;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
+  padding: clamp(16px, 3vh, 40px) clamp(16px, 3vw, 48px);
+  box-sizing: border-box;
 }
 
 .spotlight__scrim {
@@ -13,54 +15,58 @@
   border: 0;
   padding: 0;
   margin: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   cursor: pointer;
 }
 
-/* Modal bottom drawer — Figma 2:6 (1440 × 600).
-   The drawer is framed by the standard page margins (48px at 1440), leaving
-   the top ~300px open to see the darkened page behind. */
+/* Modal Spotlight Panel — Centered, expansive almost full-screen view */
 .spotlight__panel {
   position: relative;
   z-index: 1;
-  width: calc(100% - var(--grid-margin) * 2);
-  max-width: calc(var(--grid-max-width) - var(--grid-margin) * 2);
-  margin-inline: auto;
-  height: min(600px, 80vh);
+  width: 100%;
+  max-width: 1320px;
+  height: min(860px, 88vh);
   background: var(--color-neutral-white);
-  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28), 0 4px 16px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
+  border: 1px solid var(--color-neutral-gray-light);
 }
 
 .spotlight__close {
   position: absolute;
-  top: 16px;
-  right: 20px;
-  z-index: 2;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
   border: 0;
   background: transparent;
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
   cursor: pointer;
   padding: 8px 12px;
   color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .spotlight__close:hover {
-  opacity: 0.6;
+  opacity: 0.7;
+  transform: scale(1.1);
 }
 
-/* Two-column layout: title in column 1 (left), body columns to the right
-   (Figma 2:6). Uses matching page padding. */
+/* Two-column layout: title & attribution in left column, body columns to the right. */
 .spotlight__layout {
-  --spotlight-pad-x: calc(var(--grid-margin) - 16px);
-  padding: var(--spacing-3xl) var(--spotlight-pad-x);
+  --spotlight-pad-x: clamp(24px, 4vw, 56px);
+  padding: clamp(32px, 5vh, 64px) var(--spotlight-pad-x);
   display: grid;
-  grid-template-columns: minmax(220px, 1.1fr) 2fr;
-  gap: var(--grid-gutter);
+  grid-template-columns: minmax(240px, 1fr) 2fr;
+  gap: clamp(24px, 4vw, 56px);
   height: 100%;
   box-sizing: border-box;
   overflow-y: auto;
@@ -78,11 +84,11 @@
 
 .spotlight__title {
   margin: 0;
-  text-align: right;
-  font-size: var(--type-title-size);
-  line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
-  padding-bottom: var(--spacing-xl);
+  text-align: left;
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.15;
+  font-weight: 500;
+  padding-bottom: var(--spacing-lg);
   border-bottom: 1px solid var(--color-neutral-gray-light);
 }
 
@@ -91,16 +97,14 @@
   flex-direction: column;
   gap: var(--spacing-lg);
   font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
+  line-height: 1.65;
 }
 
-/* Attribution line under the title's divider (Figma 2:6), in the same
-   label column as the title rather than spanning the body above the
-   two curatorial-note columns. */
+/* Attribution line under the title's divider */
 .spotlight__attribution {
   margin: 0;
-  padding-top: var(--spacing-xl);
-  text-align: right;
+  padding-top: var(--spacing-md);
+  text-align: left;
   font-size: var(--type-caption-size);
   line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
