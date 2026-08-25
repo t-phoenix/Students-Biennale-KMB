@@ -6,7 +6,7 @@ Static full-bleed looping video for the public domain. Deployed as a **separate 
 
 | File | Role |
 |---|---|
-| `index.html` | Full-viewport muted autoplay loop |
+| `index.html` | Full-viewport muted autoplay loop (JS play() + WebKit control hide for mobile) |
 | `sb-coming-soon.mp4` | Base looping creative (no baked-in copyright; credit is HTML overlay) |
 | `vercel.json` | Cache headers for the video |
 

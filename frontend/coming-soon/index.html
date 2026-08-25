@@ -20,6 +20,7 @@
         height: 100%;
         overflow: hidden;
         background: #000;
+        -webkit-tap-highlight-color: transparent;
       }
 
       .stage {
@@ -32,6 +33,23 @@
         height: 100%;
         object-fit: cover;
         display: block;
+        /* Avoid native media UI chrome on WebKit / mobile */
+        pointer-events: none;
+      }
+
+      /* Hide iOS/Safari “tap to play” overlay when autoplay is deferred */
+      .stage video::-webkit-media-controls {
+        display: none !important;
+        -webkit-appearance: none;
+      }
+
+      .stage video::-webkit-media-controls-start-playback-button {
+        display: none !important;
+        -webkit-appearance: none;
+      }
+
+      .stage video::-webkit-media-controls-enclosure {
+        display: none !important;
       }
 
       .credit {
@@ -83,13 +101,19 @@
     <main class="stage" aria-label="Coming soon">
       <h1 class="sr-only">Students’ Biennale — Coming Soon</h1>
       <video
-        src="./sb-coming-soon.mp4"
-        autoplay
+        id="coming-soon-video"
         muted
+        autoplay
         loop
         playsinline
+        webkit-playsinline
+        disablepictureinpicture
+        disableremoteplayback
         preload="auto"
-      ></video>
+        x-webkit-airplay="deny"
+      >
+        <source src="./sb-coming-soon.mp4" type="video/mp4" />
+      </video>
       <p class="credit">
         © 2026
         <a
@@ -106,5 +130,69 @@
         >.
       </p>
     </main>
+    <script>
+      (function () {
+        var video = document.getElementById("coming-soon-video");
+        if (!video) return;
+
+        // Browsers gate autoplay on the muted *property*, not only the attribute.
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.setAttribute("muted", "");
+        video.setAttribute("playsinline", "");
+        video.setAttribute("webkit-playsinline", "");
+
+        var playing = false;
+
+        function markPlaying() {
+          playing = true;
+        }
+
+        function tryPlay() {
+          if (playing && !video.paused) return;
+
+          video.muted = true;
+
+          var attempt = video.play();
+          if (attempt && typeof attempt.then === "function") {
+            attempt.then(markPlaying).catch(function () {
+              playing = false;
+            });
+          } else {
+            markPlaying();
+          }
+        }
+
+        video.addEventListener("playing", markPlaying);
+        video.addEventListener("loadeddata", tryPlay);
+        video.addEventListener("canplay", tryPlay);
+        video.addEventListener("canplaythrough", tryPlay);
+
+        // Resume after tab switch / lock screen / Low Power Mode recovery
+        document.addEventListener("visibilitychange", function () {
+          if (!document.hidden) tryPlay();
+        });
+        window.addEventListener("pageshow", tryPlay);
+        window.addEventListener("focus", tryPlay);
+
+        // iOS Low Power Mode / data-saver: first gesture unlocks muted playback
+        // with no visible play button (stage captures the gesture).
+        ["touchstart", "touchend", "pointerdown", "click", "keydown"].forEach(
+          function (eventName) {
+            document.addEventListener(eventName, tryPlay, {
+              capture: true,
+              passive: true,
+            });
+          }
+        );
+
+        tryPlay();
+        // Delayed retries for slow mobile networks / deferred media policies
+        setTimeout(tryPlay, 250);
+        setTimeout(tryPlay, 1000);
+        setTimeout(tryPlay, 2500);
+      })();
+    </script>
   </body>
 </html>
