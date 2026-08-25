@@ -5,6 +5,10 @@
   padding: 0 0.05em;
 }
 
+/* Detail pages — Artwork 1:569, Curators 1:2484, Venues 1:1966.
+   Horizontal placement comes entirely from .fig-grid spans; this file only owns
+   vertical rhythm and the look of each block. */
+
 .detail {
   width: 100%;
   padding-bottom: 80px;
@@ -42,41 +46,21 @@
   display: block;
 }
 
+.detail__hero-img {
+  cursor: zoom-in;
+}
+
 .detail__hero-fallback {
   background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
 }
 
-/* Artwork page cover — genuinely full-screen, with the title/year overlaid
-   at its base (a scrim behind for legibility) so the details below read as
-   a direct continuation of the cover rather than a separate block. */
+/* Artwork page cover — genuinely full-screen (Figma 121:2: plain full-bleed
+   photo, no title overlay/scrim — the title moved to its own section below,
+   see .detail__section that follows the hero in ArtworkDetailBody). 50px
+   short of full height so the next section visibly peeks at the fold. */
 .detail__hero--cover {
-  height: 100vh;
-  height: 100dvh;
-}
-
-.detail__hero-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.68), transparent 45%);
-  pointer-events: none;
-}
-
-.detail__hero-caption {
-  position: absolute;
-  inset-inline: 0;
-  bottom: 48px;
-  z-index: 2;
-  align-items: end;
-}
-
-.detail__hero-caption .detail__label {
-  color: var(--color-text-inverse);
-}
-
-.detail__hero-caption .detail__title,
-.detail__hero-caption .detail__year {
-  color: var(--color-text-inverse);
+  height: calc(100vh - 50px);
+  height: calc(100dvh - 50px);
 }
 
 .detail__hero-dots {
@@ -85,10 +69,7 @@
   top: 24px;
   z-index: 3;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
   gap: 8px;
-  max-width: min(60vw, 420px);
 }
 
 .detail__hero-dots button {
@@ -112,6 +93,58 @@
 
 .detail__hero-dots--venue button {
   border-color: var(--color-neutral-white);
+}
+
+/* Artwork hero dots — centered at the bottom of the cover (Figma 121:2),
+   a separate modifier from --venue so the shared base rule and the venue
+   carousel's own bottom-right placement stay untouched. */
+.detail__hero-dots--artwork {
+  left: 50%;
+  right: auto;
+  top: auto;
+  bottom: 24px;
+  transform: translateX(-50%);
+}
+
+.detail__hero-dots--artwork button {
+  border-color: var(--color-neutral-white);
+}
+
+/* Prev/next — /icons/arrow-switch.svg, the client-supplied image-switch
+   arrow (already white, points left by default — --next mirrors it). */
+.detail__hero-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  cursor: pointer;
+  padding: 14px 18px;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease;
+}
+
+.detail__hero-nav img {
+  width: 18px;
+  height: 24px;
+}
+
+.detail__hero-nav--next img {
+  transform: scaleX(-1);
+}
+
+.detail__hero-nav:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.detail__hero-nav--prev {
+  left: var(--grid-margin);
+}
+
+.detail__hero-nav--next {
+  right: var(--grid-margin);
 }
 
 .detail__desc {
@@ -233,6 +266,12 @@
   object-fit: cover;
   object-position: center bottom;
   display: block;
+  filter: grayscale(1);
+  transition: filter 0.3s ease;
+}
+
+.detail__portrait:hover img {
+  filter: grayscale(0);
 }
 
 .detail__portrait--empty {

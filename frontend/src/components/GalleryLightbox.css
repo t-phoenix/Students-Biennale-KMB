@@ -61,11 +61,21 @@
   transform: translateY(-50%);
   background: rgba(255, 255, 255, 0.15);
   border: none;
-  color: var(--color-neutral-white);
-  font-size: 24px;
   cursor: pointer;
-  padding: 10px 16px;
+  padding: 14px 18px;
+  display: grid;
+  place-items: center;
   transition: background 0.2s ease;
+}
+
+/* /icons/arrow-switch.svg — already white, points left by default. */
+.gallery-lightbox__nav img {
+  width: 18px;
+  height: 24px;
+}
+
+.gallery-lightbox__next img {
+  transform: scaleX(-1);
 }
 
 .gallery-lightbox__nav:hover {
@@ -92,8 +102,12 @@
 
 @media (max-width: 768px) {
   .gallery-lightbox__nav {
-    font-size: 18px;
-    padding: 8px 12px;
+    padding: 10px 12px;
+  }
+
+  .gallery-lightbox__nav img {
+    width: 14px;
+    height: 19px;
   }
 
   .gallery-lightbox__close {

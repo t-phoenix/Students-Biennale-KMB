@@ -1,18 +1,12 @@
 .spotlight {
-  /* Near edge-to-edge, ~100px frame on wide screens */
-  --spotlight-inset: clamp(20px, 5.5vw, 100px);
-  --spotlight-pad-x: clamp(28px, 4.2vw, 64px);
-  --spotlight-pad-y: clamp(32px, 4.5vw, 64px);
-  /* Mirrors the page grid's label column: 3 of 12 columns, minus one gutter so the
-     text edge lands where .fig-label puts it. */
-  --spotlight-gutter: var(--grid-gutter);
-  --spotlight-label-w: min(295px, 25%);
-
   position: fixed;
   inset: 0;
-  z-index: 400;
-  display: grid;
-  place-items: stretch;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 3vh, 40px) clamp(16px, 3vw, 48px);
+  box-sizing: border-box;
 }
 
 .spotlight__scrim {
@@ -21,160 +15,175 @@
   border: 0;
   padding: 0;
   margin: 0;
-  background: rgba(27, 23, 28, 0.55);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   cursor: pointer;
 }
 
+/* Modal Spotlight Panel — Centered, expansive almost full-screen view */
 .spotlight__panel {
   position: relative;
   z-index: 1;
-  margin: var(--spotlight-inset);
-  height: calc(100dvh - var(--spotlight-inset) * 2);
-  max-height: calc(100dvh - var(--spotlight-inset) * 2);
+  width: 100%;
+  max-width: 1320px;
+  height: min(860px, 88vh);
   background: var(--color-neutral-white);
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28), 0 4px 16px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
-  min-height: 0;
   overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--color-neutral-gray-light);
 }
 
 .spotlight__close {
   position: absolute;
-  top: clamp(14px, 2vw, 22px);
-  right: clamp(16px, 2.2vw, 28px);
-  z-index: 2;
-  width: 44px;
-  height: 44px;
+  top: 20px;
+  right: 24px;
+  z-index: 10;
   border: 0;
   background: transparent;
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
-  color: var(--color-text-primary);
-  display: grid;
-  place-items: center;
   cursor: pointer;
+  padding: 8px 12px;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .spotlight__close:hover {
-  opacity: 0.55;
+  opacity: 0.7;
+  transform: scale(1.1);
 }
 
+/* Two-column layout: title & attribution in left column, body columns to the right. */
 .spotlight__layout {
+  --spotlight-pad-x: clamp(24px, 4vw, 56px);
+  padding: clamp(32px, 5vh, 64px) var(--spotlight-pad-x);
   display: grid;
-  grid-template-columns: var(--spotlight-label-w) minmax(0, 1fr);
-  column-gap: var(--spotlight-gutter);
-  padding: var(--spotlight-pad-y) var(--spotlight-pad-x);
-  padding-right: calc(var(--spotlight-pad-x) + 20px);
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-x: hidden;
+  grid-template-columns: minmax(240px, 1fr) 2fr;
+  gap: clamp(24px, 4vw, 56px);
+  height: 100%;
+  box-sizing: border-box;
   overflow-y: auto;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
   align-content: start;
 }
 
-.spotlight__title {
-  margin: 0;
-  text-align: right;
-  font-size: var(--type-title-size);
-  line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
+/* Label column (Figma's Group 220): title, divider, attribution stacked
+   together and sticky as one unit while the two body columns scroll. */
+.spotlight__label {
   position: sticky;
   top: 0;
   background: var(--color-neutral-white);
   padding-bottom: var(--spacing-xl);
 }
 
+.spotlight__title {
+  margin: 0;
+  text-align: left;
+  font-size: clamp(24px, 2.2vw, 32px);
+  line-height: 1.15;
+  font-weight: 500;
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-neutral-gray-light);
+}
+
 .spotlight__body {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-2xl);
-  padding-bottom: var(--spacing-xl);
-}
-
-.spotlight__body p {
-  margin: 0;
+  gap: var(--spacing-lg);
   font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
+  line-height: 1.65;
 }
 
-/* Attribution line under the title's divider (Figma 2:6) — a small caption
-   above the two curatorial-note columns. */
+/* Attribution line under the title's divider */
 .spotlight__attribution {
   margin: 0;
-  padding-top: var(--spacing-xl);
-  border-top: 1px solid var(--color-neutral-gray-light);
+  padding-top: var(--spacing-md);
+  text-align: left;
   font-size: var(--type-caption-size);
   line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
 }
 
-/* Two curatorial-note columns side by side (Figma's twin 427px columns). */
+/* Sensing Grounds modal has two columns of body text side-by-side (Figma 2:6). */
 .spotlight__body--split {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--spacing-4xl);
+  grid-template-columns: 1fr 1fr;
+  gap: var(--grid-gutter);
+  align-items: start;
 }
 
 .spotlight__body--split p {
   margin: 0;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
 }
 
-@media (max-width: 900px) {
-  .spotlight__body--split {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-xl);
-  }
+/* Scholar Spotlight (Figma 10:998) — two-column biography layout. */
+.spotlight__scholar-grid {
+  display: grid;
+  grid-template-columns: minmax(180px, 240px) 1fr;
+  gap: var(--grid-gutter);
+  align-items: start;
 }
 
-.spotlight__actions {
-  margin-top: var(--spacing-3xl);
-  padding-top: var(--spacing-xl);
+.spotlight__scholar-photo {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  background: var(--color-neutral-gray-mid);
+}
+
+.spotlight__scholar-copy {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
-.spotlight__actions a {
-  font-size: var(--type-subtitle-size);
-  line-height: var(--type-subtitle-line);
-  font-weight: 500;
+.spotlight__scholar-copy p {
+  margin: 0;
 }
 
-@media (max-width: 800px) {
-  .spotlight {
-    --spotlight-inset: 16px;
-    --spotlight-pad-x: 22px;
-    --spotlight-pad-y: 28px;
+@media (max-width: 899px) {
+  .spotlight__panel {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+    height: 85vh;
   }
 
   .spotlight__layout {
+    --spotlight-pad-x: var(--grid-margin);
     grid-template-columns: 1fr;
-    row-gap: var(--spacing-xl);
     padding-right: var(--spotlight-pad-x);
+  }
+
+  .spotlight__label {
+    position: static;
+    padding-bottom: 0;
   }
 
   .spotlight__title {
     text-align: left;
-    position: static;
-    padding-bottom: 0;
+    padding-bottom: var(--spacing-md);
+  }
+
+  .spotlight__attribution {
+    text-align: left;
   }
 
   .spotlight__body {
     gap: var(--spacing-xl);
   }
 
-  .spotlight__actions {
-    justify-content: flex-start;
-    margin-top: var(--spacing-2xl);
+  .spotlight__body--split {
+    grid-template-columns: 1fr;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .spotlight__panel {
-    transition: none !important;
+  .spotlight__scholar-grid {
+    grid-template-columns: 1fr;
   }
 }

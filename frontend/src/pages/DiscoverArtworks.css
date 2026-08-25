@@ -51,7 +51,7 @@
   transform: translateY(-50%);
   border: 0;
   background: transparent;
-  font-size: 11px;
+  font-size: var(--type-caption-size);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-secondary);

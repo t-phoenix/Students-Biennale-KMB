@@ -8,27 +8,11 @@ import {
 } from "../lib/scrollToSection";
 import "./Header.css";
 
-type NavItem = {
-  label: string;
-  /** Home section hash — used for in-page scroll when `to` is absent. */
-  hash?: HomeSectionId;
-  /** Full page route — takes precedence over hash navigation. */
-  to?: string;
-};
-
-const NAV: NavItem[] = [
-  { hash: "editions", label: "EDITIONS" },
-  { to: "/programmes", label: "PROGRAMMES" },
-  { hash: "press", label: "PRESS" },
+const NAV: { hash: HomeSectionId; label: string; to?: string }[] = [
+  { hash: "editions", label: "EDITIONS", to: "/editions/2025-26/curators" },
+  { hash: "programmes", label: "PROGRAMMES", to: "/programmes" },
+  { hash: "press", label: "PRESS", to: "/press" },
   { hash: "about", label: "ABOUT" },
-];
-
-/** Home sections still observed for scroll-spy (includes programmes band). */
-const HOME_SECTION_IDS: HomeSectionId[] = [
-  "editions",
-  "programmes",
-  "press",
-  "about",
 ];
 
 export function Header() {
@@ -47,9 +31,8 @@ export function Header() {
     const fromHash = parseHomeHash(location.hash);
     if (fromHash) setActiveSection(fromHash);
 
-    const sections = HOME_SECTION_IDS.map((id) => document.getElementById(id)).filter(
-      (el): el is HTMLElement => Boolean(el)
-    );
+    const sections = NAV.map((n) => document.getElementById(n.hash))
+      .filter((el): el is HTMLElement => Boolean(el));
     if (!sections.length) return;
 
     const observer = new IntersectionObserver(
@@ -70,8 +53,10 @@ export function Header() {
     () => {
       const el = discoverRef.current;
       if (!el || prefersReducedMotion()) return;
-      const enter = () => gsap.to(el, { scale: 1.04, autoAlpha: 1, duration: 0.2, ease: "power2.out" });
-      const leave = () => gsap.to(el, { scale: 1, duration: 0.2, ease: "power2.out" });
+      const enter = () =>
+        gsap.to(el, { scale: 1.04, autoAlpha: 1, duration: 0.2, ease: "power2.out" });
+      const leave = () =>
+        gsap.to(el, { scale: 1, duration: 0.2, ease: "power2.out" });
       el.addEventListener("pointerenter", enter);
       el.addEventListener("pointerleave", leave);
       return () => {
@@ -93,11 +78,6 @@ export function Header() {
       return;
     }
     navigate({ pathname: "/", hash });
-  };
-
-  const isNavActive = (item: NavItem) => {
-    if (item.to) return location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
-    return onHome && item.hash != null && activeSection === item.hash;
   };
 
   return (
@@ -123,13 +103,18 @@ export function Header() {
 
       <nav className="site-header__nav" aria-label="Primary">
         {NAV.map((item, i) => (
-          <span key={item.to ?? item.hash} style={{ display: "contents" }}>
+          <span key={item.hash} style={{ display: "contents" }}>
             {i > 0 ? <span className="site-header__sep">/</span> : null}
-            {item.to ? (
+            {item.to && (!onHome || item.hash === "editions") ? (
               <Link
                 to={item.to}
-                data-label={item.to.replace(/^\//, "")}
-                className={isNavActive(item) ? "is-active" : undefined}
+                data-label={item.hash}
+                className={
+                  (item.hash === "editions" && location.pathname.startsWith("/editions")) ||
+                  (item.to && location.pathname.startsWith(item.to))
+                    ? "is-active"
+                    : undefined
+                }
               >
                 {item.label}
               </Link>
@@ -137,8 +122,12 @@ export function Header() {
               <a
                 href={`/#${item.hash}`}
                 data-label={item.hash}
-                className={isNavActive(item) ? "is-active" : undefined}
-                onClick={(e) => goToSection(item.hash!, e)}
+                className={
+                  onHome && activeSection === item.hash
+                    ? "is-active"
+                    : undefined
+                }
+                onClick={(e) => goToSection(item.hash, e)}
               >
                 {item.label}
               </a>

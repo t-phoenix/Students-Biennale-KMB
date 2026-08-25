@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { artworkImages, curatorsForArtwork, type ArtworkCard } from "../data/site";
+import { GalleryLightbox } from "./GalleryLightbox";
 import { HighlightText } from "./HighlightText";
 import "../pages/Detail.css";
 
@@ -14,47 +15,88 @@ type Props = {
  *  with each caller since it differs by context. */
 export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   const [heroIndex, setHeroIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const slides = artworkImages(a);
 
   useEffect(() => {
     setHeroIndex(0);
+    setLightboxOpen(false);
   }, [a.id, slides.length]);
 
   const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
   const curated = curatorsForArtwork(a);
+  const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
+  const goNext = () => setHeroIndex((i) => (i + 1) % slides.length);
 
   return (
     <div key={a.id}>
       <div className="detail__hero detail__hero--cover detail-reveal">
         {slide ? (
-          <img key={slide} src={slide} alt="" className="detail__hero-img" />
+          <img
+            key={slide}
+            src={slide}
+            alt=""
+            className="detail__hero-img"
+            onDoubleClick={() => setLightboxOpen(true)}
+          />
         ) : (
           <div className="detail__hero-fallback" aria-hidden />
         )}
-        <div className="detail__hero-scrim" aria-hidden />
-        <div className="fig-grid detail__hero-caption">
-          <p className="fig-label fig-subheading detail__label detail-reveal">Artworks Title</p>
-          <h1 className="fig-c4-9 detail__title detail-reveal">
-            <HighlightText text={a.title} query={highlightQuery} />
-          </h1>
-          <span className="fig-c10-12 detail__year detail-reveal">{a.year}</span>
-        </div>
         {slides.length > 1 ? (
-          <div className="detail__hero-dots" role="tablist" aria-label="Artwork images">
-            {slides.map((url, i) => (
-              <button
-                key={url}
-                type="button"
-                role="tab"
-                aria-label={`Image ${i + 1} of ${slides.length}`}
-                aria-selected={i === heroIndex}
-                className={i === heroIndex ? "is-active" : undefined}
-                onClick={() => setHeroIndex(i)}
-              />
-            ))}
-          </div>
+          <>
+            <button
+              type="button"
+              className="detail__hero-nav detail__hero-nav--prev"
+              aria-label="Previous image"
+              onClick={goPrev}
+            >
+              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
+            </button>
+            <button
+              type="button"
+              className="detail__hero-nav detail__hero-nav--next"
+              aria-label="Next image"
+              onClick={goNext}
+            >
+              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
+            </button>
+            <div
+              className="detail__hero-dots detail__hero-dots--artwork"
+              role="tablist"
+              aria-label="Artwork images"
+            >
+              {slides.map((url, i) => (
+                <button
+                  key={url}
+                  type="button"
+                  role="tab"
+                  aria-label={`Image ${i + 1} of ${slides.length}`}
+                  aria-selected={i === heroIndex}
+                  className={i === heroIndex ? "is-active" : undefined}
+                  onClick={() => setHeroIndex(i)}
+                />
+              ))}
+            </div>
+          </>
         ) : null}
+      </div>
+
+      {lightboxOpen ? (
+        <GalleryLightbox
+          images={slides}
+          index={heroIndex}
+          onClose={() => setLightboxOpen(false)}
+          onIndexChange={setHeroIndex}
+        />
+      ) : null}
+
+      <div className="fig-grid detail__section">
+        <p className="fig-label fig-subheading detail__label detail-reveal">Artworks Title</p>
+        <h1 className="fig-c4-9 detail__title detail-reveal">
+          <HighlightText text={a.title} query={highlightQuery} />
+        </h1>
+        <span className="fig-c10-12 detail__year detail-reveal">{a.year}</span>
       </div>
 
       <div className="fig-grid detail__section">
@@ -66,15 +108,12 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
             </dd>
           </div>
           <div>
-            <dt>Dimensions :</dt>
-            <dd>{a.dimensions}</dd>
-          </div>
-          <div>
-            <dt>Materials :</dt>
+            <dt>Materials &amp; Dimensions :</dt>
             <dd>
               {a.materials.map((m, i) => (
                 <p key={`${i}-${m}`}>{m}</p>
               ))}
+              {a.dimensions ? <p>{a.dimensions}</p> : null}
             </dd>
           </div>
         </dl>
