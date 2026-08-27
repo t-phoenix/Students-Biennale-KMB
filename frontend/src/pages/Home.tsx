@@ -765,7 +765,7 @@ export function Home() {
             <h3 className="fig-label fig-label--sub">
               students&apos; biennale
               <br />
-              2026-27 Team
+              2025-26 Team
             </h3>
             <div className="home-about__team-cols fig-c4-12 fig-sub-3">
               {TEAM_COLS.map((col, i) => (

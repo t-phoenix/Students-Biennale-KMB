@@ -33,7 +33,10 @@ export const TEAM_COLS: readonly (readonly (readonly string[])[])[] = [
     ["Production Assistants", "Hiran Unnikrishnan", "Niyas Issahak"],
     ["Accounts Manager", "Anzil Muhammed K"],
   ],
-  [["Social Media and Catalogue", "Mishal MA"]],
+  [
+    ["Social Media and Catalogue", "Mishal MA"],
+    ["Web Design and Services", "Abhinil Agarwal", "Anand Peter", "Prajesh MP", "Vishnulal CR"]
+  ],
 ];
 
 export type EditionOverviewData = {
