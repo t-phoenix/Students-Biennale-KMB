@@ -647,10 +647,17 @@ export function Home() {
           title={sensingNote.title}
           attribution={sensingNote.attribution}
         >
-          <div className="spotlight__body--split">
-            {sensingNote.paragraphs.map((p) => (
-              <p key={p.slice(0, 48)}>{p}</p>
-            ))}
+          <div className="spotlight__body--split fig-sub-2">
+            <div className="spotlight__column">
+              {(SENSING_GROUNDS_NOTE.paragraphsCol1 ?? sensingNote.paragraphs.slice(0, 2)).map((p) => (
+                <p key={p.slice(0, 48)}>{p}</p>
+              ))}
+            </div>
+            <div className="spotlight__column">
+              {(SENSING_GROUNDS_NOTE.paragraphsCol2 ?? sensingNote.paragraphs.slice(2)).map((p) => (
+                <p key={p.slice(0, 48)}>{p}</p>
+              ))}
+            </div>
           </div>
         </SpotlightModal>
 

@@ -62,8 +62,8 @@ export function SpotlightModal({ open, title, attribution, onClose, children, la
         >
           ×
         </button>
-        <div className="spotlight__layout">
-          <div className="spotlight__label">
+        <div className="spotlight__layout fig-grid">
+          <div className="spotlight__label fig-c1-3">
             <h2 id={labelId} className="spotlight__title">
               {title.split("\n").map((line, i, arr) => (
                 <span key={`${line}-${i}`}>
@@ -72,9 +72,21 @@ export function SpotlightModal({ open, title, attribution, onClose, children, la
                 </span>
               ))}
             </h2>
-            {attribution ? <p className="spotlight__attribution">{attribution}</p> : null}
+            <div className="spotlight__title-divider" aria-hidden="true" />
+            {attribution ? (
+              <div className="spotlight__attribution">
+                {typeof attribution === "string"
+                  ? attribution.split("\n").map((line, i, arr) => (
+                      <span key={`${line}-${i}`}>
+                        {line}
+                        {i < arr.length - 1 ? <br /> : null}
+                      </span>
+                    ))
+                  : attribution}
+              </div>
+            ) : null}
           </div>
-          <div className="spotlight__body">{children}</div>
+          <div className="spotlight__body fig-c4-12">{children}</div>
         </div>
       </div>
     </div>,
