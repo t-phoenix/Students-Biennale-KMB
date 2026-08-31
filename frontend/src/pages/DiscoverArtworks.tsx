@@ -26,7 +26,7 @@ export function DiscoverArtworks() {
       <div className="discover__search">
         <label className="discover__search-field">
           <input
-            type="search"
+            type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search Artworks"
@@ -34,8 +34,15 @@ export function DiscoverArtworks() {
             autoComplete="off"
           />
           {query ? (
-            <button type="button" className="discover__clear" onClick={() => setQuery("")}>
-              Clear
+            <button
+              type="button"
+              className="discover__clear"
+              onClick={() => setQuery("")}
+              aria-label="Clear search"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1.5 1.5L12.5 12.5M1.5 12.5L12.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
             </button>
           ) : null}
         </label>

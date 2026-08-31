@@ -39,10 +39,19 @@
   width: 100%;
   border: 0;
   background: transparent;
-  padding: 14px 72px 8px 0;
+  padding: 14px 40px 8px 0;
   font: inherit;
   font-size: 18px;
   outline: none;
+  color: var(--color-text-primary);
+}
+
+.discover__search-field input::-webkit-search-decoration,
+.discover__search-field input::-webkit-search-cancel-button,
+.discover__search-field input::-webkit-search-results-button,
+.discover__search-field input::-webkit-search-results-decoration {
+  display: none;
+  -webkit-appearance: none;
 }
 
 .discover__clear {
@@ -52,10 +61,19 @@
   transform: translateY(-50%);
   border: 0;
   background: transparent;
-  font-size: var(--type-caption-size);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-secondary);
+  padding: 6px;
+  cursor: pointer;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.discover__clear:hover {
+  opacity: 1;
+  transform: translateY(-50%) scale(1.1);
 }
 
 .discover__stage {
