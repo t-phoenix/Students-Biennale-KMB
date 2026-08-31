@@ -17,6 +17,7 @@
   flex: none;
   padding: 8px var(--grid-margin) 64px;
   border-bottom: 0;
+  opacity: 1;
   background: linear-gradient(
     to bottom,
     rgba(248, 248, 248, 0.98) 0%,

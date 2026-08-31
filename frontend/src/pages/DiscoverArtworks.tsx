@@ -4,6 +4,7 @@ import { InfiniteCanvas } from "../components/canvas/InfiniteCanvas";
 import { CanvasExpand } from "../components/canvas/CanvasExpand";
 import { useAllArtworks } from "../lib/catalogue";
 import { markDiscoverMount } from "../lib/discoverPerf";
+import { gsap, prefersReducedMotion, useGSAP } from "../lib/motion";
 import { prefetchDiscoverViewport } from "../lib/predictivePrefetch";
 import "./DiscoverArtworks.css";
 
@@ -15,10 +16,25 @@ type ExpandState = {
 export function DiscoverArtworks() {
   const [query, setQuery] = useState("");
   const [expand, setExpand] = useState<ExpandState | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const { artworks, catalogues } = useAllArtworks();
   const sourceKey =
     catalogues.map((row) => `${row.years}:${row.generatedAt}`).join("|") || "static";
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return;
+      gsap.from(".discover__search", {
+        opacity: 0,
+        y: -10,
+        duration: 0.7,
+        ease: "power2.out",
+        delay: 0.08,
+      });
+    },
+    { scope: rootRef, dependencies: [] },
+  );
 
   useEffect(() => {
     markDiscoverMount();
@@ -34,7 +50,7 @@ export function DiscoverArtworks() {
   }, []);
 
   return (
-    <div className="discover">
+    <div ref={rootRef} className="discover">
       <div className="discover__search">
         <label className="discover__search-field">
           <input

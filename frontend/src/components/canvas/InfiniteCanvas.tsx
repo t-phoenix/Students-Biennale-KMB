@@ -5,6 +5,7 @@ import {
   getDiscoverEagerImageUrls,
   prefetchArtworkGallery,
 } from "../../lib/predictivePrefetch";
+import { getTileRevealDelay } from "../../lib/discoverReveal";
 import { gsap, prefersReducedMotion, useGSAP } from "../../lib/motion";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
@@ -89,6 +90,14 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
     return getDiscoverEagerImageUrls(artworks, viewportW, viewportH, sourceKey);
   }, [artworks, sourceKey, tier, seedW]);
+
+  const revealViewport = useMemo(() => {
+    const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
+    const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
+    const panX = -(seedW - viewportW) / 2;
+    const panY = -40;
+    return { viewportW, viewportH, panX, panY };
+  }, [seedW, tier]);
 
   const itemsByCol = useMemo(() => {
     const groups: CanvasItem[][] = Array.from({ length: columns }, () => []);
@@ -423,9 +432,8 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     };
   }, [applyTransform, setZoom]);
 
-  // Entrance "whoa" moment — tiles stagger into place from a random order
-  // (not a mechanical sweep) while the whole field gently arrives from a
-  // slight zoom-out. Runs once; skipped under reduced motion.
+  // Gentle field zoom-in on open — individual tiles reveal progressively as
+  // their images decode (see CanvasTile), staggered from viewport center.
   useGSAP(
     () => {
       if (prefersReducedMotion()) {
@@ -433,32 +441,23 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
         applyZoom();
         return;
       }
-      zoomScale.current.value = 0.92;
+      zoomScale.current.value = 0.94;
       applyZoom();
       gsap.to(zoomScale.current, {
         value: 1,
-        duration: 1.3,
+        duration: 1.4,
         ease: "power2.out",
         onUpdate: applyZoom,
       });
-      gsap.from(".canvas-tile", {
-        opacity: 0,
-        scale: 0.9,
-        duration: 0.9,
-        ease: "power2.out",
-        stagger: { each: 0.015, from: "random", amount: 1.1 },
-      });
 
-      // Safety net: this tween sets tiles to opacity:0 immediately and
-      // relies on the animation ticking them back up. If anything interrupts
-      // that (a killed/reverted context, a tab that's backgrounded when the
-      // tween would start, etc.) tiles are left permanently invisible — the
-      // whole canvas silently breaks. Force the true end state well after
-      // the animation could possibly still be running, regardless of
-      // whether it actually completed normally.
       const safety = setTimeout(() => {
-        gsap.set(".canvas-tile", { opacity: 1, scale: 1 });
-      }, 2500);
+        rootRef.current?.querySelectorAll<HTMLElement>(".canvas-tile").forEach((tile) => {
+          tile.classList.add("is-revealed");
+          gsap.set(tile, { opacity: 1, clearProps: "opacity" });
+          const media = tile.querySelector<HTMLElement>(".canvas-tile__media");
+          if (media) gsap.set(media, { opacity: 1, scale: 1, clearProps: "opacity,transform" });
+        });
+      }, 4500);
       return () => clearTimeout(safety);
     },
     { scope: rootRef, dependencies: [] }
@@ -505,17 +504,32 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
                   className="infinite-canvas__column"
                 >
                   {yCopies.map((ty) =>
-                    itemsByCol[col].map((item) => (
+                    itemsByCol[col].map((item) => {
+                      const colPeriod = colPeriods[col] || 1;
+                      const revealDelay = getTileRevealDelay(
+                        item,
+                        tx,
+                        ty,
+                        colPeriod,
+                        seedW,
+                        revealViewport.panX,
+                        revealViewport.panY,
+                        revealViewport.viewportW,
+                        revealViewport.viewportH,
+                      );
+                      return (
                       <CanvasTile
                         key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
-                        item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriods[col] }}
+                        item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriod }}
                         dimmed={Boolean(q) && !matches(item)}
                         highlighted={Boolean(q) && matches(item)}
                         eager={Boolean(item.image && eagerImageUrls.has(item.image))}
+                        revealDelay={revealDelay}
                         onSelect={handleSelect}
                         onHoverChange={handleTileHover}
                       />
-                    ))
+                      );
+                    })
                   )}
                 </div>
               ))}
