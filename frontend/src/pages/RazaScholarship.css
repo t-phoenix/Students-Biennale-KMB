@@ -62,12 +62,10 @@
   position: relative;
 }
 
-/* Matches the curator-card tile size (Figma 1:651, 315x360) used sitewide for
-   portrait photos, instead of the image's native size. */
 .raza-scholarship__scholar-image {
   display: block;
   width: 100%;
-  aspect-ratio: 315 / 360;
+  aspect-ratio: 327 / 210;
   object-fit: cover;
   background: var(--color-neutral-gray-mid);
   margin-bottom: 1rem;

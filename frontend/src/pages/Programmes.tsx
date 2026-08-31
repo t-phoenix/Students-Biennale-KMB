@@ -172,20 +172,56 @@ export function Programmes() {
           />
         </section>
 
-        <section className="programmes__block fig-grid prog-reveal">
-          <Link to="/programmes/raza-scholarship" className="fig-c4-12 programmes__raza-heading">
-            <h2 className="programmes__raza-title">{`Raza - Students' Biennale Scholarship`}</h2>
-          </Link>
-          <div className="programmes__raza-cards fig-c4-12 fig-sub-2">
+        <section className="programmes__block programmes__block--raza fig-grid prog-reveal">
+          <div className="fig-c1-3 programmes__raza-rail">
+            <h2 className="fig-heading programmes__raza-rail-heading">
+              RAZA - STUDENTS&apos;
+              <br />
+              BIENNALE
+              <br />
+              SCHOLARSHIP
+            </h2>
+            <div className="programmes__raza-divider" aria-hidden />
+            <p className="programmes__raza-rail-sub">
+              Students&apos; Biennale 2025–26 x
+              <br />
+              Beaux Arts de Marseille
+            </p>
+          </div>
+
+          <div className="fig-c4-9 programmes__raza-intro">
+            {raza.intro.map((paragraph) => (
+              <p key={paragraph.slice(0, 48)} className="fig-body">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <div className="fig-c10-12 programmes__raza-side">
+            <div className="programmes__raza-scholars-names">
+              {raza.scholars.slice(0, 2).map((scholar) => (
+                <p key={scholar.id}>
+                  <strong>{scholar.name}</strong>
+                </p>
+              ))}
+            </div>
+            {raza.closing.map((paragraph) => (
+              <p key={paragraph.slice(0, 48)} className="fig-body programmes__raza-closing">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
+          <div className="fig-c4-12 fig-sub-2 programmes__raza-grid">
             {raza.scholars.map((scholar) => (
-              <article key={scholar.id}>
+              <article key={scholar.id} className="programmes__raza-card">
                 <button
                   type="button"
                   className="programmes__scholar-link"
                   onClick={() => setOpenScholarId(scholar.id)}
                 >
-                  <div className="programmes__card-media-wrap">
-                    <img src={scholar.image} alt={scholar.name} className="programmes__card-media" />
+                  <div className="programmes__raza-card-media">
+                    <img src={scholar.image} alt={scholar.name} />
                   </div>
                   <h3>{scholar.name}</h3>
                 </button>

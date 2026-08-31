@@ -89,22 +89,26 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
         aria-modal="true"
         aria-label={scholar.name}
       >
-        <button
-          ref={closeRef}
-          type="button"
-          className="scholar-spotlight__back"
-          onClick={onClose}
-        >
-          ← BACK
-        </button>
-
         <ArtworkDetailBody artwork={artwork} />
 
-        {next ? (
-          <div className="scholar-spotlight__next">
-            <CtaLink variant="next" lines={["NEXT"]} onClick={() => setActiveId(next.id)} />
-          </div>
-        ) : null}
+        <div className="fig-grid scholar-spotlight__nav">
+          <button
+            type="button"
+            className="fig-c1-3 detail__back scholar-spotlight__back-btn"
+            onClick={onClose}
+          >
+            <span className="detail__back-arrow" aria-hidden>←</span>
+            <span>BACK</span>
+          </button>
+          {next ? (
+            <CtaLink
+              variant="next"
+              lines={["NEXT"]}
+              className="scholar-spotlight__next-btn"
+              onClick={() => setActiveId(next.id)}
+            />
+          ) : null}
+        </div>
       </div>
     </div>,
     document.body

@@ -1089,45 +1089,63 @@ export const PAST_WORKSHOPS: PastWorkshop[] = [
   },
 ];
 
-/** Raza - Students' Biennale Scholarship — the two Beaux-Arts de Marseille exchange
- *  artists (Figma 7:321, 10:1193, 10:1397). Shared by Programmes.tsx and
- *  RazaScholarship.tsx so the list only exists in one place. */
 export const RAZA_SCHOLARS: { id: string; name: string; image: string }[] = [
   { id: "kaki-weiss", name: "Kaki Weiss", image: "/programmes/raza-kaki-weiss.jpg" },
   { id: "nina-durel", name: "Nina Durel", image: "/programmes/raza-nina-durel.jpg" },
+  { id: "rutuja-sonawane", name: "Rutuja Sonawane", image: "/programmes/raza-rutuja-sonawane.jpg" },
+  { id: "mohammad-riyaz", name: "Mohammad Riyaz", image: "/programmes/raza-mohammad-riyaz.jpg" },
 ];
-
-/* Figma 10:1193 (Kaki) / 10:1397 (Nina) — both "Artwork Page" frames whose real
-   content isn't finalised yet, so the design itself is Lorem Ipsum. Preserved
-   verbatim (including Kaki's venue being unset in Figma, unlike Nina's "VKL
-   Warehouse", and the description paragraph repeating twice) since matching
-   the two frames exactly was the explicit ask. Shaped as full ArtworkCard
-   records — not a bespoke subset — so the scholar spotlight can render them
-   through the exact same ArtworkDetailBody used by the real artwork pages,
-   rather than a hand-rolled layout that drifts from Figma over time. */
-const RAZA_LOREM =
-  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets. It has survived not only many decades, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised thanks to these sheets and more recently with desktop publishing software like Aldus PageMaker and Microsoft Word including versions of Lorem Ipsum.";
 
 export const RAZA_SCHOLAR_ARTWORKS: ArtworkCard[] = [
   {
     id: "kaki-weiss",
-    title: "Lorem Ipsum",
+    title: "TABUT",
     venue: "Lorem Ipsum",
     year: "2025 - 26",
-    description: `${RAZA_LOREM}\n\n${RAZA_LOREM}`,
-    artists: [{ name: "Kaki Weiss", institution: "National Institute of Design, Ahmedabad" }],
-    materials: ["Lorem Ipsum | Variable", "Lorem Ipsum | Variable", "Lorem Ipsum | Variable"],
+    description: `Kaki Weiss proposes a kitchen where the act of cooking becomes a medium for transmission and memory. Centered around a table, the installation also invites participation in activating the space.\n\nHere, the kitchen is reimagined not as a private, enclosed space but as a site of exchange — a place where knowledge is handed down not through instruction alone, but through repeated gesture, smell, taste, and touch. Cooking becomes a language of its own, one that carries memory across bodies and generations, often without the need for words.\n\nThe table at the center of the work anchors this exchange. It is less an object to be viewed than a threshold to be crossed — a surface where making and remembering happen simultaneously, and where the boundary between artist and audience begins to dissolve. By inviting participation, Weiss resists the idea of the artwork as something finished or fixed. Instead, the installation only becomes whole through activation: through hands that stir, mix, and share.\n\nIn this sense, the work asks what it means to inherit — not objects, but practices; not stories, but the living memory held in the act of cooking itself.`,
+    artists: [{ name: "Kaki Weiss", institution: "Beaux Arts de Marseille, France" }],
+    materials: [
+      "Mixed media installation with performance (reclaimed wood, textile, kitchen implements, food materials)",
+    ],
     dimensions: "Variable",
+    image: "/programmes/raza-kaki-weiss.jpg",
+    images: ["/programmes/raza-kaki-hero.jpg", "/programmes/raza-kaki-weiss.jpg"],
   },
   {
     id: "nina-durel",
-    title: "Lorem Ipsum",
-    venue: "VKL Warehouse",
+    title: "TABUT",
+    venue: "Lorem Ipsum",
     year: "2025 - 26",
-    description: `${RAZA_LOREM}\n\n${RAZA_LOREM}`,
-    artists: [{ name: "Nina Durel", institution: "National Institute of Design, Ahmedabad" }],
-    materials: ["Lorem Ipsum | Variable", "Lorem Ipsum | Variable", "Lorem Ipsum | Variable"],
+    description: `Conceived as a book-object with variable dimensions (55 x 40 x 20 cm when closed), this work unfolds as a "sensitive cartography" of Kochi's fluvial and coastal networks. Beginning with a digital drift through Google Maps, the artist turns to the act of walking and observing, measuring not land, but water. Inspired by artist Matías Poisson, who maps cities through horizon lines and urban details, the project embraces mapping as an intuitive, imperfect art where distortions, invented keys, and shifting perspectives reveal what standard cartography cannot.\n\nThrough observational drawing, the waterways are traced for their biodiverse edges: water hyacinths, fishing structures, and imagined sea creatures echoing the legendary "Here be dragons" of Olaus Magnus. Traditional Chinese fishing nets (Cheena vala) along Vypin become recurring motifs forms held between function and image.\n\nA deployable surveying tool, built to the scale of a carry-on suitcase, accompanies this process. Hybrid in nature, it evokes scientific instruments such as GPS/GNSS units and theodolites while functioning as a sculptural observation module. Drawing from the field structures of Gilles Ebersolt and the inhabitable sculptures of Abraham Poincheval, the work becomes both instrument and artwork, a portable studio carried on the back.\n\nHere, cartography is not fixed but lived. Art moves through the landscape, made outdoors and shown in passage, tracing the unstable contours of water and memory.`,
+    artists: [{ name: "Nina Durel", institution: "Beaux Arts de Marseille, France" }],
+    materials: ["Mixed media installation"],
     dimensions: "Variable",
+    image: "/programmes/raza-nina-durel.jpg",
+    images: ["/programmes/raza-nina-hero.jpg", "/programmes/raza-nina-durel.jpg"],
+  },
+  {
+    id: "rutuja-sonawane",
+    title: "Lorem Ipsum",
+    venue: "Lorem Ipsum",
+    year: "2025 - 26",
+    description: "Catalogue text for this work is being finalised.",
+    artists: [{ name: "Rutuja Sonawane", institution: "Sir J. J. School of Art, Mumbai" }],
+    materials: ["Mixed media installation"],
+    dimensions: "Variable",
+    image: "/programmes/raza-rutuja-sonawane.jpg",
+    images: ["/programmes/raza-rutuja-sonawane.jpg"],
+  },
+  {
+    id: "mohammad-riyaz",
+    title: "Lorem Ipsum",
+    venue: "Lorem Ipsum",
+    year: "2025 - 26",
+    description: "Catalogue text for this work is being finalised.",
+    artists: [{ name: "Mohammad Riyaz", institution: "Government College of Fine Arts, Chennai" }],
+    materials: ["Mixed media installation"],
+    dimensions: "Variable",
+    image: "/programmes/raza-mohammad-riyaz.jpg",
+    images: ["/programmes/raza-mohammad-riyaz.jpg"],
   },
 ];
 
