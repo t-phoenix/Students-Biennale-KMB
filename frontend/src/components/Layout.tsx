@@ -4,7 +4,7 @@ import Lenis from "lenis";
 import { syncScrollTrigger } from "../lib/motion";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { parseHomeHash, parseProgrammeHash, scrollToId, scrollToSection } from "../lib/scrollToSection";
+import { parseHomeHash, parseProgrammeHash, scrollToId } from "../lib/scrollToSection";
 import { setLenisInstance } from "../lib/lenisSingleton";
 import "./Layout.css";
 
@@ -13,6 +13,8 @@ export function Layout() {
   const isDiscover = location.pathname === "/artworks";
   const lenisRef = useRef<Lenis | null>(null);
   const prevPathRef = useRef(location.pathname);
+  const prevProgrammesPathRef = useRef(location.pathname);
+  const prevHomePathRef = useRef(location.pathname);
 
   useEffect(() => {
     if (isDiscover) {
@@ -73,22 +75,54 @@ export function Layout() {
   }, [location.pathname, location.key]);
 
   useEffect(() => {
-    if (location.pathname !== "/") return;
+    if (location.pathname !== "/") {
+      prevHomePathRef.current = location.pathname;
+      return;
+    }
     const id = parseHomeHash(location.hash);
     if (!id) return;
-    requestAnimationFrame(() => scrollToSection(id));
+
+    const crossPage = prevHomePathRef.current !== "/";
+    prevHomePathRef.current = location.pathname;
+
+    let cancelled = false;
+    let attempts = 0;
+    const run = () => {
+      if (cancelled) return;
+      if (scrollToId(id, { crossPage })) return;
+      if (++attempts < 10) requestAnimationFrame(run);
+    };
+    requestAnimationFrame(() => requestAnimationFrame(run));
+
+    return () => {
+      cancelled = true;
+    };
   }, [location.pathname, location.hash]);
 
   useEffect(() => {
-    if (location.pathname !== "/programmes") return;
+    if (location.pathname !== "/programmes") {
+      prevProgrammesPathRef.current = location.pathname;
+      return;
+    }
     const id = parseProgrammeHash(location.hash);
     if (!id) return;
-    // Programmes content may still be mounting; retry once after paint.
-    const run = () => scrollToId(id);
-    requestAnimationFrame(() => {
-      run();
-      requestAnimationFrame(run);
-    });
+
+    const crossPage = prevProgrammesPathRef.current !== "/programmes";
+    prevProgrammesPathRef.current = location.pathname;
+
+    let cancelled = false;
+    let attempts = 0;
+    const run = () => {
+      if (cancelled) return;
+      if (scrollToId(id, { crossPage })) return;
+      if (++attempts < 10) requestAnimationFrame(run);
+    };
+    // Two frames give the Programmes page time to mount before we measure.
+    requestAnimationFrame(() => requestAnimationFrame(run));
+
+    return () => {
+      cancelled = true;
+    };
   }, [location.pathname, location.hash]);
 
   return (

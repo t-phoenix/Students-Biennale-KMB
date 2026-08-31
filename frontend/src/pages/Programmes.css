@@ -15,9 +15,15 @@
   scroll-margin-top: calc(var(--nav-height, 60px) + 12px);
 }
 
-/* Residencies pin is already full-viewport sticky — no scroll offset gap. */
+/* Land flush below the sticky nav so the section title isn't covered. */
 #residencies {
-  scroll-margin-top: 0;
+  scroll-margin-top: var(--nav-height, 60px);
+}
+
+@media (max-width: 899px) {
+  #residencies {
+    scroll-margin-top: var(--nav-height-mobile, 56px);
+  }
 }
 
 .programmes__hero {

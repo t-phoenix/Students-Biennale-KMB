@@ -1,8 +1,11 @@
+import { syncScrollTrigger } from "./motion";
 import { getLenisInstance } from "./lenisSingleton";
 
 export type HomeSectionId = "editions" | "programmes" | "press" | "about";
 
 export type ProgrammeSectionId = "workshops" | "residencies" | "awards";
+
+const PROGRAMME_SECTIONS = new Set<ProgrammeSectionId>(["workshops", "awards", "residencies"]);
 
 export function parseHomeHash(hash: string): HomeSectionId | null {
   const id = hash.replace(/^#/, "") as HomeSectionId;
@@ -29,37 +32,64 @@ function navOffsetPx() {
   return Number.isFinite(n) ? n : 60;
 }
 
-/** Smooth-scroll to an element id, clearing the sticky nav. Routes through the
- *  page's Lenis instance when one is mounted — calling native window.scrollTo
- *  while Lenis also owns the scroll loop makes the two fight over the final
- *  rest position, which is what left a sliver of the previous section visible
- *  under the header after a hash-nav jump. The target is computed once, here,
- *  from native window.scrollY and passed to Lenis as a plain number — letting
- *  Lenis resolve the DOM element itself would additionally subtract its own
- *  `animatedScroll` + any scroll-margin/-padding, double-counting the offset. */
-export function scrollToId(id: string) {
-  const el = document.getElementById(id);
-  if (!el) return;
-
-  const compute = () => Math.max(0, el.getBoundingClientRect().top + window.scrollY - navOffsetPx());
-
-  const lenis = getLenisInstance();
-  if (lenis) {
-    // Home's hash click handler both scrolls directly and updates the URL hash,
-    // which independently re-triggers the same scroll via Layout's hash effect —
-    // two overlapping animated scrollTo calls retarget each other mid-flight and
-    // can settle short. Snapping once more (immediate, freshly measured) after
-    // this call's own animation completes makes the final position exact
-    // regardless of what else fired in between.
-    lenis.scrollTo(compute(), {
-      onComplete: () => lenis.scrollTo(compute(), { immediate: true }),
-    });
-    return;
-  }
-
-  window.scrollTo({ top: compute(), behavior: "smooth" });
+function lenisOffsetFor(el: HTMLElement) {
+  // Programme anchors declare scroll-margin-top in Programmes.css. Lenis reads
+  // those automatically when the element is passed as the target.
+  if (PROGRAMME_SECTIONS.has(el.id as ProgrammeSectionId)) return 0;
+  return -navOffsetPx();
 }
 
-export function scrollToSection(id: HomeSectionId) {
-  scrollToId(id);
+export type ScrollToOptions = {
+  /** When navigating from another route, reset scroll first so the previous
+   *  page's scrollY is not applied to the new document before we animate. */
+  crossPage?: boolean;
+};
+
+/** Smooth-scroll to an element id, clearing the sticky nav. Routes through the
+ *  page's Lenis instance when one is mounted — pass the element itself so
+ *  Lenis can honour CSS scroll-margin and use its internal animatedScroll. */
+export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
+  const el = document.getElementById(id);
+  if (!el) return false;
+
+  const lenis = getLenisInstance();
+  const offset = lenisOffsetFor(el);
+
+  if (lenis) {
+    if (options.crossPage) {
+      window.scrollTo(0, 0);
+      lenis.scrollTo(0, { immediate: true });
+    }
+
+    lenis.resize();
+    syncScrollTrigger();
+
+    const snap = () => {
+      lenis.resize();
+      lenis.scrollTo(el, { offset, immediate: true });
+    };
+
+    lenis.scrollTo(el, {
+      offset,
+      onComplete: snap,
+    });
+    return true;
+  }
+
+  if (options.crossPage) {
+    window.scrollTo(0, 0);
+  }
+
+  if (PROGRAMME_SECTIONS.has(el.id as ProgrammeSectionId)) {
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  }
+
+  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - navOffsetPx());
+  window.scrollTo({ top, behavior: "smooth" });
+  return true;
+}
+
+export function scrollToSection(id: HomeSectionId, options: ScrollToOptions = {}) {
+  scrollToId(id, options);
 }
