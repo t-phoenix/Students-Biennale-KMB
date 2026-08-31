@@ -119,17 +119,24 @@ export function Header() {
 
     const navRect = navEl.getBoundingClientRect();
     const tabRect = tabEl.getBoundingClientRect();
-
-    // Exact horizontal offset of the active tab link relative to the nav container
-    let targetX = tabRect.left - navRect.left;
-
-    // Prevent overflow outside container right boundary
     const contentWidth = contentEl.offsetWidth || 180;
-    const maxTargetX = Math.max(10, navRect.width - contentWidth - 12);
-    if (targetX > maxTargetX) {
-      targetX = maxTargetX;
+    const isRightAligned = hash === "about";
+
+    let targetX = 0;
+    if (isRightAligned) {
+      // Right-align with the ABOUT link / container edge with clean margin
+      const targetRight = tabRect.right - navRect.left;
+      targetX = targetRight - contentWidth;
+      const maxTargetX = navRect.width - contentWidth - 10;
+      if (targetX > maxTargetX) targetX = maxTargetX;
+      if (targetX < 8) targetX = 8;
+    } else {
+      // Left-align with active tab link
+      targetX = tabRect.left - navRect.left;
+      const maxTargetX = Math.max(10, navRect.width - contentWidth - 10);
+      if (targetX > maxTargetX) targetX = maxTargetX;
+      if (targetX < 8) targetX = 8;
     }
-    if (targetX < 8) targetX = 8;
 
     if (prefersReducedMotion()) {
       gsap.set(contentEl, { x: targetX });
@@ -351,7 +358,11 @@ export function Header() {
           onMouseLeave={closeDropdown}
           aria-hidden={!activeDropdown}
         >
-          <div ref={dropdownContentRef} className="site-header__dropdown-content">
+          <div
+            ref={dropdownContentRef}
+            className={`site-header__dropdown-content site-header__dropdown-content--${renderedDropdown}`}
+            data-align={renderedDropdown === "about" ? "right" : "left"}
+          >
             {activeItems.map((d) => (
               <Link
                 key={d.label}

@@ -129,6 +129,10 @@
   will-change: transform;
 }
 
+.site-header__dropdown-content[data-align="right"] {
+  align-items: flex-end;
+}
+
 .site-header__dropdown-item {
   padding: 5px 12px;
   font-size: 14px;
@@ -142,6 +146,10 @@
   transition: color 0.18s ease, transform 0.18s ease;
   display: block;
   text-align: left;
+}
+
+.site-header__dropdown-content[data-align="right"] .site-header__dropdown-item {
+  text-align: right;
 }
 
 .site-header__dropdown-item:hover,
