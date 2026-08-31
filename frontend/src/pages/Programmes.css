@@ -359,12 +359,31 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: opacity 0.2s ease;
   cursor: pointer;
 }
 
-.programmes__scholar-link:hover {
-  opacity: 0.7;
+.programmes__card-media-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 315 / 360;
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+  margin-bottom: 12px;
+}
+
+.programmes__card-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.programmes__scholar-link:hover .programmes__card-media {
+  transform: scale(1.03);
 }
 
 .programmes__raza-cards h3 {
@@ -373,6 +392,11 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 2px;
+  transition: opacity 0.2s ease;
+}
+
+.programmes__scholar-link:hover h3 {
+  opacity: 0.7;
 }
 
 @media (max-width: 899px) {

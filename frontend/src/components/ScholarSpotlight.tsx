@@ -95,7 +95,7 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
           className="scholar-spotlight__back"
           onClick={onClose}
         >
-          BACK
+          ← BACK
         </button>
 
         <ArtworkDetailBody artwork={artwork} />
