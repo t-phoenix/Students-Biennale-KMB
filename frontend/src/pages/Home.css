@@ -124,6 +124,46 @@
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--color-text-primary);
+  padding-right: 20px;
+}
+
+.home-hero__card-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10;
+  transition: color 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.6;
+}
+
+.home-hero__card-close:hover {
+  color: var(--color-text-primary);
+  background: rgba(0, 0, 0, 0.08);
+  opacity: 1;
+}
+
+.home-hero__card[data-offset="1"] .home-hero__card-close,
+.home-hero__card[data-offset="2"] .home-hero__card-close {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.home-hero__stack:hover .home-hero__card .home-hero__card-close,
+.home-hero__stack:focus-within .home-hero__card .home-hero__card-close {
+  opacity: 0.6;
+  pointer-events: auto;
 }
 
 .home-hero__card-body {

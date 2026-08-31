@@ -133,6 +133,7 @@ export function Home() {
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
+  const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
@@ -477,36 +478,51 @@ export function Home() {
 
         {/* Overlay sits on the page grid */}
         <div className="home-hero__grid">
-          <div
-            className="home-hero__stack fig-span3-plus-gutter"
-            data-node-id="17:309"
-            tabIndex={0}
-            aria-label="Edition updates. Hover or focus to expand."
-          >
-            {cards.map((item, i, arr) => (
-              <article
-                key={item.id}
-                className="home-hero__card home-hero__card--interactive"
-                style={{ zIndex: arr.length - i }}
-                data-offset={i}
-                role="button"
-                tabIndex={0}
-                aria-label={`${item.heading}. Open update.`}
-                onClick={() => openCard(item)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    openCard(item);
-                  }
-                }}
-              >
-                <div className="home-hero__card-inner">
-                  <h2 className="home-hero__card-title">{item.heading}</h2>
-                  <p className="home-hero__card-body">{item.body}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+          {cards.filter((c) => !dismissedCardIds.includes(c.id)).length > 0 ? (
+            <div
+              className="home-hero__stack fig-span3-plus-gutter"
+              data-node-id="17:309"
+              tabIndex={0}
+              aria-label="Edition updates. Hover or focus to expand."
+            >
+              {cards
+                .filter((c) => !dismissedCardIds.includes(c.id))
+                .map((item, i, arr) => (
+                  <article
+                    key={item.id}
+                    className="home-hero__card home-hero__card--interactive"
+                    style={{ zIndex: arr.length - i }}
+                    data-offset={i}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`${item.heading}. Open update.`}
+                    onClick={() => openCard(item)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        openCard(item);
+                      }
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="home-hero__card-close"
+                      aria-label={`Dismiss ${item.heading}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDismissedCardIds((prev) => [...prev, item.id]);
+                      }}
+                    >
+                      ✕
+                    </button>
+                    <div className="home-hero__card-inner">
+                      <h2 className="home-hero__card-title">{item.heading}</h2>
+                      <p className="home-hero__card-body">{item.body}</p>
+                    </div>
+                  </article>
+                ))}
+            </div>
+          ) : null}
 
           <div className="home-hero__meta">
             {showCredits ? (
