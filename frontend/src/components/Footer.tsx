@@ -25,8 +25,8 @@ const SOCIAL = [
 
 export function Footer() {
   return (
-    <footer className="site-footer">
-      <div className="site-footer__brand">
+    <footer className="site-footer fig-grid">
+      <div className="site-footer__brand fig-c1-3">
         <a
           className="site-footer__logo"
           href={KMB_URL}
@@ -41,32 +41,32 @@ export function Footer() {
             height={68}
           />
         </a>
-        <p>
-          Kochi Biennale Foundation, Indian Chamber Centenary Building, Indian Chamber Road,
-          Mattancherry, Kochi, Kerala 682002, India
-        </p>
-        <p>All rights reserved to Kochi Biennale Foundation</p>
-        <p>
-          Designed by{" "}
-          <a href={CROW_THEORY_URL} target="_blank" rel="noreferrer">
-            The Crow Theory
-          </a>
-        </p>
+        <div className="site-footer__brand-info">
+          <p>
+            Kochi Biennale Foundation, Indian Chamber Centenary Building, Indian Chamber Road,
+            Mattancherry, Kochi, Kerala 682002, India
+          </p>
+          <p>All rights reserved to Kochi Biennale Foundation</p>
+          <p>
+            Designed by{" "}
+            <a href={CROW_THEORY_URL} target="_blank" rel="noreferrer">
+              The Crow Theory
+            </a>
+          </p>
+        </div>
       </div>
 
-      <div className="site-footer__rule" aria-hidden="true" />
-
-      <nav className="site-footer__nav" aria-label="Footer">
+      <nav className="site-footer__nav fig-c4-12 fig-sub-3" aria-label="Footer">
         <div className="site-footer__col">
-          <p className="site-footer__title">KBF</p>
+          <p className="site-footer__header">KBF</p>
           <a href={KMB_URL} target="_blank" rel="noreferrer">
-            Kochi-Muziris Biennale 2025–26
+            Kochi-Muziris Biennale 2025-26
           </a>
-          <Link to="/editions">Students&apos; Biennale Editions</Link>
+          <Link to="/editions/2025-26/curators">Students&apos; Biennale Editions</Link>
         </div>
 
         <div className="site-footer__col">
-          <Link to="/programmes" className="site-footer__title">
+          <Link to="/programmes" className="site-footer__header">
             Programmes
           </Link>
           <Link to="/press">Press / Updates</Link>
@@ -77,7 +77,7 @@ export function Footer() {
         </div>
 
         <div className="site-footer__col">
-          <p className="site-footer__title">Support</p>
+          <p className="site-footer__header">Support</p>
           <a href="mailto:info@kochimuzirisbiennale.org">Contact Us</a>
           <div className="site-footer__social">
             {SOCIAL.map((item) => (
@@ -88,7 +88,7 @@ export function Footer() {
                 rel="noreferrer"
                 aria-label={item.label}
               >
-                <img src={item.icon} alt="" width={22} height={22} />
+                <img src={item.icon} alt="" width={20} height={20} />
               </a>
             ))}
           </div>
