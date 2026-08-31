@@ -25,6 +25,7 @@ import {
 import { prefetchHomeDestinations } from "../lib/predictivePrefetch";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useProgrammes } from "../lib/programmes";
+import { useProgrammesCovers } from "../lib/programmesCms";
 import "./Home.css";
 
 const FALLBACK_UPDATES: ActiveUpdateCard[] = [
@@ -114,6 +115,7 @@ export function Home() {
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();
+  const { homeBannerUrl } = useProgrammesCovers();
   const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
   const covers = dynamicCovers.length
     ? dynamicCovers
@@ -637,7 +639,7 @@ export function Home() {
               PROGRAMMES
             </h2>
             <div className="home-programmes__banner fig-c4-12">
-              <img src="/home/programmes-banner.jpg" alt="" />
+              <img src={homeBannerUrl} alt="" />
             </div>
           </div>
           <div className="fig-grid home-programmes__bottom">

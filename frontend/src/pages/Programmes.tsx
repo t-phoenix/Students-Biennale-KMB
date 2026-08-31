@@ -1,6 +1,8 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { buildAutoSlideTimeline, jumpToSlide, initSlideStack } from "../lib/imageSlider";
+import { useProgrammesCovers } from "../lib/programmesCms";
 import { CtaLink } from "../components/CtaLink";
 import { ResidenciesBand } from "../components/ResidenciesBand";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
@@ -10,60 +12,124 @@ import "./Programmes.css";
 
 export function Programmes() {
   const root = useRef<HTMLDivElement>(null);
+  const heroTlRef = useRef<gsap.core.Timeline | null>(null);
+  const slidesRef = useRef<HTMLElement[]>([]);
+  const slideIndexRef = useRef(0);
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [expandedPast, setExpandedPast] = useState(false);
+  const { heroCovers } = useProgrammesCovers();
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
 
   const visiblePastWorkshops = expandedPast ? pastWorkshops : pastWorkshops.slice(0, 2);
 
+  const goToSlide = useCallback((index: number) => {
+    const slides = slidesRef.current;
+    if (!slides.length || index < 0 || index >= slides.length) return;
+    if (index === slideIndexRef.current) return;
+    heroTlRef.current?.pause();
+    jumpToSlide(slides, slideIndexRef.current, index);
+    slideIndexRef.current = index;
+    setHeroSlide(index);
+  }, []);
+
   useGSAP(
     () => {
-      if (prefersReducedMotion()) return;
-      gsap.from(".prog-reveal", {
-        autoAlpha: 0,
-        y: 24,
-        duration: 0.55,
-        stagger: 0.08,
-        ease: "power2.out",
-        clearProps: "opacity,visibility,transform",
-      });
-
-      const heroTl = gsap.timeline({ repeat: -1 });
-      for (let i = 0; i < 5; i += 1) {
-        heroTl.call(() => setHeroSlide(i)).to({}, { duration: 3.5 });
+      const reduced = prefersReducedMotion();
+      if (!reduced) {
+        gsap.from(".prog-reveal", {
+          autoAlpha: 0,
+          y: 24,
+          duration: 0.55,
+          stagger: 0.08,
+          ease: "power2.out",
+          clearProps: "opacity,visibility,transform",
+        });
       }
-      const hero = root.current?.querySelector<HTMLElement>(".programmes__hero");
-      const pause = () => heroTl.pause();
-      const play = () => heroTl.play();
-      hero?.addEventListener("pointerenter", pause);
-      hero?.addEventListener("pointerleave", play);
+
+      let cleanupHero: (() => void) | undefined;
+      const slides = gsap.utils.toArray<HTMLElement>(".programmes__hero-slide");
+      slidesRef.current = slides;
+
+      if (reduced) {
+        if (slides.length) initSlideStack(slides, 0);
+        return;
+      }
+
+      if (slides.length > 1) {
+        slideIndexRef.current = 0;
+        const tl = buildAutoSlideTimeline(slides, 0, (index) => {
+          slideIndexRef.current = index;
+          setHeroSlide(index);
+        }, heroTlRef);
+        const hero = root.current?.querySelector<HTMLElement>(".programmes__hero");
+        const pause = () => tl.pause();
+        const play = () => {
+          buildAutoSlideTimeline(
+            slidesRef.current,
+            slideIndexRef.current,
+            (index) => {
+              slideIndexRef.current = index;
+              setHeroSlide(index);
+            },
+            heroTlRef,
+          );
+        };
+        hero?.addEventListener("pointerenter", pause);
+        hero?.addEventListener("pointerleave", play);
+        hero?.addEventListener("focusin", pause);
+        hero?.addEventListener("focusout", play);
+        cleanupHero = () => {
+          heroTlRef.current?.kill();
+          heroTlRef.current = null;
+          hero?.removeEventListener("pointerenter", pause);
+          hero?.removeEventListener("pointerleave", play);
+          hero?.removeEventListener("focusin", pause);
+          hero?.removeEventListener("focusout", play);
+        };
+      } else if (slides.length === 1) {
+        initSlideStack(slides, 0);
+        slideIndexRef.current = 0;
+        setHeroSlide(0);
+      }
+
       return () => {
-        hero?.removeEventListener("pointerenter", pause);
-        hero?.removeEventListener("pointerleave", play);
+        cleanupHero?.();
       };
     },
-    { scope: root }
+    { scope: root, dependencies: [heroCovers.length, heroCovers.map((c) => c.id).join(",")] },
   );
 
   return (
     <div ref={root} className="programmes">
       <section className="programmes__hero prog-reveal" aria-label="Programmes hero">
-        <img src="/programmes/hero.jpg" alt="" className="programmes__hero-media" />
-        <div className="programmes__hero-dots" role="tablist" aria-label="Hero slides">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <button
-              key={i}
-              type="button"
-              role="tab"
-              aria-selected={heroSlide === i}
-              className={heroSlide === i ? "is-active" : undefined}
-              onClick={() => setHeroSlide(i)}
-              aria-label={`Slide ${i + 1}`}
+        <div className="programmes__hero-slides" aria-hidden={heroCovers.length > 1}>
+          {heroCovers.map((cover) => (
+            <img
+              key={cover.id}
+              className="programmes__hero-slide"
+              src={cover.image_url}
+              alt=""
+              loading="eager"
             />
           ))}
         </div>
+        {heroCovers.length > 1 ? (
+          <div className="programmes__hero-dots" role="tablist" aria-label="Hero slides">
+            {heroCovers.map((cover, i) => (
+              <button
+                key={cover.id}
+                type="button"
+                role="tab"
+                aria-selected={heroSlide === i}
+                className={heroSlide === i ? "is-active" : undefined}
+                onClick={() => goToSlide(i)}
+                aria-label={`Slide ${i + 1}`}
+              />
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section id="workshops" className="programmes__block fig-grid prog-reveal">

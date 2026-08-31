@@ -18,12 +18,10 @@ import {
   preloadUrlsConcurrent,
   whenIdle,
 } from "./preloadImages";
-
-const STATIC_ROUTE_HEROES = [
-  "/programmes/hero.jpg",
-  "/home/programmes-banner.jpg",
-  "/home/press-featured.jpg",
-] as const;
+import {
+  peekHomeProgrammesBannerUrl,
+  peekProgrammesHeroCovers,
+} from "./programmesCms";
 
 const HOME_SENSING_STRIP = [
   "/home/sensing-wide.jpg",
@@ -33,7 +31,13 @@ const HOME_SENSING_STRIP = [
 /** Likely next destinations from the home page — fetched during idle time. */
 export function prefetchHomeDestinations(catalogue?: MappedCatalogue | null) {
   whenIdle(() => {
-    void preloadUrls(STATIC_ROUTE_HEROES);
+    const programmesHeroUrls = peekProgrammesHeroCovers().map((cover) => cover.image_url);
+    const programmesBannerUrl = peekHomeProgrammesBannerUrl();
+    void preloadUrls([
+      ...programmesHeroUrls,
+      programmesBannerUrl,
+      "/home/press-featured.jpg",
+    ]);
     void preloadUrls(HOME_SENSING_STRIP);
 
     if (catalogue?.heroUrls.length) {
@@ -121,7 +125,16 @@ export function prefetchRouteHero(
   sourceKey?: string,
 ) {
   if (to.startsWith("/programmes")) {
-    void preloadUrl("/programmes/hero.jpg", "high");
+    const heroCovers = peekProgrammesHeroCovers();
+    if (heroCovers.length) {
+      void preloadUrls(
+        heroCovers.map((cover) => cover.image_url),
+        "high",
+      );
+    } else {
+      void preloadUrl("/programmes/hero.jpg", "high");
+    }
+    void preloadUrl(peekHomeProgrammesBannerUrl(), "high");
     return;
   }
   if (to.startsWith("/press")) {

@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.5"
   }
   graphql_public: {
     Tables: {
@@ -227,6 +227,77 @@ export type Database = {
           },
         ]
       }
+      assets: {
+        Row: {
+          alt_text: string | null
+          bucket: string
+          bytes: number | null
+          created_at: string
+          height: number | null
+          id: string
+          mime_type: string | null
+          parent_asset_id: string | null
+          public_url: string | null
+          sha256: string | null
+          sort_order: number
+          source_label: string | null
+          source_url: string | null
+          status: Database["public"]["Enums"]["asset_status"]
+          storage_path: string
+          updated_at: string
+          variant: Database["public"]["Enums"]["asset_variant"]
+          width: number | null
+        }
+        Insert: {
+          alt_text?: string | null
+          bucket: string
+          bytes?: number | null
+          created_at?: string
+          height?: number | null
+          id: string
+          mime_type?: string | null
+          parent_asset_id?: string | null
+          public_url?: string | null
+          sha256?: string | null
+          sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["asset_status"]
+          storage_path: string
+          updated_at?: string
+          variant?: Database["public"]["Enums"]["asset_variant"]
+          width?: number | null
+        }
+        Update: {
+          alt_text?: string | null
+          bucket?: string
+          bytes?: number | null
+          created_at?: string
+          height?: number | null
+          id?: string
+          mime_type?: string | null
+          parent_asset_id?: string | null
+          public_url?: string | null
+          sha256?: string | null
+          sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
+          status?: Database["public"]["Enums"]["asset_status"]
+          storage_path?: string
+          updated_at?: string
+          variant?: Database["public"]["Enums"]["asset_variant"]
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assets_parent_asset_id_fkey"
+            columns: ["parent_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       award_winner_artists: {
         Row: {
           award_winner_id: string
@@ -307,77 +378,6 @@ export type Database = {
             columns: ["programme_id"]
             isOneToOne: false
             referencedRelation: "programmes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      assets: {
-        Row: {
-          alt_text: string | null
-          bucket: string
-          bytes: number | null
-          created_at: string
-          height: number | null
-          id: string
-          mime_type: string | null
-          parent_asset_id: string | null
-          public_url: string | null
-          sha256: string | null
-          sort_order: number
-          source_label: string | null
-          source_url: string | null
-          status: Database["public"]["Enums"]["asset_status"]
-          storage_path: string
-          updated_at: string
-          variant: Database["public"]["Enums"]["asset_variant"]
-          width: number | null
-        }
-        Insert: {
-          alt_text?: string | null
-          bucket: string
-          bytes?: number | null
-          created_at?: string
-          height?: number | null
-          id: string
-          mime_type?: string | null
-          parent_asset_id?: string | null
-          public_url?: string | null
-          sha256?: string | null
-          sort_order?: number
-          source_label?: string | null
-          source_url?: string | null
-          status?: Database["public"]["Enums"]["asset_status"]
-          storage_path: string
-          updated_at?: string
-          variant?: Database["public"]["Enums"]["asset_variant"]
-          width?: number | null
-        }
-        Update: {
-          alt_text?: string | null
-          bucket?: string
-          bytes?: number | null
-          created_at?: string
-          height?: number | null
-          id?: string
-          mime_type?: string | null
-          parent_asset_id?: string | null
-          public_url?: string | null
-          sha256?: string | null
-          sort_order?: number
-          source_label?: string | null
-          source_url?: string | null
-          status?: Database["public"]["Enums"]["asset_status"]
-          storage_path?: string
-          updated_at?: string
-          variant?: Database["public"]["Enums"]["asset_variant"]
-          width?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "assets_parent_asset_id_fkey"
-            columns: ["parent_asset_id"]
-            isOneToOne: false
-            referencedRelation: "assets"
             referencedColumns: ["id"]
           },
         ]
@@ -562,8 +562,8 @@ export type Database = {
           id: string
           image_url: string
           institution: string | null
-          show_artwork_name: boolean
           show_artist: boolean
+          show_artwork_name: boolean
           show_institution: boolean
           sort_order: number
           updated_at: string
@@ -576,8 +576,8 @@ export type Database = {
           id?: string
           image_url: string
           institution?: string | null
-          show_artwork_name?: boolean
           show_artist?: boolean
+          show_artwork_name?: boolean
           show_institution?: boolean
           sort_order?: number
           updated_at?: string
@@ -590,8 +590,8 @@ export type Database = {
           id?: string
           image_url?: string
           institution?: string | null
-          show_artwork_name?: boolean
           show_artist?: boolean
+          show_artwork_name?: boolean
           show_institution?: boolean
           sort_order?: number
           updated_at?: string
@@ -817,6 +817,36 @@ export type Database = {
           subtype?: Database["public"]["Enums"]["programme_subtype"]
           summary?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      programmes_covers: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          image_url: string
+          show_on_home: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url: string
+          show_on_home?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          image_url?: string
+          show_on_home?: boolean
+          sort_order?: number
+          updated_at?: string
         }
         Relationships: []
       }

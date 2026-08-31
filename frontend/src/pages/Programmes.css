@@ -29,13 +29,22 @@
 .programmes__hero {
   position: relative;
   background: var(--color-primary-dark);
+  overflow: hidden;
+}
+
+.programmes__hero-slides {
+  position: relative;
+  width: 100%;
+  height: min(615px, 58vh);
 }
 
 /* Full-bleed hero — Figma 1:1649 is 1440 × 615. */
-.programmes__hero-media {
+.programmes__hero-slide {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: min(615px, 58vh);
+  height: 100%;
   max-width: none;
   object-fit: cover;
 }

@@ -5,6 +5,7 @@ import { ConfirmModal } from "../../components/admin/ConfirmModal";
 import { ThemeToggle } from "../../components/admin/ThemeToggle";
 import { Login } from "./Login";
 import { HomeCovers } from "./sections/HomeCovers";
+import { ProgrammesCovers } from "./sections/ProgrammesCovers";
 import { UpdateCards } from "./sections/UpdateCards";
 import { Workshops } from "./sections/Workshops";
 import { ResidenciesSection } from "./sections/Residencies";
@@ -14,6 +15,7 @@ import "./Admin.css";
 
 const NAV = [
   { key: "covers", label: "Home Covers" },
+  { key: "programmes-covers", label: "Programmes Covers" },
   { key: "cards", label: "Update Cards" },
   { key: "workshops", label: "Workshops" },
   { key: "residencies", label: "Residencies" },
@@ -103,6 +105,7 @@ export function Admin() {
         </div>
         <div className="adm-main__body">
           {section === "covers" && <HomeCovers {...sectionProps} />}
+          {section === "programmes-covers" && <ProgrammesCovers {...sectionProps} />}
           {section === "cards" && <UpdateCards {...sectionProps} />}
           {section === "workshops" && <Workshops {...sectionProps} />}
           {section === "residencies" && <ResidenciesSection {...sectionProps} />}
