@@ -5,16 +5,16 @@
   width: 100%;
   box-sizing: border-box;
   color: #4a4a4a;
-  display: grid;
-  grid-template-columns: 1fr auto 3fr;
+  display: flex;
   align-items: stretch;
 }
 
 .site-footer__brand {
   display: flex;
   flex-direction: column;
-  padding-inline-end: 48px;
-  box-sizing: border-box;
+  flex: 0 0 290px;
+  padding-inline-end: 64px;
+  box-sizing: content-box;
 }
 
 .site-footer__logo {
@@ -37,8 +37,8 @@
 
 .site-footer__brand-info p {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.7;
   font-weight: 400;
   color: #4a4a4a;
   max-width: 290px;
@@ -58,19 +58,20 @@
   color: var(--color-text-primary);
 }
 
-/* Vertical divider */
+/* Vertical divider with equal left and right space */
 .site-footer__divider {
   width: 1px;
   background: var(--color-neutral-gray-light);
   align-self: stretch;
+  flex-shrink: 0;
 }
 
-/* Three equally spaced columns with comfortable breathing room from the line */
+/* Navigation: equal 64px space from line, with compact column gap bringing Programmes towards left */
 .site-footer__nav {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  column-gap: 40px;
-  padding-inline-start: 72px;
+  display: flex;
+  gap: clamp(40px, 5.5vw, 84px);
+  flex: 1 1 auto;
+  padding-inline-start: 64px;
   padding-top: 120px;
   align-items: start;
   box-sizing: border-box;
@@ -85,8 +86,8 @@
 
 .site-footer__header {
   margin: 0 0 2px;
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.7;
   font-weight: 400;
   color: #4a4a4a;
 }
@@ -98,12 +99,13 @@ a.site-footer__header {
 
 .site-footer__col a {
   display: block;
-  font-size: 13px;
-  line-height: 1.65;
+  font-size: 14px;
+  line-height: 1.7;
   font-weight: 400;
   color: #4a4a4a;
   text-decoration: none;
   transition: color 0.15s ease, opacity 0.15s ease;
+  white-space: nowrap;
 }
 
 .site-footer__col a:hover {
@@ -115,12 +117,12 @@ a.site-footer__header {
   display: inline-flex !important;
   align-items: center;
   gap: 8px;
-  word-break: break-all;
+  white-space: nowrap;
 }
 
 .site-footer__contact-icon {
-  width: 14px;
-  height: 14px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
   display: block;
   opacity: 0.85;
