@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { DiscoverArtworks } from "./pages/DiscoverArtworks";
@@ -58,6 +59,7 @@ export default function App() {
               />
             </Route>
           </Routes>
+          <SpeedInsights />
         </HomeCmsProvider>
       </BrowserRouter>
     </CatalogueProvider>
