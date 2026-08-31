@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, useCallback, type MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
@@ -53,8 +53,17 @@ export function Header() {
   const navigate = useNavigate();
   const onHome = location.pathname === "/";
   const [activeSection, setActiveSection] = useState<HomeSectionId | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [renderedDropdown, setRenderedDropdown] = useState<string | null>(null);
+
   const discoverRef = useRef<HTMLAnchorElement>(null);
   const headerRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const tabRefs = useRef<Record<string, HTMLElement | null>>({});
+  const dropdownPanelRef = useRef<HTMLDivElement>(null);
+  const dropdownContentRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isOpenRef = useRef(false);
 
   useEffect(() => {
     if (!onHome) {
@@ -101,11 +110,152 @@ export function Header() {
     { scope: headerRef }
   );
 
+  const updateContentPosition = useCallback((hash: string, isInitialOpen: boolean) => {
+    const navEl = navRef.current;
+    const tabEl = tabRefs.current[hash];
+    const contentEl = dropdownContentRef.current;
+    const panelEl = dropdownPanelRef.current;
+    if (!navEl || !tabEl || !contentEl || !panelEl) return;
+
+    const navRect = navEl.getBoundingClientRect();
+    const tabRect = tabEl.getBoundingClientRect();
+
+    // Exact horizontal offset of the active tab link relative to the nav container
+    let targetX = tabRect.left - navRect.left;
+
+    // Prevent overflow outside container right boundary
+    const contentWidth = contentEl.offsetWidth || 180;
+    const maxTargetX = Math.max(10, navRect.width - contentWidth - 12);
+    if (targetX > maxTargetX) {
+      targetX = maxTargetX;
+    }
+    if (targetX < 8) targetX = 8;
+
+    if (prefersReducedMotion()) {
+      gsap.set(contentEl, { x: targetX });
+      return;
+    }
+
+    if (isInitialOpen) {
+      gsap.set(contentEl, { x: targetX });
+      gsap.fromTo(
+        contentEl.querySelectorAll(".site-header__dropdown-item"),
+        { autoAlpha: 0, y: 5 },
+        { autoAlpha: 1, y: 0, duration: 0.26, stagger: 0.025, ease: "power2.out" }
+      );
+    } else {
+      // Premium horizontal GSAP glide to the active tab's position
+      gsap.to(contentEl, {
+        x: targetX,
+        duration: 0.38,
+        ease: "power3.out",
+        overwrite: "auto",
+      });
+      gsap.fromTo(
+        contentEl.querySelectorAll(".site-header__dropdown-item"),
+        { autoAlpha: 0, y: 4 },
+        { autoAlpha: 1, y: 0, duration: 0.24, stagger: 0.02, ease: "power2.out" }
+      );
+    }
+  }, []);
+
+  const openDropdown = useCallback((hash: string) => {
+    const navItem = NAV.find((n) => n.hash === hash);
+    if (!navItem?.dropdown) {
+      closeDropdown();
+      return;
+    }
+
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+
+    const panelEl = dropdownPanelRef.current;
+    const wasOpen = isOpenRef.current;
+
+    setActiveDropdown(hash);
+    setRenderedDropdown(hash);
+    isOpenRef.current = true;
+
+    if (!wasOpen && panelEl) {
+      if (prefersReducedMotion()) {
+        gsap.set(panelEl, { autoAlpha: 1, y: 0 });
+      } else {
+        gsap.killTweensOf(panelEl);
+        gsap.fromTo(
+          panelEl,
+          { autoAlpha: 0, y: -8, scaleY: 0.94 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            scaleY: 1,
+            duration: 0.35,
+            ease: "power3.out",
+            transformOrigin: "top center",
+          }
+        );
+      }
+      requestAnimationFrame(() => {
+        updateContentPosition(hash, true);
+      });
+    } else if (wasOpen) {
+      requestAnimationFrame(() => {
+        updateContentPosition(hash, false);
+      });
+    }
+  }, [updateContentPosition]);
+
+  const closeDropdown = useCallback(() => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = setTimeout(() => {
+      const panelEl = dropdownPanelRef.current;
+      if (!panelEl) {
+        setActiveDropdown(null);
+        setRenderedDropdown(null);
+        isOpenRef.current = false;
+        return;
+      }
+      if (prefersReducedMotion()) {
+        gsap.set(panelEl, { autoAlpha: 0 });
+        setActiveDropdown(null);
+        setRenderedDropdown(null);
+        isOpenRef.current = false;
+        return;
+      }
+      gsap.killTweensOf(panelEl);
+      gsap.to(panelEl, {
+        autoAlpha: 0,
+        y: -6,
+        duration: 0.22,
+        ease: "power2.in",
+        onComplete: () => {
+          setActiveDropdown(null);
+          setRenderedDropdown(null);
+          isOpenRef.current = false;
+        },
+      });
+    }, 140);
+  }, []);
+
+  const closeImmediate = useCallback(() => {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
+    const panelEl = dropdownPanelRef.current;
+    if (panelEl) {
+      gsap.killTweensOf(panelEl);
+      gsap.set(panelEl, { autoAlpha: 0 });
+    }
+    setActiveDropdown(null);
+    setRenderedDropdown(null);
+    isOpenRef.current = false;
+  }, []);
+
   const goToSection = (
     hash: HomeSectionId,
     event: MouseEvent<HTMLAnchorElement>
   ) => {
     event.preventDefault();
+    closeImmediate();
     if (onHome) {
       scrollToSection(hash);
       navigate({ pathname: "/", hash }, { replace: true });
@@ -114,9 +264,12 @@ export function Header() {
     navigate({ pathname: "/", hash });
   };
 
+  const activeNavItem = NAV.find((n) => n.hash === renderedDropdown);
+  const activeItems = activeNavItem?.dropdown ?? [];
+
   return (
     <header ref={headerRef} className="site-header" data-node-id="6:287">
-      <Link to="/" className="site-header__brand" aria-label="Students' Biennale home">
+      <Link to="/" className="site-header__brand" aria-label="Students' Biennale home" onClick={closeImmediate}>
         <img
           className="site-header__brand-logo site-header__brand-logo--full"
           src="/logo-sb.svg"
@@ -130,26 +283,40 @@ export function Header() {
       </Link>
 
       {location.pathname === "/artworks" ? null : (
-        <Link ref={discoverRef} to="/artworks" className="site-header__discover">
+        <Link ref={discoverRef} to="/artworks" className="site-header__discover" onClick={closeImmediate}>
           [Discover Artworks]
         </Link>
       )}
 
-      <nav className="site-header__nav" aria-label="Primary">
+      <nav
+        ref={navRef}
+        className="site-header__nav"
+        aria-label="Primary"
+        onMouseLeave={closeDropdown}
+      >
         {NAV.map((item, i) => (
           <span key={item.hash} className="site-header__nav-item" style={{ display: "contents" }}>
             {i > 0 ? <span className="site-header__sep">/</span> : null}
-            <span className="site-header__nav-trigger">
+            <span
+              ref={(el) => {
+                tabRefs.current[item.hash] = el;
+              }}
+              className="site-header__nav-trigger"
+              onMouseEnter={() => openDropdown(item.hash)}
+              onFocus={() => openDropdown(item.hash)}
+            >
               {item.to ? (
                 <Link
                   to={item.to}
                   data-label={item.hash}
                   className={
                     (item.hash === "editions" && location.pathname.startsWith("/editions")) ||
-                    (item.to && location.pathname.startsWith(item.to))
+                    (item.to && location.pathname.startsWith(item.to)) ||
+                    activeDropdown === item.hash
                       ? "is-active"
                       : undefined
                   }
+                  onClick={closeImmediate}
                 >
                   {item.label}
                 </Link>
@@ -158,7 +325,7 @@ export function Header() {
                   href={`/#${item.hash}`}
                   data-label={item.hash}
                   className={
-                    onHome && activeSection === item.hash
+                    (onHome && activeSection === item.hash) || activeDropdown === item.hash
                       ? "is-active"
                       : undefined
                   }
@@ -167,22 +334,36 @@ export function Header() {
                   {item.label}
                 </a>
               )}
-              {item.dropdown ? (
-                <div className="site-header__dropdown">
-                  {item.dropdown.map((d) => (
-                    <Link
-                      key={d.label}
-                      to={d.to}
-                      className={d.isCurrent ? "is-current" : undefined}
-                    >
-                      {d.label}
-                    </Link>
-                  ))}
-                </div>
-              ) : null}
             </span>
           </span>
         ))}
+
+        {/* Unified full-width dropdown panel: fixed responsive width matching the nav container, sliding text placement */}
+        <div
+          ref={dropdownPanelRef}
+          className="site-header__dropdown-panel"
+          onMouseEnter={() => {
+            if (closeTimerRef.current) {
+              clearTimeout(closeTimerRef.current);
+              closeTimerRef.current = null;
+            }
+          }}
+          onMouseLeave={closeDropdown}
+          aria-hidden={!activeDropdown}
+        >
+          <div ref={dropdownContentRef} className="site-header__dropdown-content">
+            {activeItems.map((d) => (
+              <Link
+                key={d.label}
+                to={d.to}
+                className={`site-header__dropdown-item${d.isCurrent ? " is-current" : ""}`}
+                onClick={closeImmediate}
+              >
+                {d.label}
+              </Link>
+            ))}
+          </div>
+        </div>
       </nav>
 
       <a
@@ -191,6 +372,7 @@ export function Header() {
         target="_blank"
         rel="noreferrer"
         aria-label="Kochi Biennale Foundation"
+        onClick={closeImmediate}
       >
         <img
           className="site-header__kbf-logo site-header__kbf-logo--full"

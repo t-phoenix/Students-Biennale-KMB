@@ -51,6 +51,7 @@
 }
 
 .site-header__nav {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 0;
@@ -77,55 +78,83 @@
   pointer-events: none;
 }
 
-/* Dropdown trigger — plain hover/focus panel, no JS needed (Figma 24:296:
-   plain white list, current item black, rest gray, no dividers). */
 .site-header__nav-trigger {
   position: relative;
   display: inline-block;
 }
 
-.site-header__dropdown {
+/* ==========================================================================
+   Unified Full-Width Dropdown Panel:
+   - Width is locked to 100% of the nav container (responsive to container width)
+   - Background stays fixed in width and position
+   - Inner text container shifts horizontally to align with the active nav tab
+   - Smooth GSAP animations with custom ease and staggered item entrance
+   ========================================================================== */
+
+.site-header__dropdown-panel {
   position: absolute;
-  top: 100%;
-  left: 10px;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  min-width: 160px;
-  padding: 16px 0;
+  top: calc(100% + 2px);
+  left: 0;
+  width: 100%;
+  box-sizing: border-box;
   background: var(--color-neutral-white);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--color-neutral-gray-light);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03);
+  padding: 14px 0 16px;
+  z-index: 50;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-4px);
-  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  pointer-events: auto;
+  min-height: 80px;
 }
 
-.site-header__nav-trigger:hover .site-header__dropdown,
-.site-header__nav-trigger:focus-within .site-header__dropdown {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+/* Invisible hover bridge to prevent mouse cursor dropping between nav and panel */
+.site-header__dropdown-panel::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: transparent;
 }
 
-.site-header__dropdown a {
-  padding: 6px 20px;
+.site-header__dropdown-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: max-content;
+  min-width: 150px;
+  box-sizing: border-box;
+  will-change: transform;
+}
+
+.site-header__dropdown-item {
+  padding: 5px 12px;
   font-size: 14px;
+  line-height: 22px;
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
   color: var(--color-text-secondary);
   white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.18s ease, transform 0.18s ease;
+  display: block;
+  text-align: left;
 }
 
-.site-header__dropdown a:hover,
-.site-header__dropdown a.is-current {
+.site-header__dropdown-item:hover,
+.site-header__dropdown-item.is-current {
   color: var(--color-text-primary);
+  font-weight: 500;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .site-header__dropdown {
-    transition: none;
+  .site-header__dropdown-panel,
+  .site-header__dropdown-content,
+  .site-header__dropdown-item {
+    transition: none !important;
   }
 }
 
