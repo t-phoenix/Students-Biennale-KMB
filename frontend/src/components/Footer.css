@@ -102,6 +102,21 @@ a.site-footer__header {
   opacity: 0.7;
 }
 
+.site-footer__contact-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  word-break: break-all;
+}
+
+.site-footer__contact-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  display: block;
+  opacity: 0.85;
+}
+
 .site-footer__social {
   display: flex;
   align-items: center;

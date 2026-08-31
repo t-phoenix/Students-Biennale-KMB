@@ -58,15 +58,17 @@ export function Footer() {
 
       <nav className="site-footer__nav fig-c4-12 fig-sub-3" aria-label="Footer">
         <div className="site-footer__col">
-          <p className="site-footer__header">KBF</p>
           <a href={KMB_URL} target="_blank" rel="noreferrer">
-            Kochi-Muziris Biennale 2025-26
+            Kochi Biennale Foundation
+          </a>
+          <a href={KMB_URL} target="_blank" rel="noreferrer">
+            Kochi-Muzris-Biennale 2025-26
           </a>
           <Link to="/editions/2025-26/curators">Students&apos; Biennale Editions</Link>
         </div>
 
         <div className="site-footer__col">
-          <Link to="/programmes" className="site-footer__header">
+          <Link to="/programmes">
             Programmes
           </Link>
           <Link to="/press">Press / Updates</Link>
@@ -77,8 +79,28 @@ export function Footer() {
         </div>
 
         <div className="site-footer__col">
-          <p className="site-footer__header">Support</p>
-          <a href="mailto:info@kochimuzirisbiennale.org">Contact Us</a>
+          <p className="site-footer__header">Contact Us</p>
+          <a
+            className="site-footer__contact-link"
+            href="mailto:info@kochimuzirisbiennale.org"
+          >
+            <img src="/icons/icon-mail.svg" alt="" className="site-footer__contact-icon" />
+            <span>info@kochimuzirisbiennale.org</span>
+          </a>
+          <a
+            className="site-footer__contact-link"
+            href="mailto:studentsbiennale@kochimuzirisbiennale.org"
+          >
+            <img src="/icons/icon-mail.svg" alt="" className="site-footer__contact-icon" />
+            <span>studentsbiennale@kochimuzirisbiennale.org</span>
+          </a>
+          <a
+            className="site-footer__contact-link"
+            href="tel:+914842215287"
+          >
+            <img src="/icons/icon-phone.svg" alt="" className="site-footer__contact-icon" />
+            <span>+91 484-2215287</span>
+          </a>
           <div className="site-footer__social">
             {SOCIAL.map((item) => (
               <a
