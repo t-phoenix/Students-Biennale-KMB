@@ -5,7 +5,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { GalleryLightbox } from "./GalleryLightbox";
 import { HighlightText } from "./HighlightText";
-import { PreloadedImage } from "./PreloadedImage";
+import { ImageCrossfadeStack } from "./ImageCrossfadeStack";
 import "../pages/Detail.css";
 
 type Props = {
@@ -42,8 +42,6 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
     void preloadAdjacent(slides, heroIndex, 1, "high");
   }, [heroIndex, slides]);
 
-  const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
-  const upcomingSlides = slides.filter((url) => url !== slide);
   const curated = curatorsForArtwork(a);
   const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
   const goNext = () => setHeroIndex((i) => (i + 1) % slides.length);
@@ -79,15 +77,13 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   return (
     <div key={a.id}>
       <div ref={heroRef} className="detail__hero detail__hero--cover detail-reveal">
-        {slide ? (
+        {slides.length ? (
           <>
-            <PreloadedImage
-              key={slide}
-              src={slide}
-              alt=""
-              className="detail__hero-img"
-              prefetch={upcomingSlides}
-              onClick={() => setLightboxOpen(true)}
+            <ImageCrossfadeStack
+              images={slides}
+              index={heroIndex}
+              imageClassName="detail__hero-img"
+              onImageClick={() => setLightboxOpen(true)}
             />
             <button
               type="button"

@@ -4,6 +4,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import { HighlightText } from "../components/HighlightText";
+import { ImageCrossfadeStack } from "../components/ImageCrossfadeStack";
 import { venueImages } from "../data/site";
 import { prefetchNextArtwork } from "../lib/predictivePrefetch";
 import {
@@ -206,14 +207,19 @@ export function Detail() {
   if (data.kind === "venue" && data.item) {
     const v = data.item;
     const slides = venueImages(v);
-    const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
     const venueWorks = catalogue.artworks.filter((a) => a.venue === v.name || a.venue === v.id);
 
     return (
       <div ref={root} className="detail" key={v.id}>
         <div className="fig-grid detail__section">
           <div className="detail__venue-hero fig-c1-7 detail-reveal">
-            {slide ? <img src={slide} alt="" /> : null}
+            {slides.length ? (
+              <ImageCrossfadeStack
+                images={slides}
+                index={heroIndex}
+                imageClassName="detail__venue-hero-img"
+              />
+            ) : null}
             {slides.length > 1 ? (
               <div className="detail__hero-dots detail__hero-dots--venue" role="tablist" aria-label="Venue images">
                 {slides.map((_, i) => (

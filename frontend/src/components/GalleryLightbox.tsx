@@ -2,7 +2,7 @@ import { useEffect, useRef, type TouchEvent as ReactTouchEvent } from "react";
 import { createPortal } from "react-dom";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useModalPortal } from "../lib/useModalPortal";
-import { PreloadedImage } from "./PreloadedImage";
+import { ImageCrossfadeStack } from "./ImageCrossfadeStack";
 import "./GalleryLightbox.css";
 
 type Props = {
@@ -90,12 +90,13 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
         onTouchEnd={onTouchEnd}
       >
         <div className="gallery-lightbox__frame">
-          <PreloadedImage
-            key={images[index]}
-            src={images[index]}
-            alt=""
-            className="gallery-lightbox__image"
-            prefetch={images.filter((_, i) => i !== index)}
+          <ImageCrossfadeStack
+            images={images}
+            index={index}
+            fit="contain"
+            relative
+            imageClassName="gallery-lightbox__image"
+            loaderVariant="inline"
           />
         </div>
         <button ref={closeRef} type="button" className="gallery-lightbox__close" aria-label="Close" onClick={onClose}>

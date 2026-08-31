@@ -6,6 +6,7 @@ import { HighlightText } from "../components/HighlightText";
 import { getEditionOverview } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue, useEditionCatalogue } from "../lib/catalogue";
+import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { preloadUrls } from "../lib/preloadImages";
 import "./EditionOverview.css";
 
@@ -60,34 +61,6 @@ function InstitutionsList({
       ))}
     </p>
   );
-}
-
-function buildHeroTimeline(
-  slides: HTMLElement[],
-  startIndex: number,
-  onSlideChange: (index: number) => void,
-  tlRef: { current: gsap.core.Timeline | null },
-) {
-  tlRef.current?.kill();
-  gsap.killTweensOf(slides);
-  gsap.set(slides, { opacity: 0, visibility: "visible" });
-  gsap.set(slides[startIndex], { opacity: 1 });
-  onSlideChange(startIndex);
-
-  const tl = gsap.timeline({ repeat: -1 });
-  const len = slides.length;
-  for (let step = 0; step < len; step++) {
-    const i = (startIndex + step) % len;
-    const el = slides[i];
-    const next = slides[(i + 1) % len];
-    const nextIdx = (i + 1) % len;
-    tl.to({}, { duration: 5 })
-      .to(el, { opacity: 0, duration: 0.6, ease: "power2.out" }, ">")
-      .to(next, { opacity: 1, duration: 0.6, ease: "power2.out" }, "<")
-      .call(() => onSlideChange(nextIdx));
-  }
-  tlRef.current = tl;
-  return tl;
 }
 
 /**
@@ -158,24 +131,7 @@ export function EditionOverview() {
     if (index === slideIndexRef.current) return;
 
     heroTlRef.current?.pause();
-    gsap.killTweensOf(slides);
-
-    const prev = slideIndexRef.current;
-    gsap.set(slides, { visibility: "visible" });
-
-    if (prefersReducedMotion()) {
-      gsap.set(slides, { opacity: 0 });
-      gsap.set(slides[index], { opacity: 1 });
-    } else {
-      slides.forEach((el, i) => {
-        if (i !== prev && i !== index) gsap.set(el, { opacity: 0 });
-      });
-      gsap.set(slides[prev], { opacity: 1 });
-      gsap.set(slides[index], { opacity: 0 });
-      gsap.to(slides[prev], { opacity: 0, duration: 0.35, ease: "power2.out", overwrite: true });
-      gsap.to(slides[index], { opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
-    }
-
+    jumpToSlide(slides, slideIndexRef.current, index);
     slideIndexRef.current = index;
     setSlide(index);
   }, []);
@@ -218,10 +174,16 @@ export function EditionOverview() {
         return;
       }
 
-      buildHeroTimeline(slides, 0, (index) => {
-        slideIndexRef.current = index;
-        setSlide(index);
-      }, heroTlRef);
+      buildAutoSlideTimeline(
+        slides,
+        0,
+        (index) => {
+          slideIndexRef.current = index;
+          setSlide(index);
+        },
+        heroTlRef,
+        5,
+      );
 
       const onEnter = () => heroTlRef.current?.pause();
       const onLeave = () => heroTlRef.current?.resume();
@@ -274,10 +236,16 @@ export function EditionOverview() {
                     onClick={() => {
                       goToSlide(i);
                       if (!prefersReducedMotion() && slidesRef.current.length > 1) {
-                        buildHeroTimeline(slidesRef.current, i, (index) => {
-                          slideIndexRef.current = index;
-                          setSlide(index);
-                        }, heroTlRef);
+                        buildAutoSlideTimeline(
+                          slidesRef.current,
+                          i,
+                          (index) => {
+                            slideIndexRef.current = index;
+                            setSlide(index);
+                          },
+                          heroTlRef,
+                          5,
+                        );
                       }
                     }}
                   />

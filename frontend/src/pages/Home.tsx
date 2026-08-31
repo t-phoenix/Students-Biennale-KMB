@@ -23,6 +23,7 @@ import {
   type UpdateCardMode,
 } from "../lib/homeCms/updateCardLinks";
 import { prefetchHomeDestinations } from "../lib/predictivePrefetch";
+import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useProgrammes } from "../lib/programmes";
 import "./Home.css";
 
@@ -66,34 +67,6 @@ function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
   if (value === "internal" || value === "external" || value === "content") return value;
   if (value === "programmes" || value === "news") return "internal";
   return "content";
-}
-
-function buildHeroTimeline(
-  slides: HTMLElement[],
-  startIndex: number,
-  onSlideChange: (index: number) => void,
-  tlRef: { current: gsap.core.Timeline | null },
-) {
-  tlRef.current?.kill();
-  gsap.killTweensOf(slides);
-  gsap.set(slides, { opacity: 0, visibility: "visible" });
-  gsap.set(slides[startIndex], { opacity: 1 });
-  onSlideChange(startIndex);
-
-  const tl = gsap.timeline({ repeat: -1 });
-  const len = slides.length;
-  for (let step = 0; step < len; step++) {
-    const i = (startIndex + step) % len;
-    const el = slides[i];
-    const next = slides[(i + 1) % len];
-    const nextIdx = (i + 1) % len;
-    tl.to({}, { duration: 4 })
-      .to(el, { opacity: 0, duration: 0.6, ease: "power2.out" }, ">")
-      .to(next, { opacity: 1, duration: 0.6, ease: "power2.out" }, "<")
-      .call(() => onSlideChange(nextIdx));
-  }
-  tlRef.current = tl;
-  return tl;
 }
 
 /** Continuous auto-scroll strip, right→left, in the Sensing Grounds row. */
@@ -221,24 +194,7 @@ export function Home() {
     if (index === slideIndexRef.current) return;
 
     heroTlRef.current?.pause();
-    gsap.killTweensOf(slides);
-
-    const prev = slideIndexRef.current;
-    gsap.set(slides, { visibility: "visible" });
-
-    if (prefersReducedMotion()) {
-      gsap.set(slides, { opacity: 0 });
-      gsap.set(slides[index], { opacity: 1 });
-    } else {
-      slides.forEach((el, i) => {
-        if (i !== prev && i !== index) gsap.set(el, { opacity: 0 });
-      });
-      gsap.set(slides[prev], { opacity: 1 });
-      gsap.set(slides[index], { opacity: 0 });
-      gsap.to(slides[prev], { opacity: 0, duration: 0.35, ease: "power2.out", overwrite: true });
-      gsap.to(slides[index], { opacity: 1, duration: 0.35, ease: "power2.out", overwrite: true });
-    }
-
+    jumpToSlide(slides, slideIndexRef.current, index);
     slideIndexRef.current = index;
     setSlide(index);
   }, []);
@@ -391,14 +347,14 @@ export function Home() {
           slidesRef.current = slides;
           if (slides.length) {
             slideIndexRef.current = 0;
-            const tl = buildHeroTimeline(slides, 0, (index) => {
+            const tl = buildAutoSlideTimeline(slides, 0, (index) => {
               slideIndexRef.current = index;
               setSlide(index);
             }, heroTlRef);
             const hero = root.querySelector<HTMLElement>(".home-hero");
             const pause = () => tl.pause();
             const play = () => {
-              buildHeroTimeline(
+              buildAutoSlideTimeline(
                 slidesRef.current,
                 slideIndexRef.current,
                 (index) => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { crossfadeSlides, initSlideStack } from "../lib/imageSlider";
 import { preloadUrls } from "../lib/preloadImages";
 import "./ResidenciesBand.css";
 
@@ -30,6 +31,8 @@ type Props = {
 export function ResidenciesBand({ slides }: Props) {
   const sectionRef = useRef<HTMLElement>(null);
   const bgWrapRef = useRef<HTMLDivElement>(null);
+  const bgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const prevIndex = useRef(0);
   const [index, setIndex] = useState(0);
   const safeIndex = slides.length ? Math.min(index, slides.length - 1) : 0;
   const slide = slides[safeIndex];
@@ -41,6 +44,19 @@ export function ResidenciesBand({ slides }: Props) {
   useEffect(() => {
     void preloadUrls(slides.map((item) => item.image).filter(Boolean));
   }, [slides]);
+
+  useEffect(() => {
+    const bgSlides = bgRefs.current.filter((el): el is HTMLImageElement => Boolean(el));
+    if (!bgSlides.length) return;
+
+    if (prevIndex.current === safeIndex) {
+      initSlideStack(bgSlides, safeIndex);
+      return;
+    }
+
+    crossfadeSlides(bgSlides, prevIndex.current, safeIndex);
+    prevIndex.current = safeIndex;
+  }, [safeIndex, slides.length]);
 
   useGSAP(
     () => {
@@ -83,9 +99,12 @@ export function ResidenciesBand({ slides }: Props) {
         {slides.map((item, i) => (
           <img
             key={item.id}
+            ref={(el) => {
+              bgRefs.current[i] = el;
+            }}
             src={item.image}
             alt=""
-            className={`residencies-band__bg${i === safeIndex ? " is-active" : ""}`}
+            className="residencies-band__bg"
             draggable={false}
             loading="eager"
             decoding="async"

@@ -388,7 +388,8 @@
   background: var(--color-neutral-gray-mid);
 }
 
-.detail__venue-hero img {
+.detail__venue-hero img,
+.detail__venue-hero-img {
   position: absolute;
   inset: 0;
   width: 100%;
