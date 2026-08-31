@@ -1,128 +1,195 @@
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { CtaLink } from "../components/CtaLink";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import { useProgrammes } from "../lib/programmes";
+import type { ResidencyProgramme } from "../lib/programmes/types";
 import "./Residencies.css";
+
+function findResidency(
+  residencies: ResidencyProgramme[],
+  key: string,
+): ResidencyProgramme | undefined {
+  if (!key) return undefined;
+  return (
+    residencies.find((row) => row.slug === key) ??
+    residencies.find((row) => row.id === key)
+  );
+}
 
 export function Residencies() {
   const root = useRef<HTMLDivElement>(null);
+  const featureRef = useRef<HTMLElement>(null);
+  const location = useLocation();
+  const [params, setParams] = useSearchParams();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const { residencies } = useProgrammes();
+
+  // Match Press page: query param drives the featured item. Hash links remain supported.
+  const residencyKey = params.get("residency") ?? location.hash.slice(1);
+
+  const featured = useMemo(() => {
+    if (!residencies.length) return undefined;
+    if (residencyKey) {
+      return findResidency(residencies, residencyKey) ?? residencies[0];
+    }
+    return residencies[0];
+  }, [residencyKey, residencies]);
+
+  const selectResidency = useCallback(
+    (slug: string) => {
+      setParams({ residency: slug });
+      setLightboxIndex(null);
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+    },
+    [setParams],
+  );
 
   useGSAP(
     () => {
-      if (prefersReducedMotion()) return;
-      gsap.from(".residency-reveal", {
-        autoAlpha: 0,
-        y: 24,
-        duration: 0.55,
-        stagger: 0.08,
-        ease: "power2.out",
-        clearProps: "opacity,visibility,transform",
-      });
+      const el = featureRef.current;
+      if (!el) return;
+      if (prefersReducedMotion()) {
+        gsap.set(el, { autoAlpha: 1 });
+        return;
+      }
+      gsap.fromTo(el, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35, ease: "power2.out" });
     },
-    { scope: root, dependencies: [residencies.map((item) => item.id).join("|")] }
+    { dependencies: [featured?.id], scope: root },
   );
+
+  if (!residencies.length) {
+    return (
+      <div ref={root} className="residencies">
+        <p className="fig-grid residencies__empty">No residencies published yet.</p>
+      </div>
+    );
+  }
+
+  if (!featured) return null;
+
+  const descriptionParas = featured.description.split(/\n\s*\n/).filter(Boolean);
+  const gallery = featured.galleryImages;
+  const related = residencies.filter((row) => row.id !== featured.id);
+  const hasRelated = related.length > 0;
 
   return (
     <div ref={root} className="residencies">
-      {residencies.length === 0 ? (
-        <p className="fig-grid" style={{ padding: "48px var(--grid-margin)" }}>
-          No residencies published yet.
-        </p>
+      <div className="fig-grid residencies__head">
+        <div className="residencies__rail fig-rail">
+          <h1>{featured.title}</h1>
+          {featured.host ? (
+            <p className="residencies__meta">
+              <span>Host :</span>
+              <em>{featured.host}</em>
+            </p>
+          ) : null}
+          {featured.period ? (
+            <p className="residencies__meta">
+              <span>Period :</span>
+              <em>{featured.period}</em>
+            </p>
+          ) : null}
+          {featured.venue ? (
+            <p className="residencies__meta">
+              <span>Venue :</span>
+              <em>{featured.venue}</em>
+            </p>
+          ) : null}
+          {featured.awardees ? (
+            <p className="residencies__meta">
+              <span>Awardees :</span>
+              <em>{featured.awardees}</em>
+            </p>
+          ) : null}
+        </div>
+
+        <article ref={featureRef} className="residencies__feature fig-c4-9" id={featured.slug}>
+          {featured.heroImage ? (
+            <img className="residencies__feature-media" src={featured.heroImage} alt="" />
+          ) : (
+            <div className="residencies__feature-media" aria-hidden />
+          )}
+
+          {descriptionParas.length ? (
+            <div className="residencies__body">
+              {descriptionParas.map((para) => (
+                <p key={para.slice(0, 48)}>{para}</p>
+              ))}
+            </div>
+          ) : featured.copy ? (
+            <p>{featured.copy}</p>
+          ) : null}
+
+          {gallery.length ? (
+            <div className="residencies__gallery">
+              <div className="residencies__gallery-grid">
+                {gallery.map((img, idx) => (
+                  <button
+                    key={img}
+                    type="button"
+                    className="residencies__gallery-item"
+                    onClick={() => setLightboxIndex(idx)}
+                    aria-label={`View image ${idx + 1}`}
+                  >
+                    <img src={img} alt="" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </article>
+      </div>
+
+      <div className="fig-grid residencies__related">
+        {hasRelated ? (
+          <ul className="residencies__list fig-c4-12">
+            {related.map((item) => {
+              const excerpt = item.copy || item.description.split(/\n\s*\n/)[0] || "";
+              const useTeaser = Boolean(item.heroImage && excerpt);
+              return (
+                <li key={item.id} className={useTeaser ? "is-teaser" : undefined}>
+                  {useTeaser ? (
+                    <button type="button" onClick={() => selectResidency(item.slug)}>
+                      <div className="residencies__teaser fig-band-9">
+                        <img src={item.heroImage} alt="" />
+                        <div className="residencies__teaser-copy">
+                          <div className="residencies__teaser-head">
+                            <span>{item.title}</span>
+                            {item.period ? <time>{item.period}</time> : null}
+                          </div>
+                          <p>{excerpt}</p>
+                        </div>
+                      </div>
+                    </button>
+                  ) : (
+                    <button type="button" onClick={() => selectResidency(item.slug)}>
+                      <span>{item.title}</span>
+                      {item.period ? <time>{item.period}</time> : null}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+        <CtaLink
+          className={`fig-cta-end residencies__more${hasRelated ? "" : " fig-c4-12"}`}
+          to="/programmes#residencies"
+          lines={["View", "MORE"]}
+          spacing={["0.26em", "0.135em"]}
+        />
+      </div>
+
+      {lightboxIndex !== null ? (
+        <GalleryLightbox
+          images={gallery}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
       ) : null}
-      {residencies.map((residency) => {
-        const descriptionParas = residency.description.split(/\n\s*\n/).filter(Boolean);
-        const gallery = residency.galleryImages;
-        const lightboxOpen = activeId === residency.id ? lightboxIndex : null;
-        return (
-          <section key={residency.id} id={residency.slug}>
-            <div className="residencies__hero residency-reveal">
-              <img src={residency.heroImage} alt="" className="residencies__hero-img" />
-            </div>
-
-            <div className="fig-grid residencies__content residency-reveal">
-              <div className="fig-c4-9">
-                <h1 className="residencies__title">{residency.title}</h1>
-                <div className="residencies__meta">
-                  <dl>
-                    {residency.host ? (
-                      <>
-                        <dt>Host:</dt>
-                        <dd>{residency.host}</dd>
-                      </>
-                    ) : null}
-                    {residency.period ? (
-                      <>
-                        <dt>Period:</dt>
-                        <dd>{residency.period}</dd>
-                      </>
-                    ) : null}
-                    {residency.venue ? (
-                      <>
-                        <dt>Venue:</dt>
-                        <dd>{residency.venue}</dd>
-                      </>
-                    ) : null}
-                    {residency.awardees ? (
-                      <>
-                        <dt>Awardees:</dt>
-                        <dd>{residency.awardees}</dd>
-                      </>
-                    ) : null}
-                  </dl>
-                </div>
-              </div>
-            </div>
-
-            <div className="fig-grid residencies__description residency-reveal">
-              <div className="fig-c4-9">
-                <div className="residencies__text">
-                  {descriptionParas.map((paragraph) => (
-                    <p key={paragraph.slice(0, 48)}>{paragraph}</p>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {gallery.length ? (
-              <div className="residencies__gallery fig-grid residency-reveal">
-                <div className="fig-c4-12">
-                  <div className="gallery-grid">
-                    {gallery.map((img, idx) => (
-                      <button
-                        key={img}
-                        className="gallery-item"
-                        onClick={() => {
-                          setActiveId(residency.id);
-                          setLightboxIndex(idx);
-                        }}
-                        aria-label={`View image ${idx + 1}`}
-                        type="button"
-                      >
-                        <img src={img} alt="" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : null}
-
-            {lightboxOpen !== null ? (
-              <GalleryLightbox
-                images={gallery}
-                index={lightboxOpen}
-                onClose={() => {
-                  setLightboxIndex(null);
-                  setActiveId(null);
-                }}
-                onIndexChange={setLightboxIndex}
-              />
-            ) : null}
-          </section>
-        );
-      })}
     </div>
   );
 }

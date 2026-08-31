@@ -1,91 +1,84 @@
+/* Residencies page — mirrors Press layout (Figma 1:780): title and meta on cols 1-3,
+   featured residency on cols 4-9, related list on cols 4-12. */
+
 .residencies {
   width: 100%;
+  padding-bottom: 80px;
 }
 
-.residencies__hero {
-  position: relative;
-  width: 100%;
-  height: auto;
-  margin-bottom: 4rem;
-  overflow: hidden;
+.residencies__empty {
+  padding: 48px var(--grid-margin);
+  margin: 0;
 }
 
-.residencies__hero-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: cover;
+.residencies__head {
+  padding-top: 56px;
+  align-items: start;
 }
 
-.residencies__content {
-  margin-bottom: 3rem;
-}
-
-.residencies__title {
-  font-family: "Degular Variable", sans-serif;
-  font-size: 24px;
-  font-weight: 500;
-  letter-spacing: 2.4px;
+.residencies__rail h1 {
+  margin: 0 0 28px;
+  font-size: var(--type-title-size);
+  line-height: var(--type-title-line);
+  font-weight: var(--type-title-weight);
   text-transform: uppercase;
-  margin-bottom: 2rem;
-  line-height: 1.2;
 }
 
 .residencies__meta {
-  font-family: "Degular Variable", sans-serif;
-  font-size: 16px;
-  color: #545454;
+  margin: 0 0 8px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: var(--type-body-size);
+  color: var(--color-text-secondary);
 }
 
-.residencies__meta dl {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0 1rem;
-  row-gap: 0.5rem;
+.residencies__meta span,
+.residencies__meta em {
+  font-style: normal;
 }
 
-.residencies__meta dt {
-  font-weight: 500;
+.residencies__feature-media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 650 / 377;
+  object-fit: cover;
+  background: var(--color-primary-dark);
+  margin-bottom: 28px;
 }
 
-.residencies__meta dd {
-  margin: 0;
-  line-height: 1.5;
+.residencies__body p {
+  margin: 0 0 16px;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
 }
 
-.residencies__description {
-  margin-bottom: 4rem;
-}
-
-.residencies__text p {
-  font-family: "Degular Variable", sans-serif;
-  font-size: 16px;
-  line-height: 1.7;
-  color: #000;
-  margin-bottom: 1rem;
+.residencies__feature > p {
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
 }
 
 .residencies__gallery {
-  margin-bottom: 4rem;
+  margin-top: 40px;
 }
 
-.gallery-grid {
+.residencies__gallery-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  gap: var(--grid-gutter);
 }
 
-.gallery-item {
+.residencies__gallery-item {
   position: relative;
   overflow: hidden;
-  background: none;
-  border: none;
+  border: 0;
   padding: 0;
+  background: none;
   cursor: pointer;
   aspect-ratio: 1;
 }
 
-.gallery-item img {
+.residencies__gallery-item img {
   display: block;
   width: 100%;
   height: 100%;
@@ -93,20 +86,99 @@
   transition: transform 0.3s ease;
 }
 
-.gallery-item:hover img {
+.residencies__gallery-item:hover img {
   transform: scale(1.05);
 }
 
-@media (max-width: 768px) {
-  .gallery-grid {
+.residencies__related {
+  padding-top: 64px;
+}
+
+.residencies__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.residencies__list li {
+  border-top: 1px solid var(--color-neutral-gray-light);
+}
+
+.residencies__list button {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--grid-gutter);
+  padding: 18px 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  font: inherit;
+  font-size: var(--type-subtitle-size);
+  cursor: pointer;
+}
+
+.residencies__list time {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.residencies__list li.is-teaser button {
+  display: block;
+  padding: 28px 0;
+}
+
+.residencies__teaser {
+  align-items: start;
+}
+
+.residencies__teaser img,
+.residencies__teaser > div:first-child {
+  grid-column: 1 / span 3;
+  width: 100%;
+  aspect-ratio: 315 / 219;
+  object-fit: cover;
+  background: var(--color-neutral-gray-mid);
+}
+
+.residencies__teaser-copy {
+  grid-column: 4 / span 6;
+}
+
+.residencies__teaser-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: var(--type-subtitle-size);
+}
+
+.residencies__teaser p {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+
+.residencies__more {
+  margin-top: 28px;
+}
+
+@media (max-width: 899px) {
+  .residencies__head {
+    padding-top: 32px;
+  }
+
+  .residencies__related {
+    padding-top: 40px;
+  }
+
+  .residencies__gallery-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .residencies__title {
-    font-size: 18px;
-  }
-
-  .residencies__meta dl {
-    grid-template-columns: auto 1fr;
+  .residencies__teaser img,
+  .residencies__teaser > div:first-child,
+  .residencies__teaser-copy {
+    grid-column: 1 / -1;
   }
 }

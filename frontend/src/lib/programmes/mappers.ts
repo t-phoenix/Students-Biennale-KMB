@@ -352,7 +352,7 @@ function mapResidency(row: ProgrammeRow, assets: ProgrammeAsset[]): ResidencyPro
     description,
     heroImage: cover || "",
     galleryImages: gallery,
-    moreHref: `/programmes/residencies#${row.slug}`,
+    moreHref: `/programmes/residencies?residency=${row.slug}`,
   };
 }
 

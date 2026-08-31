@@ -99,7 +99,7 @@ export function buildInternalLinkOptions(
       kind: "residency",
       group: "Residencies",
       label: r.title,
-      href: `/programmes/residencies#${r.slug || r.id}`,
+      href: `/programmes/residencies?residency=${encodeURIComponent(r.slug || r.id)}`,
       meta: r.host || undefined,
     });
   }

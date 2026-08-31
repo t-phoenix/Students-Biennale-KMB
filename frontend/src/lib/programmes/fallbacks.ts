@@ -40,7 +40,7 @@ export const FALLBACK_RESIDENCY: ResidencyProgramme = {
   description: FALLBACK_RESIDENCY_COPY,
   heroImage: "/programmes/residency-1.jpg",
   galleryImages: FALLBACK_GALLERY,
-  moreHref: "/programmes/residencies",
+  moreHref: "/programmes/residencies?residency=kbf-sb-residency-sms-hall",
 };
 
 function withAwardImage(
