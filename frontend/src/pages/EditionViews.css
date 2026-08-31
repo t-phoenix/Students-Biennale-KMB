@@ -327,13 +327,11 @@
   border-top: 1px solid var(--color-neutral-gray-light);
 }
 
-/* Venue rows — 482x300 image then copy, 320px stride (Figma 718:1326).
-   Gutter between consecutive venues widened per client feedback ("text
-   content looks a little heavy" with only 20px separating entries). */
+/* Venue rows — 482x300 image then copy, 320px stride (Figma 718:1326). */
 .edition-venue-rows {
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 20px;
 }
 
 /* Same 9-column band the toolbar above it uses (search cols 1-8, icons col

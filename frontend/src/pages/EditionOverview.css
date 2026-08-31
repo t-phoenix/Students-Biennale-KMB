@@ -5,14 +5,6 @@
   padding-bottom: 80px;
 }
 
-/* Matches Sensing Grounds/Curators/Artworks/Venues exactly — fig-label
-   alone defaults to title-size (26px), wrong for this subheading style
-   (fig-subheading never sets font-size, so fig-label's wins by default). */
-.edition-overview p.fig-subheading,
-.edition-overview h2.fig-subheading {
-  font-size: var(--type-subtitle-size);
-}
-
 /* Full-bleed hero (1440 × 820 in Figma). */
 .edition-overview__hero {
   position: relative;
@@ -196,12 +188,6 @@
 
 .edition-overview__nav {
   padding-top: 60px;
-  align-items: center;
-}
-
-.edition-overview__back {
-  font-size: var(--type-subtitle-size);
-  align-self: center;
 }
 
 @media (max-width: 899px) {

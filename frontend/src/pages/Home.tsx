@@ -133,10 +133,6 @@ export function Home() {
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
-  const [stackClosed, setStackClosed] = useState(false);
-  const [programmesHover, setProgrammesHover] = useState<number | null>(null);
-  const programmesThumbsRef = useRef<HTMLDivElement>(null);
-  const programmesThumbEls = useRef<(HTMLAnchorElement | null)[]>([]);
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();
@@ -299,42 +295,6 @@ export function Home() {
     { scope: rootRef }
   );
 
-  // Programmes thumbnails flex-basis hover expand
-  useGSAP(
-    () => {
-      const container = programmesThumbsRef.current;
-      if (!container || prefersReducedMotion()) return;
-      if (typeof window !== "undefined" && window.innerWidth <= 899) return;
-
-      const els = programmesThumbEls.current.filter((el): el is HTMLAnchorElement => Boolean(el));
-      if (els.length !== 3) return;
-
-      // Base: 3 equal thirds minus the 2 gutters between them.
-      // Hovered: grows +60px on each side (+120px total flex-basis).
-      // Other two: shrink -60px each (-120px total, balance is exact).
-      const totalWidth = container.getBoundingClientRect().width;
-      const baseWidth = (totalWidth - 40) / 3;
-
-      els.forEach((el, i) => {
-        let targetBasis: number;
-        if (programmesHover === null) {
-          targetBasis = baseWidth;
-        } else if (programmesHover === i) {
-          targetBasis = baseWidth + 120;
-        } else {
-          targetBasis = baseWidth - 60;
-        }
-        gsap.to(el, {
-          flexBasis: `${Math.round(targetBasis)}px`,
-          duration: 0.35,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      });
-    },
-    { dependencies: [programmesHover], scope: programmesThumbsRef }
-  );
-
   useGSAP(
     () => {
       withMotionPreference({
@@ -479,23 +439,11 @@ export function Home() {
         {/* Overlay sits on the page grid */}
         <div className="home-hero__grid">
           <div
-            className={`home-hero__stack fig-span3-plus-gutter${stackClosed ? " is-closed" : ""}`}
+            className="home-hero__stack fig-span3-plus-gutter"
             data-node-id="17:309"
             tabIndex={0}
             aria-label="Edition updates. Hover or focus to expand."
-            onMouseEnter={() => setStackClosed(false)}
           >
-            <button
-              type="button"
-              className="home-hero__stack-close"
-              aria-label="Close update stack"
-              onClick={(e) => {
-                e.stopPropagation();
-                setStackClosed(true);
-              }}
-            >
-              ✕
-            </button>
             {cards.map((item, i, arr) => (
               <article
                 key={item.id}
@@ -677,37 +625,27 @@ export function Home() {
                   { label: "AWARDS", hash: "awards" },
                   { label: "RESIDENCIES", hash: "residencies" },
                 ] as const
-              ).map((tab, i) => (
+              ).map((tab) => (
                 <Link
                   key={tab.hash}
                   to={`/programmes#${tab.hash}`}
                   className="fig-subheading"
-                  onMouseEnter={() => setProgrammesHover(i)}
-                  onMouseLeave={() => setProgrammesHover(null)}
                 >
                   {tab.label}
                   <span className="fig-subheading__underline" aria-hidden />
                 </Link>
               ))}
             </div>
-            <div ref={programmesThumbsRef} className="home-programmes__thumbs fig-c4-12">
-              {[
-                { to: "/programmes#workshops", img: workshopThumb },
-                { to: "/programmes#awards", img: awardsThumb },
-                { to: "/programmes#residencies", img: residencyThumb },
-              ].map((t, i) => (
-                <Link
-                  key={t.to}
-                  ref={(el) => {
-                    programmesThumbEls.current[i] = el;
-                  }}
-                  to={t.to}
-                  onMouseEnter={() => setProgrammesHover(i)}
-                  onMouseLeave={() => setProgrammesHover(null)}
-                >
-                  <img src={t.img} alt="" />
-                </Link>
-              ))}
+            <div className="home-programmes__thumbs fig-c4-12 fig-sub-3">
+              <Link to="/programmes#workshops">
+                <img src={workshopThumb} alt="" />
+              </Link>
+              <Link to="/programmes#awards">
+                <img src={awardsThumb} alt="" />
+              </Link>
+              <Link to="/programmes#residencies">
+                <img src={residencyThumb} alt="" />
+              </Link>
             </div>
           </div>
         </section>
@@ -759,7 +697,7 @@ export function Home() {
           <div className="fig-grid home-about__intro">
             <h2 className="fig-label fig-heading">ABOUT US</h2>
           </div>
-          <div id="about-kbf" className="fig-grid home-about__block">
+          <div className="fig-grid home-about__block">
             <img
               className="home-about__logo-kbf fig-c1-3"
               src="/home/logo-kbf-about.svg"
@@ -777,7 +715,7 @@ export function Home() {
               Foundation.
             </p>
           </div>
-          <div id="about-sb" className="fig-grid home-about__block">
+          <div className="fig-grid home-about__block">
             <div className="home-about__logo-sb fig-c1-3" aria-label="Students' Biennale">
               <img src="/home/logo-sb-mark-about.svg" alt="" width={72} height={100} />
               <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={120} height={48} />
@@ -823,7 +761,7 @@ export function Home() {
             </div>
           </div>
 
-          <div id="about-team" className="fig-grid home-about__team">
+          <div className="fig-grid home-about__team">
             <h3 className="fig-label fig-label--sub">
               students&apos; biennale
               <br />
