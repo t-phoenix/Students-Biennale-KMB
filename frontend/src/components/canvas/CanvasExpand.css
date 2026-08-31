@@ -29,14 +29,27 @@
   will-change: transform, opacity;
 }
 
-/* Full artwork content brings its own .fig-grid horizontal margin — drop the
-   sheet's own inline padding so the two don't stack. */
+/* Full artwork content brings its own .fig-grid horizontal margin and a
+   genuinely full-bleed hero — drop the sheet's padding entirely (not just
+   inline) so the hero reaches every edge instead of floating in a white
+   margin, matching the real artwork page. */
 .canvas-expand__sheet--artwork {
-  padding-inline: 0;
+  padding: 0;
 }
 
 .canvas-expand__sheet--artwork .canvas-expand__back {
-  margin-inline: var(--page-pad);
+  position: absolute;
+  top: 24px;
+  left: var(--page-pad);
+  z-index: 3;
+  margin-bottom: 0;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  color: var(--color-neutral-white);
+}
+
+.canvas-expand__sheet--artwork .canvas-expand__back:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .canvas-expand__full-page {

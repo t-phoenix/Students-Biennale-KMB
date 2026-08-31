@@ -77,6 +77,58 @@
   pointer-events: none;
 }
 
+/* Dropdown trigger — plain hover/focus panel, no JS needed (Figma 24:296:
+   plain white list, current item black, rest gray, no dividers). */
+.site-header__nav-trigger {
+  position: relative;
+  display: inline-block;
+}
+
+.site-header__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 10px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 16px 0;
+  background: var(--color-neutral-white);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+
+.site-header__nav-trigger:hover .site-header__dropdown,
+.site-header__nav-trigger:focus-within .site-header__dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.site-header__dropdown a {
+  padding: 6px 20px;
+  font-size: 14px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.site-header__dropdown a:hover,
+.site-header__dropdown a.is-current {
+  color: var(--color-text-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-header__dropdown {
+    transition: none;
+  }
+}
+
 .site-header__kbf {
   display: flex;
   align-items: center;

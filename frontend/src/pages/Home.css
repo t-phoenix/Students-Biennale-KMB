@@ -1,81 +1,83 @@
+/* Home page — Sensing Grounds 6:286, Programmes 6:588, Press 6:890, About 6:1192 */
+
 .home {
   width: 100%;
-  background: var(--color-neutral-white);
 }
 
-.home__main {
-  width: 100%;
-}
-
-/* —— Hero: full-bleed media, overlay on the shared 12-col grid
-   stack = cols 1–3 + trailing gutter · meta = cols 10–12 —— */
-/* 50px short of full height (minus the header) so the next section visibly
-   peeks at the fold, same treatment as the artwork page's hero. */
 .home-hero {
   position: relative;
   width: 100%;
-  min-height: calc(100dvh - var(--nav-height) - 50px);
-  height: calc(100dvh - var(--nav-height) - 50px);
+  height: 100vh;
+  height: 100dvh;
+  min-height: 560px;
+  max-height: 1080px;
   overflow: hidden;
-  background: var(--color-neutral-gray-light);
-  isolation: isolate;
+  background: var(--color-primary-dark);
 }
 
 .home-hero__slides {
   position: absolute;
   inset: 0;
-  cursor: zoom-in;
 }
 
-.home-hero__bg,
-.home-hero__slide {
+.home-hero__slide,
+.home-hero__fallback {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
   max-width: none;
+  object-fit: cover;
+  display: block;
 }
 
-/* Overlay grid — the page's 12 columns, stretched to the full hero width so it
-   lines up with every section below it (same .fig-grid math, no 1440 cap). */
+.home-hero__fallback {
+  background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
+}
+
+.home-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(27, 23, 28, 0.15) 0%,
+    transparent 35%,
+    rgba(27, 23, 28, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* Grid overlay — items align to the bottom of the hero */
 .home-hero__grid {
   position: absolute;
   inset: 0;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
-  column-gap: var(--grid-gutter);
-  padding-inline: var(--grid-margin);
-  pointer-events: none;
+  padding-bottom: 32px;
   align-items: end;
-  padding-bottom: 88px;
+  pointer-events: none;
 }
 
-.home-hero__stack {
-  --card-h: 137px;
-  --card-gap: 8px;
-  --peek: 14px;
-  --peek-gap: 6px;
-  --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --stack-dur: 320ms;
-  --stack-h-collapsed: calc(var(--card-h) + (var(--peek) + var(--peek-gap)) * 2);
-  --stack-h-expanded: calc(var(--card-h) * 3 + var(--card-gap) * 2);
-
+/* Update cards — anchor bottom on col 1, expand upward on hover/focus */
+.home-hero__updates {
+  grid-column: 1 / span 3;
   position: relative;
   align-self: end;
-  z-index: 3;
-  height: var(--stack-h-collapsed);
-  max-height: calc(100dvh - var(--nav-height) - 120px);
-  outline: none;
-  cursor: pointer;
   pointer-events: auto;
-  transition: height var(--stack-dur) var(--stack-ease);
 }
 
-.home-hero__stack:focus-visible {
-  outline: 1px solid var(--color-neutral-white);
-  outline-offset: 4px;
+/* Base stack container — height matches the collapsed stack so nothing overflows */
+.home-hero__stack {
+  --card-h: 120px;
+  --card-w: 320px;
+  --peek: 16px;
+  --peek-gap: 8px;
+  --card-gap: 8px;
+  --stack-h-collapsed: calc(var(--card-h) + var(--peek) * 2 + var(--peek-gap) * 2);
+  --stack-h-expanded: calc(var(--card-h) * 3 + var(--card-gap) * 2);
+  position: relative;
+  width: 100%;
+  max-width: var(--card-w);
+  height: var(--stack-h-collapsed);
+  transition: height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .home-hero__card {
@@ -84,19 +86,16 @@
   width: 100%;
   height: var(--card-h);
   background: var(--color-neutral-white);
-  border: 0;
-  box-shadow: 0 1px 2px rgba(27, 23, 28, 0.06), 0 8px 24px rgba(27, 23, 28, 0.12);
+  border: 1px solid var(--color-neutral-gray-light);
   overflow: hidden;
-  border-radius: 0;
-  transition:
-    top var(--stack-dur) var(--stack-ease),
-    height var(--stack-dur) var(--stack-ease),
-    left var(--stack-dur) var(--stack-ease),
-    width var(--stack-dur) var(--stack-ease),
-    box-shadow var(--stack-dur) var(--stack-ease);
+  box-shadow: 0 8px 24px rgba(27, 23, 28, 0.18);
+  transition: top 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.25s ease;
+  pointer-events: auto;
 }
 
-.home-hero__card--linked[data-offset="0"],
 .home-hero__card--interactive[data-offset="0"] {
   cursor: pointer;
 }
@@ -168,14 +167,14 @@
 }
 
 /* Expanded — grow upward */
-.home-hero__stack:hover,
-.home-hero__stack:focus-within {
+.home-hero__stack:not(.is-closed):hover,
+.home-hero__stack:not(.is-closed):focus-within {
   height: var(--stack-h-expanded);
   cursor: default;
 }
 
-.home-hero__stack:hover .home-hero__card,
-.home-hero__stack:focus-within .home-hero__card {
+.home-hero__stack:not(.is-closed):hover .home-hero__card,
+.home-hero__stack:not(.is-closed):focus-within .home-hero__card {
   left: 0;
   width: 100%;
   height: var(--card-h);
@@ -184,24 +183,60 @@
   pointer-events: auto;
 }
 
-.home-hero__stack:hover .home-hero__card[data-offset="0"],
-.home-hero__stack:focus-within .home-hero__card[data-offset="0"] {
+.home-hero__stack:not(.is-closed):hover .home-hero__card[data-offset="0"],
+.home-hero__stack:not(.is-closed):focus-within .home-hero__card[data-offset="0"] {
   top: 0;
 }
 
-.home-hero__stack:hover .home-hero__card[data-offset="1"],
-.home-hero__stack:focus-within .home-hero__card[data-offset="1"] {
+.home-hero__stack:not(.is-closed):hover .home-hero__card[data-offset="1"],
+.home-hero__stack:not(.is-closed):focus-within .home-hero__card[data-offset="1"] {
   top: calc(var(--card-h) + var(--card-gap));
 }
 
-.home-hero__stack:hover .home-hero__card[data-offset="2"],
-.home-hero__stack:focus-within .home-hero__card[data-offset="2"] {
+.home-hero__stack:not(.is-closed):hover .home-hero__card[data-offset="2"],
+.home-hero__stack:not(.is-closed):focus-within .home-hero__card[data-offset="2"] {
   top: calc(var(--card-h) * 2 + var(--card-gap) * 2);
 }
 
-.home-hero__stack:hover .home-hero__card .home-hero__card-inner,
-.home-hero__stack:focus-within .home-hero__card .home-hero__card-inner {
+.home-hero__stack:not(.is-closed):hover .home-hero__card .home-hero__card-inner,
+.home-hero__stack:not(.is-closed):focus-within .home-hero__card .home-hero__card-inner {
   opacity: 1;
+}
+
+/* Close button — only reachable/visible once expanded; covered by the
+   :not(.is-closed) guards above so clicking it forces a full collapse
+   instead of fighting the hover/focus-within state that opened it. */
+.home-hero__stack-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 4;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.home-hero__stack:not(.is-closed):hover .home-hero__stack-close,
+.home-hero__stack:not(.is-closed):focus-within .home-hero__stack-close {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.home-hero__stack:not(.is-closed):hover .home-hero__stack-close:hover {
+  background: var(--color-neutral-white);
+  opacity: 0.7;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -270,114 +305,90 @@
   background: var(--color-neutral-white);
 }
 
-/* Centered at the bottom of the hero, matching the artwork page's hero
-   dots — a standalone overlay rather than nested in .home-hero__meta. */
-.home-hero__dots--centered {
-  position: absolute;
-  left: 50%;
-  bottom: 24px;
-  transform: translateX(-50%);
-  z-index: 3;
-  justify-content: center;
-}
-
-/* Prev/next — /icons/arrow-switch.svg, same as the artwork page's hero
-   nav (Detail.css .detail__hero-nav) for consistency. */
-.home-hero__nav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 3;
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  cursor: pointer;
-  padding: 14px 18px;
-  display: grid;
-  place-items: center;
-  transition: background 0.2s ease;
-}
-
-.home-hero__nav img {
-  width: 18px;
-  height: 24px;
-}
-
-.home-hero__nav--next img {
-  transform: scaleX(-1);
-}
-
-.home-hero__nav:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.home-hero__nav--prev {
-  left: var(--grid-margin);
-}
-
-.home-hero__nav--next {
-  right: var(--grid-margin);
-}
-
-/* —— Sections —— */
+/* Sections */
 .home-section {
-  padding-block: 81px 72px;
+  padding-block: var(--spacing-5xl);
+  border-top: 1px solid var(--color-neutral-gray-light);
 }
 
-.home-edition__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
+.home-section--flush-top {
+  border-top: 0;
 }
 
-.home-edition__body .fig-body + .fig-body {
-  margin-top: var(--spacing-md);
-}
-
-/* Expands in place instead of opening a modal — height is animated via GSAP
-   from Home.tsx; this just establishes the clipped starting state. */
-.home-edition__more {
-  height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.home-edition__more .fig-body:first-child {
-  margin-top: var(--spacing-md);
-}
-
-.home-text-btn {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin-top: var(--spacing-md);
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  font-style: italic;
-  color: var(--color-text-secondary);
-  width: fit-content;
-  display: inline-block;
-  text-decoration: none;
-  cursor: pointer;
-  transition: color 0.2s ease, opacity 0.2s ease;
-}
-
-.home-text-btn:hover {
-  color: var(--color-text-primary);
-}
-
-/* Sensing */
+/* Sensing Grounds */
 .home-sensing {
-  --sensing-h: clamp(220px, 25vw, 360px);
-  padding-top: 0;
+  --sensing-h: min(720px, 62vh);
+  --title-stack-h: 70px;
 }
 
-.home-sensing__row {
-  position: relative;
+.home-sensing__top {
   align-items: start;
 }
 
+/* Col 1-3 rail — right-aligned, height locked to title stack so the gap below is
+   shared cleanly between the two top-row blocks. */
+.home-sensing__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  min-height: var(--title-stack-h);
+}
+
+.home-sensing__title {
+  margin: 0;
+  text-align: right;
+}
+
+.home-sensing__edition {
+  margin: 0;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 400;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+/* Col 4-9 intro — height matches rail so the rule below aligns */
+.home-sensing__intro {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: var(--title-stack-h);
+}
+
+.home-sensing__intro p {
+  margin: 0;
+}
+
+/* Col 10-12 peek image */
+.home-sensing__peek {
+  grid-column: 10 / span 3;
+  width: 100%;
+  height: var(--sensing-h);
+  background: var(--color-neutral-gray-mid);
+  overflow: hidden;
+}
+
+.home-sensing__peek img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-width: none;
+  display: block;
+}
+
+/* Bottom row — rail links on col 1-3, scroller on col 4-12 */
+.home-sensing__bottom {
+  margin-top: 40px;
+  align-items: start;
+}
+
+/* No align-items override (default stretch) — matches .home-sensing__links,
+   so each link's box spans the full rail width and the hover underline
+   (inset-inline:0 on its child span) reveals across that full width instead
+   of shrinking to just the word's own text width. */
 .home-sensing__links {
   display: flex;
   flex-direction: column;
@@ -385,18 +396,14 @@
   font-size: var(--type-subtitle-size);
 }
 
-.home-sensing__links button {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  font: inherit;
+.home-sensing__links a {
+  padding-bottom: 4px;
   color: var(--color-text-primary);
-  cursor: pointer;
-  text-align: inherit;
+  text-align: right;
 }
 
-/* Contained (no bleed) auto-scrolling image strip — cols 4-12. The track is
-   double-wide (two copies of the image list back to back) and translated by
+/* Infinite horizontal image scroller (cols 4-12).
+   The inner track holds two copies of the image list and is translated by
    -50% on a linear infinite loop, so it always stays within this box. */
 .home-sensing__scroll {
   height: var(--sensing-h);
@@ -469,7 +476,8 @@
   font-size: var(--type-subtitle-size);
 }
 
-.home-programmes__rail button {
+.home-programmes__rail button,
+.home-programmes__rail a {
   border: 0;
   background: transparent;
   padding: 0 0 4px;
@@ -478,6 +486,22 @@
   width: 100%;
   color: var(--color-text-primary);
   cursor: pointer;
+  text-decoration: none;
+}
+
+/* Flex row (not fig-sub-3's equal-fr grid) so each thumb's width can be
+   driven precisely in pixels by the hover-expand GSAP tween above. */
+.home-programmes__thumbs {
+  display: flex;
+  gap: var(--grid-gutter);
+}
+
+.home-programmes__thumbs a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
 .home-programmes__thumbs img {
@@ -578,6 +602,7 @@
 .home-about__block {
   margin-bottom: var(--spacing-5xl);
   align-items: start;
+  scroll-margin-top: calc(var(--nav-height) + 12px);
 }
 
 .home-about__logo-kbf {
@@ -604,6 +629,7 @@
 
 .home-about__team {
   margin-top: 48px;
+  scroll-margin-top: calc(var(--nav-height) + 12px);
 }
 
 .home-about__team-cols {
@@ -660,6 +686,14 @@
 
   .home-sensing__peek {
     display: none;
+  }
+
+  .home-programmes__thumbs {
+    flex-wrap: wrap;
+  }
+
+  .home-programmes__thumbs a {
+    flex: 1 1 calc(50% - 10px);
   }
 
   .home-press__featured-img {

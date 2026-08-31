@@ -5,28 +5,34 @@ type Props = {
   item: CanvasItem;
   dimmed?: boolean;
   onSelect: (item: CanvasItem, el: HTMLButtonElement) => void;
+  onHoverChange?: (id: string | null) => void;
 };
 
-export function CanvasTile({ item, dimmed, onSelect }: Props) {
+export function CanvasTile({ item, dimmed, onSelect, onHoverChange }: Props) {
   return (
     <button
       type="button"
-      className={`canvas-tile canvas-tile--${item.kind} ${dimmed ? "is-dimmed" : ""}`}
+      className={`canvas-tile${dimmed ? " is-dimmed" : ""}`}
       style={{
         width: item.width,
         height: item.height,
-        transform: `translate3d(${item.x}px, ${item.y}px, 0)`,
+        left: item.x,
+        top: item.y,
       }}
-      aria-label={`${item.name} (${item.kind})`}
+      data-id={item.id}
+      data-kind={item.kind}
       onClick={(e) => onSelect(item, e.currentTarget)}
+      onMouseEnter={() => onHoverChange?.(item.id)}
+      onMouseLeave={() => onHoverChange?.(null)}
     >
       {item.image ? (
         <img
-          src={item.image}
-          alt=""
-          loading="lazy"
-          decoding="async"
           className="canvas-tile__media"
+          src={item.image}
+          alt={item.name}
+          loading="lazy"
+          draggable={false}
+          referrerPolicy="no-referrer"
         />
       ) : (
         <div className="canvas-tile__media canvas-tile__media--empty" aria-hidden />

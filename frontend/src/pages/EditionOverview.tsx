@@ -111,6 +111,7 @@ export function EditionOverview() {
   const yearIds = catalogues.map((row) => row.years);
   const yearIndex = yearIds.indexOf(yearId);
   const nextId = yearIndex > 0 ? yearIds[yearIndex - 1] : fallback.nextId;
+  const prevId = yearIndex >= 0 && yearIndex < yearIds.length - 1 ? yearIds[yearIndex + 1] : fallback.prevId;
   const intro = catalogue.overview
     ? catalogue.overview.split("\n\n").filter(Boolean)
     : fallback.intro;
@@ -139,6 +140,7 @@ export function EditionOverview() {
     heroImages,
     galleryImages,
     nextId,
+    prevId,
     subtitle: fallback.subtitle,
   };
   const subtitleLines = isPreviousEdition
@@ -312,7 +314,7 @@ export function EditionOverview() {
 
       {!isPreviousEdition ? (
         <div className="fig-grid edition-overview__section">
-          <p className="fig-label fig-label--sub edition-overview__reveal">CATALOGUE</p>
+          <p className="fig-label fig-subheading edition-overview__reveal">CATALOGUE</p>
           <nav className="fig-c4-12 edition-overview__links edition-overview__reveal">
             <Link to={`/editions/${yearId}/curators`} className="fig-subheading">
               CURATORS
@@ -336,14 +338,14 @@ export function EditionOverview() {
 
       {edition.team.length ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">THE TEAM</h2>
+          <h2 className="fig-label fig-subheading edition-overview__reveal">THE TEAM</h2>
           <div className="fig-c4-12 edition-overview__reveal">
             <TeamGrid team={edition.team} highlight={highlight} />
           </div>
         </div>
       ) : catalogue.teamBody ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">THE TEAM</h2>
+          <h2 className="fig-label fig-subheading edition-overview__reveal">THE TEAM</h2>
           <div
             className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal"
           >
@@ -354,7 +356,7 @@ export function EditionOverview() {
 
       {edition.institutions.length ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <h2 className="fig-label fig-subheading edition-overview__reveal">
             PARTICIPATING INSTITUTIONS
           </h2>
           {isPreviousEdition ? (
@@ -377,23 +379,33 @@ export function EditionOverview() {
         </div>
       ) : null}
 
-      {edition.nextId ? (
+      {edition.prevId || edition.nextId ? (
         <div className="fig-grid edition-overview__nav">
-          {isPreviousEdition ? (
-            <CtaLink
-              className="fig-cta-end"
-              to={`/editions/${edition.nextId}`}
-              lines={["Students' Biennale", nextLabel]}
-              spacing={["0.1em", "0.1em"]}
-              variant="next"
-            />
-          ) : (
-            <CtaLink
-              className="fig-cta-end"
-              to={`/editions/${edition.nextId}`}
-              lines={["Next", "Edition"]}
-            />
-          )}
+          {edition.prevId ? (
+            <Link
+              to={`/editions/${edition.prevId}`}
+              className="edition-overview__back fig-subheading edition-overview__reveal"
+            >
+              BACK
+            </Link>
+          ) : null}
+          {edition.nextId ? (
+            isPreviousEdition ? (
+              <CtaLink
+                className="fig-cta-end"
+                to={`/editions/${edition.nextId}`}
+                lines={["Students' Biennale", nextLabel]}
+                spacing={["0.1em", "0.1em"]}
+                variant="next"
+              />
+            ) : (
+              <CtaLink
+                className="fig-cta-end"
+                to={`/editions/${edition.nextId}`}
+                lines={["Next", "Edition"]}
+              />
+            )
+          ) : null}
         </div>
       ) : null}
     </div>

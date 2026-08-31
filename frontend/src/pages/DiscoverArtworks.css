@@ -15,12 +15,13 @@
   right: 0;
   z-index: 5;
   flex: none;
-  padding: 8px var(--grid-margin) 16px;
+  padding: 8px var(--grid-margin) 64px;
   border-bottom: 0;
   background: linear-gradient(
     to bottom,
     rgba(248, 248, 248, 0.98) 0%,
-    rgba(248, 248, 248, 0.9) 65%,
+    rgba(248, 248, 248, 0.94) 45%,
+    rgba(248, 248, 248, 0.7) 70%,
     transparent 100%
   );
   pointer-events: none;
@@ -38,7 +39,7 @@
   width: 100%;
   border: 0;
   background: transparent;
-  padding: 14px 72px 14px 0;
+  padding: 14px 72px 8px 0;
   font: inherit;
   font-size: 18px;
   outline: none;

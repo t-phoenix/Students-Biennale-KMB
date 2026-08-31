@@ -55,6 +55,8 @@ export type EditionOverviewData = {
   galleryImages: string[];
   /** Year id of the edition that follows this one, for the trailing CTA. */
   nextId?: string;
+  /** Year id of the older edition that precedes this one, for the back link. */
+  prevId?: string;
 };
 
 /**
@@ -339,8 +341,10 @@ export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): Se
 
 export function getEditionOverview(yearId: string): EditionOverviewData {
   const index = ALL_EDITIONS.indexOf(yearId);
-  // Editions are listed newest-first, so the "next" edition is the previous index.
+  // Editions are listed newest-first, so the "next" (newer) edition is index - 1,
+  // and the "previous" (older) edition is index + 1.
   const nextId = index > 0 ? ALL_EDITIONS[index - 1] : undefined;
+  const prevId = index >= 0 && index < ALL_EDITIONS.length - 1 ? ALL_EDITIONS[index + 1] : undefined;
   const isLatest = yearId === LATEST_EDITION.id;
   const isInaugural = yearId === "2014-15";
 
@@ -356,6 +360,7 @@ export function getEditionOverview(yearId: string): EditionOverviewData {
       heroImages: ["/editions/2014-15/hero.jpg"],
       galleryImages: EDITION_2014_GALLERY,
       nextId,
+      prevId,
     };
   }
 
@@ -372,5 +377,6 @@ export function getEditionOverview(yearId: string): EditionOverviewData {
     institutions: isLatest ? institutionsForLatest() : [],
     galleryImages: isLatest ? [] : [],
     nextId,
+    prevId,
   };
 }

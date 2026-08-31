@@ -1,10 +1,3 @@
-/* Tagged search highlight (from ?highlight= query param) */
-.detail mark {
-  background: color-mix(in srgb, var(--color-text-primary) 18%, transparent);
-  color: inherit;
-  padding: 0 0.05em;
-}
-
 /* Detail pages — Artwork 1:569, Curators 1:2484, Venues 1:1966.
    Horizontal placement comes entirely from .fig-grid spans; this file only owns
    vertical rhythm and the look of each block. */
@@ -12,6 +5,13 @@
 .detail {
   width: 100%;
   padding-bottom: 80px;
+}
+
+/* Tagged search highlight (from ?highlight= query param) */
+.detail mark {
+  background: color-mix(in srgb, var(--color-text-primary) 18%, transparent);
+  color: inherit;
+  padding: 0 0.05em;
 }
 
 .detail__section {
@@ -182,11 +182,13 @@
   text-transform: uppercase;
 }
 
+/* Regular weight per client feedback (was --type-title-weight, 600) —
+   same size as the title, just not as heavy. */
 .detail__year {
   text-align: right;
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
+  font-weight: 400;
 }
 
 /* Stacked label-over-value rows with a rule between, spanning cols 4-12
@@ -280,31 +282,37 @@
 
 /* Name + bio flow together as one block so the bio sits right under the name,
    instead of being pushed down to a second implicit grid row by the portrait's
-   height. */
+   height. align-self:end bottom-anchors the whole block to the portrait's
+   bottom edge (the row's tallest item) per client feedback — a grid-item
+   property, independent of this element's own internal flex layout. */
 .detail__curator-copy {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  align-self: end;
 }
 
 .detail__curator-copy .detail__title {
   margin: 0;
 }
 
+/* Underline removed and the whole block unified to one colour (secondary
+   gray) per client feedback — was black h2 + gray p + black assistant
+   label, an unintentional three-tone mix. */
 .detail__zone h2 {
   margin: 0;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   font-weight: 400;
   text-transform: uppercase;
-  border-bottom: 1px solid var(--color-text-primary);
-  padding-bottom: 1px;
+  color: var(--color-text-secondary);
 }
 
 .detail__zone p {
   margin: 22px 0 0;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
+  color: var(--color-text-secondary);
 }
 
 .detail__zone-assistant {
@@ -315,22 +323,35 @@
 }
 
 .detail__zone-assistant span {
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
   margin-bottom: 4px;
 }
 
+/* Regular weight per client feedback (was --type-title-weight, 600). */
 .detail__note-title {
   margin: 0 0 24px;
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
+  font-weight: 400;
   text-transform: uppercase;
 }
 
+/* Wider gutter above (was 20px) between the Artists grid and this line,
+   per client feedback. */
 .detail__curated-by {
-  margin: 20px 0 0;
+  margin: 40px 0 0;
   font-size: var(--type-body-size);
   color: var(--color-text-secondary);
+}
+
+.detail__curated-by a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.detail__curated-by a:hover {
+  color: var(--color-text-primary);
 }
 
 /* Venue hero spans cols 1-7 (762 at 1440); info sits on cols 8-12. */
@@ -383,6 +404,12 @@
 .detail__venue-links a {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* More room between rows than fig-sub-3's shared 20px gap — client feedback
+   wanted space between one card's text and the next row's image. */
+.fig-sub-3.detail__cards {
+  row-gap: 48px;
 }
 
 .detail__cards a {

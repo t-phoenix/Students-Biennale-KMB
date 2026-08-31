@@ -290,11 +290,10 @@ function packMasonry(
     const tileW = clamp(Math.round(colW * scale), absMinW, Math.round(colW));
     const tileH = clamp(Math.round(tileW / aspect), minTileH, maxTileH);
 
-    // Scatter smaller tiles anywhere across their column's slack instead of
-    // always centering — that centered look is what read as "grid" before.
+    // Center each tile horizontally in its column per client feedback
+    // (column width stays jittered; tiles within a column share a center).
     const slack = colW - tileW;
-    const posT = (pseudoRandom(n * 5 + col * 11) + 1) / 2;
-    const xInCol = Math.round(slack * posT);
+    const xInCol = Math.round(slack / 2);
 
     // Irregular spacing above this tile — never the same value twice in a row.
     const gapT = (pseudoRandom(n * 13 + col * 6) + 1) / 2;
@@ -333,7 +332,7 @@ export type CanvasPack = {
 const packCache = new Map<string, CanvasPack>();
 
 /** Bust layout cache after packing rules change (dev / HMR safety). */
-const PACK_VERSION = "artworks-only-v11-tighter-gap";
+const PACK_VERSION = "artworks-only-v12-centered-columns";
 
 export function getCanvasPack(
   tier: CanvasTier = "desktop",

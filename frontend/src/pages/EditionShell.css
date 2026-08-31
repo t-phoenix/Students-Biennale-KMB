@@ -38,7 +38,7 @@
   cursor: pointer;
   font-size: var(--type-subtitle-size);
   font-weight: 500;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
   text-transform: uppercase;
   list-style: none;
   margin-bottom: 20px;

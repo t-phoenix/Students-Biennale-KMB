@@ -38,14 +38,34 @@
   transition: opacity 0.2s ease;
 }
 
-/* "Half open" row — the one workshop with real content (thumbnail + a
-   description snippet) reads larger than the plain single-line rows. */
+/* "Half open" row — the one workshop with real content shows a thumbnail
+   and description snippet only while hovered/focused (matches the same
+   preview treatment on Programmes.tsx); at rest it's a plain single-line
+   row like the others. */
 .past-workshops__list li.is-open a {
+  padding: 18px 0;
+  transition: opacity 0.2s ease, align-items 0.2s ease, padding 0.2s ease;
+}
+
+.past-workshops__list li.is-open a:hover,
+.past-workshops__list li.is-open a:focus-within {
   align-items: flex-start;
   padding: 24px 0;
 }
 
-.past-workshops__list a:hover {
+.past-workshops__list li.is-open .past-workshops__thumb,
+.past-workshops__list li.is-open .past-workshops__snippet {
+  display: none;
+}
+
+.past-workshops__list li.is-open a:hover .past-workshops__thumb,
+.past-workshops__list li.is-open a:hover .past-workshops__snippet,
+.past-workshops__list li.is-open a:focus-within .past-workshops__thumb,
+.past-workshops__list li.is-open a:focus-within .past-workshops__snippet {
+  display: block;
+}
+
+.past-workshops__list li:not(.is-open) a:hover {
   opacity: 0.65;
 }
 

@@ -146,13 +146,36 @@
 }
 
 /* "Half open" — the workshop with real content shows a thumbnail and a
-   description snippet; the rest stay plain single-line rows. */
+   description snippet, but only while hovered/focused ("half open when
+   only cursor is top of the content" per client feedback); at rest it
+   reads as a plain single-line row like the others. */
 .programmes__completed li.is-open a {
+  align-items: center;
+  padding: 18px 0;
+  transition: opacity 0.2s ease, align-items 0.2s ease, padding 0.2s ease;
+}
+
+.programmes__completed li.is-open a:hover,
+.programmes__completed li.is-open a:focus-within {
   align-items: flex-start;
   padding: 24px 0;
 }
 
-.programmes__completed a:hover {
+.programmes__completed li.is-open .programmes__past-thumb,
+.programmes__completed li.is-open .programmes__past-snippet {
+  display: none;
+}
+
+.programmes__completed li.is-open a:hover .programmes__past-thumb,
+.programmes__completed li.is-open a:hover .programmes__past-snippet,
+.programmes__completed li.is-open a:focus-within .programmes__past-thumb,
+.programmes__completed li.is-open a:focus-within .programmes__past-snippet {
+  display: block;
+}
+
+/* Excludes .is-open — its hover reveals content instead of dimming, and
+   doing both at once read as contradictory. */
+.programmes__completed li:not(.is-open) a:hover {
   opacity: 0.65;
 }
 
@@ -206,6 +229,33 @@
 
 .programmes__more {
   margin-top: 60px;
+}
+
+/* "View More" for Past Workshops expands the list in place — a down-arrow
+   trigger, not a link to a separate page (per client feedback). */
+.programmes__more--expand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: var(--type-caption-size);
+  letter-spacing: 0.135em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--color-text-primary);
+}
+
+.programmes__more--expand:hover {
+  opacity: 0.7;
+}
+
+.programmes__more--expand img {
+  width: 10px;
+  height: 14px;
+  transform: rotate(-90deg);
 }
 
 .programmes__awards {

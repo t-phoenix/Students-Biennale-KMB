@@ -129,7 +129,7 @@ export function ResidenciesBand({ slides }: Props) {
           </dl>
           {slide.copy ? <p>{slide.copy}</p> : null}
           <Link to={slide.moreHref} className="residencies-band__more">
-            Learn more...
+            Read more...
           </Link>
         </div>
       </div>

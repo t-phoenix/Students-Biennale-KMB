@@ -16,7 +16,9 @@
 
 /* No inline padding — ArtworkDetailBody's own .fig-grid sections supply their
    horizontal margin, and its hero needs to bleed edge-to-edge within this
-   sheet the same way it does on the real artwork page. */
+   sheet the same way it does on the real artwork page. No top padding either
+   (was padding-block:40px on both sides) — a real page's hero starts flush
+   at the very top, and this should match. */
 .scholar-spotlight__sheet {
   position: fixed;
   top: var(--header-h, 72px);
@@ -27,17 +29,31 @@
   background: var(--color-neutral-white);
   color: var(--color-text-primary);
   overflow: auto;
-  padding-block: 40px;
+  padding-bottom: 40px;
   will-change: transform, opacity;
 }
 
+/* ArtworkDetailBody's hero is built for a full page (~100dvh) — inside a
+   modal that's already viewport-sized, that meant scrolling almost a full
+   screen before any real content (title, venue, materials) was visible.
+   Capped much shorter here so the spotlight reads as a spotlight, not
+   another full page. */
+.scholar-spotlight__sheet .detail__hero--cover {
+  height: min(480px, 55vh);
+}
+
 .scholar-spotlight__back {
+  position: absolute;
+  top: 16px;
+  left: var(--page-pad);
+  z-index: 3;
   border: 0;
-  background: transparent;
-  padding: 0;
-  margin: 0 var(--page-pad) 24px;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 8px 14px;
+  margin: 0;
   font-size: var(--type-caption-size);
   letter-spacing: 0.08em;
+  color: var(--color-neutral-white);
   cursor: pointer;
 }
 

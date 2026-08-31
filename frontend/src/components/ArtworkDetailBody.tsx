@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { artworkImages, curatorsForArtwork, type ArtworkCard } from "../data/site";
+import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { GalleryLightbox } from "./GalleryLightbox";
 import { HighlightText } from "./HighlightText";
 import "../pages/Detail.css";
@@ -16,6 +18,7 @@ type Props = {
 export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
 
   const slides = artworkImages(a);
 
@@ -29,9 +32,37 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
   const goNext = () => setHeroIndex((i) => (i + 1) % slides.length);
 
+  // Auto-advance the hero on a timer, same pace and pause-on-interact
+  // pattern as the Home hero, per client feedback ("auto-advance on a
+  // timer" — confirmed, no specific interval given).
+  useGSAP(
+    () => {
+      const hero = heroRef.current;
+      if (!hero || slides.length <= 1 || prefersReducedMotion()) return;
+      const tl = gsap.timeline({ repeat: -1 });
+      slides.forEach((_, i) => {
+        tl.to({}, { duration: 4 }).call(() => setHeroIndex((i + 1) % slides.length));
+      });
+      const pause = () => tl.pause();
+      const play = () => tl.play();
+      hero.addEventListener("pointerenter", pause);
+      hero.addEventListener("pointerleave", play);
+      hero.addEventListener("focusin", pause);
+      hero.addEventListener("focusout", play);
+      return () => {
+        hero.removeEventListener("pointerenter", pause);
+        hero.removeEventListener("pointerleave", play);
+        hero.removeEventListener("focusin", pause);
+        hero.removeEventListener("focusout", play);
+        tl.kill();
+      };
+    },
+    { dependencies: [a.id, slides.length], scope: heroRef }
+  );
+
   return (
     <div key={a.id}>
-      <div className="detail__hero detail__hero--cover detail-reveal">
+      <div ref={heroRef} className="detail__hero detail__hero--cover detail-reveal">
         {slide ? (
           <img
             key={slide}
@@ -110,10 +141,16 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
           <div>
             <dt>Materials &amp; Dimensions :</dt>
             <dd>
-              {a.materials.map((m, i) => (
-                <p key={`${i}-${m}`}>{m}</p>
-              ))}
-              {a.dimensions ? <p>{a.dimensions}</p> : null}
+              {a.materials.map((m, i) =>
+                i === a.materials.length - 1 && a.dimensions ? (
+                  <p key={`${i}-${m}`}>
+                    {m} | {a.dimensions}
+                  </p>
+                ) : (
+                  <p key={`${i}-${m}`}>{m}</p>
+                )
+              )}
+              {!a.materials.length && a.dimensions ? <p>{a.dimensions}</p> : null}
             </dd>
           </div>
         </dl>
@@ -145,7 +182,12 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
         {curated.length ? (
           <p className="fig-c4-6 detail__curated-by detail-reveal">
             <strong>Curated By</strong>
-            {curated.map((c) => c.name).join(" and ")}
+            {curated.map((c, i) => (
+              <span key={c.id}>
+                {i > 0 ? " and " : ""}
+                <Link to={`/editions/2025-26/curators/${c.id}`}>{c.name}</Link>
+              </span>
+            ))}
           </p>
         ) : null}
       </div>

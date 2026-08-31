@@ -23,9 +23,12 @@ const DRAG_THRESHOLD = 5;
 
 /** How far a released flick glides, as a multiplier on its exit velocity. */
 const THROW_DISTANCE_MULT = 14;
-/** Idle time before the canvas begins its organic zoom-out. */
-const IDLE_ZOOM_DELAY = 1000;
-const ZOOM_OUT_SCALE = 0.86;
+/** User-controlled zoom range — Ctrl+wheel/trackpad-pinch on desktop, real
+ *  two-finger pinch on touch. */
+const MIN_ZOOM = 0.6;
+const MAX_ZOOM = 1.8;
+/** Wheel-delta-to-zoom sensitivity for Ctrl+scroll / trackpad pinch. */
+const WHEEL_ZOOM_SPEED = 0.012;
 
 function wrap(n: number, size: number) {
   return ((n % size) + size) % size;
@@ -103,45 +106,38 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   const ambient = useRef({ vx: 0, vy: 0 });
   const ambientWanderTimeout = useRef<number | undefined>(undefined);
 
-  // Idle-gated organic zoom-out, with a fast smooth reset on any interaction.
+  // User-controlled zoom — Ctrl+wheel/trackpad-pinch (desktop) or a real
+  // two-finger pinch (touch). Persists at whatever level the user sets it to;
+  // panning/dragging no longer resets it (that was specific to the old
+  // idle-triggered auto zoom, which this replaces).
   const zoomScale = useRef({ value: 1 });
   const zoomTween = useRef<gsap.core.Tween | null>(null);
-  const zoomedOut = useRef(false);
-  const lastInteractionAt = useRef(performance.now());
 
   const applyZoom = useCallback(() => {
     const el = zoomRef.current;
     if (el) el.style.transform = `scale(${zoomScale.current.value})`;
   }, []);
 
-  const resetZoom = useCallback(() => {
-    zoomedOut.current = false;
-    zoomTween.current?.kill();
-    zoomTween.current = gsap.to(zoomScale.current, {
-      value: 1,
-      duration: 0.5,
-      ease: "power2.out",
-      onUpdate: applyZoom,
-    });
-  }, [applyZoom]);
+  const setZoom = useCallback(
+    (value: number, animate = false) => {
+      const next = clamp(value, MIN_ZOOM, MAX_ZOOM);
+      zoomTween.current?.kill();
+      if (animate && !prefersReducedMotion()) {
+        zoomTween.current = gsap.to(zoomScale.current, {
+          value: next,
+          duration: 0.3,
+          ease: "power2.out",
+          onUpdate: applyZoom,
+        });
+      } else {
+        zoomScale.current.value = next;
+        applyZoom();
+      }
+    },
+    [applyZoom]
+  );
 
-  const startZoomOut = useCallback(() => {
-    zoomedOut.current = true;
-    zoomTween.current?.kill();
-    zoomTween.current = gsap.to(zoomScale.current, {
-      value: ZOOM_OUT_SCALE,
-      duration: 3.5,
-      ease: "sine.inOut",
-      onUpdate: applyZoom,
-    });
-  }, [applyZoom]);
-
-  /** Mark a real user interaction — resets the idle-zoom clock and, if the
-   *  canvas is currently zoomed out (or mid-zoom), smoothly snaps it back. */
-  const registerInteraction = useCallback(() => {
-    lastInteractionAt.current = performance.now();
-    if (zoomedOut.current || zoomScale.current.value !== 1) resetZoom();
-  }, [resetZoom]);
+  const pinch = useRef<{ startDist: number; startZoom: number } | null>(null);
 
   const q = query.trim().toLowerCase();
   const matches = useCallback(
@@ -156,6 +152,18 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     },
     [q]
   );
+
+  // Direct DOM class toggling (not React state) so hovering doesn't re-render
+  // every tile on the canvas — this can be a large tile count and re-rendering
+  // all of them per mouse move would be the kind of jank GSAP everywhere else
+  // in this component is specifically built to avoid.
+  const handleTileHover = useCallback((id: string | null) => {
+    const root = rootRef.current;
+    if (!root) return;
+    root.querySelectorAll<HTMLElement>(".canvas-tile").forEach((tile) => {
+      tile.classList.toggle("is-hover-dimmed", id !== null && tile.dataset.id !== id);
+    });
+  }, []);
 
   const applyTransform = useCallback(() => {
     const world = worldRef.current;
@@ -179,11 +187,15 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
 
   // The pan offset is only meaningful relative to the current seed size —
   // re-centre when a resize crosses a tier boundary (seedW/colPeriods change).
+  // Centered horizontally so the viewport opens on the middle of one repeat
+  // period (equal random-jittered field on both sides) rather than an
+  // arbitrary small pan from the period's edge.
   useEffect(() => {
-    offset.current = { x: -40, y: -40 };
+    const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
+    offset.current = { x: -(seedW - viewportW) / 2, y: -40 };
     vel.current = { x: 0, y: 0 };
     applyTransform();
-  }, [applyTransform]);
+  }, [applyTransform, seedW]);
 
   // Ambient wander: pick a new slow drift target on a randomized cadence,
   // easing to it rather than snapping — that's what reads as "living" rather
@@ -215,22 +227,12 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
         offset.current.x += ambient.current.vx / 60;
         offset.current.y += ambient.current.vy / 60;
         applyTransform();
-
-        if (!zoomedOut.current && performance.now() - lastInteractionAt.current > IDLE_ZOOM_DELAY) {
-          startZoomOut();
-        }
       }
       raf.current = requestAnimationFrame(step);
     };
     raf.current = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf.current);
-  }, [applyTransform, paused, startZoomOut]);
-
-  // Coming back from a paused state (e.g. closing the expand overlay)
-  // shouldn't immediately trigger a zoom-out — give the user a fresh window.
-  useEffect(() => {
-    if (!paused) lastInteractionAt.current = performance.now();
-  }, [paused]);
+  }, [applyTransform, paused]);
 
   useEffect(() => {
     if (!q) return;
@@ -249,7 +251,6 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
       glideTween.current?.kill();
-      registerInteraction();
       dragging.current = true;
       didDrag.current = false;
       suppressClick.current = false;
@@ -316,12 +317,46 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      // Browsers report trackpad pinch as wheel events with ctrlKey set —
+      // this one branch covers desktop Ctrl+scroll and trackpad pinch alike.
+      if (e.ctrlKey) {
+        setZoom(zoomScale.current.value - e.deltaY * WHEEL_ZOOM_SPEED);
+        return;
+      }
       glideTween.current?.kill();
-      registerInteraction();
       offset.current.x -= e.deltaX;
       offset.current.y -= e.deltaY;
       vel.current = { x: 0, y: 0 };
       applyTransform();
+    };
+
+    // Two-finger touch pinch. Touch events fire alongside Pointer Events for
+    // the same gesture, so a second finger touching down cancels any
+    // single-pointer drag already in progress to avoid the two paths fighting
+    // over `offset`.
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return;
+      dragging.current = false;
+      pointerId.current = null;
+      root.classList.remove("is-grabbing");
+      const [t1, t2] = [e.touches[0], e.touches[1]];
+      pinch.current = {
+        startDist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
+        startZoom: zoomScale.current.value,
+      };
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length !== 2 || !pinch.current) return;
+      e.preventDefault();
+      const [t1, t2] = [e.touches[0], e.touches[1]];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const ratio = dist / pinch.current.startDist;
+      setZoom(pinch.current.startZoom * ratio);
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length < 2) pinch.current = null;
     };
 
     root.addEventListener("pointerdown", onPointerDown);
@@ -329,6 +364,10 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
     root.addEventListener("wheel", onWheel, { passive: false });
+    root.addEventListener("touchstart", onTouchStart, { passive: true });
+    root.addEventListener("touchmove", onTouchMove, { passive: false });
+    root.addEventListener("touchend", onTouchEnd, { passive: true });
+    root.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
     return () => {
       root.removeEventListener("pointerdown", onPointerDown);
@@ -336,8 +375,12 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
       root.removeEventListener("wheel", onWheel);
+      root.removeEventListener("touchstart", onTouchStart);
+      root.removeEventListener("touchmove", onTouchMove);
+      root.removeEventListener("touchend", onTouchEnd);
+      root.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [applyTransform, registerInteraction]);
+  }, [applyTransform, setZoom]);
 
   // Entrance "whoa" moment — tiles stagger into place from a random order
   // (not a mechanical sweep) while the whole field gently arrives from a
@@ -364,6 +407,18 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
         ease: "power2.out",
         stagger: { each: 0.015, from: "random", amount: 1.1 },
       });
+
+      // Safety net: this tween sets tiles to opacity:0 immediately and
+      // relies on the animation ticking them back up. If anything interrupts
+      // that (a killed/reverted context, a tab that's backgrounded when the
+      // tween would start, etc.) tiles are left permanently invisible — the
+      // whole canvas silently breaks. Force the true end state well after
+      // the animation could possibly still be running, regardless of
+      // whether it actually completed normally.
+      const safety = setTimeout(() => {
+        gsap.set(".canvas-tile", { opacity: 1, scale: 1 });
+      }, 2500);
+      return () => clearTimeout(safety);
     },
     { scope: rootRef, dependencies: [] }
   );
@@ -411,6 +466,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
                         item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriods[col] }}
                         dimmed={Boolean(q) && !matches(item)}
                         onSelect={handleSelect}
+                        onHoverChange={handleTileHover}
                       />
                     ))
                   )}

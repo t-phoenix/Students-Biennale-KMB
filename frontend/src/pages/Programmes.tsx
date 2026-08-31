@@ -12,11 +12,11 @@ export function Programmes() {
   const root = useRef<HTMLDivElement>(null);
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
+  const [expandedPast, setExpandedPast] = useState(false);
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
 
-  const PAST_WORKSHOPS_PREVIEW = 5;
-  const visiblePastWorkshops = pastWorkshops.slice(0, PAST_WORKSHOPS_PREVIEW);
+  const visiblePastWorkshops = expandedPast ? pastWorkshops : pastWorkshops.slice(0, 2);
 
   useGSAP(
     () => {
@@ -125,12 +125,16 @@ export function Programmes() {
             );
           })}
         </ul>
-        <Link to="/programmes/past-workshops" className="fig-cta-end programmes__more">
-          <CtaLink
-            lines={["VIEW", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-          />
-        </Link>
+        {!expandedPast && pastWorkshops.length > 2 ? (
+          <button
+            type="button"
+            className="fig-cta-end programmes__more programmes__more--expand"
+            onClick={() => setExpandedPast(true)}
+          >
+            <img src="/icons/arrow-right.svg" alt="" aria-hidden />
+            <span>VIEW MORE</span>
+          </button>
+        ) : null}
       </section>
 
       {/* Order: International Awards, with Raza Scholarship nested right after
