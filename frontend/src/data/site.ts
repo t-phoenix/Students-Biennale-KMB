@@ -193,19 +193,37 @@ function withNaturalSize(draft: CanvasDraft): CanvasDraft {
 }
 
 function artworkDrafts(artworks: ArtworkCard[]): CanvasDraft[] {
-  return artworks.map((artwork) =>
-    withNaturalSize({
+  return artworks.map((artwork) => {
+    const artistNames = artwork.artists?.map((a) => a.name).join(", ") || "";
+    const institutions = artwork.artists?.map((a) => a.institution).join(", ") || "";
+    const materialsStr = artwork.materials?.join(", ") || "";
+    const searchBlob = [
+      artwork.title,
+      artistNames,
+      institutions,
+      artwork.venue,
+      artwork.year,
+      artwork.medium,
+      materialsStr,
+      artwork.description,
+      artwork.searchText,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return withNaturalSize({
       id: `aw-${artwork.id}`,
       kind: "artwork" as const,
       name: artwork.title,
-      meta: artwork.venue ? `${artwork.venue}${artwork.year ? ` · ${artwork.year}` : ""}` : artwork.year,
+      meta: [artistNames, artwork.venue, artwork.year].filter(Boolean).join(" · ") || artwork.year || "",
       image: artwork.image,
       bio: artwork.description,
-      tags: artwork.searchText,
+      tags: searchBlob,
       imageW: artwork.imageWidth ?? (artwork.image ? 1600 : undefined),
       imageH: artwork.imageHeight ?? (artwork.image ? 1200 : undefined),
-    }),
-  );
+    });
+  });
 }
 
 function canvasBase(artworks?: ArtworkCard[]): CanvasDraft[] {

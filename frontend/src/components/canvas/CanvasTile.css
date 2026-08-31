@@ -14,9 +14,11 @@
   user-select: none;
   container-type: inline-size;
   opacity: 1;
+  filter: grayscale(0%);
   transition: box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.25s ease;
+    opacity 0.3s ease,
+    filter 0.3s ease;
 }
 
 .canvas-tile:hover {
@@ -34,15 +36,28 @@
   }
 }
 
+/* When search query is active:
+   Non-matching items are Black & White (grayscale 100%) and 50% opacity */
 .canvas-tile.is-dimmed {
-  opacity: 0.18;
-  pointer-events: none;
-  box-shadow: none;
+  opacity: 0.5;
+  filter: grayscale(100%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Hovering one tile drops every other tile to 70% opacity — a separate,
-   direct-DOM-driven state (see InfiniteCanvas's handleTileHover) from the
-   search-query dimming above, so the two never fight over one class. */
+.canvas-tile.is-dimmed:hover {
+  opacity: 0.8;
+  filter: grayscale(30%);
+}
+
+/* Matching searched items: full color, full 100% opacity, enhanced elevation */
+.canvas-tile.is-matched {
+  opacity: 1;
+  filter: grayscale(0%);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.26), 0 4px 14px rgba(0, 0, 0, 0.15);
+  z-index: 5;
+}
+
+/* Hovering one tile drops other un-searched tiles slightly */
 .canvas-tile.is-hover-dimmed {
   opacity: 0.7;
 }

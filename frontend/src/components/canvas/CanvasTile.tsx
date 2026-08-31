@@ -4,15 +4,16 @@ import "./CanvasTile.css";
 type Props = {
   item: CanvasItem;
   dimmed?: boolean;
+  highlighted?: boolean;
   onSelect: (item: CanvasItem, el: HTMLButtonElement) => void;
   onHoverChange?: (id: string | null) => void;
 };
 
-export function CanvasTile({ item, dimmed, onSelect, onHoverChange }: Props) {
+export function CanvasTile({ item, dimmed, highlighted, onSelect, onHoverChange }: Props) {
   return (
     <button
       type="button"
-      className={`canvas-tile${dimmed ? " is-dimmed" : ""}`}
+      className={`canvas-tile${dimmed ? " is-dimmed" : ""}${highlighted ? " is-matched" : ""}`}
       style={{
         width: item.width,
         height: item.height,

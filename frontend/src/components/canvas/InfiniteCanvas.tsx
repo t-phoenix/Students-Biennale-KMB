@@ -140,17 +140,25 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   const pinch = useRef<{ startDist: number; startZoom: number } | null>(null);
 
   const q = query.trim().toLowerCase();
+  const queryTokens = useMemo(() => q.split(/\s+/).filter(Boolean), [q]);
+
   const matches = useCallback(
     (item: CanvasItem) => {
-      if (!q) return true;
-      return (
-        item.name.toLowerCase().includes(q) ||
-        item.kind.toLowerCase().includes(q) ||
-        item.meta.toLowerCase().includes(q) ||
-        (item.tags?.includes(q) ?? false)
-      );
+      if (queryTokens.length === 0) return true;
+      const haystack = [
+        item.name,
+        item.kind,
+        item.meta,
+        item.tags,
+        item.bio,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return queryTokens.every((token) => haystack.includes(token));
     },
-    [q]
+    [queryTokens]
   );
 
   // Direct DOM class toggling (not React state) so hovering doesn't re-render
@@ -238,10 +246,24 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     if (!q) return;
     const hit = pool.find(matches);
     if (!hit) return;
-    offset.current.x = -hit.x + window.innerWidth * 0.35;
-    offset.current.y = -hit.y + window.innerHeight * 0.35;
-    vel.current = { x: 0, y: 0 };
-    applyTransform();
+    const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
+    const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
+    const targetX = -hit.x + viewportW * 0.35;
+    const targetY = -hit.y + viewportH * 0.35;
+    glideTween.current?.kill();
+    if (!prefersReducedMotion()) {
+      glideTween.current = gsap.to(offset.current, {
+        x: targetX,
+        y: targetY,
+        duration: 0.8,
+        ease: "power2.out",
+        onUpdate: applyTransform,
+      });
+    } else {
+      offset.current.x = targetX;
+      offset.current.y = targetY;
+      applyTransform();
+    }
   }, [q, pool, matches, applyTransform]);
 
   useEffect(() => {
@@ -465,6 +487,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
                         key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
                         item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriods[col] }}
                         dimmed={Boolean(q) && !matches(item)}
+                        highlighted={Boolean(q) && matches(item)}
                         onSelect={handleSelect}
                         onHoverChange={handleTileHover}
                       />
