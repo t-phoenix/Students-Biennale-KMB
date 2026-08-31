@@ -48,7 +48,7 @@ const NAV: {
   hasDropdown?: boolean;
 }[] = [
   { hash: "editions", label: "EDITIONS", to: "/editions/2025-26/curators", hasDropdown: true },
-  { hash: "programmes", label: "PROGRAMMES", hasDropdown: true },
+  { hash: "programmes", label: "PROGRAMMES", to: "/programmes", hasDropdown: true },
   { hash: "press", label: "PRESS", to: "/press", hasDropdown: false },
   { hash: "about", label: "ABOUT", hasDropdown: true },
 ];
