@@ -271,15 +271,15 @@
   line-height: var(--type-caption-line);
 }
 
-/* Curator portrait — left-aligned with SB logo (col 1 start). */
+/* Curator portrait — right-aligned in the label column, on the 355 line. */
 .detail__portrait {
-  justify-self: start;
+  justify-self: end;
   width: 100%;
-  max-width: 315px;
-  aspect-ratio: 315 / 380;
+  max-width: 295px;
+  aspect-ratio: 295 / 380;
   overflow: hidden;
   background: #e0e0e0;
-  margin-inline-end: 0;
+  margin-inline-end: var(--grid-gutter);
   position: relative;
 }
 
