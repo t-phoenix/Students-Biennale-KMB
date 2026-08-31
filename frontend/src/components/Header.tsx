@@ -11,41 +11,46 @@ import "./Header.css";
 
 type DropdownItem = { label: string; to: string; isCurrent?: boolean };
 
-const NAV: {
-  hash: HomeSectionId;
-  label: string;
-  to?: string;
-  dropdown?: DropdownItem[];
-}[] = [
-  {
-    hash: "editions",
-    label: "EDITIONS",
-    to: "/editions/2025-26/curators",
-    dropdown: [
+const DROPDOWNS: Record<
+  string,
+  { align: "left" | "right"; items: DropdownItem[] }
+> = {
+  editions: {
+    align: "left",
+    items: [
       { label: LATEST_EDITION.id, to: `/editions/${LATEST_EDITION.id}/curators`, isCurrent: true },
-      ...PREVIOUS_EDITIONS.map((year) => ({ label: year, to: `/editions/${year}` })),
+      ...PREVIOUS_EDITIONS.map((year) => ({ label: year.replace("-", "–"), to: `/editions/${year}` })),
     ],
   },
-  {
-    hash: "programmes",
-    label: "PROGRAMMES",
-    dropdown: [
+  programmes: {
+    align: "left",
+    items: [
       { label: "Workshops", to: "/programmes#workshops" },
       { label: "Awards", to: "/programmes#awards" },
       { label: "Residencies", to: "/programmes#residencies" },
     ],
   },
-  { hash: "press", label: "PRESS", to: "/press" },
-  {
-    hash: "about",
-    label: "ABOUT",
-    dropdown: [
+  about: {
+    align: "right",
+    items: [
       { label: "Kochi Biennale Foundation", to: "/#about-kbf" },
       { label: "Students' Biennale", to: "/#about-sb" },
       { label: "SB 2025-26 Team", to: "/#about-team" },
       { label: "Sponsors of SB 2025-26", to: "/#about" },
     ],
   },
+};
+
+const NAV: {
+  hash: HomeSectionId;
+  label: string;
+  to?: string;
+  hasDropdown?: boolean;
+}[] = [
+  { hash: "editions", label: "EDITIONS", to: "/editions/2025-26/curators", hasDropdown: true },
+  { hash: "programmes", label: "PROGRAMMES", hasDropdown: true },
+  { hash: "press", label: "PRESS", to: "/press", hasDropdown: false },
+  { hash: "about", label: "ABOUT", hasDropdown: true },
 ];
 
 export function Header() {
@@ -54,14 +59,13 @@ export function Header() {
   const onHome = location.pathname === "/";
   const [activeSection, setActiveSection] = useState<HomeSectionId | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const [renderedDropdown, setRenderedDropdown] = useState<string | null>(null);
 
   const discoverRef = useRef<HTMLAnchorElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<Record<string, HTMLElement | null>>({});
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
-  const dropdownContentRef = useRef<HTMLDivElement>(null);
+  const slotRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isOpenRef = useRef(false);
 
@@ -110,138 +114,153 @@ export function Header() {
     { scope: headerRef }
   );
 
-  const updateContentPosition = useCallback((hash: string, isInitialOpen: boolean) => {
-    const navEl = navRef.current;
-    const tabEl = tabRefs.current[hash];
-    const contentEl = dropdownContentRef.current;
-    const panelEl = dropdownPanelRef.current;
-    if (!navEl || !tabEl || !contentEl || !panelEl) return;
+  // Synchronize dropdown panel animation, height morph, and slot placement
+  useGSAP(
+    () => {
+      const panel = dropdownPanelRef.current;
+      const navEl = navRef.current;
+      if (!panel || !navEl) return;
 
-    const navRect = navEl.getBoundingClientRect();
-    const tabRect = tabEl.getBoundingClientRect();
-    const contentWidth = contentEl.offsetWidth || 180;
-    const isRightAligned = hash === "about";
+      if (!activeDropdown) {
+        if (isOpenRef.current) {
+          isOpenRef.current = false;
+          if (prefersReducedMotion()) {
+            gsap.set(panel, { autoAlpha: 0 });
+          } else {
+            gsap.killTweensOf(panel);
+            gsap.to(panel, {
+              autoAlpha: 0,
+              y: -8,
+              duration: 0.22,
+              ease: "power2.in",
+            });
+          }
+        }
+        return;
+      }
 
-    let targetX = 0;
-    if (isRightAligned) {
-      // Right-align with the ABOUT link / container edge with clean margin
-      const targetRight = tabRect.right - navRect.left;
-      targetX = targetRight - contentWidth;
-      const maxTargetX = navRect.width - contentWidth - 10;
-      if (targetX > maxTargetX) targetX = maxTargetX;
-      if (targetX < 8) targetX = 8;
-    } else {
-      // Left-align with active tab link
-      targetX = tabRect.left - navRect.left;
-      const maxTargetX = Math.max(10, navRect.width - contentWidth - 10);
-      if (targetX > maxTargetX) targetX = maxTargetX;
-      if (targetX < 8) targetX = 8;
-    }
+      const activeSlot = slotRefs.current[activeDropdown];
+      const tabEl = tabRefs.current[activeDropdown];
+      if (!activeSlot || !tabEl) return;
 
-    if (prefersReducedMotion()) {
-      gsap.set(contentEl, { x: targetX });
-      return;
-    }
+      const navRect = navEl.getBoundingClientRect();
+      const tabRect = tabEl.getBoundingClientRect();
 
-    if (isInitialOpen) {
-      gsap.set(contentEl, { x: targetX });
-      gsap.fromTo(
-        contentEl.querySelectorAll(".site-header__dropdown-item"),
-        { autoAlpha: 0, y: 5 },
-        { autoAlpha: 1, y: 0, duration: 0.26, stagger: 0.025, ease: "power2.out" }
-      );
-    } else {
-      // Premium horizontal GSAP glide to the active tab's position
-      gsap.to(contentEl, {
-        x: targetX,
-        duration: 0.38,
-        ease: "power3.out",
-        overwrite: "auto",
+      // Position active slot precisely
+      if (activeDropdown === "about") {
+        const rightOffset = Math.max(12, navRect.right - tabRect.right);
+        activeSlot.style.right = `${rightOffset}px`;
+        activeSlot.style.left = "auto";
+      } else {
+        const leftOffset = Math.max(12, tabRect.left - navRect.left);
+        activeSlot.style.left = `${leftOffset}px`;
+        activeSlot.style.right = "auto";
+      }
+
+      // Hide all slots except the active one
+      Object.entries(slotRefs.current).forEach(([key, el]) => {
+        if (!el) return;
+        if (key === activeDropdown) {
+          el.style.display = "flex";
+        } else {
+          el.style.display = "none";
+          gsap.set(el, { autoAlpha: 0 });
+        }
       });
-      gsap.fromTo(
-        contentEl.querySelectorAll(".site-header__dropdown-item"),
-        { autoAlpha: 0, y: 4 },
-        { autoAlpha: 1, y: 0, duration: 0.24, stagger: 0.02, ease: "power2.out" }
-      );
-    }
-  }, []);
+
+      // Calculate required height
+      const targetHeight = activeSlot.scrollHeight + 28; // 14px top + 14px bottom padding
+
+      const wasOpen = isOpenRef.current;
+      isOpenRef.current = true;
+
+      if (!wasOpen) {
+        // Initial entrance
+        if (prefersReducedMotion()) {
+          gsap.set(panel, { autoAlpha: 1, y: 0, height: targetHeight });
+          gsap.set(activeSlot, { autoAlpha: 1 });
+        } else {
+          gsap.killTweensOf(panel);
+          gsap.set(panel, { height: targetHeight });
+          gsap.fromTo(
+            panel,
+            { autoAlpha: 0, y: -10, scaleY: 0.94 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              scaleY: 1,
+              duration: 0.35,
+              ease: "power3.out",
+              transformOrigin: "top center",
+            }
+          );
+          gsap.fromTo(
+            activeSlot,
+            { autoAlpha: 0 },
+            { autoAlpha: 1, duration: 0.25, ease: "power2.out" }
+          );
+          gsap.fromTo(
+            activeSlot.querySelectorAll(".site-header__dropdown-item"),
+            { autoAlpha: 0, y: 6 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.28,
+              stagger: 0.025,
+              ease: "power2.out",
+            }
+          );
+        }
+      } else {
+        // Smooth tab switch with fluid height tween and item cross-fade
+        if (prefersReducedMotion()) {
+          gsap.set(panel, { height: targetHeight });
+          gsap.set(activeSlot, { autoAlpha: 1 });
+        } else {
+          gsap.to(panel, {
+            height: targetHeight,
+            duration: 0.35,
+            ease: "power3.out",
+            overwrite: "auto",
+          });
+          gsap.fromTo(
+            activeSlot,
+            { autoAlpha: 0 },
+            { autoAlpha: 1, duration: 0.22, ease: "power2.out" }
+          );
+          gsap.fromTo(
+            activeSlot.querySelectorAll(".site-header__dropdown-item"),
+            { autoAlpha: 0, y: 4 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.24,
+              stagger: 0.02,
+              ease: "power2.out",
+            }
+          );
+        }
+      }
+    },
+    { dependencies: [activeDropdown], scope: navRef }
+  );
 
   const openDropdown = useCallback((hash: string) => {
-    const navItem = NAV.find((n) => n.hash === hash);
-    if (!navItem?.dropdown) {
+    if (!DROPDOWNS[hash]) {
       closeDropdown();
       return;
     }
-
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
     }
-
-    const panelEl = dropdownPanelRef.current;
-    const wasOpen = isOpenRef.current;
-
     setActiveDropdown(hash);
-    setRenderedDropdown(hash);
-    isOpenRef.current = true;
-
-    if (!wasOpen && panelEl) {
-      if (prefersReducedMotion()) {
-        gsap.set(panelEl, { autoAlpha: 1, y: 0 });
-      } else {
-        gsap.killTweensOf(panelEl);
-        gsap.fromTo(
-          panelEl,
-          { autoAlpha: 0, y: -8, scaleY: 0.94 },
-          {
-            autoAlpha: 1,
-            y: 0,
-            scaleY: 1,
-            duration: 0.35,
-            ease: "power3.out",
-            transformOrigin: "top center",
-          }
-        );
-      }
-      requestAnimationFrame(() => {
-        updateContentPosition(hash, true);
-      });
-    } else if (wasOpen) {
-      requestAnimationFrame(() => {
-        updateContentPosition(hash, false);
-      });
-    }
-  }, [updateContentPosition]);
+  }, []);
 
   const closeDropdown = useCallback(() => {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     closeTimerRef.current = setTimeout(() => {
-      const panelEl = dropdownPanelRef.current;
-      if (!panelEl) {
-        setActiveDropdown(null);
-        setRenderedDropdown(null);
-        isOpenRef.current = false;
-        return;
-      }
-      if (prefersReducedMotion()) {
-        gsap.set(panelEl, { autoAlpha: 0 });
-        setActiveDropdown(null);
-        setRenderedDropdown(null);
-        isOpenRef.current = false;
-        return;
-      }
-      gsap.killTweensOf(panelEl);
-      gsap.to(panelEl, {
-        autoAlpha: 0,
-        y: -6,
-        duration: 0.22,
-        ease: "power2.in",
-        onComplete: () => {
-          setActiveDropdown(null);
-          setRenderedDropdown(null);
-          isOpenRef.current = false;
-        },
-      });
+      setActiveDropdown(null);
     }, 140);
   }, []);
 
@@ -253,7 +272,6 @@ export function Header() {
       gsap.set(panelEl, { autoAlpha: 0 });
     }
     setActiveDropdown(null);
-    setRenderedDropdown(null);
     isOpenRef.current = false;
   }, []);
 
@@ -270,9 +288,6 @@ export function Header() {
     }
     navigate({ pathname: "/", hash });
   };
-
-  const activeNavItem = NAV.find((n) => n.hash === renderedDropdown);
-  const activeItems = activeNavItem?.dropdown ?? [];
 
   return (
     <header ref={headerRef} className="site-header" data-node-id="6:287">
@@ -309,8 +324,14 @@ export function Header() {
                 tabRefs.current[item.hash] = el;
               }}
               className="site-header__nav-trigger"
-              onMouseEnter={() => openDropdown(item.hash)}
-              onFocus={() => openDropdown(item.hash)}
+              onMouseEnter={() => {
+                if (item.hasDropdown) openDropdown(item.hash);
+                else closeDropdown();
+              }}
+              onFocus={() => {
+                if (item.hasDropdown) openDropdown(item.hash);
+                else closeDropdown();
+              }}
             >
               {item.to ? (
                 <Link
@@ -345,7 +366,7 @@ export function Header() {
           </span>
         ))}
 
-        {/* Unified full-width dropdown panel: fixed responsive width matching the nav container, sliding text placement */}
+        {/* Unified full-width dropdown panel */}
         <div
           ref={dropdownPanelRef}
           className="site-header__dropdown-panel"
@@ -358,22 +379,27 @@ export function Header() {
           onMouseLeave={closeDropdown}
           aria-hidden={!activeDropdown}
         >
-          <div
-            ref={dropdownContentRef}
-            className={`site-header__dropdown-content site-header__dropdown-content--${renderedDropdown}`}
-            data-align={renderedDropdown === "about" ? "right" : "left"}
-          >
-            {activeItems.map((d) => (
-              <Link
-                key={d.label}
-                to={d.to}
-                className={`site-header__dropdown-item${d.isCurrent ? " is-current" : ""}`}
-                onClick={closeImmediate}
-              >
-                {d.label}
-              </Link>
-            ))}
-          </div>
+          {Object.entries(DROPDOWNS).map(([key, config]) => (
+            <div
+              key={key}
+              ref={(el) => {
+                slotRefs.current[key] = el;
+              }}
+              className={`site-header__dropdown-slot site-header__dropdown-slot--${key} site-header__dropdown-slot--${config.align}`}
+              style={{ display: "none" }}
+            >
+              {config.items.map((d) => (
+                <Link
+                  key={d.label}
+                  to={d.to}
+                  className={`site-header__dropdown-item${d.isCurrent ? " is-current" : ""}`}
+                  onClick={closeImmediate}
+                >
+                  {d.label}
+                </Link>
+              ))}
+            </div>
+          ))}
         </div>
       </nav>
 

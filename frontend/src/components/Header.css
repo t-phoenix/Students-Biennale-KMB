@@ -87,25 +87,26 @@
    Unified Full-Width Dropdown Panel:
    - Width is locked to 100% of the nav container (responsive to container width)
    - Background stays fixed in width and position
-   - Inner text container shifts horizontally to align with the active nav tab
-   - Smooth GSAP animations with custom ease and staggered item entrance
+   - Each tab content is individually positioned and aligned (Left for Editions/Programmes, Right for About)
+   - Zero overflow, zero layout jumping
+   - Smooth GSAP animations with fluid height morphing and staggered reveals
    ========================================================================== */
 
 .site-header__dropdown-panel {
   position: absolute;
-  top: calc(100% + 2px);
+  top: calc(100% + 4px);
   left: 0;
   width: 100%;
   box-sizing: border-box;
   background: var(--color-neutral-white);
   border: 1px solid var(--color-neutral-gray-light);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.03);
-  padding: 14px 0 16px;
+  padding: 14px 0;
   z-index: 50;
   opacity: 0;
   visibility: hidden;
   pointer-events: auto;
-  min-height: 80px;
+  overflow: hidden;
 }
 
 /* Invisible hover bridge to prevent mouse cursor dropping between nav and panel */
@@ -119,18 +120,24 @@
   background: transparent;
 }
 
-.site-header__dropdown-content {
+.site-header__dropdown-slot {
+  position: absolute;
+  top: 14px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  width: max-content;
-  min-width: 150px;
   box-sizing: border-box;
-  will-change: transform;
+  width: max-content;
+  max-width: calc(100% - 24px);
 }
 
-.site-header__dropdown-content[data-align="right"] {
+.site-header__dropdown-slot--left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.site-header__dropdown-slot--right {
   align-items: flex-end;
+  text-align: right;
 }
 
 .site-header__dropdown-item {
@@ -143,12 +150,15 @@
   color: var(--color-text-secondary);
   white-space: nowrap;
   text-decoration: none;
-  transition: color 0.18s ease, transform 0.18s ease;
+  transition: color 0.18s ease;
   display: block;
+}
+
+.site-header__dropdown-slot--left .site-header__dropdown-item {
   text-align: left;
 }
 
-.site-header__dropdown-content[data-align="right"] .site-header__dropdown-item {
+.site-header__dropdown-slot--right .site-header__dropdown-item {
   text-align: right;
 }
 
@@ -160,7 +170,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .site-header__dropdown-panel,
-  .site-header__dropdown-content,
+  .site-header__dropdown-slot,
   .site-header__dropdown-item {
     transition: none !important;
   }
