@@ -305,6 +305,54 @@
   background: var(--color-neutral-white);
 }
 
+/* Centered at the bottom of the hero, matching the artwork page's hero
+   dots — a standalone overlay rather than nested in .home-hero__meta. */
+.home-hero__dots--centered {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 3;
+  justify-content: center;
+}
+
+/* Prev/next — /icons/arrow-switch.svg, same as the artwork page's hero
+   nav (Detail.css .detail__hero-nav) for consistency. */
+.home-hero__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  cursor: pointer;
+  padding: 14px 18px;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease;
+}
+
+.home-hero__nav img {
+  width: 18px;
+  height: 24px;
+}
+
+.home-hero__nav--next img {
+  transform: scaleX(-1);
+}
+
+.home-hero__nav:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.home-hero__nav--prev {
+  left: var(--grid-margin, 48px);
+}
+
+.home-hero__nav--next {
+  right: var(--grid-margin, 48px);
+}
+
 /* Sections */
 .home-section {
   padding-block: var(--spacing-5xl);
@@ -313,6 +361,51 @@
 
 .home-section--flush-top {
   border-top: 0;
+}
+
+/* Home Edition section */
+.home-edition__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.home-edition__body .fig-body + .fig-body {
+  margin-top: var(--spacing-md);
+}
+
+/* Expands in place instead of opening a modal — height is animated via GSAP
+   from Home.tsx; this just establishes the clipped starting state. */
+.home-edition__more {
+  height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.home-edition__more .fig-body:first-child {
+  margin-top: var(--spacing-md);
+}
+
+.home-text-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin-top: var(--spacing-md);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  width: fit-content;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.home-text-btn:hover {
+  color: var(--color-text-primary);
 }
 
 /* Sensing Grounds */
