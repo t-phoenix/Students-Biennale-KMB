@@ -469,7 +469,8 @@
   font-size: var(--type-subtitle-size);
 }
 
-.home-programmes__rail button {
+.home-programmes__rail button,
+.home-programmes__rail a {
   border: 0;
   background: transparent;
   padding: 0 0 4px;
@@ -478,6 +479,22 @@
   width: 100%;
   color: var(--color-text-primary);
   cursor: pointer;
+  text-decoration: none;
+}
+
+/* Flex row (not fig-sub-3's equal-fr grid) so each thumb's width can be
+   driven precisely in pixels by the hover-expand GSAP tween above. */
+.home-programmes__thumbs {
+  display: flex;
+  gap: var(--grid-gutter);
+}
+
+.home-programmes__thumbs a {
+  display: block;
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  transition: transform 0.3s ease;
 }
 
 .home-programmes__thumbs img {
@@ -660,6 +677,14 @@
 
   .home-sensing__peek {
     display: none;
+  }
+
+  .home-programmes__thumbs {
+    flex-wrap: wrap;
+  }
+
+  .home-programmes__thumbs a {
+    flex: 1 1 calc(50% - 10px);
   }
 
   .home-press__featured-img {

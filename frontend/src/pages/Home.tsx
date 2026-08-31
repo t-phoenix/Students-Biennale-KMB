@@ -133,6 +133,9 @@ export function Home() {
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
+  const [programmesHover, setProgrammesHover] = useState<string | null>(null);
+  const programmesThumbsRef = useRef<HTMLDivElement>(null);
+  const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();
@@ -293,6 +296,42 @@ export function Home() {
       };
     },
     { scope: rootRef }
+  );
+
+  // Upcoming Programmes — hovering a rail label or its thumbnail grows that
+  // image 60px on each side (120px total) and shrinks the other two by 60px
+  // each, keeping the row's total width constant.
+  useGSAP(
+    () => {
+      const container = programmesThumbsRef.current;
+      if (!container) return;
+      if (window.innerWidth <= 899) {
+        ["workshops", "awards", "residencies"].forEach((hash) => {
+          const el = programmesThumbEls.current[hash];
+          if (el) gsap.set(el, { clearProps: "flexBasis" });
+        });
+        return;
+      }
+      const total = container.getBoundingClientRect().width;
+      if (!total) return;
+      const gap = 20;
+      const base = (total - gap * 2) / 3;
+      const reduce = prefersReducedMotion();
+
+      ["workshops", "awards", "residencies"].forEach((hash) => {
+        const el = programmesThumbEls.current[hash];
+        if (!el) return;
+        const isHovered = programmesHover === hash;
+        const isDimmed = programmesHover !== null && !isHovered;
+        const width = `${isHovered ? base + 120 : isDimmed ? base - 60 : base}px`;
+        if (reduce) {
+          gsap.set(el, { flexBasis: width });
+        } else {
+          gsap.to(el, { flexBasis: width, duration: 0.6, ease: "power3.out" });
+        }
+      });
+    },
+    { dependencies: [programmesHover], scope: programmesThumbsRef }
   );
 
   useGSAP(
@@ -629,23 +668,33 @@ export function Home() {
                 <Link
                   key={tab.hash}
                   to={`/programmes#${tab.hash}`}
-                  className="fig-subheading"
+                  className={`fig-subheading${programmesHover === tab.hash ? " is-selected" : ""}`}
+                  onMouseEnter={() => setProgrammesHover(tab.hash)}
+                  onMouseLeave={() => setProgrammesHover(null)}
                 >
                   {tab.label}
                   <span className="fig-subheading__underline" aria-hidden />
                 </Link>
               ))}
             </div>
-            <div className="home-programmes__thumbs fig-c4-12 fig-sub-3">
-              <Link to="/programmes#workshops">
-                <img src={workshopThumb} alt="" />
-              </Link>
-              <Link to="/programmes#awards">
-                <img src={awardsThumb} alt="" />
-              </Link>
-              <Link to="/programmes#residencies">
-                <img src={residencyThumb} alt="" />
-              </Link>
+            <div ref={programmesThumbsRef} className="home-programmes__thumbs fig-c4-12">
+              {[
+                { hash: "workshops", to: "/programmes#workshops", img: workshopThumb },
+                { hash: "awards", to: "/programmes#awards", img: awardsThumb },
+                { hash: "residencies", to: "/programmes#residencies", img: residencyThumb },
+              ].map((tab) => (
+                <Link
+                  key={tab.hash}
+                  ref={(el) => {
+                    programmesThumbEls.current[tab.hash] = el;
+                  }}
+                  to={tab.to}
+                  onMouseEnter={() => setProgrammesHover(tab.hash)}
+                  onMouseLeave={() => setProgrammesHover(null)}
+                >
+                  <img src={tab.img} alt="" />
+                </Link>
+              ))}
             </div>
           </div>
         </section>
