@@ -69,6 +69,22 @@
   object-position: center;
   display: block;
   pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.canvas-tile__media.is-decoded {
+  opacity: 1;
+}
+
+.canvas-tile__placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    145deg,
+    var(--color-neutral-gray-mid),
+    var(--color-neutral-gray-light)
+  );
 }
 
 .canvas-tile__media--empty {

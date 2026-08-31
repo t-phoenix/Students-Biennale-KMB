@@ -2,8 +2,32 @@
 
 const preloaded = new Set<string>();
 const inflight = new Map<string, Promise<void>>();
+const WARM_STORAGE_KEY = "sb-img-warm-v1";
 
 export type PreloadPriority = "high" | "low";
+
+function readWarmManifest(): Set<string> {
+  if (typeof sessionStorage === "undefined") return new Set();
+  try {
+    const raw = sessionStorage.getItem(WARM_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw) as string[];
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeWarmManifest(url: string) {
+  if (typeof sessionStorage === "undefined") return;
+  try {
+    const warm = readWarmManifest();
+    warm.add(url);
+    sessionStorage.setItem(WARM_STORAGE_KEY, JSON.stringify([...warm]));
+  } catch {
+    // Quota or private mode — in-memory cache still applies.
+  }
+}
 
 function attachPriority(img: HTMLImageElement, priority: PreloadPriority) {
   if (priority === "high" && "fetchPriority" in img) {
@@ -20,13 +44,18 @@ export function preloadUrl(url: string, priority: PreloadPriority = "low"): Prom
   if (preloaded.has(url)) return Promise.resolve();
 
   const promise = new Promise<void>((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      preloaded.add(url);
+      writeWarmManifest(url);
+      resolve();
+    };
+
     const img = new Image();
     img.decoding = "async";
     attachPriority(img, priority);
-    const finish = () => {
-      preloaded.add(url);
-      resolve();
-    };
     img.onload = finish;
     img.onerror = finish;
     img.src = url;
@@ -57,6 +86,28 @@ export function preloadUrls(
   return Promise.all(unique.map((url) => preloadUrl(url, priority)));
 }
 
+/** Preload URLs with a concurrency cap — avoids saturating the network on Discover. */
+export function preloadUrlsConcurrent(
+  urls: readonly string[],
+  priority: PreloadPriority = "low",
+  concurrency = 4,
+): Promise<void> {
+  const unique = [...new Set(urls.filter(Boolean))];
+  if (!unique.length) return Promise.resolve();
+
+  let index = 0;
+  const worker = async () => {
+    while (index < unique.length) {
+      const url = unique[index];
+      index += 1;
+      await preloadUrl(url, priority);
+    }
+  };
+
+  const workers = Math.min(concurrency, unique.length);
+  return Promise.all(Array.from({ length: workers }, worker)).then(() => undefined);
+}
+
 /** Preload slides around a carousel index (inclusive radius). */
 export function preloadAdjacent(
   urls: readonly string[],
@@ -85,4 +136,9 @@ export function whenIdle(task: () => void, timeoutMs = 1800) {
     return;
   }
   globalThis.setTimeout(task, 120);
+}
+
+/** Whether a URL was preloaded this session (memory or session manifest). */
+export function isImageWarm(url: string): boolean {
+  return preloaded.has(url) || readWarmManifest().has(url);
 }

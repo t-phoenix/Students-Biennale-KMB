@@ -5,7 +5,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { GalleryLightbox } from "./GalleryLightbox";
 import { HighlightText } from "./HighlightText";
-import { ImageCrossfadeStack } from "./ImageCrossfadeStack";
+import { PreloadedImage } from "./PreloadedImage";
 import "../pages/Detail.css";
 
 type Props = {
@@ -42,6 +42,8 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
     void preloadAdjacent(slides, heroIndex, 1, "high");
   }, [heroIndex, slides]);
 
+  const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
+  const upcomingSlides = slides.filter((url) => url !== slide);
   const curated = curatorsForArtwork(a);
   const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
   const goNext = () => setHeroIndex((i) => (i + 1) % slides.length);
@@ -54,8 +56,8 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
       const hero = heroRef.current;
       if (!hero || slides.length <= 1 || prefersReducedMotion()) return;
       const tl = gsap.timeline({ repeat: -1 });
-      slides.forEach((_, i) => {
-        tl.to({}, { duration: 4 }).call(() => setHeroIndex((i + 1) % slides.length));
+      tl.to({}, { duration: 4 }).call(() => {
+        setHeroIndex((cur) => (cur + 1) % slides.length);
       });
       const pause = () => tl.pause();
       const play = () => tl.play();
@@ -77,13 +79,15 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   return (
     <div key={a.id}>
       <div ref={heroRef} className="detail__hero detail__hero--cover detail-reveal">
-        {slides.length ? (
+        {slide ? (
           <>
-            <ImageCrossfadeStack
-              images={slides}
-              index={heroIndex}
-              imageClassName="detail__hero-img"
-              onImageClick={() => setLightboxOpen(true)}
+            <PreloadedImage
+              key={slide}
+              src={slide}
+              alt=""
+              className="detail__hero-img"
+              prefetch={upcomingSlides}
+              onClick={() => setLightboxOpen(true)}
             />
             <button
               type="button"

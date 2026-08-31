@@ -1,6 +1,23 @@
-import { artworkImages, LATEST_EDITION, type ArtworkCard } from "../data/site";
+import {
+  artworkImages,
+  getCanvasTier,
+  LATEST_EDITION,
+  type ArtworkCard,
+  type CanvasTier,
+} from "../data/site";
+import {
+  getDiscoverCanvasImageUrls,
+  getDiscoverCanvasPack,
+  getViewportDiscoverImageUrls,
+  splitDiscoverImageUrls,
+} from "./discoverCanvas";
 import type { MappedCatalogue } from "./catalogue/types";
-import { preloadUrl, preloadUrls, whenIdle } from "./preloadImages";
+import {
+  preloadUrl,
+  preloadUrls,
+  preloadUrlsConcurrent,
+  whenIdle,
+} from "./preloadImages";
 
 const STATIC_ROUTE_HEROES = [
   "/programmes/hero.jpg",
@@ -35,6 +52,49 @@ export function prefetchHomeDestinations(catalogue?: MappedCatalogue | null) {
   });
 }
 
+/** All unique Discover canvas tile images — intent-based, concurrency-capped. */
+export function prefetchDiscoverCanvas(
+  artworks: readonly ArtworkCard[] | undefined,
+  tier: CanvasTier = getCanvasTier(typeof window === "undefined" ? 1440 : window.innerWidth),
+  sourceKey = "static",
+) {
+  const urls = getDiscoverCanvasImageUrls(artworks, tier, sourceKey);
+  if (!urls.length) return;
+  void preloadUrlsConcurrent(urls, "low", 4);
+}
+
+/** Viewport-first on Discover page mount, then idle-preload the rest. */
+export function prefetchDiscoverViewport(
+  artworks: readonly ArtworkCard[] | undefined,
+  viewportW: number,
+  viewportH: number,
+  sourceKey = "static",
+) {
+  const tier = getCanvasTier(viewportW);
+  const pack = getDiscoverCanvasPack(artworks, tier, sourceKey);
+  const { visible, rest } = splitDiscoverImageUrls(pack, viewportW, viewportH);
+
+  if (visible.length) {
+    void preloadUrlsConcurrent(visible, "high", 4);
+  }
+
+  whenIdle(() => {
+    if (rest.length) void preloadUrlsConcurrent(rest, "low", 4);
+  });
+}
+
+/** Export viewport URL set for tile eager-loading. */
+export function getDiscoverEagerImageUrls(
+  artworks: readonly ArtworkCard[] | undefined,
+  viewportW: number,
+  viewportH: number,
+  sourceKey = "static",
+): ReadonlySet<string> {
+  const tier = getCanvasTier(viewportW);
+  const pack = getDiscoverCanvasPack(artworks, tier, sourceKey);
+  return new Set(getViewportDiscoverImageUrls(pack, viewportW, viewportH));
+}
+
 /** Full gallery for an artwork — call on tile hover or detail open. */
 export function prefetchArtworkGallery(artwork: ArtworkCard | undefined) {
   if (!artwork) return;
@@ -54,7 +114,12 @@ export function prefetchNextArtwork(
 }
 
 /** Hero images for a primary nav destination. */
-export function prefetchRouteHero(to: string, catalogues: readonly MappedCatalogue[]) {
+export function prefetchRouteHero(
+  to: string,
+  catalogues: readonly MappedCatalogue[],
+  artworks?: readonly ArtworkCard[],
+  sourceKey?: string,
+) {
   if (to.startsWith("/programmes")) {
     void preloadUrl("/programmes/hero.jpg", "high");
     return;
@@ -64,17 +129,7 @@ export function prefetchRouteHero(to: string, catalogues: readonly MappedCatalog
     return;
   }
   if (to === "/artworks") {
-    const current =
-      catalogues.find((row) => row.isCurrent) ??
-      catalogues.find((row) => row.years === LATEST_EDITION.id);
-    if (current?.artworks.length) {
-      void preloadUrls(
-        current.artworks
-          .slice(0, 12)
-          .map((row) => row.image)
-          .filter((url): url is string => Boolean(url)),
-      );
-    }
+    prefetchDiscoverCanvas(artworks, undefined, sourceKey);
     return;
   }
 

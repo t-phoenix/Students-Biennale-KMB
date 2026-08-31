@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState, useCallback, type MouseEvent } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo, type MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
-import { useCatalogue } from "../lib/catalogue";
+import { useCatalogue, useAllArtworks } from "../lib/catalogue";
 import { prefetchRouteHero } from "../lib/predictivePrefetch";
 import {
   type HomeSectionId,
@@ -59,6 +59,11 @@ export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { catalogues } = useCatalogue();
+  const { artworks } = useAllArtworks();
+  const sourceKey = useMemo(
+    () => catalogues.map((row) => `${row.years}:${row.generatedAt}`).join("|") || "static",
+    [catalogues],
+  );
   const onHome = location.pathname === "/";
   const [activeSection, setActiveSection] = useState<HomeSectionId | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -294,9 +299,9 @@ export function Header() {
 
   const warmRoute = useCallback(
     (to: string) => {
-      prefetchRouteHero(to, catalogues);
+      prefetchRouteHero(to, catalogues, artworks, sourceKey);
     },
-    [catalogues],
+    [catalogues, artworks, sourceKey],
   );
 
   return (
@@ -322,6 +327,7 @@ export function Header() {
           onClick={closeImmediate}
           onMouseEnter={() => warmRoute("/artworks")}
           onFocus={() => warmRoute("/artworks")}
+          onPointerDown={() => warmRoute("/artworks")}
         >
           [Discover Artworks]
         </Link>

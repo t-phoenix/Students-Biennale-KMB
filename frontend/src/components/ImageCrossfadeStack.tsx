@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import { crossfadeSlides, initSlideStack } from "../lib/imageSlider";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { BrandImageLoader } from "./BrandImageLoader";
@@ -42,10 +42,9 @@ export function ImageCrossfadeStack({
   const safeIndex = images.length ? Math.min(Math.max(index, 0), images.length - 1) : 0;
   const [activeReady, setActiveReady] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     prevIndex.current = 0;
     setActiveReady(false);
-    slideRefs.current = [];
   }, [imagesKey]);
 
   useEffect(() => {
@@ -58,28 +57,31 @@ export function ImageCrossfadeStack({
     void preloadAdjacent(images, safeIndex, prefetchRadius, "high");
   }, [images, safeIndex, prefetchRadius]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const slides = slideRefs.current.filter((el): el is HTMLImageElement => Boolean(el));
-    if (!slides.length) return;
+    if (slides.length !== images.length) return;
 
-    if (prevIndex.current === safeIndex) {
+    const from = prevIndex.current;
+    if (from === safeIndex) {
       initSlideStack(slides, safeIndex);
-      return;
+    } else {
+      crossfadeSlides(slides, from, safeIndex);
     }
-
-    crossfadeSlides(slides, prevIndex.current, safeIndex);
     prevIndex.current = safeIndex;
-  }, [safeIndex, imagesKey]);
 
-  useEffect(() => {
     const active = slideRefs.current[safeIndex];
-    if (!active) return;
-    if (active.complete && active.naturalWidth > 0) {
+    if (active?.complete && active.naturalWidth > 0) {
       setActiveReady(true);
-      return;
     }
-    setActiveReady(false);
-  }, [safeIndex, imagesKey]);
+  }, [safeIndex, imagesKey, images.length]);
+
+  const revealActiveSlide = (slideIndex: number) => {
+    if (slideIndex !== safeIndex) return;
+    setActiveReady(true);
+    const slides = slideRefs.current.filter((el): el is HTMLImageElement => Boolean(el));
+    if (slides.length !== images.length) return;
+    initSlideStack(slides, safeIndex);
+  };
 
   if (!images.length) return null;
 
@@ -108,9 +110,7 @@ export function ImageCrossfadeStack({
           className={["image-crossfade__slide", imageClassName].filter(Boolean).join(" ")}
           decoding="async"
           draggable={false}
-          onLoad={() => {
-            if (i === safeIndex) setActiveReady(true);
-          }}
+          onLoad={() => revealActiveSlide(i)}
           onClick={onImageClick}
         />
       ))}

@@ -1,8 +1,10 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { CanvasItem } from "../data/site";
 import { InfiniteCanvas } from "../components/canvas/InfiniteCanvas";
 import { CanvasExpand } from "../components/canvas/CanvasExpand";
 import { useAllArtworks } from "../lib/catalogue";
+import { markDiscoverMount } from "../lib/discoverPerf";
+import { prefetchDiscoverViewport } from "../lib/predictivePrefetch";
 import "./DiscoverArtworks.css";
 
 type ExpandState = {
@@ -13,9 +15,19 @@ type ExpandState = {
 export function DiscoverArtworks() {
   const [query, setQuery] = useState("");
   const [expand, setExpand] = useState<ExpandState | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
   const { artworks, catalogues } = useAllArtworks();
   const sourceKey =
     catalogues.map((row) => `${row.years}:${row.generatedAt}`).join("|") || "static";
+
+  useEffect(() => {
+    markDiscoverMount();
+    const stage = stageRef.current;
+    const rect = stage?.getBoundingClientRect();
+    const w = rect?.width || window.innerWidth;
+    const h = rect?.height || window.innerHeight;
+    prefetchDiscoverViewport(artworks, w, h, sourceKey);
+  }, [artworks, sourceKey]);
 
   const onSelect = useCallback((item: CanvasItem, el: HTMLButtonElement) => {
     setExpand({ item, origin: el.getBoundingClientRect() });
@@ -47,7 +59,7 @@ export function DiscoverArtworks() {
           ) : null}
         </label>
       </div>
-      <div className="discover__stage">
+      <div ref={stageRef} className="discover__stage">
         <InfiniteCanvas
           query={query}
           onSelect={onSelect}

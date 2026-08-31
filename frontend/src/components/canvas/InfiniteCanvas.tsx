@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCanvasPack, getCanvasTier, type ArtworkCard, type CanvasItem } from "../../data/site";
 import { findCard } from "../../lib/catalogue";
-import { prefetchArtworkGallery } from "../../lib/predictivePrefetch";
+import {
+  getDiscoverEagerImageUrls,
+  prefetchArtworkGallery,
+} from "../../lib/predictivePrefetch";
 import { gsap, prefersReducedMotion, useGSAP } from "../../lib/motion";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
@@ -80,6 +83,12 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   const { items: pool, seedW, colWidths, colPeriods } = pack;
   const columns = colWidths.length;
   const tileKey = `masonry-${tier}`;
+
+  const eagerImageUrls = useMemo(() => {
+    const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
+    const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
+    return getDiscoverEagerImageUrls(artworks, viewportW, viewportH, sourceKey);
+  }, [artworks, sourceKey, tier, seedW]);
 
   const itemsByCol = useMemo(() => {
     const groups: CanvasItem[][] = Array.from({ length: columns }, () => []);
@@ -502,6 +511,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
                         item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriods[col] }}
                         dimmed={Boolean(q) && !matches(item)}
                         highlighted={Boolean(q) && matches(item)}
+                        eager={Boolean(item.image && eagerImageUrls.has(item.image))}
                         onSelect={handleSelect}
                         onHoverChange={handleTileHover}
                       />
