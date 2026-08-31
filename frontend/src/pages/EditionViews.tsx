@@ -327,8 +327,8 @@ export function VenueView() {
         <div className="edition-venue-rows">
           {catalogue.venues.map((v) => {
             const blurb =
-              v.description.length > 600
-                ? `${v.description.slice(0, 600).trimEnd()}…`
+              v.description.length > 280
+                ? `${v.description.slice(0, 280).trimEnd()}…`
                 : v.description;
             return (
               <article key={v.id} className="edition-venue">

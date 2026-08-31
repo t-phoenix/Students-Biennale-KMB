@@ -50,6 +50,31 @@
   cursor: zoom-in;
 }
 
+.detail__hero-expand {
+  position: absolute;
+  top: 24px;
+  right: var(--grid-margin);
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  color: var(--color-neutral-white);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.detail__hero-expand:hover {
+  background: rgba(0, 0, 0, 0.65);
+  border-color: rgba(255, 255, 255, 0.85);
+  transform: scale(1.06);
+}
+
 .detail__hero-fallback {
   background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
 }
@@ -246,15 +271,15 @@
   line-height: var(--type-caption-line);
 }
 
-/* Curator portrait — right-aligned in the label column, on the 355 line. */
+/* Curator portrait — left-aligned with SB logo (col 1 start). */
 .detail__portrait {
-  justify-self: end;
+  justify-self: start;
   width: 100%;
-  max-width: 295px;
-  aspect-ratio: 295 / 380;
+  max-width: 315px;
+  aspect-ratio: 315 / 380;
   overflow: hidden;
   background: #e0e0e0;
-  margin-inline-end: var(--grid-gutter);
+  margin-inline-end: 0;
   position: relative;
 }
 
@@ -306,6 +331,7 @@
   font-weight: 400;
   text-transform: uppercase;
   color: var(--color-text-secondary);
+  border: none;
 }
 
 .detail__zone p {
@@ -336,10 +362,9 @@
   text-transform: uppercase;
 }
 
-/* Wider gutter above (was 20px) between the Artists grid and this line,
-   per client feedback. */
+/* Wider gutter above between the Artists grid and Curated By block. */
 .detail__curated-by {
-  margin: 40px 0 0;
+  margin: 56px 0 0;
   font-size: var(--type-body-size);
   color: var(--color-text-secondary);
 }
@@ -409,7 +434,7 @@
 /* More room between rows than fig-sub-3's shared 20px gap — client feedback
    wanted space between one card's text and the next row's image. */
 .fig-sub-3.detail__cards {
-  row-gap: 48px;
+  row-gap: 64px;
 }
 
 .detail__cards a {
@@ -457,8 +482,32 @@
 }
 
 .detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
   align-self: center;
+}
+
+.detail__back-arrow {
+  display: inline-block;
+  font-size: 1.1em;
+  transition: transform 0.25s ease;
+}
+
+.detail__back:hover .detail__back-arrow {
+  transform: translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .detail__back:hover .detail__back-arrow {
+    transform: none;
+  }
 }
 
 /* Right edge on col 12 right, without pushing BACK onto its own row. */

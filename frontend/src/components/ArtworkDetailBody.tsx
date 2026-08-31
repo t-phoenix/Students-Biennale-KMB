@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { artworkImages, curatorsForArtwork, type ArtworkCard } from "../data/site";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { GalleryLightbox } from "./GalleryLightbox";
@@ -16,6 +16,7 @@ type Props = {
  *  expand overlay (CanvasExpand.tsx). Page-level chrome (BACK/NEXT nav) stays
  *  with each caller since it differs by context. */
 export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
+  const { yearId = "2025-26" } = useParams();
   const [heroIndex, setHeroIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -64,13 +65,38 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
     <div key={a.id}>
       <div ref={heroRef} className="detail__hero detail__hero--cover detail-reveal">
         {slide ? (
-          <img
-            key={slide}
-            src={slide}
-            alt=""
-            className="detail__hero-img"
-            onDoubleClick={() => setLightboxOpen(true)}
-          />
+          <>
+            <img
+              key={slide}
+              src={slide}
+              alt=""
+              className="detail__hero-img"
+              onClick={() => setLightboxOpen(true)}
+            />
+            <button
+              type="button"
+              className="detail__hero-expand"
+              aria-label="View full image"
+              onClick={() => setLightboxOpen(true)}
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <polyline points="15 3 21 3 21 9" />
+                <polyline points="9 21 3 21 3 15" />
+                <line x1="21" y1="3" x2="14" y2="10" />
+                <line x1="3" y1="21" x2="10" y2="14" />
+              </svg>
+            </button>
+          </>
         ) : (
           <div className="detail__hero-fallback" aria-hidden />
         )}
@@ -141,16 +167,11 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
           <div>
             <dt>Materials &amp; Dimensions :</dt>
             <dd>
-              {a.materials.map((m, i) =>
-                i === a.materials.length - 1 && a.dimensions ? (
-                  <p key={`${i}-${m}`}>
-                    {m} | {a.dimensions}
-                  </p>
-                ) : (
-                  <p key={`${i}-${m}`}>{m}</p>
-                )
-              )}
-              {!a.materials.length && a.dimensions ? <p>{a.dimensions}</p> : null}
+              <p>
+                {[a.materials.filter(Boolean).join(", "), a.dimensions]
+                  .filter(Boolean)
+                  .join(" | ")}
+              </p>
             </dd>
           </div>
         </dl>
@@ -185,7 +206,7 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
             {curated.map((c, i) => (
               <span key={c.id}>
                 {i > 0 ? " and " : ""}
-                <Link to={`/editions/2025-26/curators/${c.id}`}>{c.name}</Link>
+                <Link to={`/editions/${yearId}/curators/${c.id}`}>{c.name}</Link>
               </span>
             ))}
           </p>

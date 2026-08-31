@@ -574,7 +574,7 @@ export function Home() {
                 aria-expanded={editionExpanded}
                 onClick={() => setEditionExpanded((v) => !v)}
               >
-                {editionExpanded ? "READ LESS..." : "READ MORE..."}
+                {editionExpanded ? "Read less..." : "Read more..."}
               </button>
             </div>
           </div>
@@ -718,7 +718,7 @@ export function Home() {
                   on an international stage.
                 </p>
                 <Link to="/press?article=kbf-curators" className="home-text-btn">
-                  READ MORE...
+                  Read more...
                 </Link>
               </div>
             </article>

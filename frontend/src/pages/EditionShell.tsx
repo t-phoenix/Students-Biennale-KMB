@@ -101,21 +101,24 @@ function EditionShellLayout() {
             </NavLink>
           ))}
         </nav>
-        <details className="edition__prev">
-          <summary>Previous EDITIONS</summary>
+        <div className="edition__prev">
+          <h2 className="edition__prev-heading">PREVIOUS EDITIONS</h2>
           <ul>
             {previousYears.map((y) => (
               <li key={y}>
                 <NavLink
                   to={`/editions/${y}`}
-                  className={({ isActive }) => (isActive ? "is-selected" : undefined)}
+                  className={({ isActive }) =>
+                    `fig-subheading${isActive ? " is-selected" : ""}`
+                  }
                 >
                   {y}
+                  <span className="fig-subheading__underline" aria-hidden />
                 </NavLink>
               </li>
             ))}
           </ul>
-        </details>
+        </div>
       </aside>
       <div className="edition__main fig-c4-12">
         <EditionCatalogueMain />

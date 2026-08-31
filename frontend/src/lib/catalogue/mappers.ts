@@ -136,13 +136,17 @@ function mapCurator(person: SnapshotPerson, zone: SnapshotZone): CuratorCard {
 
 function mapZone(zone: SnapshotZone): CuratorZone {
   const assistants = zone.assistants.map((a) => a.name).filter(Boolean);
+  const localZone = CURATOR_ZONES.find(
+    (z) => z.id === zone.id || z.label.toLowerCase() === zone.label.toLowerCase(),
+  );
   return {
     id: zone.id,
     label: zone.label,
-    states: zone.region || "",
+    states: zone.region || localZone?.states || "",
     curators: zone.curators.map((person) => mapCurator(person, zone)),
-    curatorialAssistant: assistants.length ? assistants.join(", ") : undefined,
-    noteBody: zone.common_curatorial_note ?? undefined,
+    curatorialAssistant: assistants.length ? assistants.join(", ") : localZone?.curatorialAssistant,
+    noteTitle: localZone?.noteTitle,
+    noteBody: zone.common_curatorial_note ?? localZone?.noteBody,
   };
 }
 

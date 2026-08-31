@@ -56,8 +56,9 @@ export function Detail() {
     return (
       <div className="detail">
         <div className="fig-grid detail__section">
-          <Link className="fig-c1-3" to={back}>
-            BACK
+          <Link className="fig-c1-3 detail__back" to={back}>
+            <span className="detail__back-arrow" aria-hidden>←</span>
+            <span>BACK</span>
           </Link>
           <p className="fig-c4-12">Entry not found</p>
         </div>
@@ -79,7 +80,8 @@ export function Detail() {
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
-            BACK
+            <span className="detail__back-arrow" aria-hidden>←</span>
+            <span>BACK</span>
           </Link>
           <CtaLink
             className="detail__next"
@@ -181,7 +183,8 @@ export function Detail() {
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
-            BACK
+            <span className="detail__back-arrow" aria-hidden>←</span>
+            <span>BACK</span>
           </Link>
           <CtaLink
             className="detail__next"
@@ -265,7 +268,8 @@ export function Detail() {
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
-            BACK
+            <span className="detail__back-arrow" aria-hidden>←</span>
+            <span>BACK</span>
           </Link>
           <CtaLink
             className="detail__next"
@@ -281,8 +285,9 @@ export function Detail() {
   return (
     <div className="detail">
       <div className="fig-grid detail__section">
-        <Link className="fig-c1-3" to={back}>
-          BACK
+        <Link className="fig-c1-3 detail__back" to={back}>
+          <span className="detail__back-arrow" aria-hidden>←</span>
+          <span>BACK</span>
         </Link>
         <p className="fig-c4-12">Entry not found</p>
       </div>
