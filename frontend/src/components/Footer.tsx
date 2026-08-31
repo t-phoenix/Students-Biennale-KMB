@@ -25,8 +25,8 @@ const SOCIAL = [
 
 export function Footer() {
   return (
-    <footer className="site-footer fig-grid">
-      <div className="site-footer__brand fig-c1-3">
+    <footer className="site-footer">
+      <div className="site-footer__brand">
         <a
           className="site-footer__logo"
           href={KMB_URL}
@@ -53,10 +53,13 @@ export function Footer() {
               The Crow Theory
             </a>
           </p>
+          <p className="site-footer__brand-dot">.</p>
         </div>
       </div>
 
-      <nav className="site-footer__nav fig-c4-12 fig-sub-3" aria-label="Footer">
+      <div className="site-footer__divider" aria-hidden="true" />
+
+      <nav className="site-footer__nav" aria-label="Footer">
         <div className="site-footer__col">
           <a href={KMB_URL} target="_blank" rel="noreferrer">
             Kochi Biennale Foundation
