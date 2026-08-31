@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import "./Footer.css";
 
 const KMB_URL = "https://kochimuzirisbiennale.org/";
+const KBF_ABOUT_URL = "https://kochimuzirisbiennale.org/about";
 const GOOGLE_ARTS_URL = "https://artsandculture.google.com/partner/kochi-biennale";
 const CROW_THEORY_URL = "https://www.thecrowtheory.com/";
 
@@ -61,13 +62,13 @@ export function Footer() {
 
       <nav className="site-footer__nav" aria-label="Footer">
         <div className="site-footer__col">
-          <a href={KMB_URL} target="_blank" rel="noreferrer">
+          <a href={KBF_ABOUT_URL} target="_blank" rel="noreferrer">
             Kochi Biennale Foundation
           </a>
           <a href={KMB_URL} target="_blank" rel="noreferrer">
             Kochi-Muzris-Biennale 2025-26
           </a>
-          <Link to="/editions/2025-26/curators">Students&apos; Biennale Editions</Link>
+          <Link to="/editions/2014-15">Students&apos; Biennale Editions</Link>
         </div>
 
         <div className="site-footer__col">
