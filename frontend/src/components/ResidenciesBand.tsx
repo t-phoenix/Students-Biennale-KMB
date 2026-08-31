@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { preloadUrls } from "../lib/preloadImages";
 import "./ResidenciesBand.css";
 
 export type ResidencySlide = {
@@ -38,13 +39,7 @@ export function ResidenciesBand({ slides }: Props) {
   }, [slides.length]);
 
   useEffect(() => {
-    for (const item of slides) {
-      if (!item.image) continue;
-      const img = new Image();
-      img.decoding = "async";
-      img.src = item.image;
-      void img.decode?.().catch(() => undefined);
-    }
+    void preloadUrls(slides.map((item) => item.image).filter(Boolean));
   }, [slides]);
 
   useGSAP(

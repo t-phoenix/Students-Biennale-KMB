@@ -1,0 +1,69 @@
+/* Brand loader — SB mark + advancing chevron stripes (CTA motif). */
+
+.brand-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      125deg,
+      color-mix(in srgb, var(--color-primary-dark) 88%, transparent),
+      color-mix(in srgb, var(--color-neutral-gray-dark) 72%, transparent)
+    );
+}
+
+.brand-loader--inline {
+  border-radius: inherit;
+}
+
+.brand-loader__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  gap: 18px;
+}
+
+.brand-loader__mark {
+  width: clamp(42px, 8vw, 56px);
+  height: auto;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.18));
+}
+
+.brand-loader__chevrons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transform: translateX(-6px);
+}
+
+.brand-loader__chevron {
+  display: block;
+  width: 28px;
+  height: 8px;
+  clip-path: polygon(0 50%, 72% 0, 72% 35%, 100% 35%, 100% 65%, 72% 65%, 72% 100%);
+  opacity: 0.85;
+}
+
+.brand-loader__chevron--red {
+  background: var(--color-primary-red);
+}
+
+.brand-loader__chevron--green {
+  background: var(--color-primary-green);
+  width: 22px;
+}
+
+.brand-loader__chevron--teal {
+  background: var(--color-primary-teal);
+  width: 16px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-loader__chevrons {
+    opacity: 0.65;
+  }
+}

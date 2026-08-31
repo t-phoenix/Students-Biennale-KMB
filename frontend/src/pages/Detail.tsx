@@ -5,6 +5,7 @@ import { CtaLink } from "../components/CtaLink";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import { HighlightText } from "../components/HighlightText";
 import { venueImages } from "../data/site";
+import { prefetchNextArtwork } from "../lib/predictivePrefetch";
 import {
   artworksForZoneIn,
   findCard,
@@ -49,6 +50,11 @@ export function Detail() {
     },
     { scope: root, dependencies: [id, kindSeg] }
   );
+
+  useEffect(() => {
+    if (kindSeg !== "artworks" || !id) return;
+    prefetchNextArtwork(catalogue.artworks, id);
+  }, [kindSeg, id, catalogue.artworks]);
 
   const back = `/editions/${yearId}/${kindSeg}`;
 

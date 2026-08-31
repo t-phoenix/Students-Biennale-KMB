@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { type CanvasItem } from "../../data/site";
 import { findCard, useAllArtworks } from "../../lib/catalogue";
+import { prefetchArtworkGallery } from "../../lib/predictivePrefetch";
 import { ArtworkDetailBody } from "../ArtworkDetailBody";
 import { CtaLink } from "../CtaLink";
 import { gsap, useGSAP, prefersReducedMotion } from "../../lib/motion";
@@ -28,6 +29,10 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
     const id = canvasArtworkId(item.id);
     return id ? findCard(artworks, id) : undefined;
   }, [artworks, item.id]);
+
+  useEffect(() => {
+    prefetchArtworkGallery(artwork);
+  }, [artwork]);
 
   // FLIP transform that makes the full-size sheet exactly overlay the
   // clicked tile's position/size — computed once on open, reused in reverse

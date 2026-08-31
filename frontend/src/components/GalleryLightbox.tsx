@@ -1,6 +1,8 @@
 import { useEffect, useRef, type TouchEvent as ReactTouchEvent } from "react";
 import { createPortal } from "react-dom";
+import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useModalPortal } from "../lib/useModalPortal";
+import { PreloadedImage } from "./PreloadedImage";
 import "./GalleryLightbox.css";
 
 type Props = {
@@ -23,6 +25,15 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
   const touchStart = useRef<{ x: number; y: number } | null>(null);
 
   useModalPortal({ open: true, onClose, panelRef, initialFocusRef: closeRef });
+
+  useEffect(() => {
+    void preloadUrls(images, "high", index);
+  }, [images, index]);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    void preloadAdjacent(images, index, 1, "high");
+  }, [images, index]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -78,7 +89,15 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        <img src={images[index]} alt="" className="gallery-lightbox__image" />
+        <div className="gallery-lightbox__frame">
+          <PreloadedImage
+            key={images[index]}
+            src={images[index]}
+            alt=""
+            className="gallery-lightbox__image"
+            prefetch={images.filter((_, i) => i !== index)}
+          />
+        </div>
         <button ref={closeRef} type="button" className="gallery-lightbox__close" aria-label="Close" onClick={onClose}>
           ✕
         </button>

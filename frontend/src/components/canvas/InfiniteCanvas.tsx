@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCanvasPack, getCanvasTier, type ArtworkCard, type CanvasItem } from "../../data/site";
+import { findCard } from "../../lib/catalogue";
+import { prefetchArtworkGallery } from "../../lib/predictivePrefetch";
 import { gsap, prefersReducedMotion, useGSAP } from "../../lib/motion";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
@@ -165,13 +167,21 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   // every tile on the canvas — this can be a large tile count and re-rendering
   // all of them per mouse move would be the kind of jank GSAP everywhere else
   // in this component is specifically built to avoid.
-  const handleTileHover = useCallback((id: string | null) => {
-    const root = rootRef.current;
-    if (!root) return;
-    root.querySelectorAll<HTMLElement>(".canvas-tile").forEach((tile) => {
-      tile.classList.toggle("is-hover-dimmed", id !== null && tile.dataset.id !== id);
-    });
-  }, []);
+  const handleTileHover = useCallback(
+    (id: string | null) => {
+      const root = rootRef.current;
+      if (!root) return;
+      root.querySelectorAll<HTMLElement>(".canvas-tile").forEach((tile) => {
+        tile.classList.toggle("is-hover-dimmed", id !== null && tile.dataset.id !== id);
+      });
+
+      if (!id || !artworks?.length || !id.startsWith("aw-")) return;
+      const artworkId = id.slice(3).replace(/__c\d+-\d+$/, "");
+      const artwork = findCard(artworks, artworkId);
+      prefetchArtworkGallery(artwork);
+    },
+    [artworks],
+  );
 
   const applyTransform = useCallback(() => {
     const world = worldRef.current;
@@ -449,6 +459,10 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     if (suppressClick.current) {
       suppressClick.current = false;
       return;
+    }
+    if (item.id.startsWith("aw-") && artworks?.length) {
+      const artworkId = item.id.slice(3).replace(/__c\d+-\d+$/, "");
+      prefetchArtworkGallery(findCard(artworks, artworkId));
     }
     onSelect(item, el);
   };

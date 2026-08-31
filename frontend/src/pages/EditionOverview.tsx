@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
@@ -6,6 +6,7 @@ import { HighlightText } from "../components/HighlightText";
 import { getEditionOverview } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue, useEditionCatalogue } from "../lib/catalogue";
+import { preloadUrls } from "../lib/preloadImages";
 import "./EditionOverview.css";
 
 /** Split "Inaugural Edition (2014 - 15)" into display lines for the title rail. */
@@ -145,6 +146,11 @@ export function EditionOverview() {
     ? splitEditionSubtitle(edition.subtitle).lines
     : [edition.subtitle];
   const nextLabel = edition.nextId?.replace("-", "–") ?? "";
+
+  useEffect(() => {
+    if (heroImages.length <= 1) return;
+    void preloadUrls(heroImages.slice(1));
+  }, [heroImages]);
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;

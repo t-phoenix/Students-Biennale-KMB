@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
@@ -22,6 +22,7 @@ import {
   defaultCtaLabel,
   type UpdateCardMode,
 } from "../lib/homeCms/updateCardLinks";
+import { prefetchHomeDestinations } from "../lib/predictivePrefetch";
 import { useProgrammes } from "../lib/programmes";
 import "./Home.css";
 
@@ -209,6 +210,10 @@ export function Home() {
         paragraphs: current.overallCuratorialNote.split("\n\n").filter(Boolean),
       }
     : SENSING_GROUNDS_NOTE;
+
+  useEffect(() => {
+    prefetchHomeDestinations(current ?? null);
+  }, [current]);
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;

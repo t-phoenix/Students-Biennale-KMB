@@ -3,6 +3,7 @@ import { LATEST_EDITION } from "../../data/site";
 import { loadCatalogues, peekCatalogues, refreshCataloguesIfStale } from "./cache";
 import { CatalogueContext } from "./context";
 import { mergeCatalogues } from "./mappers";
+import { prefetchCatalogueImages } from "../predictivePrefetch";
 
 export function CatalogueProvider({ children }: { children: ReactNode }) {
   const peeked = peekCatalogues();
@@ -33,6 +34,11 @@ export function CatalogueProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (status !== "ready" || !catalogues.length) return;
+    prefetchCatalogueImages(catalogues);
+  }, [status, catalogues]);
 
   const value = useMemo(
     () => ({

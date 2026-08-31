@@ -2,6 +2,8 @@ import { useEffect, useRef, useState, useCallback, type MouseEvent } from "react
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
+import { useCatalogue } from "../lib/catalogue";
+import { prefetchRouteHero } from "../lib/predictivePrefetch";
 import {
   type HomeSectionId,
   parseHomeHash,
@@ -56,6 +58,7 @@ const NAV: {
 export function Header() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { catalogues } = useCatalogue();
   const onHome = location.pathname === "/";
   const [activeSection, setActiveSection] = useState<HomeSectionId | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -289,6 +292,13 @@ export function Header() {
     navigate({ pathname: "/", hash });
   };
 
+  const warmRoute = useCallback(
+    (to: string) => {
+      prefetchRouteHero(to, catalogues);
+    },
+    [catalogues],
+  );
+
   return (
     <header ref={headerRef} className="site-header" data-node-id="6:287">
       <Link to="/" className="site-header__brand" aria-label="Students' Biennale home" onClick={closeImmediate}>
@@ -305,7 +315,14 @@ export function Header() {
       </Link>
 
       {location.pathname === "/artworks" ? null : (
-        <Link ref={discoverRef} to="/artworks" className="site-header__discover" onClick={closeImmediate}>
+        <Link
+          ref={discoverRef}
+          to="/artworks"
+          className="site-header__discover"
+          onClick={closeImmediate}
+          onMouseEnter={() => warmRoute("/artworks")}
+          onFocus={() => warmRoute("/artworks")}
+        >
           [Discover Artworks]
         </Link>
       )}
@@ -345,6 +362,8 @@ export function Header() {
                       : undefined
                   }
                   onClick={closeImmediate}
+                  onMouseEnter={() => warmRoute(item.to!)}
+                  onFocus={() => warmRoute(item.to!)}
                 >
                   {item.label}
                 </Link>
@@ -394,6 +413,8 @@ export function Header() {
                   to={d.to}
                   className={`site-header__dropdown-item${d.isCurrent ? " is-current" : ""}`}
                   onClick={closeImmediate}
+                  onMouseEnter={() => warmRoute(d.to)}
+                  onFocus={() => warmRoute(d.to)}
                 >
                   {d.label}
                 </Link>

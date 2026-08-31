@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { artworkImages, curatorsForArtwork, type ArtworkCard } from "../data/site";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { GalleryLightbox } from "./GalleryLightbox";
 import { HighlightText } from "./HighlightText";
+import { PreloadedImage } from "./PreloadedImage";
 import "../pages/Detail.css";
 
 type Props = {
@@ -28,7 +30,20 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
     setLightboxOpen(false);
   }, [a.id, slides.length]);
 
+  // Warm the full gallery as soon as the artwork opens — the carousel
+  // auto-advances every 4s, so upcoming slides should already be decoded.
+  useEffect(() => {
+    if (!slides.length) return;
+    void preloadUrls(slides, "high", 0);
+  }, [a.id, slides]);
+
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    void preloadAdjacent(slides, heroIndex, 1, "high");
+  }, [heroIndex, slides]);
+
   const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
+  const upcomingSlides = slides.filter((url) => url !== slide);
   const curated = curatorsForArtwork(a);
   const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
   const goNext = () => setHeroIndex((i) => (i + 1) % slides.length);
@@ -66,11 +81,12 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
       <div ref={heroRef} className="detail__hero detail__hero--cover detail-reveal">
         {slide ? (
           <>
-            <img
+            <PreloadedImage
               key={slide}
               src={slide}
               alt=""
               className="detail__hero-img"
+              prefetch={upcomingSlides}
               onClick={() => setLightboxOpen(true)}
             />
             <button

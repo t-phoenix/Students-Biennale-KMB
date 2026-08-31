@@ -1,11 +1,11 @@
 import { isSupabaseConfigured, supabase } from "../supabase";
+import { preloadUrl } from "../preloadImages";
 import type { HomeCms, HomeCover, HomeUpdateCard } from "./types";
 
 const STORAGE_KEY = "sb-home-cms-v3";
 
 let memory: HomeCms | null = null;
 let inflight: Promise<HomeCms> | null = null;
-const preloaded = new Set<string>();
 
 function isCover(value: unknown): value is HomeCover {
   if (!value || typeof value !== "object") return false;
@@ -40,17 +40,6 @@ function writeSession(data: HomeCms) {
   } catch {
     // Quota or private mode — in-memory cache still applies.
   }
-}
-
-function preloadUrl(url: string) {
-  if (!url || preloaded.has(url) || typeof Image === "undefined") return;
-  preloaded.add(url);
-  const img = new Image();
-  img.decoding = "async";
-  img.src = url;
-  void img.decode?.().catch(() => {
-    // decode() can reject for broken URLs; the <img> in the hero still loads.
-  });
 }
 
 function preloadCmsImages(data: HomeCms) {
