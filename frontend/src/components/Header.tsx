@@ -85,10 +85,11 @@ export function Header() {
     const fromHash = parseHomeHash(location.hash);
     if (fromHash) setActiveSection(fromHash);
 
-    const sections = NAV.filter((n) => !n.to)
-      .map((n) => document.getElementById(n.hash))
+    const sectionIds: HomeSectionId[] = ["editions", "programmes", "press", "about"];
+    const sectionEls = sectionIds
+      .map((id) => document.getElementById(id))
       .filter((el): el is HTMLElement => Boolean(el));
-    if (!sections.length) return;
+    if (!sectionEls.length) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -98,9 +99,9 @@ export function Header() {
         const top = visible[0]?.target;
         if (top?.id) setActiveSection(top.id as HomeSectionId);
       },
-      { rootMargin: "-30% 0px -45% 0px", threshold: [0.1, 0.25, 0.5] }
+      { rootMargin: "-20% 0px -40% 0px", threshold: [0.08, 0.25, 0.5] }
     );
-    sections.forEach((el) => observer.observe(el));
+    sectionEls.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
   }, [onHome, location.hash]);
 
@@ -363,6 +364,7 @@ export function Header() {
                   className={
                     (item.hash === "editions" && location.pathname.startsWith("/editions")) ||
                     (item.to && location.pathname.startsWith(item.to)) ||
+                    (onHome && activeSection === item.hash) ||
                     activeDropdown === item.hash
                       ? "is-active"
                       : undefined
@@ -378,7 +380,9 @@ export function Header() {
                   href={`/#${item.hash}`}
                   data-label={item.hash}
                   className={
-                    (onHome && activeSection === item.hash) || activeDropdown === item.hash
+                    (item.hash === "editions" && location.pathname.startsWith("/editions")) ||
+                    (onHome && activeSection === item.hash) ||
+                    activeDropdown === item.hash
                       ? "is-active"
                       : undefined
                   }

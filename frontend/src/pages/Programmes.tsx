@@ -174,7 +174,7 @@ export function Programmes() {
                 <p className="programmes__meta">
                   Date : {p.date}
                   <br />
-                  Place : {p.place}
+                  Facilitator : {p.place}
                 </p>
                 <p>{p.blurb}</p>
                 <button type="button" className="programmes__card-button">

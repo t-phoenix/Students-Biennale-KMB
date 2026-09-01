@@ -99,8 +99,32 @@
 }
 
 .past-workshop-detail__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
   font-size: var(--type-subtitle-size);
-  align-self: center;
+  line-height: var(--type-subtitle-line);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  align-self: start;
+}
+
+.past-workshop-detail__back-arrow {
+  display: inline-block;
+  font-size: 1.1em;
+  transition: transform 0.25s ease;
+}
+
+.past-workshop-detail__back:hover .past-workshop-detail__back-arrow {
+  transform: translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .past-workshop-detail__back:hover .past-workshop-detail__back-arrow {
+    transform: none;
+  }
 }
 
 .past-workshop-detail__next {

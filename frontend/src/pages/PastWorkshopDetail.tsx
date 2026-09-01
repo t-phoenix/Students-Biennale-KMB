@@ -57,6 +57,10 @@ export function PastWorkshopDetail() {
       )}
 
       <div className="fig-grid past-workshop-detail__section workshop-reveal">
+        <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
+          <span className="past-workshop-detail__back-arrow" aria-hidden>←</span>
+          <span>BACK</span>
+        </Link>
         <div className="fig-c4-9">
           <h1 className="past-workshop-detail__title">{workshop.title}</h1>
           <div className="past-workshop-detail__meta">
@@ -64,6 +68,7 @@ export function PastWorkshopDetail() {
               <strong>Facilitators:</strong> {workshop.facilitators}
             </p>
             {workshop.location ? <p>{workshop.location}</p> : null}
+            {workshop.year ? <p>{workshop.year}</p> : null}
           </div>
         </div>
       </div>
@@ -106,7 +111,8 @@ export function PastWorkshopDetail() {
 
       <div className="fig-grid past-workshop-detail__nav">
         <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
-          BACK
+          <span className="past-workshop-detail__back-arrow" aria-hidden>←</span>
+          <span>BACK</span>
         </Link>
         {next ? (
           <CtaLink
