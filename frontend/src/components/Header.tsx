@@ -20,7 +20,7 @@ const DROPDOWNS: Record<
   editions: {
     align: "left",
     items: [
-      { label: LATEST_EDITION.id, to: `/editions/${LATEST_EDITION.id}/curators`, isCurrent: true },
+      { label: LATEST_EDITION.id, to: "/#editions", isCurrent: true },
       ...PREVIOUS_EDITIONS.map((year) => ({ label: year.replace("-", "–"), to: `/editions/${year}` })),
     ],
   },
@@ -49,7 +49,7 @@ const NAV: {
   to?: string;
   hasDropdown?: boolean;
 }[] = [
-  { hash: "editions", label: "EDITIONS", to: "/editions/2025-26/curators", hasDropdown: true },
+  { hash: "editions", label: "EDITIONS", hasDropdown: true },
   { hash: "programmes", label: "PROGRAMMES", to: "/programmes", hasDropdown: true },
   { hash: "press", label: "PRESS", to: "/press", hasDropdown: false },
   { hash: "about", label: "ABOUT", hasDropdown: true },

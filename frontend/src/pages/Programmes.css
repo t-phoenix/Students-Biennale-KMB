@@ -247,31 +247,18 @@
   margin-top: 60px;
 }
 
-/* "View More" for Past Workshops expands the list in place — a down-arrow
-   trigger, not a link to a separate page (per client feedback). */
-.programmes__more--expand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  font: inherit;
-  font-size: var(--type-caption-size);
-  letter-spacing: 0.135em;
-  text-transform: uppercase;
-  cursor: pointer;
-  color: var(--color-text-primary);
+.programmes__more--collapse .cta-link__arrow {
+  transform: scaleY(-1);
 }
 
-.programmes__more--expand:hover {
-  opacity: 0.7;
+.programmes__more--collapse .cta-link:hover .cta-link__arrow {
+  transform: scaleY(-1) translateX(4px);
 }
 
-.programmes__more--expand img {
-  width: 10px;
-  height: 14px;
-  transform: rotate(-90deg);
+@media (prefers-reduced-motion: reduce) {
+  .programmes__more--collapse .cta-link__arrow {
+    transform: none;
+  }
 }
 
 .programmes__awards {

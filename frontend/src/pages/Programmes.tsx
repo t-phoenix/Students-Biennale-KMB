@@ -20,6 +20,8 @@ export function Programmes() {
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [expandedPast, setExpandedPast] = useState(false);
+  const [expandedIntlAwards, setExpandedIntlAwards] = useState(false);
+  const [expandedNationalAwards, setExpandedNationalAwards] = useState(false);
   const { heroCovers } = useProgrammesCovers();
   const currentHeroSrc = heroCovers[heroSlide]?.image_url ?? heroCovers[0]?.image_url ?? "";
   const dotsTone = useCarouselDotsTone(currentHeroSrc, "right");
@@ -27,6 +29,13 @@ export function Programmes() {
     useProgrammes();
 
   const visiblePastWorkshops = expandedPast ? pastWorkshops : pastWorkshops.slice(0, 2);
+  const awardsPreviewCount = 3;
+  const visibleIntlAwards = expandedIntlAwards
+    ? awardsInternational
+    : awardsInternational.slice(0, awardsPreviewCount);
+  const visibleNationalAwards = expandedNationalAwards
+    ? awardsNational
+    : awardsNational.slice(0, awardsPreviewCount);
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -207,15 +216,13 @@ export function Programmes() {
             );
           })}
         </ul>
-        {!expandedPast && pastWorkshops.length > 2 ? (
-          <button
-            type="button"
-            className="fig-cta-end programmes__more programmes__more--expand"
-            onClick={() => setExpandedPast(true)}
-          >
-            <img src="/icons/arrow-right.svg" alt="" aria-hidden />
-            <span>VIEW MORE</span>
-          </button>
+        {pastWorkshops.length > 2 ? (
+          <CtaLink
+            className={`fig-cta-end programmes__more${expandedPast ? " programmes__more--collapse" : ""}`}
+            lines={expandedPast ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
+            spacing={["0.26em", "0.135em"]}
+            onClick={() => setExpandedPast((open) => !open)}
+          />
         ) : null}
       </section>
 
@@ -225,7 +232,7 @@ export function Programmes() {
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">INTERNATIONAL AWARDS</h2>
           <div className="programmes__awards fig-c4-12 fig-sub-3">
-            {awardsInternational.map((a) => (
+            {visibleIntlAwards.map((a) => (
               <Link
                 key={a.id ?? `international-${a.name}-${a.artwork}`}
                 className="programmes__award"
@@ -247,11 +254,14 @@ export function Programmes() {
               </Link>
             ))}
           </div>
-          <CtaLink
-            className="fig-cta-end programmes__more"
-            lines={["VIEW", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-          />
+          {awardsInternational.length > awardsPreviewCount ? (
+            <CtaLink
+              className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
+              lines={expandedIntlAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
+              spacing={["0.26em", "0.135em"]}
+              onClick={() => setExpandedIntlAwards((open) => !open)}
+            />
+          ) : null}
         </section>
 
         <section className="programmes__block programmes__block--raza fig-grid prog-reveal">
@@ -315,7 +325,7 @@ export function Programmes() {
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">NATIONAL AWARDS</h2>
           <div className="programmes__awards fig-c4-12 fig-sub-3">
-            {awardsNational.map((a) => (
+            {visibleNationalAwards.map((a) => (
               <Link
                 key={a.id ?? `national-${a.name}-${a.artwork}`}
                 className="programmes__award"
@@ -337,11 +347,14 @@ export function Programmes() {
               </Link>
             ))}
           </div>
-          <CtaLink
-            className="fig-cta-end programmes__more"
-            lines={["VIEW", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-          />
+          {awardsNational.length > awardsPreviewCount ? (
+            <CtaLink
+              className={`fig-cta-end programmes__more${expandedNationalAwards ? " programmes__more--collapse" : ""}`}
+              lines={expandedNationalAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
+              spacing={["0.26em", "0.135em"]}
+              onClick={() => setExpandedNationalAwards((open) => !open)}
+            />
+          ) : null}
         </section>
       </div>
 
