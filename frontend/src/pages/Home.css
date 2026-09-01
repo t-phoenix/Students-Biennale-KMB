@@ -274,6 +274,7 @@
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .home-hero__artist {

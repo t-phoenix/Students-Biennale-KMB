@@ -155,18 +155,7 @@ export function Home() {
     currentCover?.show_institution,
     currentCover?.institution,
   );
-  const creditHeading = (currentCover?.artwork_name ?? "").trim();
-  const creditParts = creditHeading.split(/\s+/);
-  const creditArtwork =
-    creditParts.length === 2 ? (
-      <>
-        {creditParts[0]}
-        <br />
-        {creditParts[1]}
-      </>
-    ) : (
-      creditHeading
-    );
+  const creditArtwork = (currentCover?.artwork_name ?? "").trim();
   const creditArtist = (currentCover?.artist ?? "").trim();
   const creditInst = (currentCover?.institution ?? "").trim();
   const showCredits = showArtwork || showArtist || showInstitution;
