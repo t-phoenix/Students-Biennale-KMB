@@ -1,5 +1,5 @@
 import { isSupabaseConfigured, supabase } from "../supabase";
-import { FALLBACK_PROGRAMMES } from "./fallbacks";
+import { EMPTY_PROGRAMMES } from "./fallbacks";
 import { mapProgrammes } from "./mappers";
 import type { AwardWinnerRow, MappedProgrammes, ProgrammeAsset, ProgrammeRow } from "./types";
 
@@ -156,7 +156,7 @@ async function fetchMapped(): Promise<MappedProgrammes> {
     fetchAssets(),
     fetchAwardWinners(),
   ]);
-  if (!rows.length) return FALLBACK_PROGRAMMES;
+  if (!rows.length) return EMPTY_PROGRAMMES;
   return mapProgrammes(rows, assets, awardWinners);
 }
 
@@ -176,7 +176,7 @@ export async function loadProgrammes(): Promise<MappedProgrammes> {
   }
   if (inflight) return inflight;
   if (!isSupabaseConfigured || !supabase) {
-    memory = FALLBACK_PROGRAMMES;
+    memory = EMPTY_PROGRAMMES;
     return memory;
   }
   inflight = fetchMapped()
@@ -196,7 +196,7 @@ export async function loadProgrammes(): Promise<MappedProgrammes> {
 /** Re-fetch so CMS edits show up in the same tab after a navigation. */
 export async function refreshProgrammes(): Promise<MappedProgrammes> {
   if (!isSupabaseConfigured || !supabase) {
-    memory = peekProgrammes() ?? FALLBACK_PROGRAMMES;
+    memory = peekProgrammes() ?? EMPTY_PROGRAMMES;
     return memory;
   }
   const mapped = await fetchMapped();

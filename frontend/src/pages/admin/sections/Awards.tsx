@@ -5,6 +5,11 @@ import { refreshProgrammes } from "../../../lib/programmes/cache";
 import { requireSupabase } from "../../../lib/supabase";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
 import { SearchableSelect } from "../../../components/admin/SearchableSelect";
+import {
+  VisibilityColumnHeader,
+  VisibilityRowToggle,
+  hiddenRowClass,
+} from "../../../components/admin/VisibilityToggle";
 import type { SectionProps } from "./types";
 
 interface Programme {
@@ -44,6 +49,7 @@ type WinnerView = {
   venue?: string;
   year?: string;
   sortOrder: number;
+  active: boolean;
 };
 
 const DEV_HELP =
@@ -122,7 +128,6 @@ export function Awards({ notify, confirm }: SectionProps) {
           .select(
             "id, programme_id, artwork_id, sort_order, active, artworks(title), award_winner_artists(person_id, sort_order, people(name))",
           )
-          .eq("active", true)
           .order("sort_order"),
       ]);
 
@@ -167,6 +172,7 @@ export function Awards({ notify, confirm }: SectionProps) {
           image: "",
           artists,
           sortOrder: row.sort_order,
+          active: row.active,
         };
       });
 
@@ -354,8 +360,22 @@ export function Awards({ notify, confirm }: SectionProps) {
     }
   };
 
+  const toggleActive = async (winner: WinnerView) => {
+    try {
+      const { error } = await sb
+        .from("award_winners")
+        .update({ active: !winner.active })
+        .eq("id", winner.id);
+      if (error) throw error;
+      await refreshProgrammes();
+      await load();
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to update visibility");
+    }
+  };
+
   const handleDelete = async (winner: WinnerView) => {
-    if (!(await confirm(`Remove award for “${winner.artworkTitle}”?`))) return;
+    if (!(await confirm(`Permanently remove award for “${winner.artworkTitle}”?`))) return;
     try {
       const { error } = await sb.from("award_winners").delete().eq("id", winner.id);
       if (error) throw error;
@@ -426,6 +446,7 @@ export function Awards({ notify, confirm }: SectionProps) {
             <table className="adm-table">
               <thead>
                 <tr>
+                  <VisibilityColumnHeader />
                   <th className="adm-table__cell--meta">Image</th>
                   <th>Artwork</th>
                   <th>Artists</th>
@@ -435,7 +456,13 @@ export function Awards({ notify, confirm }: SectionProps) {
               </thead>
               <tbody>
                 {rows.map((winner, i) => (
-                  <tr key={winner.id}>
+                  <tr key={winner.id} className={hiddenRowClass(winner.active)}>
+                    <td>
+                      <VisibilityRowToggle
+                        visible={winner.active}
+                        onToggle={() => toggleActive(winner)}
+                      />
+                    </td>
                     <td>
                       {winner.image ? (
                         <img src={winner.image} alt="" className="adm-table__thumb" />
@@ -487,7 +514,7 @@ export function Awards({ notify, confirm }: SectionProps) {
                           className="adm-btn adm-btn--danger adm-btn--small"
                           onClick={() => handleDelete(winner)}
                         >
-                          Delete
+                          Delete permanently
                         </button>
                       </div>
                     </td>

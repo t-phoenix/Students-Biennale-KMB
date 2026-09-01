@@ -6,6 +6,12 @@ import { refreshProgrammes } from "../../../lib/programmes/cache";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
+import {
+  VisibilityColumnHeader,
+  VisibilityField,
+  VisibilityRowToggle,
+  hiddenRowClass,
+} from "../../../components/admin/VisibilityToggle";
 import type { SectionProps } from "./types";
 
 interface Programme {
@@ -98,6 +104,15 @@ export function Workshops({ notify, confirm }: SectionProps) {
     }
   };
 
+  const togglePublished = async (row: Programme) => {
+    try {
+      await update(row.id, { published: !row.published });
+      await refreshProgrammes();
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to update visibility");
+    }
+  };
+
   const handleDelete = async (row: Programme) => {
     if (!(await confirm(`Delete workshop "${row.title}"?`))) return;
     try {
@@ -147,6 +162,7 @@ export function Workshops({ notify, confirm }: SectionProps) {
           <table className="adm-table">
             <thead>
               <tr>
+                <VisibilityColumnHeader />
                 <th className="adm-table__cell--meta">Image</th>
                 <th>Title</th>
                 <th className="adm-table__cell--date">Dates</th>
@@ -156,7 +172,13 @@ export function Workshops({ notify, confirm }: SectionProps) {
             </thead>
             <tbody>
               {list.map((r, i) => (
-                <tr key={r.id}>
+                <tr key={r.id} className={hiddenRowClass(r.published)}>
+                  <td>
+                    <VisibilityRowToggle
+                      visible={r.published}
+                      onToggle={() => togglePublished(r)}
+                    />
+                  </td>
                   <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
                   <td>
                     <div className="adm-table__clamp adm-table__clamp--2">{r.title}</div>
@@ -211,6 +233,10 @@ export function Workshops({ notify, confirm }: SectionProps) {
           <FormField label="Summary" value={editing.summary ?? ""} onChange={(v) => setEditing({ ...editing, summary: v })} multiline />
           <FormField label="Body" value={editing.body ?? ""} onChange={(v) => setEditing({ ...editing, body: v })} multiline />
           <ImageUpload value={editing._image ?? ""} onChange={(v) => setEditing({ ...editing, _image: v })} />
+          <VisibilityField
+            visible={editing.published !== false}
+            onChange={(visible) => setEditing({ ...editing, published: visible })}
+          />
           <div className="adm-form-actions">
             <button className="adm-btn adm-btn--primary" onClick={save} disabled={busy}>
               {busy ? "Saving…" : editing.id ? "Update" : "Create"}

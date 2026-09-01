@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
+import { refreshHomeCms } from "../../../lib/homeCms";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
@@ -7,6 +8,12 @@ import {
   CreditVisibilityToggles,
   type CreditVisibilityField,
 } from "../../../components/admin/CreditVisibilityToggles";
+import {
+  VisibilityColumnHeader,
+  VisibilityField,
+  VisibilityRowToggle,
+  hiddenRowClass,
+} from "../../../components/admin/VisibilityToggle";
 import type { SectionProps } from "./types";
 
 interface Cover {
@@ -34,6 +41,8 @@ const EMPTY: Omit<Cover, "id"> = {
   active: true,
 };
 
+const LAST_COVER_MSG = "Keep at least one live home cover visible.";
+
 function cellClass(show: boolean, text: string | null): string {
   const off = show === false || !text?.trim();
   return off
@@ -50,6 +59,9 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
   const [busy, setBusy] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
+  const visibleCount = rows.filter((r) => r.active).length;
+  const isLastVisible = (row: Cover) => row.active && visibleCount === 1;
+
   const setVisibility = (
     target: Partial<Cover>,
     key: CreditVisibilityField,
@@ -58,6 +70,15 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
 
   const save = async () => {
     if (!editing?.image_url) return;
+    const hidingLast =
+      editing.active === false &&
+      (editing.id
+        ? rows.find((r) => r.id === editing.id)?.active && visibleCount === 1
+        : visibleCount === 0);
+    if (hidingLast) {
+      notify("error", LAST_COVER_MSG);
+      return;
+    }
     setBusy(true);
     try {
       if (editing.id) {
@@ -88,7 +109,28 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
     }
   };
 
+  const toggleActive = async (row: Cover) => {
+    if (isLastVisible(row)) {
+      notify("error", LAST_COVER_MSG);
+      return;
+    }
+    try {
+      await update(row.id, { active: !row.active });
+      try {
+        await refreshHomeCms();
+      } catch {
+        /* public cache refresh is best-effort */
+      }
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to update visibility");
+    }
+  };
+
   const handleDelete = async (row: Cover) => {
+    if (isLastVisible(row)) {
+      notify("error", LAST_COVER_MSG);
+      return;
+    }
     if (!(await confirm(`Delete cover "${row.artwork_name || "Untitled"}"?`))) return;
     try {
       await remove(row.id);
@@ -203,6 +245,10 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
             }
             type="number"
           />
+          <VisibilityField
+            visible={editing.active !== false}
+            onChange={(visible) => setEditing({ ...editing, active: visible })}
+          />
           <div className="adm-form-actions">
             <button className="adm-btn adm-btn--primary" onClick={save} disabled={busy}>
               {busy ? "Saving…" : editing.id ? "Update" : "Create"}
@@ -221,19 +267,22 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
           <table className="adm-table">
             <thead>
               <tr>
+                <VisibilityColumnHeader />
                 <th className="adm-table__cell--meta">Image</th>
                 <th>Artwork</th>
                 <th>Artist</th>
                 <th>Institution</th>
                 <th className="adm-table__cell--vis">Hero</th>
                 <th className="adm-table__cell--num">Order</th>
-                <th className="adm-table__cell--meta">Active</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r.id}>
+                <tr key={r.id} className={hiddenRowClass(r.active)}>
+                  <td>
+                    <VisibilityRowToggle visible={r.active} onToggle={() => toggleActive(r)} />
+                  </td>
                   <td>
                     {r.image_url && (
                       <img src={r.image_url} alt="" className="adm-table__thumb" />
@@ -262,7 +311,6 @@ export function HomeCovers({ notify, confirm }: SectionProps) {
                     />
                   </td>
                   <td>{r.sort_order}</td>
-                  <td>{r.active ? "Yes" : "No"}</td>
                   <td>
                     <div className="adm-table__actions">
                       <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />

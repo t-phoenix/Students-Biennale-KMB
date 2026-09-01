@@ -1,9 +1,16 @@
 import { useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
 import { swapSortOrder } from "../../../lib/admin/reorder";
+import { refreshPressItems } from "../../../lib/pressCms";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
+import {
+  VisibilityColumnHeader,
+  VisibilityField,
+  VisibilityRowToggle,
+  hiddenRowClass,
+} from "../../../components/admin/VisibilityToggle";
 import type { SectionProps } from "./types";
 
 interface PressItem {
@@ -63,6 +70,19 @@ export function PressItems({ notify, confirm }: SectionProps) {
     }
   };
 
+  const togglePublished = async (row: PressItem) => {
+    try {
+      await update(row.id, { published: !row.published });
+      try {
+        await refreshPressItems();
+      } catch {
+        /* public cache refresh is best-effort */
+      }
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to update visibility");
+    }
+  };
+
   const handleDelete = async (row: PressItem) => {
     if (!(await confirm(`Delete "${row.title}"?`))) return;
     try {
@@ -116,6 +136,10 @@ export function PressItems({ notify, confirm }: SectionProps) {
           <FormField label="Excerpt / Author" value={editing.excerpt ?? ""} onChange={(v) => setEditing({ ...editing, excerpt: v })} multiline />
           <FormField label="Content (Markdown)" value={editing.body ?? ""} onChange={(v) => setEditing({ ...editing, body: v })} multiline />
           <ImageUpload value={editing._image ?? ""} onChange={(v) => setEditing({ ...editing, _image: v })} />
+          <VisibilityField
+            visible={editing.published !== false}
+            onChange={(visible) => setEditing({ ...editing, published: visible })}
+          />
           <div className="adm-form-actions">
             <button className="adm-btn adm-btn--primary" onClick={save} disabled={busy}>
               {busy ? "Saving…" : editing.id ? "Update" : "Create"}
@@ -131,6 +155,7 @@ export function PressItems({ notify, confirm }: SectionProps) {
         <div className="adm-table-wrap">
           <table className="adm-table adm-table--press">
             <colgroup>
+              <col className="adm-col--show" />
               <col className="adm-col--title" />
               <col className="adm-col--date" />
               <col className="adm-col--order" />
@@ -139,22 +164,27 @@ export function PressItems({ notify, confirm }: SectionProps) {
             </colgroup>
             <thead>
               <tr>
+                <VisibilityColumnHeader />
                 <th>Title</th>
                 <th>Date</th>
                 <th>Order</th>
-                <th>Published</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r.id}>
+                <tr key={r.id} className={hiddenRowClass(r.published)}>
+                  <td>
+                    <VisibilityRowToggle
+                      visible={r.published}
+                      onToggle={() => togglePublished(r)}
+                    />
+                  </td>
                   <td>
                     <div className="adm-table__clamp adm-table__clamp--2">{r.title}</div>
                   </td>
                   <td>{r.published_at ? new Date(r.published_at).toLocaleDateString() : "—"}</td>
                   <td>{r.sort_order ?? "—"}</td>
-                  <td>{r.published ? "Yes" : "No"}</td>
                   <td>
                     <div className="adm-table__actions">
                       <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />

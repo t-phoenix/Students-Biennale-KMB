@@ -1,6 +1,6 @@
 import type { ArtworkCard, PastWorkshop } from "../../data/site";
 import type { ResidencySlide } from "../../components/ResidenciesBand";
-import { FALLBACK_PROGRAMMES } from "./fallbacks";
+import { EMPTY_PROGRAMMES } from "./fallbacks";
 import type {
   AwardWinnerCard,
   AwardWinnerRow,
@@ -362,8 +362,8 @@ function scholarImage(name: string): string {
 }
 
 export function parseRazaProgramme(row: ProgrammeRow | undefined): RazaProgramme {
-  const fallback = FALLBACK_PROGRAMMES.raza;
-  if (!row) return fallback;
+  const empty = EMPTY_PROGRAMMES.raza;
+  if (!row) return empty;
 
   const skipPara = (para: string) =>
     para === row.title ||
@@ -412,11 +412,11 @@ export function parseRazaProgramme(row: ProgrammeRow | undefined): RazaProgramme
   }
 
   return {
-    title: row.title || fallback.title,
+    title: row.title || empty.title,
     subtitle: RAZA_SUBTITLE,
-    intro: intro.length ? intro : fallback.intro,
-    scholars: scholars.length ? scholars : fallback.scholars,
-    closing: closing.length ? closing : fallback.closing,
+    intro: intro.length ? intro : empty.intro,
+    scholars: scholars.length ? scholars : empty.scholars,
+    closing: closing.length ? closing : empty.closing,
   };
 }
 

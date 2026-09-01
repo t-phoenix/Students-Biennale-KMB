@@ -111,4 +111,18 @@ export function loadHomeCms(): Promise<HomeCms> {
   return inflight;
 }
 
+/** Force a fresh fetch (e.g. after CMS visibility edits). */
+export async function refreshHomeCms(): Promise<HomeCms> {
+  memory = null;
+  if (typeof sessionStorage !== "undefined") {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+  inflight = null;
+  return loadHomeCms();
+}
+
 void loadHomeCms();

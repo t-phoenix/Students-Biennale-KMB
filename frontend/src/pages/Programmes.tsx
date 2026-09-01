@@ -8,6 +8,7 @@ import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { ResidenciesBand } from "../components/ResidenciesBand";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
+import { SectionEmpty } from "../components/SectionEmpty";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
 import { LATEST_EDITION } from "../data/site";
 import "./Programmes.css";
@@ -36,6 +37,7 @@ export function Programmes() {
   const visibleNationalAwards = expandedNationalAwards
     ? awardsNational
     : awardsNational.slice(0, awardsPreviewCount);
+  const showRaza = raza.intro.length > 0 || raza.scholars.length > 0;
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -116,6 +118,7 @@ export function Programmes() {
 
   return (
     <div ref={root} className="programmes">
+      {heroCovers.length > 0 ? (
       <section className="programmes__hero prog-reveal" aria-label="Programmes hero">
         <div className="programmes__hero-slides" aria-hidden={heroCovers.length > 1}>
           {heroCovers.map((cover) => (
@@ -156,6 +159,7 @@ export function Programmes() {
           </>
         ) : null}
       </section>
+      ) : null}
 
       <section id="workshops" className="programmes__block fig-grid prog-reveal">
         <h1 className="fig-label fig-subheading">UPCOMING WORKSHOPS</h1>
@@ -180,12 +184,13 @@ export function Programmes() {
             ))}
           </div>
         ) : (
-          <p className="fig-c4-12">No upcoming workshops at the moment. Please check back later.</p>
+          <SectionEmpty>No upcoming workshops at the moment. Please check back later.</SectionEmpty>
         )}
       </section>
 
       <section className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
+        {pastWorkshops.length ? (
         <ul className="programmes__completed fig-c4-12">
           {visiblePastWorkshops.map((item) => {
             const isOpen = Boolean(item.description);
@@ -216,6 +221,9 @@ export function Programmes() {
             );
           })}
         </ul>
+        ) : (
+          <SectionEmpty>No past workshops published yet.</SectionEmpty>
+        )}
         {pastWorkshops.length > 2 ? (
           <CtaLink
             className={`fig-cta-end programmes__more${expandedPast ? " programmes__more--collapse" : ""}`}
@@ -231,6 +239,7 @@ export function Programmes() {
       <div id="awards">
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">INTERNATIONAL AWARDS</h2>
+          {awardsInternational.length ? (
           <div className="programmes__awards fig-c4-12 fig-sub-3">
             {visibleIntlAwards.map((a) => (
               <Link
@@ -254,6 +263,9 @@ export function Programmes() {
               </Link>
             ))}
           </div>
+          ) : (
+            <SectionEmpty>No international awards published yet.</SectionEmpty>
+          )}
           {awardsInternational.length > awardsPreviewCount ? (
             <CtaLink
               className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
@@ -264,6 +276,7 @@ export function Programmes() {
           ) : null}
         </section>
 
+        {showRaza ? (
         <section className="programmes__block programmes__block--raza fig-grid prog-reveal">
           <div className="fig-c1-3 programmes__raza-rail">
             <h2 className="fig-heading programmes__raza-rail-heading">
@@ -321,9 +334,11 @@ export function Programmes() {
             ))}
           </div>
         </section>
+        ) : null}
 
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">NATIONAL AWARDS</h2>
+          {awardsNational.length ? (
           <div className="programmes__awards fig-c4-12 fig-sub-3">
             {visibleNationalAwards.map((a) => (
               <Link
@@ -347,6 +362,9 @@ export function Programmes() {
               </Link>
             ))}
           </div>
+          ) : (
+            <SectionEmpty>No national awards published yet.</SectionEmpty>
+          )}
           {awardsNational.length > awardsPreviewCount ? (
             <CtaLink
               className={`fig-cta-end programmes__more${expandedNationalAwards ? " programmes__more--collapse" : ""}`}
@@ -357,6 +375,12 @@ export function Programmes() {
           ) : null}
         </section>
       </div>
+
+      {residencies.length === 0 ? (
+        <section id="residencies" className="programmes__block fig-grid prog-reveal">
+          <SectionEmpty>No residencies published yet.</SectionEmpty>
+        </section>
+      ) : null}
 
       <ResidenciesBand slides={toResidencySlides(residencies)} />
 

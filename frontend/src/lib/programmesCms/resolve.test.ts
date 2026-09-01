@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveHomeProgrammesBanner, resolveProgrammesHeroCovers } from "./resolve";
-import {
-  HOME_PROGRAMMES_BANNER_FALLBACK,
-  PROGRAMMES_HERO_FALLBACK,
-  type ProgrammesCover,
-} from "./types";
+import type { ProgrammesCover } from "./types";
 
 const sample: ProgrammesCover[] = [
   { id: "a", image_url: "/a.jpg", sort_order: 0, show_on_home: false },
@@ -13,16 +9,8 @@ const sample: ProgrammesCover[] = [
 ];
 
 describe("resolveProgrammesHeroCovers", () => {
-  it("returns static fallback when empty", () => {
-    const result = resolveProgrammesHeroCovers([]);
-    expect(result).toEqual([
-      {
-        id: "fallback",
-        image_url: PROGRAMMES_HERO_FALLBACK,
-        sort_order: 0,
-        show_on_home: false,
-      },
-    ]);
+  it("returns empty array when no covers", () => {
+    expect(resolveProgrammesHeroCovers([])).toEqual([]);
   });
 
   it("returns covers unchanged when present", () => {
@@ -31,8 +19,8 @@ describe("resolveProgrammesHeroCovers", () => {
 });
 
 describe("resolveHomeProgrammesBanner", () => {
-  it("returns static fallback when empty", () => {
-    expect(resolveHomeProgrammesBanner([])).toBe(HOME_PROGRAMMES_BANNER_FALLBACK);
+  it("returns null when empty", () => {
+    expect(resolveHomeProgrammesBanner([])).toBeNull();
   });
 
   it("picks the show_on_home cover", () => {

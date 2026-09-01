@@ -6,7 +6,7 @@ import type { ProgrammesCmsStatus, ProgrammesCover } from "./types";
 export function useProgrammesCovers(): {
   covers: ProgrammesCover[];
   heroCovers: ProgrammesCover[];
-  homeBannerUrl: string;
+  homeBannerUrl: string | null;
   status: ProgrammesCmsStatus;
 } {
   const peeked = peekProgrammesCovers();

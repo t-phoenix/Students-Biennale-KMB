@@ -1,4 +1,5 @@
 import { LATEST_EDITION, PRESS } from "../../data/site";
+import { peekPressItems } from "../pressCms";
 import type { MappedProgrammes } from "../programmes/types";
 
 export type UpdateCardMode = "content" | "internal" | "external";
@@ -128,7 +129,9 @@ export function buildInternalLinkOptions(
     });
   }
 
-  for (const item of PRESS) {
+  const cmsPress = peekPressItems();
+  const pressSource = cmsPress?.length ? cmsPress : PRESS;
+  for (const item of pressSource) {
     options.push({
       id: item.id,
       kind: "press",

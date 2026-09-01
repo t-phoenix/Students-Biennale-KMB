@@ -5,6 +5,12 @@ import { refreshProgrammesCovers } from "../../../lib/programmesCms";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
+import {
+  VisibilityColumnHeader,
+  VisibilityField,
+  VisibilityRowToggle,
+  hiddenRowClass,
+} from "../../../components/admin/VisibilityToggle";
 import type { SectionProps } from "./types";
 
 interface Cover {
@@ -22,6 +28,8 @@ const EMPTY: Omit<Cover, "id"> = {
   show_on_home: false,
 };
 
+const LAST_COVER_MSG = "Keep at least one live programmes cover visible.";
+
 async function clearHomeFlag(exceptId?: string) {
   const sb = requireSupabase();
   let q = sb.from("programmes_covers").update({ show_on_home: false }).eq("show_on_home", true);
@@ -38,6 +46,9 @@ export function ProgrammesCovers({ notify, confirm }: SectionProps) {
   const [editing, setEditing] = useState<Partial<Cover> | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const visibleCount = rows.filter((r) => r.active).length;
+  const isLastVisible = (row: Cover) => row.active && visibleCount === 1;
+
   const bustCache = async () => {
     try {
       await refreshProgrammesCovers();
@@ -48,6 +59,15 @@ export function ProgrammesCovers({ notify, confirm }: SectionProps) {
 
   const save = async () => {
     if (!editing?.image_url) return;
+    const hidingLast =
+      editing.active === false &&
+      (editing.id
+        ? rows.find((r) => r.id === editing.id)?.active && visibleCount === 1
+        : visibleCount === 0);
+    if (hidingLast) {
+      notify("error", LAST_COVER_MSG);
+      return;
+    }
     setBusy(true);
     try {
       if (editing.show_on_home) await clearHomeFlag(editing.id);
@@ -85,6 +105,10 @@ export function ProgrammesCovers({ notify, confirm }: SectionProps) {
   };
 
   const toggleActive = async (row: Cover) => {
+    if (isLastVisible(row)) {
+      notify("error", LAST_COVER_MSG);
+      return;
+    }
     try {
       await update(row.id, { active: !row.active });
       await bustCache();
@@ -94,6 +118,10 @@ export function ProgrammesCovers({ notify, confirm }: SectionProps) {
   };
 
   const handleDelete = async (row: Cover) => {
+    if (isLastVisible(row)) {
+      notify("error", LAST_COVER_MSG);
+      return;
+    }
     if (!(await confirm("Delete this programmes cover?"))) return;
     try {
       await remove(row.id);
@@ -158,14 +186,10 @@ export function ProgrammesCovers({ notify, confirm }: SectionProps) {
             }
             type="number"
           />
-          <label className="adm-field">
-            <span className="adm-field__label">Active</span>
-            <input
-              type="checkbox"
-              checked={editing.active !== false}
-              onChange={(e) => setEditing({ ...editing, active: e.target.checked })}
-            />
-          </label>
+          <VisibilityField
+            visible={editing.active !== false}
+            onChange={(visible) => setEditing({ ...editing, active: visible })}
+          />
           <label className="adm-field">
             <span className="adm-field__label">Use as Home programmes banner</span>
             <input
@@ -192,16 +216,23 @@ export function ProgrammesCovers({ notify, confirm }: SectionProps) {
           <table className="adm-table">
             <thead>
               <tr>
+                <VisibilityColumnHeader />
                 <th className="adm-table__cell--meta">Image</th>
                 <th className="adm-table__cell--meta">Home</th>
                 <th className="adm-table__cell--num">Order</th>
-                <th className="adm-table__cell--meta">Active</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r.id}>
+                <tr key={r.id} className={hiddenRowClass(r.active)}>
+                  <td>
+                    <VisibilityRowToggle
+                      visible={r.active}
+                      onToggle={() => toggleActive(r)}
+                      disabled={busy}
+                    />
+                  </td>
                   <td>
                     {r.image_url && (
                       <img src={r.image_url} alt="" className="adm-table__thumb" />
@@ -222,15 +253,6 @@ export function ProgrammesCovers({ notify, confirm }: SectionProps) {
                     )}
                   </td>
                   <td>{r.sort_order}</td>
-                  <td>
-                    <button
-                      type="button"
-                      className="adm-btn adm-btn--ghost adm-btn--small"
-                      onClick={() => toggleActive(r)}
-                    >
-                      {r.active ? "Yes" : "No"}
-                    </button>
-                  </td>
                   <td>
                     <div className="adm-table__actions">
                       <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />

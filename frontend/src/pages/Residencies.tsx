@@ -4,6 +4,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import { useProgrammes } from "../lib/programmes";
+import { SectionEmpty } from "../components/SectionEmpty";
 import type { ResidencyProgramme } from "../lib/programmes/types";
 import "./Residencies.css";
 
@@ -62,7 +63,7 @@ export function Residencies() {
   if (!residencies.length) {
     return (
       <div ref={root} className="residencies">
-        <p className="fig-grid residencies__empty">No residencies published yet.</p>
+        <SectionEmpty className="residencies__empty">No residencies published yet.</SectionEmpty>
       </div>
     );
   }

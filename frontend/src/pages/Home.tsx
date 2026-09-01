@@ -30,42 +30,6 @@ import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import "./Home.css";
 
-const FALLBACK_UPDATES: ActiveUpdateCard[] = [
-  {
-    id: "u1",
-    mode: "content",
-    heading: "Update 01",
-    body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
-    detailBody:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966.",
-    imageUrl: null,
-    href: null,
-    ctaLabel: null,
-  },
-  {
-    id: "u2",
-    mode: "content",
-    heading: "Update 02",
-    body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
-    detailBody:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966.",
-    imageUrl: null,
-    href: null,
-    ctaLabel: null,
-  },
-  {
-    id: "u3",
-    mode: "content",
-    heading: "Update 03",
-    body: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966",
-    detailBody:
-      "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966.",
-    imageUrl: null,
-    href: null,
-    ctaLabel: null,
-  },
-];
-
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
   if (value === "internal" || value === "external" || value === "content") return value;
   if (value === "programmes" || value === "news") return "internal";
@@ -119,34 +83,21 @@ export function Home() {
     useProgrammes();
   const { homeBannerUrl } = useProgrammesCovers();
   const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
-  const covers = dynamicCovers.length
-    ? dynamicCovers
-    : Array.from({ length: 5 }, (_, i) => ({
-        id: `fallback-${i}`,
-        image_url: "/home/hero.jpg",
-        artwork_name: null,
-        artist: null,
-        institution: null,
-        show_artwork_name: false,
-        show_artist: false,
-        show_institution: false,
-      }));
-  const cards: ActiveUpdateCard[] = cmsCards.length
-    ? cmsCards.map((c) => {
-        const mode = normalizeCardMode(c.card_type);
-        const href = c.link_url?.trim() || null;
-        return {
-          id: c.id,
-          mode,
-          heading: c.heading,
-          body: c.body,
-          detailBody: c.detail_body,
-          imageUrl: c.image_url,
-          href,
-          ctaLabel: c.link_label || defaultCtaLabel(mode),
-        };
-      })
-    : [...FALLBACK_UPDATES];
+  const covers = dynamicCovers;
+  const cards: ActiveUpdateCard[] = cmsCards.map((c) => {
+    const mode = normalizeCardMode(c.card_type);
+    const href = c.link_url?.trim() || null;
+    return {
+      id: c.id,
+      mode,
+      heading: c.heading,
+      body: c.body,
+      detailBody: c.detail_body,
+      imageUrl: c.image_url,
+      href,
+      ctaLabel: c.link_label || defaultCtaLabel(mode),
+    };
+  });
   const currentCover = covers[slide] ?? covers[0];
   const dotsTone = useCarouselDotsTone(currentCover?.image_url ?? "", "center");
   const showArtwork = heroCreditVisible(currentCover?.show_artwork_name, currentCover?.artwork_name);
@@ -159,11 +110,9 @@ export function Home() {
   const creditArtist = (currentCover?.artist ?? "").trim();
   const creditInst = (currentCover?.institution ?? "").trim();
   const showCredits = showArtwork || showArtist || showInstitution;
-  const workshopThumb =
-    upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "/home/thumb-workshops.jpg";
-  const residencyThumb = residencies[0]?.heroImage || "/home/thumb-residencies.jpg";
-  const awardsThumb =
-    awardsInternational[0]?.image || awardsNational[0]?.image || "/home/thumb-awards.jpg";
+  const workshopThumb = upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || null;
+  const residencyThumb = residencies[0]?.heroImage || null;
+  const awardsThumb = awardsInternational[0]?.image || awardsNational[0]?.image || null;
   const yearId = current?.years ?? LATEST_EDITION.id;
   const overviewParas = (current?.overview || `${EDITION_SHORT}\n\n${EDITION_MORE}`)
     .split("\n\n")
@@ -619,7 +568,7 @@ export function Home() {
               PROGRAMMES
             </h2>
             <div className="home-programmes__banner fig-c4-12">
-              <img src={homeBannerUrl} alt="" />
+              {homeBannerUrl ? <img src={homeBannerUrl} alt="" /> : null}
             </div>
           </div>
           <div className="fig-grid home-programmes__bottom">
@@ -658,7 +607,11 @@ export function Home() {
                   onMouseEnter={() => setProgrammesHover(tab.hash)}
                   onMouseLeave={() => setProgrammesHover(null)}
                 >
-                  <img src={tab.img} alt="" />
+                  {tab.img ? (
+                    <img src={tab.img} alt="" />
+                  ) : (
+                    <span className="home-programmes__thumb-placeholder" aria-hidden />
+                  )}
                 </Link>
               ))}
             </div>

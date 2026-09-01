@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAllArtworks } from "../catalogue";
-import { FALLBACK_PROGRAMMES, LEGACY_WORKSHOP_IDS } from "./fallbacks";
+import { EMPTY_PROGRAMMES, LEGACY_WORKSHOP_IDS } from "./fallbacks";
 import { loadProgrammes, peekProgrammes, refreshProgrammes } from "./cache";
 import { toResidencySlides, withCatalogueAwards } from "./mappers";
 import type { MappedProgrammes, ProgrammeStatus } from "./types";
 
 export function useProgrammes(): MappedProgrammes & { status: ProgrammeStatus; error: string | null } {
   const peeked = peekProgrammes();
-  const [data, setData] = useState<MappedProgrammes>(peeked ?? FALLBACK_PROGRAMMES);
+  const [data, setData] = useState<MappedProgrammes>(peeked ?? EMPTY_PROGRAMMES);
   const [status, setStatus] = useState<ProgrammeStatus>(peeked ? "ready" : "loading");
   const [error, setError] = useState<string | null>(null);
   const { artworks } = useAllArtworks();
@@ -25,7 +25,7 @@ export function useProgrammes(): MappedProgrammes & { status: ProgrammeStatus; e
         if (!cancelled) setData(refreshed);
       } catch (err) {
         if (cancelled) return;
-        setData(initial ?? FALLBACK_PROGRAMMES);
+        setData(initial ?? EMPTY_PROGRAMMES);
         setError(err instanceof Error ? err.message : "Could not load programmes");
         setStatus("ready");
       }

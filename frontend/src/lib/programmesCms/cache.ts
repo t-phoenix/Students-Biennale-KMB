@@ -58,7 +58,7 @@ export function peekProgrammesCovers(): ProgrammesCover[] | null {
   return memory ?? readSession();
 }
 
-export function peekHomeProgrammesBannerUrl(): string {
+export function peekHomeProgrammesBannerUrl(): string | null {
   const covers = peekProgrammesCovers() ?? [];
   return resolveHomeProgrammesBanner(covers);
 }

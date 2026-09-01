@@ -11,6 +11,12 @@ import { refreshProgrammes } from "../../../lib/programmes/cache";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
+import {
+  VisibilityColumnHeader,
+  VisibilityField,
+  VisibilityRowToggle,
+  hiddenRowClass,
+} from "../../../components/admin/VisibilityToggle";
 import type { SectionProps } from "./types";
 
 interface Programme {
@@ -119,6 +125,15 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
       notify("error", e instanceof Error ? e.message : "Failed to save");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const togglePublished = async (row: Programme) => {
+    try {
+      await update(row.id, { published: !row.published });
+      await refreshProgrammes();
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to update visibility");
     }
   };
 
@@ -236,6 +251,10 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
           >
             + Add gallery image
           </button>
+          <VisibilityField
+            visible={editing.published !== false}
+            onChange={(visible) => setEditing({ ...editing, published: visible })}
+          />
           <div className="adm-form-actions">
             <button className="adm-btn adm-btn--primary" onClick={save} disabled={busy}>
               {busy ? "Saving…" : editing.id ? "Update" : "Create"}
@@ -254,6 +273,7 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
           <table className="adm-table">
             <thead>
               <tr>
+                <VisibilityColumnHeader />
                 <th className="adm-table__cell--meta">Image</th>
                 <th>Title</th>
                 <th>Host</th>
@@ -264,7 +284,13 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={r.id}>
+                <tr key={r.id} className={hiddenRowClass(r.published)}>
+                  <td>
+                    <VisibilityRowToggle
+                      visible={r.published}
+                      onToggle={() => togglePublished(r)}
+                    />
+                  </td>
                   <td>{thumbs[r.id] ? <img src={thumbs[r.id]} alt="" className="adm-table__thumb" /> : "—"}</td>
                   <td>
                     <div className="adm-table__clamp adm-table__clamp--2">{r.title}</div>

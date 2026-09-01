@@ -2,18 +2,21 @@ import { useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
-import { PRESS } from "../data/site";
+import { SectionEmpty } from "../components/SectionEmpty";
+import { usePressItems } from "../lib/pressCms";
 import "./Press.css";
 
 export function Press() {
   const root = useRef<HTMLDivElement>(null);
   const featureRef = useRef<HTMLElement>(null);
   const [params, setParams] = useSearchParams();
-  const articleId = params.get("article") ?? PRESS[0].id;
+  const { items: articles } = usePressItems();
+
+  const articleId = params.get("article") ?? articles[0]?.id;
 
   const featured = useMemo(
-    () => PRESS.find((p) => p.id === articleId) ?? PRESS[0],
-    [articleId]
+    () => articles.find((p) => p.id === articleId) ?? articles[0],
+    [articleId, articles],
   );
 
   useGSAP(
@@ -26,8 +29,16 @@ export function Press() {
       }
       gsap.fromTo(el, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35, ease: "power2.out" });
     },
-    { dependencies: [featured.id], scope: root }
+    { dependencies: [featured?.id], scope: root },
   );
+
+  if (!featured) {
+    return (
+      <div ref={root} className="press">
+        <SectionEmpty className="press__empty">No press articles published yet.</SectionEmpty>
+      </div>
+    );
+  }
 
   return (
     <div ref={root} className="press">
@@ -70,7 +81,7 @@ export function Press() {
       {/* Related list spans cols 4–12, CTA locked to col 12 right (Figma 1:795 / 1:829) */}
       <div className="fig-grid press__related">
           <ul className="press__list fig-c4-12">
-            {PRESS.filter((p) => p.id !== featured.id).map((item) => (
+            {articles.filter((p) => p.id !== featured.id).map((item) => (
               <li key={item.id} className={item.teaser ? "is-teaser" : undefined}>
                 {item.teaser ? (
                   <button type="button" onClick={() => setParams({ article: item.id })}>

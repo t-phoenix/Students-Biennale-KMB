@@ -35,7 +35,7 @@ export function prefetchHomeDestinations(catalogue?: MappedCatalogue | null) {
     const programmesBannerUrl = peekHomeProgrammesBannerUrl();
     void preloadUrls([
       ...programmesHeroUrls,
-      programmesBannerUrl,
+      ...(programmesBannerUrl ? [programmesBannerUrl] : []),
       "/home/press-featured.jpg",
     ]);
     void preloadUrls(HOME_SENSING_STRIP);
@@ -131,10 +131,9 @@ export function prefetchRouteHero(
         heroCovers.map((cover) => cover.image_url),
         "high",
       );
-    } else {
-      void preloadUrl("/programmes/hero.jpg", "high");
     }
-    void preloadUrl(peekHomeProgrammesBannerUrl(), "high");
+    const programmesBannerUrl = peekHomeProgrammesBannerUrl();
+    if (programmesBannerUrl) void preloadUrl(programmesBannerUrl, "high");
     return;
   }
   if (to.startsWith("/press")) {

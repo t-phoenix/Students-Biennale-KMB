@@ -1,24 +1,11 @@
-import {
-  HOME_PROGRAMMES_BANNER_FALLBACK,
-  PROGRAMMES_HERO_FALLBACK,
-  type ProgrammesCover,
-} from "./types";
+import type { ProgrammesCover } from "./types";
 
-export function resolveProgrammesHeroCovers(
-  covers: ProgrammesCover[],
-  fallbackUrl = PROGRAMMES_HERO_FALLBACK,
-): ProgrammesCover[] {
-  if (covers.length === 0) {
-    return [{ id: "fallback", image_url: fallbackUrl, sort_order: 0, show_on_home: false }];
-  }
+export function resolveProgrammesHeroCovers(covers: ProgrammesCover[]): ProgrammesCover[] {
   return covers;
 }
 
-export function resolveHomeProgrammesBanner(
-  covers: ProgrammesCover[],
-  fallbackUrl = HOME_PROGRAMMES_BANNER_FALLBACK,
-): string {
-  if (covers.length === 0) return fallbackUrl;
+export function resolveHomeProgrammesBanner(covers: ProgrammesCover[]): string | null {
+  if (covers.length === 0) return null;
   const flagged = covers.find((cover) => cover.show_on_home);
-  return flagged?.image_url ?? covers[0]?.image_url ?? fallbackUrl;
+  return flagged?.image_url ?? covers[0]?.image_url ?? null;
 }

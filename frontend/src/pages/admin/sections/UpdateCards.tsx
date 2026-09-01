@@ -4,7 +4,14 @@ import { swapUpdateCardSlots } from "../../../lib/admin/reorder";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
+import {
+  VisibilityColumnHeader,
+  VisibilityField,
+  VisibilityRowToggle,
+  hiddenRowClass,
+} from "../../../components/admin/VisibilityToggle";
 import { isSupabaseConfigured, supabase } from "../../../lib/supabase";
+import { refreshHomeCms } from "../../../lib/homeCms";
 import { useProgrammes } from "../../../lib/programmes";
 import {
   buildInternalLinkOptions,
@@ -162,6 +169,19 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
       notify("error", e instanceof Error ? e.message : "Failed to save");
     } finally {
       setBusy(false);
+    }
+  };
+
+  const toggleActive = async (row: Card) => {
+    try {
+      await update(row.id, { active: !row.active });
+      try {
+        await refreshHomeCms();
+      } catch {
+        /* public cache refresh is best-effort */
+      }
+    } catch (e: unknown) {
+      notify("error", e instanceof Error ? e.message : "Failed to update visibility");
     }
   };
 
@@ -408,6 +428,11 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
             </>
           )}
 
+          <VisibilityField
+            visible={editing.active !== false}
+            onChange={(visible) => setEditing({ ...editing, active: visible })}
+          />
+
           <div className="adm-form-actions">
             <button className="adm-btn adm-btn--primary" onClick={save} disabled={busy}>
               {busy ? "Saving…" : editing.id ? "Update" : "Create"}
@@ -425,6 +450,7 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
         <div className="adm-table-wrap">
           <table className="adm-table adm-table--cards">
             <colgroup>
+              <col className="adm-col--show" />
               <col className="adm-col--slot" />
               <col className="adm-col--type" />
               <col className="adm-col--heading" />
@@ -434,6 +460,7 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
             </colgroup>
             <thead>
               <tr>
+                <VisibilityColumnHeader />
                 <th>Slot</th>
                 <th>Option</th>
                 <th>Heading</th>
@@ -446,7 +473,10 @@ export function UpdateCards({ notify, confirm }: SectionProps) {
               {rows.map((r, i) => {
                 const rowMode = normalizeMode(r.card_type);
                 return (
-                  <tr key={r.id}>
+                  <tr key={r.id} className={hiddenRowClass(r.active)}>
+                    <td>
+                      <VisibilityRowToggle visible={r.active} onToggle={() => toggleActive(r)} />
+                    </td>
                     <td>{r.slot}</td>
                     <td>{cardModeLabel(rowMode).replace(/^Option (\d).*/, "Opt $1")}</td>
                     <td>

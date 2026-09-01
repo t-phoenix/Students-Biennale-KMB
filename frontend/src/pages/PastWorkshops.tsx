@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { useProgrammes } from "../lib/programmes";
+import { SectionEmpty } from "../components/SectionEmpty";
 import "./PastWorkshops.css";
 
 export function PastWorkshops() {
@@ -27,6 +28,7 @@ export function PastWorkshops() {
     <div ref={root} className="past-workshops">
       <div className="fig-grid past-workshops__section past-workshops-reveal">
         <h1 className="fig-label fig-subheading">PAST WORKSHOPS</h1>
+        {pastWorkshops.length ? (
         <ul className="past-workshops__list fig-c4-12">
           {pastWorkshops.map((item) => {
             const isOpen = Boolean(item.description);
@@ -57,6 +59,9 @@ export function PastWorkshops() {
             );
           })}
         </ul>
+        ) : (
+          <SectionEmpty>No past workshops published yet.</SectionEmpty>
+        )}
       </div>
     </div>
   );

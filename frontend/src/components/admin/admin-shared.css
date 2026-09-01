@@ -515,6 +515,139 @@
   text-decoration-thickness: 1px;
 }
 
+.adm-table__row--hidden {
+  opacity: 0.45;
+}
+
+.adm-table__row--hidden .adm-table__thumb {
+  filter: grayscale(0.6);
+}
+
+/* ── Site visibility (Live / Hidden) ── */
+
+.adm-table__cell--show {
+  width: 44px;
+  padding-inline: 8px 4px;
+  vertical-align: middle;
+}
+
+.adm-vis-col-head {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: var(--color-text-tertiary);
+  opacity: 0.85;
+}
+
+.adm-vis-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--color-neutral-black);
+  background: transparent;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  line-height: 1;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.12s ease;
+}
+
+.adm-vis-row:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: var(--color-neutral-black);
+  color: var(--color-text-inverse);
+}
+
+.adm-vis-row.is-live {
+  border-color: var(--color-neutral-black);
+}
+
+.adm-vis-row.is-hidden {
+  opacity: 0.42;
+  border-style: dashed;
+  color: var(--color-text-secondary);
+}
+
+.adm-vis-row.is-hidden:hover:not(:disabled) {
+  opacity: 1;
+  border-style: solid;
+  background: var(--color-primary-red);
+  border-color: var(--color-primary-red);
+  color: var(--color-text-inverse);
+}
+
+.adm-vis-row:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.adm-vis-field {
+  margin-bottom: var(--spacing-xl);
+}
+
+.adm-vis-field__control {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--color-neutral-black);
+}
+
+.adm-vis-field__opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 108px;
+  padding: 10px 16px;
+  border: none;
+  border-right: 1px solid var(--color-neutral-black);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.adm-vis-field__opt:last-child {
+  border-right: none;
+}
+
+.adm-vis-field__opt:hover:not(.is-active) {
+  background: var(--adm-hover-wash);
+  color: var(--color-text-primary);
+}
+
+.adm-vis-field__opt.is-active {
+  background: var(--color-neutral-black);
+  color: var(--color-text-inverse);
+}
+
+.adm-vis-field__opt.is-active svg {
+  opacity: 1;
+}
+
+.adm-vis-field__hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.01em;
+}
+
 .adm-table__link {
   display: block;
   max-width: 100%;
@@ -526,6 +659,10 @@
 }
 
 /* Update cards: body gets the room; link stays compact. */
+.adm-table--cards col.adm-col--show {
+  width: 44px;
+}
+
 .adm-table--cards col.adm-col--slot {
   width: 56px;
 }
@@ -551,6 +688,10 @@
 }
 
 /* Press: title grows; meta columns stay tight. */
+.adm-table--press col.adm-col--show {
+  width: 44px;
+}
+
 .adm-table--press col.adm-col--title {
   width: auto;
 }

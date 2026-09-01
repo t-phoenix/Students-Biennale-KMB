@@ -6,6 +6,11 @@
   padding-bottom: 80px;
 }
 
+.press__empty {
+  padding: 48px var(--grid-margin);
+  margin: 0;
+}
+
 .press__head {
   padding-top: 56px;
   align-items: start;
