@@ -630,7 +630,7 @@
 
 /* About */
 .home-about__intro {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 .home-about__block {
@@ -638,20 +638,41 @@
   align-items: start;
 }
 
+.home-about__logo-wrap {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  width: 100%;
+  padding-inline-end: var(--grid-gutter);
+  box-sizing: border-box;
+}
+
 .home-about__logo-kbf {
   width: 217px;
-  height: 68px;
+  height: auto;
+  max-width: 100%;
   object-fit: contain;
-  justify-self: end;
-  margin-inline-end: var(--grid-gutter);
+  display: block;
 }
 
 .home-about__logo-sb {
   display: flex;
   align-items: center;
-  gap: 12px;
-  justify-self: end;
-  margin-inline-end: var(--grid-gutter);
+  gap: 16px;
+}
+
+.home-about__logo-sb img:first-child {
+  width: 64px;
+  height: 90px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.home-about__logo-sb img:last-child {
+  width: 120px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .home-about__sb-copy {
@@ -661,38 +682,76 @@
 }
 
 .home-about__team {
-  margin-top: 48px;
+  margin-top: 60px;
+  align-items: start;
 }
 
 .home-about__team-cols {
-  row-gap: 24px;
+  row-gap: 28px;
 }
 
 .home-about__role {
   display: flex;
   flex-direction: column;
-  margin-bottom: 24px;
-  font-size: var(--type-body-size);
-  line-height: 36px;
+  margin-bottom: 28px;
 }
 
 .home-about__role strong {
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.8px;
   text-transform: uppercase;
+  margin-bottom: 4px;
+  line-height: 20px;
+  color: var(--color-text-primary);
+}
+
+.home-about__role span {
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-primary);
 }
 
 .home-about__sponsors {
   margin-top: 64px;
+  align-items: start;
 }
 
-.home-about__sponsor-grid {
-  row-gap: var(--grid-gutter);
+.home-about__sponsor-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.home-about__sponsor {
-  height: 99px;
-  background: var(--color-neutral-gray-mid);
+.home-about__sponsor-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
+.home-about__sponsor-logo-wrap {
+  display: flex;
+  align-items: center;
+  margin: 2px 0 4px;
+}
+
+.home-about__sponsor-logo {
+  height: 21px;
+  width: auto;
+  max-width: 240px;
+  object-fit: contain;
+  display: block;
+}
+
+.home-about__sponsor-caption {
+  margin: 0;
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  color: var(--color-text-primary);
 }
 
 /* Tier C — the grid drops to 6 columns and every span goes full width, so the
@@ -734,9 +793,9 @@
     margin-bottom: 24px;
   }
 
-  .home-about__logo-kbf,
-  .home-about__logo-sb {
-    justify-self: start;
-    margin-inline-end: 0;
+  .home-about__logo-wrap {
+    justify-content: flex-start;
+    padding-inline-end: 0;
+    margin-bottom: 16px;
   }
 }

@@ -713,13 +713,15 @@ export function Home() {
             <h2 className="fig-label fig-heading">ABOUT US</h2>
           </div>
           <div className="fig-grid home-about__block">
-            <img
-              className="home-about__logo-kbf fig-c1-3"
-              src="/home/logo-kbf-about.svg"
-              alt="Kochi Biennale Foundation"
-              width={217}
-              height={68}
-            />
+            <div className="home-about__logo-wrap fig-c1-3">
+              <img
+                className="home-about__logo-kbf"
+                src="/home/logo-kbf-about.svg"
+                alt="Kochi Biennale Foundation"
+                width={217}
+                height={68}
+              />
+            </div>
             <p className="fig-body fig-c4-9">
               The Kochi Biennale Foundation (KBF) was established in 2010 as a non-profit, charitable
               trust to promote art, culture, heritage, and education. Every two years, KBF hosts the
@@ -731,9 +733,11 @@ export function Home() {
             </p>
           </div>
           <div className="fig-grid home-about__block">
-            <div className="home-about__logo-sb fig-c1-3" aria-label="Students' Biennale">
-              <img src="/home/logo-sb-mark-about.svg" alt="" width={72} height={100} />
-              <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={120} height={48} />
+            <div className="home-about__logo-wrap fig-c1-3">
+              <div className="home-about__logo-sb" aria-label="Students' Biennale">
+                <img src="/home/logo-sb-mark-about.svg" alt="" width={72} height={100} />
+                <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={120} height={48} />
+              </div>
             </div>
             <div className="home-about__sb-copy fig-c4-9">
               <p className="fig-body">
@@ -778,9 +782,9 @@ export function Home() {
 
           <div className="fig-grid home-about__team">
             <h3 className="fig-label fig-label--sub">
-              students&apos; biennale
+              STUDENTS&apos; BIENNALE
               <br />
-              2025-26 Team
+              2025-26 TEAM
             </h3>
             <div className="home-about__team-cols fig-c4-12 fig-sub-3">
               {TEAM_COLS.map((col, i) => (
@@ -799,11 +803,21 @@ export function Home() {
           </div>
 
           <div className="fig-grid home-about__sponsors">
-            <h3 className="fig-label fig-label--sub">sponsors</h3>
-            <div className="home-about__sponsor-grid fig-c4-12 fig-sub-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="home-about__sponsor" />
-              ))}
+            <h3 className="fig-label fig-label--sub">SPONSORS</h3>
+            <div className="home-about__sponsor-content fig-c4-9">
+              <p className="home-about__sponsor-label">SUPPORTED BY</p>
+              <div className="home-about__sponsor-logo-wrap">
+                <img
+                  className="home-about__sponsor-logo"
+                  src="/home/logo-tata-trusts.svg"
+                  alt="Tata Trusts"
+                  width={212}
+                  height={21}
+                />
+              </div>
+              <p className="home-about__sponsor-caption">
+                The Kochi Biennale Foundation is grateful for their support.
+              </p>
             </div>
           </div>
         </section>
