@@ -53,6 +53,7 @@
   position: absolute;
   right: var(--grid-margin);
   bottom: 24px;
+  z-index: 3;
   display: flex;
   gap: 8px;
 }

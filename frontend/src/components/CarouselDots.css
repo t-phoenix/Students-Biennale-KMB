@@ -1,0 +1,26 @@
+/* Adaptive dot tracker contrast — add class "carousel-dots" + data-tone from useCarouselDotsTone. */
+.carousel-dots[data-tone="dark"] button {
+  border-color: var(--color-neutral-white);
+}
+
+.carousel-dots[data-tone="dark"] button.is-active {
+  background: var(--color-neutral-white);
+}
+
+.carousel-dots[data-tone="light"] button {
+  border-color: rgba(0, 0, 0, 0.45);
+}
+
+.carousel-dots[data-tone="light"] button.is-active {
+  background: rgba(0, 0, 0, 0.52);
+}
+
+/* Before sampling — mid-gray dots readable on most backgrounds. */
+.carousel-dots[data-tone="unknown"] button {
+  border-color: rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+.carousel-dots[data-tone="unknown"] button.is-active {
+  background: rgba(0, 0, 0, 0.45);
+}

@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { buildAutoSlideTimeline, jumpToSlide, initSlideStack } from "../lib/imageSlider";
 import { useProgrammesCovers } from "../lib/programmesCms";
+import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
+import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { ResidenciesBand } from "../components/ResidenciesBand";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
@@ -19,6 +21,8 @@ export function Programmes() {
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [expandedPast, setExpandedPast] = useState(false);
   const { heroCovers } = useProgrammesCovers();
+  const currentHeroSrc = heroCovers[heroSlide]?.image_url ?? heroCovers[0]?.image_url ?? "";
+  const dotsTone = useCarouselDotsTone(currentHeroSrc, "right");
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
 
@@ -116,7 +120,18 @@ export function Programmes() {
           ))}
         </div>
         {heroCovers.length > 1 ? (
-          <div className="programmes__hero-dots" role="tablist" aria-label="Hero slides">
+          <>
+            <CarouselNavArrows
+              slideSrc={currentHeroSrc}
+              onPrev={() => goToSlide((heroSlide - 1 + heroCovers.length) % heroCovers.length)}
+              onNext={() => goToSlide((heroSlide + 1) % heroCovers.length)}
+            />
+            <div
+              className="programmes__hero-dots carousel-dots"
+              data-tone={dotsTone}
+              role="tablist"
+              aria-label="Hero slides"
+            >
             {heroCovers.map((cover, i) => (
               <button
                 key={cover.id}
@@ -128,7 +143,8 @@ export function Programmes() {
                 aria-label={`Slide ${i + 1}`}
               />
             ))}
-          </div>
+            </div>
+          </>
         ) : null}
       </section>
 

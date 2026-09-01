@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { HighlightText } from "../components/HighlightText";
 import { getEditionOverview } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue, useEditionCatalogue } from "../lib/catalogue";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
+import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { preloadUrls } from "../lib/preloadImages";
 import "./EditionOverview.css";
 
@@ -136,6 +138,23 @@ export function EditionOverview() {
     setSlide(index);
   }, []);
 
+  const resumeHeroTimeline = useCallback((index: number) => {
+    if (prefersReducedMotion() || slidesRef.current.length <= 1) return;
+    buildAutoSlideTimeline(
+      slidesRef.current,
+      index,
+      (next) => {
+        slideIndexRef.current = next;
+        setSlide(next);
+      },
+      heroTlRef,
+      5,
+    );
+  }, []);
+
+  const currentHeroSrc = heroImages[slide] ?? heroImages[0] ?? "";
+  const dotsTone = useCarouselDotsTone(currentHeroSrc, "right");
+
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
@@ -220,11 +239,26 @@ export function EditionOverview() {
               ))}
             </div>
             {heroImages.length > 1 ? (
-              <div
-                className="edition-overview__hero-dots"
-                role="tablist"
-                aria-label="Edition cover images"
-              >
+              <>
+                <CarouselNavArrows
+                  slideSrc={currentHeroSrc}
+                  onPrev={() => {
+                    const i = (slide - 1 + heroImages.length) % heroImages.length;
+                    goToSlide(i);
+                    resumeHeroTimeline(i);
+                  }}
+                  onNext={() => {
+                    const i = (slide + 1) % heroImages.length;
+                    goToSlide(i);
+                    resumeHeroTimeline(i);
+                  }}
+                />
+                <div
+                  className="edition-overview__hero-dots carousel-dots"
+                  data-tone={dotsTone}
+                  role="tablist"
+                  aria-label="Edition cover images"
+                >
                 {heroImages.map((src, i) => (
                   <button
                     key={src}
@@ -235,22 +269,12 @@ export function EditionOverview() {
                     className={i === slide ? "is-active" : undefined}
                     onClick={() => {
                       goToSlide(i);
-                      if (!prefersReducedMotion() && slidesRef.current.length > 1) {
-                        buildAutoSlideTimeline(
-                          slidesRef.current,
-                          i,
-                          (index) => {
-                            slideIndexRef.current = index;
-                            setSlide(index);
-                          },
-                          heroTlRef,
-                          5,
-                        );
-                      }
+                      resumeHeroTimeline(i);
                     }}
                   />
                 ))}
-              </div>
+                </div>
+              </>
             ) : null}
           </>
         ) : (

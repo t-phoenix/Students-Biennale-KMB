@@ -1,0 +1,72 @@
+/* Shared prev/next for hero carousels — matches Home / Detail nav sizing. */
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  border: none;
+  cursor: pointer;
+  padding: 14px 18px;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease;
+}
+
+.carousel-nav--prev {
+  left: var(--grid-margin);
+}
+
+.carousel-nav--next {
+  right: var(--grid-margin);
+}
+
+.carousel-nav img {
+  width: 18px;
+  height: 24px;
+}
+
+.carousel-nav--next img {
+  transform: scaleX(-1);
+}
+
+/* Dark slide edge — white arrow (default SVG). */
+.carousel-nav[data-tone="dark"] {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.carousel-nav[data-tone="dark"]:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.carousel-nav[data-tone="dark"] img {
+  filter: none;
+  opacity: 1;
+}
+
+/* Light slide edge — mid-gray arrow for contrast on white backgrounds. */
+.carousel-nav[data-tone="light"] {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.carousel-nav[data-tone="light"]:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.carousel-nav[data-tone="light"] img {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.52;
+}
+
+/* Before sampling or when CORS blocks read — dual halo keeps arrows visible. */
+.carousel-nav[data-tone="unknown"] {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.carousel-nav[data-tone="unknown"]:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.carousel-nav[data-tone="unknown"] img {
+  filter: brightness(0) saturate(100%);
+  opacity: 0.45;
+}

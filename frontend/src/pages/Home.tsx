@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../lib/motion";
+import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { SpotlightModal } from "../components/SpotlightModal";
 import { GalleryLightbox } from "../components/GalleryLightbox";
@@ -22,6 +23,7 @@ import {
   defaultCtaLabel,
   type UpdateCardMode,
 } from "../lib/homeCms/updateCardLinks";
+import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { prefetchHomeDestinations } from "../lib/predictivePrefetch";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useProgrammes } from "../lib/programmes";
@@ -146,6 +148,7 @@ export function Home() {
       })
     : [...FALLBACK_UPDATES];
   const currentCover = covers[slide] ?? covers[0];
+  const dotsTone = useCarouselDotsTone(currentCover?.image_url ?? "", "center");
   const showArtwork = heroCreditVisible(currentCover?.show_artwork_name, currentCover?.artwork_name);
   const showArtist = heroCreditVisible(currentCover?.show_artist, currentCover?.artist);
   const showInstitution = heroCreditVisible(
@@ -419,24 +422,11 @@ export function Home() {
         </div>
 
         {covers.length > 1 ? (
-          <>
-            <button
-              type="button"
-              className="home-hero__nav home-hero__nav--prev"
-              aria-label="Previous slide"
-              onClick={() => goToSlide((slide - 1 + covers.length) % covers.length)}
-            >
-              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
-            </button>
-            <button
-              type="button"
-              className="home-hero__nav home-hero__nav--next"
-              aria-label="Next slide"
-              onClick={() => goToSlide((slide + 1) % covers.length)}
-            >
-              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
-            </button>
-          </>
+          <CarouselNavArrows
+            slideSrc={currentCover.image_url}
+            onPrev={() => goToSlide((slide - 1 + covers.length) % covers.length)}
+            onNext={() => goToSlide((slide + 1) % covers.length)}
+          />
         ) : null}
 
         {/* Overlay sits on the page grid */}
@@ -499,7 +489,8 @@ export function Home() {
         </div>
 
         <div
-          className="home-hero__dots home-hero__dots--centered"
+          className="home-hero__dots home-hero__dots--centered carousel-dots"
+          data-tone={dotsTone}
           role="tablist"
           aria-label="Hero slides"
         >
