@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { artworkImages, curatorsForArtwork, type ArtworkCard } from "../data/site";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
+import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
+import { CarouselNavArrows } from "./CarouselNavArrows";
 import { GalleryLightbox } from "./GalleryLightbox";
 import { HighlightText } from "./HighlightText";
 import { PreloadedImage } from "./PreloadedImage";
@@ -43,6 +45,7 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   }, [heroIndex, slides]);
 
   const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
+  const dotsTone = useCarouselDotsTone(slide ?? "", "center");
   const upcomingSlides = slides.filter((url) => url !== slide);
   const curated = curatorsForArtwork(a);
   const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
@@ -118,24 +121,10 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
         )}
         {slides.length > 1 ? (
           <>
-            <button
-              type="button"
-              className="detail__hero-nav detail__hero-nav--prev"
-              aria-label="Previous image"
-              onClick={goPrev}
-            >
-              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
-            </button>
-            <button
-              type="button"
-              className="detail__hero-nav detail__hero-nav--next"
-              aria-label="Next image"
-              onClick={goNext}
-            >
-              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
-            </button>
+            <CarouselNavArrows slideSrc={slide ?? ""} onPrev={goPrev} onNext={goNext} />
             <div
-              className="detail__hero-dots detail__hero-dots--artwork"
+              className="detail__hero-dots detail__hero-dots--artwork carousel-dots"
+              data-tone={dotsTone}
               role="tablist"
               aria-label="Artwork images"
             >
