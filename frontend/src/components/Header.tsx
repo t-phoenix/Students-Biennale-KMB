@@ -132,7 +132,21 @@ export function Header() {
   useEffect(() => {
     if (location.pathname === "/artworks") {
       showHeader();
-      return;
+      const onTuck = (e: Event) => {
+        const tucked = Boolean((e as CustomEvent<{ tucked: boolean }>).detail?.tucked);
+        if (tucked) {
+          if (!isHoveredRef.current && !activeDropdown) {
+            hideHeader();
+          }
+        } else {
+          showHeader();
+        }
+      };
+
+      window.addEventListener("canvas:tuck-header", onTuck);
+      return () => {
+        window.removeEventListener("canvas:tuck-header", onTuck);
+      };
     }
 
     const onScroll = () => {
@@ -159,7 +173,10 @@ export function Header() {
   const onHeaderEnter = useCallback(() => {
     isHoveredRef.current = true;
     showHeader();
-  }, [showHeader]);
+    if (location.pathname === "/artworks") {
+      window.dispatchEvent(new CustomEvent("canvas:tuck-header", { detail: { tucked: false } }));
+    }
+  }, [showHeader, location.pathname]);
 
   const onHeaderLeave = useCallback(() => {
     isHoveredRef.current = false;

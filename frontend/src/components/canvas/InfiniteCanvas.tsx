@@ -336,6 +336,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
         didDrag.current = true;
         suppressClick.current = true;
         root.classList.add("is-grabbing");
+        window.dispatchEvent(new CustomEvent("canvas:interacting"));
         try {
           root.setPointerCapture(e.pointerId);
         } catch {
@@ -354,6 +355,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       vel.current.y = (dy / dt) * 16;
       last.current = { x: e.clientX, y: e.clientY, t: now };
       applyTransform();
+      window.dispatchEvent(new CustomEvent("canvas:interacting"));
     };
 
     const onPointerUp = (e: PointerEvent) => {
@@ -385,6 +387,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+      window.dispatchEvent(new CustomEvent("canvas:interacting"));
 
       const rect = root.getBoundingClientRect();
       const clientX = e.clientX - rect.left;
@@ -448,6 +451,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length !== 2 || !pinch.current) return;
       e.preventDefault();
+      window.dispatchEvent(new CustomEvent("canvas:interacting"));
       const [t1, t2] = [e.touches[0], e.touches[1]];
       const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
       const ratio = dist / (pinch.current.startDist || 1);
