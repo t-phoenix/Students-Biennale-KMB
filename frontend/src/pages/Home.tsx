@@ -973,6 +973,7 @@ export function Home() {
         open={razaModalOpen}
         onClose={() => setRazaModalOpen(false)}
         onSelectScholar={(scholarId) => {
+          setRazaModalOpen(false);
           setOpenScholarId(scholarId);
         }}
       />
