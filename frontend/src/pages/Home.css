@@ -720,7 +720,7 @@
 }
 
 .home-about__sponsors {
-  margin-top: 80px;
+  margin-top: 64px;
   align-items: start;
 }
 
@@ -732,33 +732,31 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  gap: 16px;
 }
 
 .home-about__sponsor-unit {
-  width: 227px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
 }
 
 .home-about__sponsor-label {
   margin: 0;
-  width: 100%;
   font-size: 18px;
   font-weight: 500;
   line-height: 36px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  text-align: center;
+  text-align: left;
   color: var(--color-text-primary);
 }
 
 .home-about__sponsor-logo-wrap {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  margin-top: 12px;
-  width: 100%;
+  margin-top: 8px;
 }
 
 .home-about__sponsor-logo {
@@ -769,12 +767,13 @@
 }
 
 .home-about__sponsor-caption {
-  margin: 60px 0 0 0;
+  margin: 0;
   font-size: 16px;
   font-weight: 400;
   line-height: 36px;
   letter-spacing: 0;
   color: var(--color-text-primary);
+  text-align: left;
 }
 
 /* Tier C — the grid drops to 6 columns and every span goes full width, so the
@@ -826,22 +825,7 @@
     margin-top: 48px;
   }
 
-  .home-about__sponsor-unit {
-    width: 100%;
-    max-width: 240px;
-    align-items: flex-start;
-  }
-
-  .home-about__sponsor-label {
-    text-align: left;
-  }
-
-  .home-about__sponsor-logo-wrap {
-    justify-content: flex-start;
-  }
-
   .home-about__sponsor-caption {
-    margin-top: 32px;
     line-height: 26px;
   }
 }
