@@ -758,15 +758,17 @@ export function Home() {
           <div className="fig-grid home-about__sponsors">
             <h3 className="fig-label fig-label--sub">SPONSORS</h3>
             <div className="home-about__sponsor-content fig-c4-9">
-              <p className="home-about__sponsor-label">SUPPORTED BY</p>
-              <div className="home-about__sponsor-logo-wrap">
-                <img
-                  className="home-about__sponsor-logo"
-                  src="/home/logo-tata-trusts.svg"
-                  alt="Tata Trusts"
-                  width={212}
-                  height={21}
-                />
+              <div className="home-about__sponsor-unit">
+                <p className="home-about__sponsor-label">SUPPORTED BY</p>
+                <div className="home-about__sponsor-logo-wrap">
+                  <img
+                    className="home-about__sponsor-logo"
+                    src="/home/logo-tata-trusts.svg"
+                    alt="Tata Trusts"
+                    width={212}
+                    height={21}
+                  />
+                </div>
               </div>
               <p className="home-about__sponsor-caption">
                 The Kochi Biennale Foundation is grateful for their support.
