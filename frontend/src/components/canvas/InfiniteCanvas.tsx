@@ -5,7 +5,6 @@ import {
   getDiscoverEagerImageUrls,
   prefetchArtworkGallery,
 } from "../../lib/predictivePrefetch";
-import { getTileRevealDelay } from "../../lib/discoverReveal";
 import { gsap, prefersReducedMotion, useGSAP } from "../../lib/motion";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
@@ -91,14 +90,6 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     return getDiscoverEagerImageUrls(artworks, viewportW, viewportH, sourceKey);
   }, [artworks, sourceKey, tier, seedW]);
 
-  const revealViewport = useMemo(() => {
-    const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
-    const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
-    const panX = -(seedW - viewportW) / 2;
-    const panY = -40;
-    return { viewportW, viewportH, panX, panY };
-  }, [seedW, tier]);
-
   const itemsByCol = useMemo(() => {
     const groups: CanvasItem[][] = Array.from({ length: columns }, () => []);
     for (const item of pool) groups[item.col]?.push(item);
@@ -128,36 +119,23 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
 
   // User-controlled zoom — Ctrl+wheel/trackpad-pinch (desktop) or a real
   // two-finger pinch (touch). Persists at whatever level the user sets it to;
-  // panning/dragging no longer resets it (that was specific to the old
-  // idle-triggered auto zoom, which this replaces).
+  // panning/dragging no longer resets it.
   const zoomScale = useRef({ value: 1 });
+  const targetZoomRef = useRef(1);
   const zoomTween = useRef<gsap.core.Tween | null>(null);
+  const zoomFocalRef = useRef({ x: 0, y: 0 });
 
   const applyZoom = useCallback(() => {
     const el = zoomRef.current;
     if (el) el.style.transform = `scale(${zoomScale.current.value})`;
   }, []);
 
-  const setZoom = useCallback(
-    (value: number, animate = false) => {
-      const next = clamp(value, MIN_ZOOM, MAX_ZOOM);
-      zoomTween.current?.kill();
-      if (animate && !prefersReducedMotion()) {
-        zoomTween.current = gsap.to(zoomScale.current, {
-          value: next,
-          duration: 0.3,
-          ease: "power2.out",
-          onUpdate: applyZoom,
-        });
-      } else {
-        zoomScale.current.value = next;
-        applyZoom();
-      }
-    },
-    [applyZoom]
-  );
-
-  const pinch = useRef<{ startDist: number; startZoom: number } | null>(null);
+  const pinch = useRef<{
+    startDist: number;
+    startZoom: number;
+    midX: number;
+    midY: number;
+  } | null>(null);
 
   const q = query.trim().toLowerCase();
   const queryTokens = useMemo(() => q.split(/\s+/).filter(Boolean), [q]);
@@ -214,6 +192,52 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       }
     }
   }, [seedW, columns, colPeriods]);
+
+  const zoomTo = useCallback(
+    (
+      targetScale: number,
+      focalX: number,
+      focalY: number,
+      options?: { duration?: number; ease?: string }
+    ) => {
+      const next = clamp(targetScale, MIN_ZOOM, MAX_ZOOM);
+      targetZoomRef.current = next;
+      zoomFocalRef.current = { x: focalX, y: focalY };
+
+      zoomTween.current?.kill();
+
+      if (prefersReducedMotion()) {
+        const prev = zoomScale.current.value;
+        zoomScale.current.value = next;
+        offset.current.x += focalX * (1 / next - 1 / prev);
+        offset.current.y += focalY * (1 / next - 1 / prev);
+        applyZoom();
+        applyTransform();
+        return;
+      }
+
+      let lastScale = zoomScale.current.value;
+      zoomTween.current = gsap.to(zoomScale.current, {
+        value: next,
+        duration: options?.duration ?? 0.65,
+        ease: options?.ease ?? "power3.out",
+        overwrite: "auto",
+        onUpdate: () => {
+          const currentScale = zoomScale.current.value;
+          const fx = zoomFocalRef.current.x;
+          const fy = zoomFocalRef.current.y;
+          if (currentScale > 0 && lastScale > 0) {
+            offset.current.x += fx * (1 / currentScale - 1 / lastScale);
+            offset.current.y += fy * (1 / currentScale - 1 / lastScale);
+          }
+          lastScale = currentScale;
+          applyZoom();
+          applyTransform();
+        },
+      });
+    },
+    [applyZoom, applyTransform]
+  );
 
   // The pan offset is only meaningful relative to the current seed size —
   // re-centre when a resize crosses a tier boundary (seedW/colPeriods change).
@@ -362,17 +386,42 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
 
-      // Browsers report trackpad pinch as wheel events with ctrlKey set —
-      // this one branch covers desktop Ctrl+scroll and trackpad pinch alike.
+      const rect = root.getBoundingClientRect();
+      const clientX = e.clientX - rect.left;
+      const clientY = e.clientY - rect.top;
+
       if (e.ctrlKey) {
-        setZoom(zoomScale.current.value - e.deltaY * WHEEL_ZOOM_SPEED);
+        // Trackpad pinch or Ctrl + mouse wheel zoom
+        const sensitivity = WHEEL_ZOOM_SPEED;
+        const currentTarget = targetZoomRef.current || zoomScale.current.value;
+        const delta = -e.deltaY * sensitivity;
+        const nextTarget = clamp(currentTarget + delta, MIN_ZOOM, MAX_ZOOM);
+
+        zoomTo(nextTarget, clientX, clientY, {
+          duration: 0.6,
+          ease: "power3.out",
+        });
         return;
       }
+
+      // Normal wheel: pan with momentum glide
       glideTween.current?.kill();
       offset.current.x -= e.deltaX;
       offset.current.y -= e.deltaY;
       vel.current = { x: 0, y: 0 };
       applyTransform();
+    };
+
+    const onDblClick = (e: MouseEvent) => {
+      const rect = root.getBoundingClientRect();
+      const clientX = e.clientX - rect.left;
+      const clientY = e.clientY - rect.top;
+      const current = zoomScale.current.value;
+      const nextTarget = current < 1.15 ? 1.45 : 1.0;
+      zoomTo(nextTarget, clientX, clientY, {
+        duration: 0.75,
+        ease: "power3.out",
+      });
     };
 
     // Two-finger touch pinch. Touch events fire alongside Pointer Events for
@@ -385,9 +434,14 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       pointerId.current = null;
       root.classList.remove("is-grabbing");
       const [t1, t2] = [e.touches[0], e.touches[1]];
+      const rect = root.getBoundingClientRect();
+      const midX = (t1.clientX + t2.clientX) / 2 - rect.left;
+      const midY = (t1.clientY + t2.clientY) / 2 - rect.top;
       pinch.current = {
         startDist: Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY),
         startZoom: zoomScale.current.value,
+        midX,
+        midY,
       };
     };
 
@@ -396,12 +450,24 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       e.preventDefault();
       const [t1, t2] = [e.touches[0], e.touches[1]];
       const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-      const ratio = dist / pinch.current.startDist;
-      setZoom(pinch.current.startZoom * ratio);
+      const ratio = dist / (pinch.current.startDist || 1);
+      const target = clamp(pinch.current.startZoom * ratio, MIN_ZOOM, MAX_ZOOM);
+      const rect = root.getBoundingClientRect();
+      const midX = (t1.clientX + t2.clientX) / 2 - rect.left;
+      const midY = (t1.clientY + t2.clientY) / 2 - rect.top;
+      zoomTo(target, midX, midY, { duration: 0.15, ease: "power2.out" });
     };
 
     const onTouchEnd = (e: TouchEvent) => {
-      if (e.touches.length < 2) pinch.current = null;
+      if (e.touches.length < 2) {
+        if (pinch.current) {
+          zoomTo(targetZoomRef.current, pinch.current.midX, pinch.current.midY, {
+            duration: 0.6,
+            ease: "power3.out",
+          });
+          pinch.current = null;
+        }
+      }
     };
 
     root.addEventListener("pointerdown", onPointerDown);
@@ -409,6 +475,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
     root.addEventListener("wheel", onWheel, { passive: false });
+    root.addEventListener("dblclick", onDblClick);
     root.addEventListener("touchstart", onTouchStart, { passive: true });
     root.addEventListener("touchmove", onTouchMove, { passive: false });
     root.addEventListener("touchend", onTouchEnd, { passive: true });
@@ -420,12 +487,13 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
       root.removeEventListener("wheel", onWheel);
+      root.removeEventListener("dblclick", onDblClick);
       root.removeEventListener("touchstart", onTouchStart);
       root.removeEventListener("touchmove", onTouchMove);
       root.removeEventListener("touchend", onTouchEnd);
       root.removeEventListener("touchcancel", onTouchEnd);
     };
-  }, [applyTransform, setZoom]);
+  }, [applyTransform, zoomTo]);
 
   // Gentle field zoom-in on open — individual tiles reveal progressively as
   // their images decode (see CanvasTile), staggered from viewport center.
@@ -438,22 +506,9 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       }
       zoomScale.current.value = 0.94;
       applyZoom();
-      gsap.to(zoomScale.current, {
-        value: 1,
-        duration: 1.4,
-        ease: "power2.out",
-        onUpdate: applyZoom,
-      });
-
-      const safety = setTimeout(() => {
-        rootRef.current?.querySelectorAll<HTMLElement>(".canvas-tile").forEach((tile) => {
-          tile.classList.add("is-revealed");
-          gsap.set(tile, { opacity: 1, clearProps: "opacity" });
-          const media = tile.querySelector<HTMLElement>(".canvas-tile__media");
-          if (media) gsap.set(media, { opacity: 1, scale: 1, clearProps: "opacity,transform" });
-        });
-      }, 4500);
-      return () => clearTimeout(safety);
+      const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
+      const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
+      zoomTo(1, viewportW / 2, viewportH / 2, { duration: 1.4, ease: "power2.out" });
     },
     { scope: rootRef, dependencies: [] }
   );
@@ -501,28 +556,16 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
                   {yCopies.map((ty) =>
                     itemsByCol[col].map((item) => {
                       const colPeriod = colPeriods[col] || 1;
-                      const revealDelay = getTileRevealDelay(
-                        item,
-                        tx,
-                        ty,
-                        colPeriod,
-                        seedW,
-                        revealViewport.panX,
-                        revealViewport.panY,
-                        revealViewport.viewportW,
-                        revealViewport.viewportH,
-                      );
                       return (
-                      <CanvasTile
-                        key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
-                        item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriod }}
-                        dimmed={Boolean(q) && !matches(item)}
-                        highlighted={Boolean(q) && matches(item)}
-                        eager={Boolean(item.image && eagerImageUrls.has(item.image))}
-                        revealDelay={revealDelay}
-                        onSelect={handleSelect}
-                        onHoverChange={handleTileHover}
-                      />
+                        <CanvasTile
+                          key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
+                          item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriod }}
+                          dimmed={Boolean(q) && !matches(item)}
+                          highlighted={Boolean(q) && matches(item)}
+                          eager={Boolean(item.image && eagerImageUrls.has(item.image))}
+                          onSelect={handleSelect}
+                          onHoverChange={handleTileHover}
+                        />
                       );
                     })
                   )}

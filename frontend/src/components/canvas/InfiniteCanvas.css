@@ -22,7 +22,7 @@
 .infinite-canvas__zoom {
   position: absolute;
   inset: 0;
-  transform-origin: 50% 50%;
+  transform-origin: 0 0;
   will-change: transform;
 }
 

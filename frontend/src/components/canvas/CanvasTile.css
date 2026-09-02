@@ -13,12 +13,11 @@
   -webkit-user-select: none;
   user-select: none;
   container-type: inline-size;
-  opacity: 0;
+  opacity: 1;
   filter: grayscale(0%);
-  pointer-events: none;
+  pointer-events: auto;
   transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.3s ease,
     filter 0.3s ease;
 }
 
@@ -62,11 +61,6 @@
   z-index: 5;
 }
 
-.canvas-tile.is-revealed {
-  opacity: 1;
-  pointer-events: auto;
-}
-
 .canvas-tile__media {
   position: absolute;
   inset: 0;
@@ -77,12 +71,9 @@
   object-position: center;
   display: block;
   pointer-events: none;
-  opacity: 0;
-  transform-origin: center center;
-}
-
-.canvas-tile.is-revealed .canvas-tile__media {
   opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease;
 }
 
 .canvas-tile__placeholder {
