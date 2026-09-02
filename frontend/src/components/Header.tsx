@@ -131,21 +131,8 @@ export function Header() {
 
   useEffect(() => {
     if (location.pathname === "/artworks") {
-      const onCanvasNav = (e: Event) => {
-        const visible = Boolean((e as CustomEvent<{ visible: boolean }>).detail?.visible);
-        if (visible) {
-          showHeader();
-        } else {
-          if (!isHoveredRef.current && !activeDropdown) {
-            hideHeader();
-          }
-        }
-      };
-
-      window.addEventListener("canvas:nav", onCanvasNav);
-      return () => {
-        window.removeEventListener("canvas:nav", onCanvasNav);
-      };
+      showHeader();
+      return;
     }
 
     const onScroll = () => {
@@ -172,17 +159,11 @@ export function Header() {
   const onHeaderEnter = useCallback(() => {
     isHoveredRef.current = true;
     showHeader();
-    if (location.pathname === "/artworks") {
-      window.dispatchEvent(new CustomEvent("canvas:nav-hover", { detail: { hovering: true } }));
-    }
-  }, [showHeader, location.pathname]);
+  }, [showHeader]);
 
   const onHeaderLeave = useCallback(() => {
     isHoveredRef.current = false;
-    if (location.pathname === "/artworks") {
-      window.dispatchEvent(new CustomEvent("canvas:nav-hover", { detail: { hovering: false } }));
-      return;
-    }
+    if (location.pathname === "/artworks") return;
     if (window.scrollY > 60 && !activeDropdown) {
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
       hideTimerRef.current = setTimeout(() => {

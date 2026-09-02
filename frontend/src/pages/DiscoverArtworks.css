@@ -7,18 +7,7 @@
   background: #f3f3f3;
 }
 
-/* Generous top-edge sensor to bring navigation down smoothly */
-.discover__top-sensor {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 52px;
-  z-index: 998;
-  pointer-events: auto;
-}
-
-/* Search sits directly flush below the fixed header */
+/* Search sits permanently flush below the fixed header */
 .discover__search {
   position: absolute;
   top: var(--nav-height);
@@ -35,8 +24,7 @@
     rgba(255, 255, 255, 0.65) 75%,
     transparent 100%
   );
-  pointer-events: auto;
-  will-change: transform, opacity;
+  pointer-events: none;
 }
 
 @media (max-width: 899px) {
