@@ -313,6 +313,49 @@
   opacity: 0.7;
 }
 
+/* Raza Section Subsection Heading (Figma 50:1773 & 50:2228) */
+.programmes__raza-heading-row {
+  grid-column: 1 / -1;
+  margin-top: 56px;
+  margin-bottom: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-neutral-gray-mid);
+}
+
+.programmes__raza-title-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.programmes__raza-title-btn:hover {
+  opacity: 0.65;
+}
+
+.programmes__raza-title-arrow {
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.25s ease;
+  display: inline-block;
+}
+
+.programmes__raza-title-btn:hover .programmes__raza-title-arrow {
+  transform: translate(3px, -3px);
+}
+
 /* Raza Section Layout (matching Image 1 / Figma 29-963) */
 .programmes__block--raza {
   row-gap: 40px;

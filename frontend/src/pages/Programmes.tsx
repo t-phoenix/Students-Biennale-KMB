@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { buildAutoSlideTimeline, jumpToSlide, initSlideStack } from "../lib/imageSlider";
@@ -38,12 +38,50 @@ export function Programmes() {
     awardsInternational.length > 0 ? awardsInternational : EMPTY_PROGRAMMES.awardsInternational;
   const nationalAwardsEffective =
     awardsNational.length > 0 ? awardsNational : EMPTY_PROGRAMMES.awardsNational;
-  const visibleIntlAwards = expandedIntlAwards
-    ? intlAwardsEffective
-    : intlAwardsEffective.slice(0, awardsPreviewCount);
+
+  const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
+  const standardIntlAwards = useMemo(
+    () => intlAwardsEffective.filter((a) => !razaIds.has(a.artworkId)),
+    [intlAwardsEffective, razaIds],
+  );
+  const visibleStandardAwards = expandedIntlAwards
+    ? standardIntlAwards
+    : standardIntlAwards.slice(0, awardsPreviewCount);
+
   const visibleNationalAwards = expandedNationalAwards
     ? nationalAwardsEffective
     : nationalAwardsEffective.slice(0, awardsPreviewCount);
+
+  const razaAwardCards = [
+    {
+      id: "kaki-weiss",
+      name: "Kaki Weiss",
+      artwork: "Tabut",
+      institution: "Beaux Arts de Marseille, France",
+      image: "/programmes/raza-kaki-weiss.jpg",
+    },
+    {
+      id: "nina-durel",
+      name: "Nina Durel",
+      artwork: "Inseamm",
+      institution: "Beaux Arts de Marseille, France",
+      image: "/programmes/raza-nina-durel.jpg",
+    },
+    {
+      id: "rutuja-sonawane",
+      name: "Rutuja Sonawane",
+      artwork: "The People’s Orchestra",
+      institution: "Sir J. J. School of Art, Mumbai, Maharashtra",
+      image: "/programmes/raza-rutuja-sonawane.jpg",
+    },
+    {
+      id: "mohammad-riyaz",
+      name: "Mohammad Riyaz",
+      artwork: "Inheritance of the hand",
+      institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh",
+      image: "/programmes/raza-mohammad-riyaz.jpg",
+    },
+  ];
 
   const razaEffective = {
     title: raza.title || DEFAULT_RAZA.title,
@@ -52,7 +90,6 @@ export function Programmes() {
     scholars: raza.scholars?.length ? raza.scholars : DEFAULT_RAZA.scholars,
     closing: raza.closing?.length ? raza.closing : DEFAULT_RAZA.closing,
   };
-  const showRaza = true;
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -266,7 +303,7 @@ export function Programmes() {
           <h2 className="fig-label fig-subheading">INTERNATIONAL AWARDS</h2>
           {intlAwardsEffective.length ? (
           <div className="programmes__awards fig-c4-12 fig-sub-3">
-            {visibleIntlAwards.map((a) => (
+            {visibleStandardAwards.map((a) => (
               <Link
                 key={a.id ?? `international-${a.name}-${a.artwork}`}
                 className="programmes__award"
@@ -287,11 +324,51 @@ export function Programmes() {
                 </p>
               </Link>
             ))}
+
+            {/* Raza - Students' Biennale Scholarship Subsection (Figma 50:1773 & 50:2228) */}
+            {expandedIntlAwards || standardIntlAwards.length <= awardsPreviewCount ? (
+              <>
+                <div className="programmes__raza-heading-row" id="raza">
+                  <button
+                    type="button"
+                    className="programmes__raza-title-btn"
+                    onClick={() => setRazaModalOpen(true)}
+                    aria-label="Open Raza - Students' Biennale Scholarship Spotlight"
+                    title="Click to spotlight Raza - Students' Biennale Scholarship"
+                  >
+                    <span>RAZA - STUDENTS&apos; BIENNALE SCHOLARSHIP</span>
+                    <span className="programmes__raza-title-arrow" aria-hidden>↗</span>
+                  </button>
+                </div>
+
+                {razaAwardCards.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className="programmes__award"
+                    onClick={() => {
+                      if (s.id === "kaki-weiss" || s.id === "nina-durel") {
+                        setOpenScholarId(s.id);
+                      } else {
+                        setRazaModalOpen(true);
+                      }
+                    }}
+                  >
+                    <div className="programmes__award-media">
+                      <img src={s.image} alt={s.name} />
+                    </div>
+                    <h3>{s.name}</h3>
+                    <p>Artwork : {s.artwork}</p>
+                    <p>{s.institution}</p>
+                  </button>
+                ))}
+              </>
+            ) : null}
           </div>
           ) : (
             <SectionEmpty>No international awards published yet.</SectionEmpty>
           )}
-          {intlAwardsEffective.length > awardsPreviewCount ? (
+          {standardIntlAwards.length + razaAwardCards.length > awardsPreviewCount ? (
             <CtaLink
               className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
               lines={expandedIntlAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
@@ -300,73 +377,6 @@ export function Programmes() {
             />
           ) : null}
         </section>
-
-        {showRaza ? (
-        <section id="raza" className="programmes__block programmes__block--raza fig-grid prog-reveal">
-          <div className="fig-c1-3 programmes__raza-rail">
-            <button
-              type="button"
-              className="programmes__raza-rail-trigger"
-              onClick={() => setRazaModalOpen(true)}
-              aria-label="Open Raza - Students' Biennale Scholarship Spotlight"
-            >
-              <h2 className="fig-heading programmes__raza-rail-heading">
-                RAZA - STUDENTS&apos;
-                <br />
-                BIENNALE
-                <br />
-                SCHOLARSHIP
-              </h2>
-              <div className="programmes__raza-divider" aria-hidden />
-              <p className="programmes__raza-rail-sub">
-                Students&apos; Biennale 2025–26 x
-                <br />
-                Beaux Arts de Marseille
-              </p>
-            </button>
-          </div>
-
-          <div className="fig-c4-9 programmes__raza-intro">
-            {razaEffective.intro.map((paragraph) => (
-              <p key={paragraph.slice(0, 48)} className="fig-body">
-                {paragraph}
-              </p>
-            ))}
-          </div>
-
-          <div className="fig-c10-12 programmes__raza-side">
-            <div className="programmes__raza-scholars-names">
-              {razaEffective.scholars.slice(0, 2).map((scholar) => (
-                <p key={scholar.id}>
-                  <strong>{scholar.name}</strong>
-                </p>
-              ))}
-            </div>
-            {razaEffective.closing.map((paragraph) => (
-              <p key={paragraph.slice(0, 48)} className="fig-body programmes__raza-closing">
-                {paragraph}
-              </p>
-            ))}
-          </div>
-
-          <div className="fig-c4-12 fig-sub-2 programmes__raza-grid">
-            {razaEffective.scholars.map((scholar) => (
-              <article key={scholar.id} className="programmes__raza-card">
-                <button
-                  type="button"
-                  className="programmes__scholar-link"
-                  onClick={() => setOpenScholarId(scholar.id)}
-                >
-                  <div className="programmes__raza-card-media">
-                    <img src={scholar.image} alt={scholar.name} />
-                  </div>
-                  <h3>{scholar.name}</h3>
-                </button>
-              </article>
-            ))}
-          </div>
-        </section>
-        ) : null}
 
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">NATIONAL AWARDS</h2>
