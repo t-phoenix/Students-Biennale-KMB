@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Lenis from "lenis";
-import { syncScrollTrigger } from "../lib/motion";
+import { gsap, syncScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { parseHomeHash, parseProgrammeHash, scrollToId } from "../lib/scrollToSection";
@@ -25,19 +25,25 @@ export function Layout() {
     }
 
     const lenis = new Lenis({
-      duration: 1.1,
+      duration: 1.2,
       smoothWheel: true,
+      wheelMultiplier: 0.95,
+      touchMultiplier: 1.5,
     });
     lenisRef.current = lenis;
     setLenisInstance(lenis);
 
-    let raf = 0;
-    const loop = (time: number) => {
-      lenis.raf(time);
-      syncScrollTrigger();
-      raf = requestAnimationFrame(loop);
+    // Synchronize Lenis with GSAP ticker for locked frame rate
+    const updateTicker = (time: number) => {
+      lenis.raf(time * 1000);
     };
-    raf = requestAnimationFrame(loop);
+    gsap.ticker.add(updateTicker);
+    gsap.ticker.lagSmoothing(0);
+
+    const onScroll = () => {
+      syncScrollTrigger();
+    };
+    lenis.on("scroll", onScroll);
 
     const onSpotlight = (e: Event) => {
       const open = Boolean((e as CustomEvent<{ open: boolean }>).detail?.open);
@@ -48,12 +54,27 @@ export function Layout() {
 
     return () => {
       window.removeEventListener("spotlight:change", onSpotlight);
-      cancelAnimationFrame(raf);
+      lenis.off("scroll", onScroll);
+      gsap.ticker.remove(updateTicker);
       lenis.destroy();
       lenisRef.current = null;
       setLenisInstance(null);
     };
   }, [isDiscover]);
+
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion() || !mainRef.current) return;
+      gsap.fromTo(
+        mainRef.current,
+        { autoAlpha: 0, y: 10 },
+        { autoAlpha: 1, y: 0, duration: 0.65, ease: "power3.out", overwrite: "auto" }
+      );
+    },
+    { dependencies: [location.pathname], scope: mainRef }
+  );
 
   // Land at the top of every new page, keyed on location.key (not pathname)
   // so this also fires when navigating to the same path — e.g. clicking the
@@ -128,7 +149,7 @@ export function Layout() {
   return (
     <div className={`site-layout${isDiscover ? " site-layout--discover" : ""}`}>
       <Header />
-      <div className="site-layout__main">
+      <div ref={mainRef} className="site-layout__main">
         <Outlet />
       </div>
       {isDiscover ? null : <Footer />}

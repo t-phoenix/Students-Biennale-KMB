@@ -247,11 +247,12 @@
   /* Kill any inherited stretch from width/height attribute fallbacks */
   aspect-ratio: auto;
   filter: grayscale(1);
-  transition: filter 0.3s ease;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
 }
 
 .edition-card--curator:hover .edition-card__frame img,
 .edition-card--curator:focus-visible .edition-card__frame img {
+  transform: scale(1.03);
   filter: grayscale(0);
 }
 
@@ -288,6 +289,12 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+}
+
+.edition-card:hover .edition-card__media img,
+.edition-card:focus-visible .edition-card__media img {
+  transform: scale(1.03);
 }
 
 .edition-card__media--portrait {

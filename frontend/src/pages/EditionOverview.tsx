@@ -158,13 +158,17 @@ export function EditionOverview() {
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
-      gsap.from(".edition-overview__reveal", {
-        autoAlpha: 0,
-        y: 24,
-        duration: 0.55,
-        stagger: 0.08,
-        ease: "power2.out",
-      });
+      gsap.fromTo(
+        ".edition-overview__reveal",
+        { autoAlpha: 0, y: 12 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.85,
+          stagger: { amount: 0.35, ease: "power2.out" },
+          ease: "power3.out",
+        }
+      );
     },
     { scope: root, dependencies: [yearId] }
   );

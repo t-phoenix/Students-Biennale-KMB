@@ -10,6 +10,13 @@
   flex: 1 1 auto;
   width: 100%;
   min-width: 0;
+  padding-top: var(--nav-height);
+}
+
+@media (max-width: 899px) {
+  .site-layout__main {
+    padding-top: var(--nav-height-mobile);
+  }
 }
 
 /* Discover Artworks — full device width + height under the header */
@@ -22,17 +29,22 @@
 }
 
 .site-layout--discover .site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
   width: 100%;
-  max-width: none;
-  flex: 0 0 auto;
+  z-index: 1000;
+  will-change: transform;
 }
 
 .site-layout--discover .site-layout__main {
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  height: calc(100dvh - var(--nav-height));
-  max-height: calc(100dvh - var(--nav-height));
+  height: 100dvh;
+  max-height: 100dvh;
+  padding-top: 0;
 }
 
 :root {

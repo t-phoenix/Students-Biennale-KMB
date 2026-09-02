@@ -7,25 +7,42 @@
   background: #f3f3f3;
 }
 
-/* Search floats over the canvas so the stage stays full-bleed */
-.discover__search {
+/* Generous top-edge sensor to bring navigation down smoothly */
+.discover__top-sensor {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 5;
+  height: 52px;
+  z-index: 998;
+  pointer-events: auto;
+}
+
+/* Search sits directly flush below the fixed header */
+.discover__search {
+  position: absolute;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  z-index: 1001;
   flex: none;
-  padding: 8px var(--grid-margin) 64px;
+  padding: 8px var(--grid-margin) 44px;
   border-bottom: 0;
-  opacity: 1;
   background: linear-gradient(
     to bottom,
-    rgba(248, 248, 248, 0.98) 0%,
-    rgba(248, 248, 248, 0.94) 45%,
-    rgba(248, 248, 248, 0.7) 70%,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.94) 50%,
+    rgba(255, 255, 255, 0.65) 75%,
     transparent 100%
   );
-  pointer-events: none;
+  pointer-events: auto;
+  will-change: transform, opacity;
+}
+
+@media (max-width: 899px) {
+  .discover__search {
+    top: var(--nav-height-mobile);
+  }
 }
 
 .discover__search-field {

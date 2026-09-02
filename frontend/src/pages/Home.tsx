@@ -243,22 +243,198 @@ export function Home() {
     () => {
       withMotionPreference({
         animate: () => {
-          gsap.utils.toArray<HTMLElement>(".home-section").forEach((section) => {
-            gsap.fromTo(
-              section,
-              { autoAlpha: 0, y: 36 },
-              {
-                autoAlpha: 1,
-                y: 0,
-                duration: 0.65,
-                ease: "power2.out",
-                scrollTrigger: { trigger: section, start: "top 82%", once: true },
-              }
-            );
-          });
+          // 1. Sensing Grounds
+          const sensing = document.querySelector<HTMLElement>(".home-sensing");
+          if (sensing) {
+            const tl = gsap.timeline({
+              scrollTrigger: { trigger: sensing, start: "top 88%", once: true },
+            });
+            tl.fromTo(
+              sensing.querySelectorAll(".home-sensing__links .fig-subheading"),
+              { autoAlpha: 0, x: -14 },
+              { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.06, ease: "power3.out" },
+              0
+            )
+              .fromTo(
+                sensing.querySelector(".home-sensing__scroll"),
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 1.05, ease: "power2.out" },
+                0.1
+              )
+              .fromTo(
+                sensing.querySelector(".home-sensing__cta"),
+                { autoAlpha: 0, y: 8 },
+                { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out" },
+                0.2
+              );
+          }
+
+          // 2. Upcoming Programmes
+          const programmes = document.querySelector<HTMLElement>(".home-programmes");
+          if (programmes) {
+            const tl = gsap.timeline({
+              scrollTrigger: { trigger: programmes, start: "top 88%", once: true },
+            });
+            tl.fromTo(
+              programmes.querySelector(".home-programmes__top .fig-label"),
+              { autoAlpha: 0, x: -14 },
+              { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+              0
+            )
+              .fromTo(
+                programmes.querySelector(".home-programmes__banner"),
+                { autoAlpha: 0, scale: 1.03 },
+                { autoAlpha: 1, scale: 1, duration: 1.1, ease: "power3.out" },
+                0.08
+              )
+              .fromTo(
+                programmes.querySelectorAll(".home-programmes__rail .fig-subheading"),
+                { autoAlpha: 0, x: -10 },
+                { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.06, ease: "power3.out" },
+                0.12
+              )
+              .fromTo(
+                programmes.querySelectorAll(".home-programmes__thumbs a"),
+                { autoAlpha: 0, y: 12 },
+                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "power3.out" },
+                0.16
+              );
+          }
+
+          // 3. Press
+          const press = document.querySelector<HTMLElement>(".home-press");
+          if (press) {
+            const tl = gsap.timeline({
+              scrollTrigger: { trigger: press, start: "top 88%", once: true },
+            });
+            tl.fromTo(
+              press.querySelector(".fig-label"),
+              { autoAlpha: 0, x: -14 },
+              { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+              0
+            )
+              .fromTo(
+                press.querySelector(".home-press__featured-img"),
+                { autoAlpha: 0, scale: 1.03 },
+                { autoAlpha: 1, scale: 1, duration: 1.1, ease: "power3.out" },
+                0.06
+              )
+              .fromTo(
+                press.querySelector(".home-press__featured"),
+                { autoAlpha: 0, y: 8 },
+                { autoAlpha: 1, y: 0, duration: 0.95, ease: "power3.out" },
+                0.12
+              )
+              .fromTo(
+                press.querySelectorAll(".home-press__list li"),
+                { autoAlpha: 0, y: 8 },
+                { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.07, ease: "power3.out" },
+                0.16
+              )
+              .fromTo(
+                press.querySelector(".home-press__more"),
+                { autoAlpha: 0, y: 6 },
+                { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out" },
+                0.22
+              );
+          }
+
+          // 4. About Us
+          const about = document.querySelector<HTMLElement>(".home-about");
+          if (about) {
+            // Intro + KBF
+            const tlAbout = gsap.timeline({
+              scrollTrigger: { trigger: about, start: "top 88%", once: true },
+            });
+            tlAbout.fromTo(
+              about.querySelector(".home-about__intro .fig-label"),
+              { autoAlpha: 0, x: -14 },
+              { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+              0
+            )
+              .fromTo(
+                about.querySelector(".home-about__block:first-of-type .home-about__logo-wrap"),
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, ease: "power2.out" },
+                0.08
+              )
+              .fromTo(
+                about.querySelector(".home-about__block:first-of-type p"),
+                { autoAlpha: 0, y: 6 },
+                { autoAlpha: 1, y: 0, duration: 0.95, ease: "power2.out" },
+                0.14
+              );
+
+            // SB Block
+            const sbBlock = about.querySelectorAll(".home-about__block")[1];
+            if (sbBlock) {
+              const tlSb = gsap.timeline({
+                scrollTrigger: { trigger: sbBlock, start: "top 88%", once: true },
+              });
+              tlSb.fromTo(
+                sbBlock.querySelector(".home-about__logo-wrap"),
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, ease: "power2.out" },
+                0
+              ).fromTo(
+                sbBlock.querySelectorAll(".home-about__sb-copy p"),
+                { autoAlpha: 0, y: 6 },
+                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.07, ease: "power2.out" },
+                0.08
+              );
+            }
+
+            // Team
+            const team = about.querySelector<HTMLElement>(".home-about__team");
+            if (team) {
+              const tlTeam = gsap.timeline({
+                scrollTrigger: { trigger: team, start: "top 88%", once: true },
+              });
+              tlTeam.fromTo(
+                team.querySelector(".fig-label"),
+                { autoAlpha: 0, x: -14 },
+                { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+                0
+              ).fromTo(
+                team.querySelectorAll(".home-about__team-cols > div"),
+                { autoAlpha: 0, y: 10 },
+                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.09, ease: "power3.out" },
+                0.08
+              );
+            }
+
+            // Sponsors
+            const sponsors = about.querySelector<HTMLElement>(".home-about__sponsors");
+            if (sponsors) {
+              const tlSponsors = gsap.timeline({
+                scrollTrigger: { trigger: sponsors, start: "top 90%", once: true },
+              });
+              tlSponsors.fromTo(
+                sponsors.querySelector(".fig-label"),
+                { autoAlpha: 0, x: -14 },
+                { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+                0
+              )
+                .fromTo(
+                  sponsors.querySelector(".home-about__sponsor-unit"),
+                  { autoAlpha: 0, y: 8 },
+                  { autoAlpha: 1, y: 0, duration: 0.95, ease: "power3.out" },
+                  0.08
+                )
+                .fromTo(
+                  sponsors.querySelector(".home-about__sponsor-caption"),
+                  { autoAlpha: 0, y: 6 },
+                  { autoAlpha: 1, y: 0, duration: 0.95, ease: "power2.out" },
+                  0.14
+                );
+            }
+          }
         },
         onReduce: () => {
-          gsap.set(".home-section", { autoAlpha: 1, y: 0 });
+          gsap.set(
+            ".home-section, .fig-label, .home-sensing__scroll, .home-programmes__banner, .home-about__sponsor-unit",
+            { autoAlpha: 1, x: 0, y: 0, scale: 1 }
+          );
         },
       });
     },
@@ -276,12 +452,13 @@ export function Home() {
         animate: () => {
           gsap.fromTo(
             ".home-hero__card",
-            { autoAlpha: 0 },
+            { autoAlpha: 0, y: 16 },
             {
               autoAlpha: 1,
+              y: 0,
               stagger: 0.08,
-              duration: 0.45,
-              ease: "power2.out",
+              duration: 0.65,
+              ease: "power3.out",
               overwrite: true,
             }
           );

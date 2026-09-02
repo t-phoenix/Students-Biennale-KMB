@@ -1,7 +1,9 @@
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
+  left: 0;
+  right: 0;
+  z-index: 1000;
   height: var(--nav-height);
   display: flex;
   align-items: center;
@@ -14,7 +16,25 @@
   max-width: none;
   margin-inline: 0;
   box-sizing: border-box;
-  background: var(--color-neutral-bg-light);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  will-change: transform;
+}
+
+.site-header__hover-zone {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  z-index: 999;
+  pointer-events: auto;
+}
+
+.site-header__hover-zone--canvas {
+  height: 48px;
 }
 
 .site-header__brand {

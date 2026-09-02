@@ -7,7 +7,17 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 export const EASE = {
   out: "power2.out",
   inOut: "power3.inOut",
+  smooth: "power3.out",
+  expo: "power4.out",
+  spring: "back.out(1.8)",
+  soft: "power1.out",
 } as const;
+
+// Configure ScrollTrigger performance defaults
+ScrollTrigger.config({
+  limitCallbacks: true,
+  ignoreMobileResize: true,
+});
 
 /** Call once at app bootstrap if needed. */
 export function initMotion() {

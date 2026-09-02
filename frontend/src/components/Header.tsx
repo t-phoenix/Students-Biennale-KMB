@@ -77,6 +77,122 @@ export function Header() {
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isOpenRef = useRef(false);
 
+  // Smart non-disruptive auto-hiding header
+  const isHiddenRef = useRef(false);
+  const isHoveredRef = useRef(false);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastScrollYRef = useRef(0);
+
+  const showHeader = useCallback(() => {
+    if (hideTimerRef.current) {
+      clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = null;
+    }
+    const header = headerRef.current;
+    if (!header) return;
+    if (isHiddenRef.current) {
+      isHiddenRef.current = false;
+      if (prefersReducedMotion()) {
+        gsap.set(header, { yPercent: 0 });
+      } else {
+        gsap.to(header, {
+          yPercent: 0,
+          duration: 0.38,
+          ease: "power3.out",
+          overwrite: "auto",
+        });
+      }
+    }
+  }, []);
+
+  const hideHeader = useCallback(() => {
+    const header = headerRef.current;
+    if (!header || isHoveredRef.current || activeDropdown) return;
+    if (!isHiddenRef.current) {
+      isHiddenRef.current = true;
+      if (prefersReducedMotion()) {
+        gsap.set(header, { yPercent: -100 });
+      } else {
+        gsap.to(header, {
+          yPercent: -100,
+          duration: 0.38,
+          ease: "power3.in",
+          overwrite: "auto",
+        });
+      }
+    }
+  }, [activeDropdown]);
+
+  useEffect(() => {
+    if (activeDropdown) {
+      showHeader();
+    }
+  }, [activeDropdown, showHeader]);
+
+  useEffect(() => {
+    if (location.pathname === "/artworks") {
+      const onCanvasNav = (e: Event) => {
+        const visible = Boolean((e as CustomEvent<{ visible: boolean }>).detail?.visible);
+        if (visible) {
+          showHeader();
+        } else {
+          if (!isHoveredRef.current && !activeDropdown) {
+            hideHeader();
+          }
+        }
+      };
+
+      window.addEventListener("canvas:nav", onCanvasNav);
+      return () => {
+        window.removeEventListener("canvas:nav", onCanvasNav);
+      };
+    }
+
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - lastScrollYRef.current;
+
+      if (currentY <= 50) {
+        showHeader();
+      } else if (delta > 8 && !isHoveredRef.current && !activeDropdown) {
+        hideHeader();
+      } else if (delta < -8) {
+        showHeader();
+      }
+      lastScrollYRef.current = currentY;
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, [location.pathname, showHeader, hideHeader, activeDropdown]);
+
+  const onHeaderEnter = useCallback(() => {
+    isHoveredRef.current = true;
+    showHeader();
+    if (location.pathname === "/artworks") {
+      window.dispatchEvent(new CustomEvent("canvas:nav-hover", { detail: { hovering: true } }));
+    }
+  }, [showHeader, location.pathname]);
+
+  const onHeaderLeave = useCallback(() => {
+    isHoveredRef.current = false;
+    if (location.pathname === "/artworks") {
+      window.dispatchEvent(new CustomEvent("canvas:nav-hover", { detail: { hovering: false } }));
+      return;
+    }
+    if (window.scrollY > 60 && !activeDropdown) {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      hideTimerRef.current = setTimeout(() => {
+        if (!isHoveredRef.current && !activeDropdown && window.scrollY > 60) {
+          hideHeader();
+        }
+      }, 1000);
+    }
+  }, [activeDropdown, hideHeader, location.pathname]);
+
   useEffect(() => {
     if (!onHome) {
       setActiveSection(null);
@@ -306,7 +422,19 @@ export function Header() {
   );
 
   return (
-    <header ref={headerRef} className="site-header" data-node-id="6:287">
+    <>
+      <div
+        className={`site-header__hover-zone${location.pathname === "/artworks" ? " site-header__hover-zone--canvas" : ""}`}
+        onPointerEnter={onHeaderEnter}
+        aria-hidden
+      />
+      <header
+        ref={headerRef}
+        className="site-header"
+        data-node-id="6:287"
+        onPointerEnter={onHeaderEnter}
+        onPointerLeave={onHeaderLeave}
+      >
       <Link to="/" className="site-header__brand" aria-label="Students' Biennale home" onClick={closeImmediate}>
         <img
           className="site-header__brand-logo site-header__brand-logo--full"
@@ -454,5 +582,6 @@ export function Header() {
         />
       </a>
     </header>
+    </>
   );
 }

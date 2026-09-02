@@ -10,14 +10,42 @@ import "./EditionViews.css";
 function useStagger(ref: RefObject<HTMLElement | null>, dep: string) {
   useGSAP(
     () => {
-      if (prefersReducedMotion()) return;
-      gsap.from(".edition-card", {
-        autoAlpha: 0,
-        y: 20,
-        duration: 0.45,
-        stagger: 0.06,
-        ease: "power2.out",
-      });
+      if (prefersReducedMotion() || !ref.current) return;
+      const targets = ref.current.querySelectorAll(".edition-card, .edition-venue");
+      if (!targets.length) return;
+
+      const tl = gsap.timeline();
+      tl.fromTo(
+        targets,
+        { autoAlpha: 0, y: 14 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.85,
+          stagger: { amount: 0.35, ease: "power2.out" },
+          ease: "power3.out",
+          overwrite: "auto",
+        },
+        0
+      );
+
+      const images = ref.current.querySelectorAll(
+        ".edition-card__frame img, .edition-card__media img"
+      );
+      if (images.length) {
+        tl.fromTo(
+          images,
+          { scale: 1.03 },
+          {
+            scale: 1,
+            duration: 1.05,
+            stagger: { amount: 0.35, ease: "power2.out" },
+            ease: "power3.out",
+            overwrite: "auto",
+          },
+          0
+        );
+      }
     },
     { scope: ref, dependencies: [dep] },
   );

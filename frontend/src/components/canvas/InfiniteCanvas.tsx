@@ -187,12 +187,6 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   // in this component is specifically built to avoid.
   const handleTileHover = useCallback(
     (id: string | null) => {
-      const root = rootRef.current;
-      if (!root) return;
-      root.querySelectorAll<HTMLElement>(".canvas-tile").forEach((tile) => {
-        tile.classList.toggle("is-hover-dimmed", id !== null && tile.dataset.id !== id);
-      });
-
       if (!id || !artworks?.length || !id.startsWith("aw-")) return;
       const artworkId = id.slice(3).replace(/__c\d+-\d+$/, "");
       const artwork = findCard(artworks, artworkId);
@@ -367,6 +361,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
 
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
+
       // Browsers report trackpad pinch as wheel events with ctrlKey set —
       // this one branch covers desktop Ctrl+scroll and trackpad pinch alike.
       if (e.ctrlKey) {

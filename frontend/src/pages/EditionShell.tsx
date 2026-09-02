@@ -1,7 +1,9 @@
-import { NavLink, Outlet, useMatch, useParams } from "react-router-dom";
+import { useRef } from "react";
+import { NavLink, Outlet, useLocation, useMatch, useParams } from "react-router-dom";
 import { EditionSearchResultsPanel } from "../components/EditionSearchResults";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
+import { gsap, prefersReducedMotion, useGSAP } from "../lib/motion";
 import { EditionSearchProvider, useEditionSearch } from "./EditionSearchContext";
 import "./EditionShell.css";
 import "./EditionViews.css";
@@ -54,6 +56,26 @@ function EditionSearchToolbar() {
 
 function EditionCatalogueMain() {
   const { isSearching, query, results } = useEditionSearch();
+  const location = useLocation();
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion() || !contentRef.current) return;
+      gsap.fromTo(
+        contentRef.current,
+        { autoAlpha: 0, y: 12 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.7,
+          ease: "power3.out",
+          overwrite: "auto",
+        }
+      );
+    },
+    { dependencies: [location.pathname], scope: contentRef }
+  );
 
   return (
     <div className="edition-view">
@@ -61,7 +83,9 @@ function EditionCatalogueMain() {
       {isSearching ? (
         <EditionSearchResultsPanel query={query} results={results} />
       ) : (
-        <Outlet />
+        <div ref={contentRef} className="edition-content-wrapper">
+          <Outlet />
+        </div>
       )}
     </div>
   );

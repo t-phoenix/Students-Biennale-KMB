@@ -9,22 +9,23 @@
   color: var(--color-text-primary);
   overflow: hidden;
   border-radius: 0;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
   -webkit-user-select: none;
   user-select: none;
   container-type: inline-size;
   opacity: 0;
   filter: grayscale(0%);
   pointer-events: none;
-  transition: box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+  transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     opacity 0.3s ease,
     filter 0.3s ease;
 }
 
 .canvas-tile:hover {
-  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.2), 0 6px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-4px) scale(1.02);
+  z-index: 10;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -47,24 +48,18 @@
 /* When search query is active:
    Non-matching items are Black & White (grayscale 100%) and strictly 50% opacity only */
 .canvas-tile.is-dimmed,
-.canvas-tile.is-dimmed:hover,
-.canvas-tile.is-dimmed.is-hover-dimmed {
-  opacity: 0.5 !important;
+.canvas-tile.is-dimmed:hover {
+  opacity: 0.45 !important;
   filter: grayscale(100%) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: none;
 }
 
 /* Matching searched items: full color, full 100% opacity, enhanced elevation */
 .canvas-tile.is-matched {
   opacity: 1;
   filter: grayscale(0%);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.26), 0 4px 14px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
   z-index: 5;
-}
-
-/* Hovering one tile drops other un-searched tiles slightly (only when not searching) */
-.canvas-tile:not(.is-dimmed).is-hover-dimmed {
-  opacity: 0.7;
 }
 
 .canvas-tile.is-revealed {

@@ -2,8 +2,8 @@ import { gsap, prefersReducedMotion } from "./motion";
 
 /** Shared crossfade timing — matches Home / Edition hero carousels. */
 export const SLIDER_CROSSFADE = {
-  duration: 0.6,
-  ease: "power2.out" as const,
+  duration: 0.85,
+  ease: "power2.inOut" as const,
 } as const;
 
 export const SLIDER_HOLD_SECONDS = 4;
