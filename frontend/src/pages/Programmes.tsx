@@ -325,45 +325,41 @@ export function Programmes() {
               </Link>
             ))}
 
-            {/* Raza - Students' Biennale Scholarship Subsection (Figma 50:1773 & 50:2228) */}
-            {expandedIntlAwards || standardIntlAwards.length <= awardsPreviewCount ? (
-              <>
-                <div className="programmes__raza-heading-row" id="raza">
-                  <button
-                    type="button"
-                    className="programmes__raza-title-btn"
-                    onClick={() => setRazaModalOpen(true)}
-                    aria-label="Open Raza - Students' Biennale Scholarship Spotlight"
-                    title="Click to spotlight Raza - Students' Biennale Scholarship"
-                  >
-                    <span>RAZA - STUDENTS&apos; BIENNALE SCHOLARSHIP</span>
-                    <span className="programmes__raza-title-arrow" aria-hidden>↗</span>
-                  </button>
-                </div>
+            {/* Raza - Students' Biennale Scholarship Subsection (Figma 50:1773 & 50:2228) — always visible */}
+            <div className="programmes__raza-heading-row" id="raza">
+              <button
+                type="button"
+                className="programmes__raza-title-btn"
+                onClick={() => setRazaModalOpen(true)}
+                aria-label="Open Raza - Students' Biennale Scholarship Spotlight"
+                title="Click to spotlight Raza - Students' Biennale Scholarship"
+              >
+                <span>RAZA - STUDENTS&apos; BIENNALE SCHOLARSHIP</span>
+                <span className="programmes__raza-title-arrow" aria-hidden>↗</span>
+              </button>
+            </div>
 
-                {razaAwardCards.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    className="programmes__award"
-                    onClick={() => {
-                      if (s.id === "kaki-weiss" || s.id === "nina-durel") {
-                        setOpenScholarId(s.id);
-                      } else {
-                        setRazaModalOpen(true);
-                      }
-                    }}
-                  >
-                    <div className="programmes__award-media">
-                      <img src={s.image} alt={s.name} />
-                    </div>
-                    <h3>{s.name}</h3>
-                    <p>Artwork : {s.artwork}</p>
-                    <p>{s.institution}</p>
-                  </button>
-                ))}
-              </>
-            ) : null}
+            {razaAwardCards.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className="programmes__award"
+                onClick={() => {
+                  if (s.id === "kaki-weiss" || s.id === "nina-durel") {
+                    setOpenScholarId(s.id);
+                  } else {
+                    setRazaModalOpen(true);
+                  }
+                }}
+              >
+                <div className="programmes__award-media">
+                  <img src={s.image} alt={s.name} />
+                </div>
+                <h3>{s.name}</h3>
+                <p>Artwork : {s.artwork}</p>
+                <p>{s.institution}</p>
+              </button>
+            ))}
           </div>
           ) : (
             <SectionEmpty>No international awards published yet.</SectionEmpty>
