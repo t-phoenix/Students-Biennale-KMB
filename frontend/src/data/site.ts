@@ -815,6 +815,32 @@ export const ARTWORKS: ArtworkCard[] = [
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
   },
+  {
+    id: "kaki-weiss",
+    title: "Tabut",
+    venue: "Beaux Arts de Marseille, France",
+    year: "2025 - 26",
+    description: `Kaki Weiss proposes a kitchen where the act of cooking becomes a medium for transmission and memory. Centered around a table, the installation also invites participation in activating the space.\n\nHere, the kitchen is reimagined not as a private, enclosed space but as a site of exchange — a place where knowledge is handed down not through instruction alone, but through repeated gesture, smell, taste, and touch. Cooking becomes a language of its own, one that carries memory across bodies and generations, often without the need for words.\n\nThe table at the center of the work anchors this exchange. It is less an object to be viewed than a threshold to be crossed — a surface where making and remembering happen simultaneously, and where the boundary between artist and audience begins to dissolve. By inviting participation, Weiss resists the idea of the artwork as something finished or fixed. Instead, the installation only becomes whole through activation: through hands that stir, mix, and share.\n\nIn this sense, the work asks what it means to inherit — not objects, but practices; not stories, but the living memory held in the act of cooking itself.`,
+    artists: [{ name: "Kaki Weiss", institution: "Beaux Arts de Marseille, France" }],
+    materials: [
+      "Mixed media installation with performance (reclaimed wood, textile, kitchen implements, food materials)",
+    ],
+    dimensions: "Variable",
+    image: "/programmes/raza-kaki-weiss.jpg",
+    images: ["/programmes/raza-kaki-hero.jpg", "/programmes/raza-kaki-weiss.jpg"],
+  },
+  {
+    id: "nina-durel",
+    title: "Inseamm",
+    venue: "Beaux Arts de Marseille, France",
+    year: "2025 - 26",
+    description: `Conceived as a book-object with variable dimensions (55 x 40 x 20 cm when closed), this work unfolds as a "sensitive cartography" of Kochi's fluvial and coastal networks. Beginning with a digital drift through Google Maps, the artist turns to the act of walking and observing, measuring not land, but water. Inspired by artist Matías Poisson, who maps cities through horizon lines and urban details, the project embraces mapping as an intuitive, imperfect art where distortions, invented keys, and shifting perspectives reveal what standard cartography cannot.\n\nThrough observational drawing, the waterways are traced for their biodiverse edges: water hyacinths, fishing structures, and imagined sea creatures echoing the legendary "Here be dragons" of Olaus Magnus. Traditional Chinese fishing nets (Cheena vala) along Vypin become recurring motifs forms held between function and image.\n\nA deployable surveying tool, built to the scale of a carry-on suitcase, accompanies this process. Hybrid in nature, it evokes scientific instruments such as GPS/GNSS units and theodolites while functioning as a sculptural observation module. Drawing from the field structures of Gilles Ebersolt and the inhabitable sculptures of Abraham Poincheval, the work becomes both instrument and artwork, a portable studio carried on the back.\n\nHere, cartography is not fixed but lived. Art moves through the landscape, made outdoors and shown in passage, tracing the unstable contours of water and memory.`,
+    artists: [{ name: "Nina Durel", institution: "Beaux Arts de Marseille, France" }],
+    materials: ["Mixed media installation"],
+    dimensions: "Variable",
+    image: "/programmes/raza-nina-durel.jpg",
+    images: ["/programmes/raza-nina-hero.jpg", "/programmes/raza-nina-durel.jpg"],
+  },
 ];
 
 /** Curator names for an artwork, via its curatorial zone. Empty when unassigned. */
@@ -961,6 +987,8 @@ export type ArtistCard = {
  * frame (713:297) — 3-up, left to right, top to bottom. All are Zone 1 institutions.
  */
 export const ARTISTS: ArtistCard[] = [
+  { id: "kaki-weiss", name: "Kaki Weiss", institution: "Beaux Arts de Marseille, France", zone: "Zone 1" },
+  { id: "nina-durel", name: "Nina Durel", institution: "Beaux Arts de Marseille, France", zone: "Zone 1" },
   { id: "ananya-gautam", name: "Ananya Gautam", institution: "National Institute of Design, Ahmedabad", zone: "Zone 1" },
   { id: "annanya-dhanda", name: "Annanya Dhanda", institution: "The Maharaja Sayajirao University, Baroda", zone: "Zone 1" },
   { id: "jyotismriti-bordoloi", name: "Jyotismriti Bordoloi", institution: "The Maharaja Sayajirao University, Baroda", zone: "Zone 1" },
@@ -1174,6 +1202,11 @@ export const AWARDS_INTERNATIONAL: AwardWinner[] = [
   { name: "Aswathy GS", artwork: "Staged Narratives", institution: "Raja Ravi Varma College of Fine Arts, Mavelikkara, Kerala", artworkId: "staged-narratives-aswathy" },
   { name: "Kailash Khanjode", artwork: "Ginning Justice, 2025", institution: "Government College of Art, Nagpur, Maharashtra", artworkId: "ginning-justice-kailash" },
   { name: "Sachin Banne", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "ginning-justice-sachin" },
+  { name: "Sai Gitanjali Poluru", artwork: "Root System Analysis", institution: "Shiv Nadar University", artworkId: "root-system-analysis" },
+  { name: "Kaki Weiss", artwork: "Tabut", institution: "Beaux Arts de Marseille, France", artworkId: "kaki-weiss" },
+  { name: "Nina Durel", artwork: "Inseamm", institution: "Beaux Arts de Marseille, France", artworkId: "nina-durel" },
+  { name: "Rutuja Sonawane", artwork: "The People’s Orchestra", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "rutuja-sonawane" },
+  { name: "Mohammad Riyaz", artwork: "Inheritance of the hand", institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh", artworkId: "mohammad-riyaz" },
 ];
 
 /** National Awards — Figma 1:1692 / Group 276. */

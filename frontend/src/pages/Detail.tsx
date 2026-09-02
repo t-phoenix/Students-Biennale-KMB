@@ -5,7 +5,7 @@ import { CtaLink } from "../components/CtaLink";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import { HighlightText } from "../components/HighlightText";
 import { ImageCrossfadeStack } from "../components/ImageCrossfadeStack";
-import { venueImages } from "../data/site";
+import { venueImages, RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../data/site";
 import { prefetchNextArtwork } from "../lib/predictivePrefetch";
 import {
   artworksForZoneIn,
@@ -28,11 +28,29 @@ export function Detail() {
 
   const data = useMemo(() => {
     if (kindSeg === "artworks")
-      return { kind: "artwork" as const, item: findCard(catalogue.artworks, id) };
+      return {
+        kind: "artwork" as const,
+        item: findCard(catalogue.artworks, id) ?? findCard(RAZA_SCHOLAR_ARTWORKS, id),
+      };
     if (kindSeg === "curators")
       return { kind: "curator" as const, item: findCard(catalogue.curators, id) };
-    if (kindSeg === "artists")
-      return { kind: "artist" as const, item: findCard(catalogue.artists, id) };
+    if (kindSeg === "artists") {
+      const item = findCard(catalogue.artists, id);
+      if (item) return { kind: "artist" as const, item };
+      const scholar = RAZA_SCHOLARS.find((s) => s.id === id);
+      if (scholar) {
+        return {
+          kind: "artist" as const,
+          item: {
+            id: scholar.id,
+            name: scholar.name,
+            institution: "Beaux Arts de Marseille, France",
+            zone: "Zone 1",
+          },
+        };
+      }
+      return { kind: "artist" as const, item: undefined };
+    }
     if (kindSeg === "venue")
       return { kind: "venue" as const, item: findCard(catalogue.venues, id) };
     return { kind: "unknown" as const, item: undefined };

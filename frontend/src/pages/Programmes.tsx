@@ -11,6 +11,7 @@ import { RazaSpotlightModal } from "../components/RazaSpotlightModal";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
+import { DEFAULT_RAZA, EMPTY_PROGRAMMES } from "../lib/programmes/fallbacks";
 import { LATEST_EDITION } from "../data/site";
 import "./Programmes.css";
 
@@ -33,13 +34,25 @@ export function Programmes() {
 
   const visiblePastWorkshops = expandedPast ? pastWorkshops : pastWorkshops.slice(0, 2);
   const awardsPreviewCount = 3;
+  const intlAwardsEffective =
+    awardsInternational.length > 0 ? awardsInternational : EMPTY_PROGRAMMES.awardsInternational;
+  const nationalAwardsEffective =
+    awardsNational.length > 0 ? awardsNational : EMPTY_PROGRAMMES.awardsNational;
   const visibleIntlAwards = expandedIntlAwards
-    ? awardsInternational
-    : awardsInternational.slice(0, awardsPreviewCount);
+    ? intlAwardsEffective
+    : intlAwardsEffective.slice(0, awardsPreviewCount);
   const visibleNationalAwards = expandedNationalAwards
-    ? awardsNational
-    : awardsNational.slice(0, awardsPreviewCount);
-  const showRaza = raza.intro.length > 0 || raza.scholars.length > 0;
+    ? nationalAwardsEffective
+    : nationalAwardsEffective.slice(0, awardsPreviewCount);
+
+  const razaEffective = {
+    title: raza.title || DEFAULT_RAZA.title,
+    subtitle: raza.subtitle || DEFAULT_RAZA.subtitle,
+    intro: raza.intro?.length ? raza.intro : DEFAULT_RAZA.intro,
+    scholars: raza.scholars?.length ? raza.scholars : DEFAULT_RAZA.scholars,
+    closing: raza.closing?.length ? raza.closing : DEFAULT_RAZA.closing,
+  };
+  const showRaza = true;
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -251,7 +264,7 @@ export function Programmes() {
       <div id="awards">
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">INTERNATIONAL AWARDS</h2>
-          {awardsInternational.length ? (
+          {intlAwardsEffective.length ? (
           <div className="programmes__awards fig-c4-12 fig-sub-3">
             {visibleIntlAwards.map((a) => (
               <Link
@@ -278,7 +291,7 @@ export function Programmes() {
           ) : (
             <SectionEmpty>No international awards published yet.</SectionEmpty>
           )}
-          {awardsInternational.length > awardsPreviewCount ? (
+          {intlAwardsEffective.length > awardsPreviewCount ? (
             <CtaLink
               className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
               lines={expandedIntlAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
@@ -314,7 +327,7 @@ export function Programmes() {
           </div>
 
           <div className="fig-c4-9 programmes__raza-intro">
-            {raza.intro.map((paragraph) => (
+            {razaEffective.intro.map((paragraph) => (
               <p key={paragraph.slice(0, 48)} className="fig-body">
                 {paragraph}
               </p>
@@ -323,13 +336,13 @@ export function Programmes() {
 
           <div className="fig-c10-12 programmes__raza-side">
             <div className="programmes__raza-scholars-names">
-              {raza.scholars.slice(0, 2).map((scholar) => (
+              {razaEffective.scholars.slice(0, 2).map((scholar) => (
                 <p key={scholar.id}>
                   <strong>{scholar.name}</strong>
                 </p>
               ))}
             </div>
-            {raza.closing.map((paragraph) => (
+            {razaEffective.closing.map((paragraph) => (
               <p key={paragraph.slice(0, 48)} className="fig-body programmes__raza-closing">
                 {paragraph}
               </p>
@@ -337,7 +350,7 @@ export function Programmes() {
           </div>
 
           <div className="fig-c4-12 fig-sub-2 programmes__raza-grid">
-            {raza.scholars.map((scholar) => (
+            {razaEffective.scholars.map((scholar) => (
               <article key={scholar.id} className="programmes__raza-card">
                 <button
                   type="button"
@@ -413,7 +426,7 @@ export function Programmes() {
 
       <ScholarSpotlight
         scholarId={openScholarId}
-        scholars={raza.scholars.length ? raza.scholars : undefined}
+        scholars={razaEffective.scholars}
         onClose={() => setOpenScholarId(null)}
       />
     </div>
