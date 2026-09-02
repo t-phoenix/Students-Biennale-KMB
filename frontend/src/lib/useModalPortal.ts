@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
 type Options = {
   open: boolean;
@@ -11,6 +11,13 @@ type Options = {
  *  and the `spotlight:change` event other parts of the app (Layout.tsx) listen for
  *  to suspend smooth-scroll while any full-screen overlay is open. */
 export function useModalPortal({ open, onClose, panelRef, initialFocusRef }: Options) {
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const initialFocusRef_ = useRef(initialFocusRef);
+  initialFocusRef_.current = initialFocusRef;
+  const panelRef_ = useRef(panelRef);
+  panelRef_.current = panelRef;
+
   useEffect(() => {
     if (!open) return;
 
@@ -19,14 +26,13 @@ export function useModalPortal({ open, onClose, panelRef, initialFocusRef }: Opt
     document.body.style.overflow = "hidden";
     window.dispatchEvent(new CustomEvent("spotlight:change", { detail: { open: true } }));
 
-    const panel = panelRef.current;
-
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
+      const panel = panelRef_.current?.current;
       if (e.key !== "Tab" || !panel) return;
       const focusable = panel.querySelectorAll<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -36,15 +42,17 @@ export function useModalPortal({ open, onClose, panelRef, initialFocusRef }: Opt
       const last = focusable[focusable.length - 1];
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
-        last.focus();
+        last.focus({ preventScroll: true });
       } else if (!e.shiftKey && document.activeElement === last) {
         e.preventDefault();
-        first.focus();
+        first.focus({ preventScroll: true });
       }
     };
     window.addEventListener("keydown", onKey);
 
-    const t = window.setTimeout(() => initialFocusRef?.current?.focus(), 30);
+    const t = window.setTimeout(() => {
+      initialFocusRef_.current?.current?.focus({ preventScroll: true });
+    }, 30);
 
     return () => {
       window.clearTimeout(t);
@@ -52,7 +60,7 @@ export function useModalPortal({ open, onClose, panelRef, initialFocusRef }: Opt
       document.body.style.overflow = "";
       delete document.documentElement.dataset.spotlight;
       window.dispatchEvent(new CustomEvent("spotlight:change", { detail: { open: false } }));
-      prevFocus?.focus?.();
+      prevFocus?.focus?.({ preventScroll: true });
     };
-  }, [open, onClose, panelRef, initialFocusRef]);
+  }, [open]);
 }

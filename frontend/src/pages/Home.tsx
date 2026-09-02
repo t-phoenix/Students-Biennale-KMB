@@ -82,6 +82,14 @@ export function Home() {
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
+
+  useEffect(() => {
+    if (razaModalOpen || openScholarId !== null || activeCard !== null || lightboxOpen) {
+      heroTlRef.current?.pause();
+    } else {
+      heroTlRef.current?.play();
+    }
+  }, [razaModalOpen, openScholarId, activeCard, lightboxOpen]);
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();

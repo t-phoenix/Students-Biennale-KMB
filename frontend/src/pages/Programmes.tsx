@@ -107,6 +107,14 @@ export function Programmes() {
     }
   }, []);
 
+  useEffect(() => {
+    if (razaModalOpen || openScholarId !== null) {
+      heroTlRef.current?.pause();
+    } else {
+      heroTlRef.current?.play();
+    }
+  }, [razaModalOpen, openScholarId]);
+
   useGSAP(
     () => {
       const reduced = prefersReducedMotion();
