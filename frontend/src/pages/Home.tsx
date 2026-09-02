@@ -4,6 +4,8 @@ import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../li
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { SpotlightModal } from "../components/SpotlightModal";
+import { RazaSpotlightModal } from "../components/RazaSpotlightModal";
+import { ScholarSpotlight } from "../components/ScholarSpotlight";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import {
   UpdateCardSpotlight,
@@ -73,6 +75,8 @@ export function Home() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
+  const [razaModalOpen, setRazaModalOpen] = useState(false);
+  const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
@@ -768,6 +772,16 @@ export function Home() {
                   <span className="fig-subheading__underline" aria-hidden />
                 </Link>
               ))}
+              <button
+                type="button"
+                className={`fig-subheading${programmesHover === "raza" ? " is-selected" : ""}`}
+                onClick={() => setRazaModalOpen(true)}
+                onMouseEnter={() => setProgrammesHover("raza")}
+                onMouseLeave={() => setProgrammesHover(null)}
+              >
+                RAZA SCHOLARSHIP
+                <span className="fig-subheading__underline" aria-hidden />
+              </button>
             </div>
             <div ref={programmesThumbsRef} className="home-programmes__thumbs fig-c4-12">
               {[
@@ -954,6 +968,19 @@ export function Home() {
           </div>
         </section>
       </div>
+
+      <RazaSpotlightModal
+        open={razaModalOpen}
+        onClose={() => setRazaModalOpen(false)}
+        onSelectScholar={(scholarId) => {
+          setOpenScholarId(scholarId);
+        }}
+      />
+
+      <ScholarSpotlight
+        scholarId={openScholarId}
+        onClose={() => setOpenScholarId(null)}
+      />
     </div>
   );
 }

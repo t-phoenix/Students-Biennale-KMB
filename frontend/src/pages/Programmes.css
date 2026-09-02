@@ -323,6 +323,22 @@
   padding-inline-end: var(--grid-gutter);
 }
 
+.programmes__raza-rail-trigger {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: right;
+  color: inherit;
+  display: block;
+  width: 100%;
+  transition: opacity 0.2s ease;
+}
+
+.programmes__raza-rail-trigger:hover {
+  opacity: 0.65;
+}
+
 .programmes__raza-rail-heading {
   margin: 0;
   font-size: var(--type-title-size);
@@ -451,5 +467,9 @@
   .programmes__raza-rail {
     text-align: left;
     padding-inline-end: 0;
+  }
+
+  .programmes__raza-rail-trigger {
+    text-align: left;
   }
 }

@@ -1,0 +1,222 @@
+.raza-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px var(--grid-margin);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.raza-modal__scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.raza-modal__sheet {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1440px;
+  background: var(--color-bg-elevated, #ffffff);
+  color: var(--color-text-primary, #000000);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+  padding: 60px 48px;
+  margin: auto;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.raza-modal__close {
+  position: absolute;
+  top: 24px;
+  right: 28px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--color-text-primary, #000000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 10;
+}
+
+.raza-modal__close:hover {
+  opacity: 0.6;
+  transform: scale(1.08);
+}
+
+.raza-modal__grid {
+  align-items: start;
+}
+
+/* Left Rail */
+.raza-modal__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  padding-right: 24px;
+}
+
+.raza-modal__rail-title {
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-primary, #000000);
+  margin: 0 0 20px;
+  max-width: 290px;
+}
+
+.raza-modal__rail-divider {
+  width: 100%;
+  max-width: 290px;
+  height: 1px;
+  background: var(--color-border, #000000);
+  margin-bottom: 16px;
+}
+
+.raza-modal__rail-subtitle {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--color-text-muted, #545454);
+  margin: 0;
+  max-width: 290px;
+}
+
+/* Right Main Area */
+.raza-modal__main {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* 2-Column Curatorial Text */
+.raza-modal__editorial {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--grid-gutter, 20px);
+}
+
+.raza-modal__col p {
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-primary, #000000);
+  margin: 0 0 20px;
+}
+
+.raza-modal__col p:last-child {
+  margin-bottom: 0;
+}
+
+/* 2x2 Scholars Grid */
+.raza-modal__scholars {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px var(--grid-gutter, 20px);
+  margin-top: 16px;
+}
+
+.raza-modal__scholar-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.raza-modal__scholar-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+}
+
+.raza-modal__scholar-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 426 / 273;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.raza-modal__scholar-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.raza-modal__scholar-btn:hover .raza-modal__scholar-media img {
+  transform: scale(1.04);
+}
+
+.raza-modal__scholar-name {
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 16px 0 8px;
+  color: var(--color-text-primary, #000000);
+  transition: opacity 0.2s ease;
+}
+
+.raza-modal__scholar-btn:hover .raza-modal__scholar-name {
+  opacity: 0.7;
+}
+
+.raza-modal__scholar-caption {
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-text-muted, #545454);
+  margin: 0;
+}
+
+@media (max-width: 899px) {
+  .raza-modal {
+    padding: 20px 12px;
+  }
+
+  .raza-modal__sheet {
+    padding: 44px 20px 28px;
+  }
+
+  .raza-modal__rail {
+    align-items: flex-start;
+    text-align: left;
+    padding-right: 0;
+    margin-bottom: 28px;
+  }
+
+  .raza-modal__rail-title,
+  .raza-modal__rail-divider,
+  .raza-modal__rail-subtitle {
+    max-width: 100%;
+  }
+
+  .raza-modal__editorial,
+  .raza-modal__scholars {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { buildAutoSlideTimeline, jumpToSlide, initSlideStack } from "../lib/imageSlider";
@@ -7,6 +7,7 @@ import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { ResidenciesBand } from "../components/ResidenciesBand";
+import { RazaSpotlightModal } from "../components/RazaSpotlightModal";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
@@ -20,6 +21,7 @@ export function Programmes() {
   const slideIndexRef = useRef(0);
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
+  const [razaModalOpen, setRazaModalOpen] = useState(false);
   const [expandedPast, setExpandedPast] = useState(false);
   const [expandedIntlAwards, setExpandedIntlAwards] = useState(false);
   const [expandedNationalAwards, setExpandedNationalAwards] = useState(false);
@@ -47,6 +49,12 @@ export function Programmes() {
     jumpToSlide(slides, slideIndexRef.current, index);
     slideIndexRef.current = index;
     setHeroSlide(index);
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash === "#raza") {
+      setRazaModalOpen(true);
+    }
   }, []);
 
   useGSAP(
@@ -281,21 +289,28 @@ export function Programmes() {
         </section>
 
         {showRaza ? (
-        <section className="programmes__block programmes__block--raza fig-grid prog-reveal">
+        <section id="raza" className="programmes__block programmes__block--raza fig-grid prog-reveal">
           <div className="fig-c1-3 programmes__raza-rail">
-            <h2 className="fig-heading programmes__raza-rail-heading">
-              RAZA - STUDENTS&apos;
-              <br />
-              BIENNALE
-              <br />
-              SCHOLARSHIP
-            </h2>
-            <div className="programmes__raza-divider" aria-hidden />
-            <p className="programmes__raza-rail-sub">
-              Students&apos; Biennale 2025–26 x
-              <br />
-              Beaux Arts de Marseille
-            </p>
+            <button
+              type="button"
+              className="programmes__raza-rail-trigger"
+              onClick={() => setRazaModalOpen(true)}
+              aria-label="Open Raza - Students' Biennale Scholarship Spotlight"
+            >
+              <h2 className="fig-heading programmes__raza-rail-heading">
+                RAZA - STUDENTS&apos;
+                <br />
+                BIENNALE
+                <br />
+                SCHOLARSHIP
+              </h2>
+              <div className="programmes__raza-divider" aria-hidden />
+              <p className="programmes__raza-rail-sub">
+                Students&apos; Biennale 2025–26 x
+                <br />
+                Beaux Arts de Marseille
+              </p>
+            </button>
           </div>
 
           <div className="fig-c4-9 programmes__raza-intro">
@@ -388,9 +403,17 @@ export function Programmes() {
 
       <ResidenciesBand slides={toResidencySlides(residencies)} />
 
+      <RazaSpotlightModal
+        open={razaModalOpen}
+        onClose={() => setRazaModalOpen(false)}
+        onSelectScholar={(scholarId) => {
+          setOpenScholarId(scholarId);
+        }}
+      />
+
       <ScholarSpotlight
         scholarId={openScholarId}
-        scholars={raza.scholars}
+        scholars={raza.scholars.length ? raza.scholars : undefined}
         onClose={() => setOpenScholarId(null)}
       />
     </div>
