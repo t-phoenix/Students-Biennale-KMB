@@ -56,18 +56,18 @@ export const TIER_CONFIG: Record<
     absMinW: number;
   }
 > = {
-  // Balanced column gap and reduced vertical row gap with true multi-harmonic size randomness
-  mobile: { seedW: 968, seedH: 4400, colGap: 16, rowGap: 48, gapJitter: 0.45, columns: 3, columnJitter: 0.16, minTileH: 90, maxTileH: 390, absMinW: 80 },
-  tablet: { seedW: 1550, seedH: 5000, colGap: 20, rowGap: 60, gapJitter: 0.45, columns: 4, columnJitter: 0.18, minTileH: 110, maxTileH: 480, absMinW: 100 },
-  desktop: { seedW: 2309, seedH: 5600, colGap: 24, rowGap: 72, gapJitter: 0.45, columns: 6, columnJitter: 0.22, minTileH: 130, maxTileH: 580, absMinW: 120 },
+  // Comfortable vertical row spacing and slightly scaled-down tile bounds to eliminate thin gaps
+  mobile: { seedW: 968, seedH: 4800, colGap: 16, rowGap: 64, gapJitter: 0.28, columns: 3, columnJitter: 0.16, minTileH: 80, maxTileH: 330, absMinW: 75 },
+  tablet: { seedW: 1550, seedH: 5400, colGap: 20, rowGap: 80, gapJitter: 0.28, columns: 4, columnJitter: 0.18, minTileH: 100, maxTileH: 410, absMinW: 90 },
+  desktop: { seedW: 2309, seedH: 6000, colGap: 24, rowGap: 96, gapJitter: 0.28, columns: 6, columnJitter: 0.22, minTileH: 120, maxTileH: 490, absMinW: 110 },
 };
 
-/** Artworks span from compact accent pieces to 10% larger prominent hero pieces */
+/** Artworks span from compact accent pieces to balanced prominent hero pieces */
 const KIND_SCALE: Record<CanvasItem["kind"], [number, number]> = {
-  curator: [0.75, 1.05],
-  artist: [0.75, 1.05],
-  venue: [0.75, 1.05],
-  artwork: [0.38, 1.08],
+  curator: [0.70, 0.96],
+  artist: [0.70, 0.96],
+  venue: [0.70, 0.96],
+  artwork: [0.34, 0.94],
 };
 
 export function getCanvasTier(viewportWidth: number): CanvasTier {
@@ -294,13 +294,13 @@ function packMasonry(
 
     const [scaleLo, scaleHi] = KIND_SCALE[draft.kind];
     
-    // True multi-harmonic random distribution with ~25% hero (10% larger), ~50% medium, ~25% compact accent
+    // True multi-harmonic random distribution with balanced hero, medium, and compact sizes
     const r1 = (pseudoRandom(n * 37 + col * 19 + 71) + 1) / 2;
     const r2 = (pseudoRandom(n * 53 + col * 31 + 13) + 1) / 2;
     let scaleT = r1 * 0.7 + r2 * 0.3;
     if (scaleT > 0.72) {
-      // 10% bigger hero boost
-      scaleT = 0.82 + (scaleT - 0.72) * 0.64;
+      // Balanced hero boost
+      scaleT = 0.80 + (scaleT - 0.72) * 0.55;
     } else if (scaleT < 0.28) {
       // Compact accent pieces
       scaleT = scaleT * 0.85;
@@ -315,7 +315,7 @@ function packMasonry(
     const slack = colW - tileW;
     const xInCol = Math.round(slack / 2);
 
-    // Organic vertical spacing with reduced row gap and dynamic irregularity
+    // Organic vertical spacing with comfortable row gap and controlled jitter
     const gapT = (pseudoRandom(n * 29 + col * 43 + 97) + 1) / 2;
     const tileGap = Math.round(gapLo + (gapHi - gapLo) * gapT);
 
@@ -351,7 +351,7 @@ export type CanvasPack = {
 const packCache = new Map<string, CanvasPack>();
 
 /** Bust layout cache after packing rules change (dev / HMR safety). */
-const PACK_VERSION = "artworks-true-random-tight-gap-v16";
+const PACK_VERSION = "artworks-spaced-comfortable-v17";
 
 export function getCanvasPack(
   tier: CanvasTier = "desktop",
