@@ -595,6 +595,7 @@
   line-height: var(--type-subtitle-line);
   font-weight: 500;
   text-transform: uppercase;
+  max-width: 492px;
 }
 
 .home-press__featured time {
@@ -603,8 +604,10 @@
   white-space: nowrap;
 }
 
-.home-press__featured p {
+.home-press__featured p,
+.home-press__featured .fig-body {
   margin: 0;
+  max-width: 524px;
 }
 
 .home-press__list {
