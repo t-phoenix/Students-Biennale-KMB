@@ -59,8 +59,9 @@
   --peek-gap: 6px;
   --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --stack-dur: 320ms;
-  --stack-h-collapsed: calc(var(--card-h) + (var(--peek) + var(--peek-gap)) * 2);
-  --stack-h-expanded: calc(var(--card-h) * 3 + var(--card-gap) * 2);
+  --stack-count: 3;
+  --stack-h-collapsed: calc(var(--card-h) + (var(--peek) + var(--peek-gap)) * (var(--stack-count) - 1));
+  --stack-h-expanded: calc(var(--card-h) * var(--stack-count) + var(--card-gap) * (var(--stack-count) - 1));
 
   position: relative;
   align-self: end;
@@ -71,6 +72,23 @@
   cursor: pointer;
   pointer-events: auto;
   transition: height var(--stack-dur) var(--stack-ease);
+}
+
+.home-hero__stack[data-count="1"] {
+  --stack-count: 1;
+}
+
+.home-hero__stack[data-count="2"] {
+  --stack-count: 2;
+}
+
+.home-hero__stack[data-count="3"] {
+  --stack-count: 3;
+}
+
+.home-hero__stack[data-count="1"]:hover,
+.home-hero__stack[data-count="1"]:focus-within {
+  cursor: pointer;
 }
 
 .home-hero__stack:focus-visible {

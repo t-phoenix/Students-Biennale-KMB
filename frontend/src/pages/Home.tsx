@@ -558,16 +558,18 @@ export function Home() {
 
         {/* Overlay sits on the page grid */}
         <div className="home-hero__grid">
-          {cards.filter((c) => !dismissedCardIds.includes(c.id)).length > 0 ? (
-            <div
-              className="home-hero__stack fig-span3-plus-gutter"
-              data-node-id="17:309"
-              tabIndex={0}
-              aria-label="Edition updates. Hover or focus to expand."
-            >
-              {cards
-                .filter((c) => !dismissedCardIds.includes(c.id))
-                .map((item, i, arr) => (
+          {(() => {
+            const visibleCards = cards.filter((c) => !dismissedCardIds.includes(c.id));
+            if (visibleCards.length === 0) return null;
+            return (
+              <div
+                className="home-hero__stack fig-span3-plus-gutter"
+                data-node-id="17:309"
+                data-count={visibleCards.length}
+                tabIndex={0}
+                aria-label="Edition updates. Hover or focus to expand."
+              >
+                {visibleCards.map((item, i, arr) => (
                   <article
                     key={item.id}
                     className="home-hero__card home-hero__card--interactive"
@@ -601,8 +603,9 @@ export function Home() {
                     </div>
                   </article>
                 ))}
-            </div>
-          ) : null}
+              </div>
+            );
+          })()}
 
           <div className="home-hero__meta">
             {showCredits ? (
