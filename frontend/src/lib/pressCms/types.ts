@@ -1,4 +1,4 @@
-/** Public press item shape (compatible with static fallback in data/site.ts). */
+/** Public press item shape (mapped from CMS `press_items`). */
 export type PressItem = {
   id: string;
   title: string;
@@ -6,7 +6,6 @@ export type PressItem = {
   excerpt: string;
   body?: string;
   image?: string;
-  teaser?: boolean;
   url?: string;
 };
 

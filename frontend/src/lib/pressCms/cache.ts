@@ -1,7 +1,7 @@
 import { isSupabaseConfigured, supabase } from "../supabase";
 import type { PressItem } from "./types";
 
-const STORAGE_KEY = "sb-press-cms-v1";
+const STORAGE_KEY = "sb-press-cms-v2";
 
 let memory: PressItem[] | null = null;
 let inflight: Promise<PressItem[]> | null = null;
@@ -96,7 +96,10 @@ async function fetchPressItems(): Promise<PressItem[]> {
   return rows.map((row) => {
     const id = row.slug || row.id;
     const body = row.body?.trim() || undefined;
-    const excerpt = row.excerpt?.trim() || "";
+    const excerpt =
+      row.excerpt?.trim() ||
+      body?.split(/\n\s*\n/).map((part) => part.trim()).find(Boolean) ||
+      "";
     return {
       id,
       title: row.title,
@@ -105,7 +108,6 @@ async function fetchPressItems(): Promise<PressItem[]> {
       body,
       url: row.external_url?.trim() || undefined,
       image: images.get(row.id),
-      teaser: !body && Boolean(excerpt),
     };
   });
 }

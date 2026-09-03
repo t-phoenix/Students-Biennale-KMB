@@ -42,9 +42,8 @@ export const TIER_CONFIG: Record<
     /** Target packed height before the world tiles/repeats. */
     seedH: number;
     /** Base spacing around a tile — actual spacing is jittered around this. */
-    colGap: number;
-    rowGap: number;
-    /** How far vertical spacing strays from `rowGap`, as a fraction of it (0-1). */
+    gap: number;
+    /** How far spacing strays from `gap`, as a fraction of it (0-1). */
     gapJitter: number;
     columns: number;
     /** How unevenly column widths vary around the mean, 0-1. */
@@ -55,18 +54,23 @@ export const TIER_CONFIG: Record<
     absMinW: number;
   }
 > = {
-  // Reduced column gap (~50% tighter) and doubled row gap with rich size randomness
-  mobile: { seedW: 968, seedH: 4200, colGap: 16, rowGap: 64, gapJitter: 0.35, columns: 3, columnJitter: 0.16, minTileH: 100, maxTileH: 360, absMinW: 90 },
-  tablet: { seedW: 1550, seedH: 4800, colGap: 22, rowGap: 84, gapJitter: 0.35, columns: 4, columnJitter: 0.18, minTileH: 120, maxTileH: 440, absMinW: 110 },
-  desktop: { seedW: 2309, seedH: 5400, colGap: 24, rowGap: 104, gapJitter: 0.35, columns: 6, columnJitter: 0.22, minTileH: 140, maxTileH: 520, absMinW: 130 },
+  // Survey-mode density (many small-to-medium tiles, built for scanning),
+  // sized up ~20% from the initial pass. Gap cut 20% (seedW trimmed to match
+  // so tile size itself is unaffected — only the space between tiles
+  // shrinks); gapJitter unchanged, so the randomness is proportionally the
+  // same, just tighter overall.
+  mobile: { seedW: 968, seedH: 2800, gap: 32, gapJitter: 0.55, columns: 3, columnJitter: 0.08, minTileH: 156, maxTileH: 265, absMinW: 130 },
+  tablet: { seedW: 1550, seedH: 3200, gap: 42, gapJitter: 0.55, columns: 4, columnJitter: 0.1, minTileH: 186, maxTileH: 335, absMinW: 156 },
+  desktop: { seedW: 2309, seedH: 3600, gap: 51, gapJitter: 0.55, columns: 6, columnJitter: 0.12, minTileH: 216, maxTileH: 408, absMinW: 186 },
 };
 
-/** Artworks span from compact accent pieces to prominent hero tiles for organic size randomness */
+/** Artworks stay well short of filling their column even at the high end —
+ *  small pieces in a much bigger field, not a handful of billboard tiles. */
 const KIND_SCALE: Record<CanvasItem["kind"], [number, number]> = {
-  curator: [0.75, 1],
-  artist: [0.75, 1],
-  venue: [0.75, 1],
-  artwork: [0.42, 0.98],
+  curator: [0.9, 1],
+  artist: [0.9, 1],
+  venue: [0.9, 1],
+  artwork: [0.5, 0.82],
 };
 
 export function getCanvasTier(viewportWidth: number): CanvasTier {
@@ -249,33 +253,38 @@ function packMasonry(
   artworks?: ArtworkCard[],
 ): { items: CanvasItem[]; colWidths: number[]; colPeriods: number[] } {
   const config = TIER_CONFIG[tier];
-  const { seedW, seedH, colGap, rowGap, gapJitter, columns, columnJitter, minTileH, maxTileH, absMinW } = config;
-  const gapLo = rowGap * (1 - gapJitter);
-  const gapHi = rowGap * (1 + gapJitter);
+  const { seedW, seedH, gap, gapJitter, columns, columnJitter, minTileH, maxTileH, absMinW } = config;
+  const gapLo = gap * (1 - gapJitter);
+  const gapHi = gap * (1 + gapJitter);
   const base = canvasBase(artworks);
 
-  // Jittered column widths with reduced column gap, renormalized to exactly fill seedW.
-  const inner = seedW - colGap * (columns + 1);
+  // Jittered column widths, renormalized to exactly fill seedW.
+  const inner = seedW - gap * (columns + 1);
   const rawWeights = Array.from({ length: columns }, (_, i) => 1 + pseudoRandom(i * 7 + 3) * columnJitter);
   const weightSum = rawWeights.reduce((s, w) => s + w, 0);
   const colWidths = rawWeights.map((w) => (inner * w) / weightSum);
   const colX: number[] = [];
   {
-    let x = colGap;
+    let x = gap;
     for (const w of colWidths) {
       colX.push(x);
-      x += w + colGap;
+      x += w + gap;
     }
   }
   const colHeights = new Array(columns).fill(0);
   // How far behind the shortest column another column can be and still be up
-  // for picking next. This lets columns fall in and out of sync naturally.
+  // for picking next. Always choosing the single shortest column marched every
+  // column forward in lockstep, which read as rows no matter how jittered the
+  // tile sizes were — this lets columns fall in and out of sync instead.
   const colSlack = ((minTileH + maxTileH) / 2) * 0.6;
 
   const items: CanvasItem[] = [];
   let n = 0;
 
-  // Keep going until EVERY column has reached the target height
+  // Keep going until EVERY column has reached the target height — never stop
+  // while one column is still short, or that column leaves a bare gap before
+  // the next tiled repeat starts. Columns may overshoot the target by less
+  // than one tile's height; that's normal masonry raggedness, not a seam.
   while (Math.min(...colHeights) < seedH && n < base.length * 10) {
     const minH = Math.min(...colHeights);
     const candidates: number[] = [];
@@ -294,17 +303,17 @@ function packMasonry(
     const colW = colWidths[col];
 
     const [scaleLo, scaleHi] = KIND_SCALE[draft.kind];
-    // Noticeable size randomness so images have distinct variety
-    const scaleT = (pseudoRandom(n * 19 + col * 7) + 1) / 2;
+    const scaleT = (pseudoRandom(n * 9 + col * 4) + 1) / 2;
     const scale = scaleLo + (scaleHi - scaleLo) * scaleT;
     const tileW = clamp(Math.round(colW * scale), absMinW, Math.round(colW));
     const tileH = clamp(Math.round(tileW / aspect), minTileH, maxTileH);
 
-    // Center each tile horizontally in its column
+    // Center each tile horizontally in its column per client feedback
+    // (column width stays jittered; tiles within a column share a center).
     const slack = colW - tileW;
     const xInCol = Math.round(slack / 2);
 
-    // Doubled vertical row spacing with organic irregularity
+    // Irregular spacing above this tile — never the same value twice in a row.
     const gapT = (pseudoRandom(n * 13 + col * 6) + 1) / 2;
     const tileGap = Math.round(gapLo + (gapHi - gapLo) * gapT);
 
@@ -325,8 +334,9 @@ function packMasonry(
     colHeights[col] += tileH + tileGap;
   }
 
-  // Each column's own period — where its content ends and its own pattern repeats.
-  const colPeriods = colHeights.map((h) => Math.round(h + rowGap));
+  // Each column's own period — where its content ends and its own pattern
+  // repeats. These differ across columns (that's the point).
+  const colPeriods = colHeights.map((h) => Math.round(h + gap));
   return { items, colWidths: colWidths.map((w) => Math.round(w)), colPeriods };
 }
 
@@ -340,7 +350,7 @@ export type CanvasPack = {
 const packCache = new Map<string, CanvasPack>();
 
 /** Bust layout cache after packing rules change (dev / HMR safety). */
-const PACK_VERSION = "artworks-only-v14-tight-colgap-double-rowgap-varied-sizes";
+const PACK_VERSION = "artworks-only-v12-centered-columns";
 
 export function getCanvasPack(
   tier: CanvasTier = "desktop",
@@ -805,32 +815,6 @@ export const ARTWORKS: ArtworkCard[] = [
     materials: ["Details to follow"],
     dimensions: "Dimensions variable",
   },
-  {
-    id: "kaki-weiss",
-    title: "Tabut",
-    venue: "Beaux Arts de Marseille, France",
-    year: "2025 - 26",
-    description: `Kaki Weiss proposes a kitchen where the act of cooking becomes a medium for transmission and memory. Centered around a table, the installation also invites participation in activating the space.\n\nHere, the kitchen is reimagined not as a private, enclosed space but as a site of exchange — a place where knowledge is handed down not through instruction alone, but through repeated gesture, smell, taste, and touch. Cooking becomes a language of its own, one that carries memory across bodies and generations, often without the need for words.\n\nThe table at the center of the work anchors this exchange. It is less an object to be viewed than a threshold to be crossed — a surface where making and remembering happen simultaneously, and where the boundary between artist and audience begins to dissolve. By inviting participation, Weiss resists the idea of the artwork as something finished or fixed. Instead, the installation only becomes whole through activation: through hands that stir, mix, and share.\n\nIn this sense, the work asks what it means to inherit — not objects, but practices; not stories, but the living memory held in the act of cooking itself.`,
-    artists: [{ name: "Kaki Weiss", institution: "Beaux Arts de Marseille, France" }],
-    materials: [
-      "Mixed media installation with performance (reclaimed wood, textile, kitchen implements, food materials)",
-    ],
-    dimensions: "Variable",
-    image: "/programmes/raza-kaki-weiss.jpg",
-    images: ["/programmes/raza-kaki-hero.jpg", "/programmes/raza-kaki-weiss.jpg"],
-  },
-  {
-    id: "nina-durel",
-    title: "Inseamm",
-    venue: "Beaux Arts de Marseille, France",
-    year: "2025 - 26",
-    description: `Conceived as a book-object with variable dimensions (55 x 40 x 20 cm when closed), this work unfolds as a "sensitive cartography" of Kochi's fluvial and coastal networks. Beginning with a digital drift through Google Maps, the artist turns to the act of walking and observing, measuring not land, but water. Inspired by artist Matías Poisson, who maps cities through horizon lines and urban details, the project embraces mapping as an intuitive, imperfect art where distortions, invented keys, and shifting perspectives reveal what standard cartography cannot.\n\nThrough observational drawing, the waterways are traced for their biodiverse edges: water hyacinths, fishing structures, and imagined sea creatures echoing the legendary "Here be dragons" of Olaus Magnus. Traditional Chinese fishing nets (Cheena vala) along Vypin become recurring motifs forms held between function and image.\n\nA deployable surveying tool, built to the scale of a carry-on suitcase, accompanies this process. Hybrid in nature, it evokes scientific instruments such as GPS/GNSS units and theodolites while functioning as a sculptural observation module. Drawing from the field structures of Gilles Ebersolt and the inhabitable sculptures of Abraham Poincheval, the work becomes both instrument and artwork, a portable studio carried on the back.\n\nHere, cartography is not fixed but lived. Art moves through the landscape, made outdoors and shown in passage, tracing the unstable contours of water and memory.`,
-    artists: [{ name: "Nina Durel", institution: "Beaux Arts de Marseille, France" }],
-    materials: ["Mixed media installation"],
-    dimensions: "Variable",
-    image: "/programmes/raza-nina-durel.jpg",
-    images: ["/programmes/raza-nina-hero.jpg", "/programmes/raza-nina-durel.jpg"],
-  },
 ];
 
 /** Curator names for an artwork, via its curatorial zone. Empty when unassigned. */
@@ -977,8 +961,6 @@ export type ArtistCard = {
  * frame (713:297) — 3-up, left to right, top to bottom. All are Zone 1 institutions.
  */
 export const ARTISTS: ArtistCard[] = [
-  { id: "kaki-weiss", name: "Kaki Weiss", institution: "Beaux Arts de Marseille, France", zone: "Zone 1" },
-  { id: "nina-durel", name: "Nina Durel", institution: "Beaux Arts de Marseille, France", zone: "Zone 1" },
   { id: "ananya-gautam", name: "Ananya Gautam", institution: "National Institute of Design, Ahmedabad", zone: "Zone 1" },
   { id: "annanya-dhanda", name: "Annanya Dhanda", institution: "The Maharaja Sayajirao University, Baroda", zone: "Zone 1" },
   { id: "jyotismriti-bordoloi", name: "Jyotismriti Bordoloi", institution: "The Maharaja Sayajirao University, Baroda", zone: "Zone 1" },
@@ -1005,124 +987,6 @@ export const ARTISTS: ArtistCard[] = [
   { id: "abhijith-raju", name: "Abhijith Raju", institution: "Ambedkar University, Delhi", zone: "Zone 1" },
   { id: "ashish-chauhan", name: "Ashish Chauhan", institution: "Ambedkar University, Delhi", zone: "Zone 1" },
   { id: "khushi-mittal", name: "Khushi Mittal", institution: "O.P. Jindal University, Delhi/NCR", zone: "Zone 1" },
-];
-
-export type PressItem = {
-  id: string;
-  title: string;
-  date: string;
-  excerpt: string;
-  body?: string;
-  image?: string;
-  teaser?: boolean;
-  url?: string;
-};
-
-export const PRESS: PressItem[] = [
-  {
-    id: "kbf-curators",
-    title: "KBF Announces Curators For Students' Biennale 2025-26",
-    date: "4 Dec 2025",
-    image: "/press/featured.jpg",
-    excerpt:
-      "The Kochi Biennale Foundation (KBF) has announced the curators for Students' Biennale, a key educational initiative for emerging artists across India.",
-    body: `The Kochi Biennale Foundation (KBF) has announced the curators for Students' Biennale, a key educational initiative of the Kochi Biennale Foundation for budding young artists. The programme works with state-funded art colleges across India, encouraging emerging artists to reflect on their practice and showcase their work on an international stage.
-
-The Students' Biennale exhibition will open on 13 December 2025 and run alongside the Kochi-Muziris Biennale (KMB). The largest contemporary art festival in India, the sixth edition of the KMB is scheduled to open on 12 December 2025 until March 31, 2026.
-
-The programme is led by curators/collectives who will mentor students from over 150 institutions across seven regions of the nation. They engage with the students, shortlist the exhibition participants, and work closely with participating students to develop their projects for the exhibition in Kochi.
-
-With emphasis on alternative education beyond the classroom and learning from practice, the event serves as a forum to foster fine arts education in the country.
-
-Mario D'Souza, Director of Programmes, Kochi Biennale Foundation, said, "Each edition of the Students' Biennale is a learning exercise. We work with students, educators, curators, and artists to understand the needs and shortcomings of art education in India."
-
-He added, "For this edition, we examine what other forms of nourishing practice are possible outside of the market and grant economy. We invited curators as peers, who could exemplify and share these 'other' frameworks across independent artist-run initiatives, residency models, collective work, teaching, and self-publishing, amongst others. We aspire to build a peer group and artist-to-artist network that is concerned with the 'now'. We want to learn together - about and with each other's contexts and challenges. We want to listen."
-
-The curators/collectives for the seven regions are:
-
-Savyasachi Anju Prabir, and Sukanya Deb for Punjab, Delhi, Haryana, Gujarat, Goa, and Rajasthan; Dr. Sudheesh Kottembram and Dr. Seethal CP for Kerala, Tamil Nadu, and Andhra Pradesh; Chinar Shah and Ashok Vish for Karnataka and Telangana states; and Kursheed Ahmed and Salman Basheer Baba for Jammu and Kashmir, Himachal Pradesh, Uttarakhand, and Ladakh.
-
-Gabba, an artists-led space represented by Ritushree Mondal, Himangshu Sarma, Rabiul Khan, and Surajit Mudi, will guide students from West Bengal, Odisha, Uttar Pradesh, and Chhattisgarh.
-
-Anga Art Collective leads workshops in the seven north-eastern states and Sikkim, and Secular Art Collective, represented by Salik Ansari, Bhushan Bhombale, Shamim Khan, and Shamooda Amrelia, leads workshops in Maharashtra, Bihar, Jharkhand, and Madhya Pradesh.`,
-  },
-  {
-    id: "walkthrough",
-    title: "Book A Guided Walkthrough",
-    date: "1 Jan 2026",
-    teaser: true,
-    image: "/press/walkthrough.jpg",
-    excerpt:
-      "Book a guided walk-through of the Biennale exhibitions, led by our trained art mediators.",
-    body: `Guided walk-throughs of the Students' Biennale exhibitions at Kochi offer visitors an in-depth engagement with the artworks, artistic processes, and curatorial frameworks across all participating venues. Led by trained art mediators, the tours unpack regional methodologies, material investigations, and student research across state-funded institutions in India.
-
-Walkthroughs are conducted daily throughout the exhibition period from 13 December 2025 to 31 March 2026 across Fort Kochi and Mattancherry. Special thematic sessions are designed for student groups, educational institutions, researchers, and public visitors.
-
-Each walkthrough provides unique contextual insights into how young artists negotiate regional pedagogical traditions, institutional constraints, and collective care. Tours can be scheduled in English, Malayalam, Hindi, and regional languages upon request.
-
-Prior registration is recommended for large groups and academic delegations. To reserve a dedicated mediator for your visit, please contact our mediation desk or email us through the enquiry portal.`,
-  },
-  {
-    id: "guide-map",
-    title: "The Ultimate Guide & Map to the Kochi-Muziris Biennale 2025/26 Venues",
-    date: "15 Feb 2026",
-    teaser: true,
-    image: "/home/press-featured.jpg",
-    excerpt: "A practical guide to navigating Biennale venues across Fort Kochi.",
-    body: `Navigating the Students' Biennale across Fort Kochi and Mattancherry invites visitors into historic heritage structures, community halls, warehouses, and open courtyards. Each venue hosts exhibitions shaped in dialogue with local architectural character, spatial memory, and neighborhood histories.
-
-Primary exhibition venues include VKL Warehouse, St. Andrews Parish Hall, BMS Warehouse, Space Gallery, and David Hall. Each site features dedicated mediation desks, visitor guides, accessibility ramps, and seating areas.
-
-Visitors are encouraged to explore venues by walking or cycling along the historic waterfront corridors of Fort Kochi and Bazaar Road. Information kiosks at Aspinwall House, Pepper House, and VKL Warehouse distribute complimentary printed pocket maps and venue timetables.
-
-For assistance with accessibility, group transport, or special visitor services, the Biennale information team is available on-site daily from 10:00 AM to 6:00 PM.`,
-  },
-  {
-    id: "st-andrews",
-    title: "St. Andrews Parish Hall - Students' Biennale at Kochi",
-    date: "31 Mar 2026",
-    teaser: true,
-    image: "/artworks/where-memories-are-immured.jpg",
-    excerpt: "On the Students' Biennale presentation at St. Andrews Parish Hall.",
-    body: `St. Andrews Parish Hall in Fort Kochi serves as one of the primary exhibition sites for the Students' Biennale 2025-26. Featuring site-responsive installations, moving-image presentations, and sculpture, the hall brings together student artists engaging with themes of home, domesticity, labour, and collective memory.
-
-The presentations reflect rigorous material experimentation developed over months of regional workshops and peer mentorship, transforming the historic parish hall into an open forum for public exchange and pedagogy.
-
-Central works at St. Andrews Parish Hall include large-scale architectural interventions, printmaking installations, and sonic landscapes that question institutional narratives of authorial labor. The venue hosts weekly open conversations between exhibiting student artists, visiting curators, and local community members.
-
-Admission is free and open to all visitors throughout the duration of the Biennale.`,
-    url: "https://catsofkochi.com/st-andrews-parish-hall-students-biennale-at-kochi/",
-  },
-  {
-    id: "panic",
-    title: "A warm kind of panic",
-    date: "31 Dec 2025",
-    teaser: true,
-    image: "/artworks/labour-of-the-imagined.jpg",
-    excerpt: "Critical writing on works from Sensing Grounds.",
-    body: `Reflecting on the curatorial framework of Sensing Grounds, this essay traces how student artists navigate institutional boundaries, resource limitations, and collective solidarity. Rather than presenting finished spectacles, the works embrace uncertainty, process, and active listening as disobedient methodologies.
-
-Across multiple mediums, the artists interrogate what absence carries, how memory adheres to materials, and what modes of community care emerge when artistic production is separated from commercial imperatives.
-
-The essay investigates the tension between domestic space and pedagogic apparatuses, examining how student cohorts from state-run fine arts colleges articulate resistance through tactile intimacy and unhurried material enquiry.
-
-Published as part of the Students' Biennale Critical Writing Series, 'A warm kind of panic' provides critical accompaniment to the regional exhibitions across Fort Kochi.`,
-  },
-  {
-    id: "peta",
-    title: "The Power of the Peta / Honour",
-    date: "31 Dec 2025",
-    teaser: true,
-    image: "/artworks/panopticon.jpg",
-    excerpt: "Critical writing from the edition.",
-    body: `Examining emblems of authority, pride, and labor, 'The Power of the Peta / Honour' considers how regional symbols and ceremonial headwear are recontextualized by young artists in contemporary India. The works unpack hierarchies of authorship, craft histories, and ritual traditions to question contemporary dynamics of caste, class, and statehood.
-
-The project demonstrates the vital role of the Students' Biennale in cultivating critical inquiry and self-reflexivity within regional art education.
-
-Through textiles, cast sculptures, and archival fragments, the artists interrogate how honorific garments simultaneously confer social status and enforce disciplinary structures within institutional frameworks.
-
-The exhibition text accompanies the presentation across VKL Warehouse and BMS Warehouse during the 2025-26 edition.`,
-  },
 ];
 
 export type PastWorkshop = {
@@ -1192,7 +1056,7 @@ export const RAZA_SCHOLAR_ARTWORKS: ArtworkCard[] = [
   },
   {
     id: "nina-durel",
-    title: "Inseamm",
+    title: "TABUT",
     venue: "Lorem Ipsum",
     year: "2025 - 26",
     description: `Conceived as a book-object with variable dimensions (55 x 40 x 20 cm when closed), this work unfolds as a "sensitive cartography" of Kochi's fluvial and coastal networks. Beginning with a digital drift through Google Maps, the artist turns to the act of walking and observing, measuring not land, but water. Inspired by artist Matías Poisson, who maps cities through horizon lines and urban details, the project embraces mapping as an intuitive, imperfect art where distortions, invented keys, and shifting perspectives reveal what standard cartography cannot.\n\nThrough observational drawing, the waterways are traced for their biodiverse edges: water hyacinths, fishing structures, and imagined sea creatures echoing the legendary "Here be dragons" of Olaus Magnus. Traditional Chinese fishing nets (Cheena vala) along Vypin become recurring motifs forms held between function and image.\n\nA deployable surveying tool, built to the scale of a carry-on suitcase, accompanies this process. Hybrid in nature, it evokes scientific instruments such as GPS/GNSS units and theodolites while functioning as a sculptural observation module. Drawing from the field structures of Gilles Ebersolt and the inhabitable sculptures of Abraham Poincheval, the work becomes both instrument and artwork, a portable studio carried on the back.\n\nHere, cartography is not fixed but lived. Art moves through the landscape, made outdoors and shown in passage, tracing the unstable contours of water and memory.`,
@@ -1235,11 +1099,6 @@ export const AWARDS_INTERNATIONAL: AwardWinner[] = [
   { name: "Aswathy GS", artwork: "Staged Narratives", institution: "Raja Ravi Varma College of Fine Arts, Mavelikkara, Kerala", artworkId: "staged-narratives-aswathy" },
   { name: "Kailash Khanjode", artwork: "Ginning Justice, 2025", institution: "Government College of Art, Nagpur, Maharashtra", artworkId: "ginning-justice-kailash" },
   { name: "Sachin Banne", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "ginning-justice-sachin" },
-  { name: "Sai Gitanjali Poluru", artwork: "Root System Analysis", institution: "Shiv Nadar University", artworkId: "root-system-analysis" },
-  { name: "Kaki Weiss", artwork: "Tabut", institution: "Beaux Arts de Marseille, France", artworkId: "kaki-weiss" },
-  { name: "Nina Durel", artwork: "Inseamm", institution: "Beaux Arts de Marseille, France", artworkId: "nina-durel" },
-  { name: "Rutuja Sonawane", artwork: "The People’s Orchestra", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "rutuja-sonawane" },
-  { name: "Mohammad Riyaz", artwork: "Inheritance of the hand", institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh", artworkId: "mohammad-riyaz" },
 ];
 
 /** National Awards — Figma 1:1692 / Group 276. */

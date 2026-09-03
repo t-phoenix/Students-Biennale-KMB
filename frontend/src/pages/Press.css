@@ -79,10 +79,8 @@
 
 .press__list button {
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  gap: var(--grid-gutter);
-  padding: 18px 0;
+  display: block;
+  padding: 28px 0;
   border: 0;
   background: transparent;
   text-align: left;
@@ -96,12 +94,7 @@
   white-space: nowrap;
 }
 
-.press__list li.is-teaser button {
-  display: block;
-  padding: 28px 0;
-}
-
-/* Teaser row: thumb on cols 4-6, copy on cols 7-12 (Figma 1:810 / 1:806). */
+/* List row: thumb on cols 4-6, copy on cols 7-12 (Figma 1:810 / 1:806). */
 .press__teaser {
   align-items: start;
 }
