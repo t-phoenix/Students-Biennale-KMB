@@ -47,17 +47,18 @@
 /* When search query is active:
    Non-matching items are Black & White (grayscale 100%) and strictly 50% opacity only */
 .canvas-tile.is-dimmed,
-.canvas-tile.is-dimmed:hover {
-  opacity: 0.45 !important;
+.canvas-tile.is-dimmed:hover,
+.canvas-tile.is-dimmed.is-hover-dimmed {
+  opacity: 0.5 !important;
   filter: grayscale(100%) !important;
-  box-shadow: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Matching searched items: full color, full 100% opacity, enhanced elevation */
 .canvas-tile.is-matched {
   opacity: 1;
   filter: grayscale(0%);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.26), 0 4px 14px rgba(0, 0, 0, 0.15);
   z-index: 5;
 }
 
