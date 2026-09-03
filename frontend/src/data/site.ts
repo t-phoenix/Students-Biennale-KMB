@@ -42,8 +42,9 @@ export const TIER_CONFIG: Record<
     /** Target packed height before the world tiles/repeats. */
     seedH: number;
     /** Base spacing around a tile — actual spacing is jittered around this. */
-    gap: number;
-    /** How far spacing strays from `gap`, as a fraction of it (0-1). */
+    colGap: number;
+    rowGap: number;
+    /** How far vertical spacing strays from `rowGap`, as a fraction of it (0-1). */
     gapJitter: number;
     columns: number;
     /** How unevenly column widths vary around the mean, 0-1. */
@@ -54,23 +55,18 @@ export const TIER_CONFIG: Record<
     absMinW: number;
   }
 > = {
-  // Survey-mode density (many small-to-medium tiles, built for scanning),
-  // sized up ~20% from the initial pass. Gap cut 20% (seedW trimmed to match
-  // so tile size itself is unaffected — only the space between tiles
-  // shrinks); gapJitter unchanged, so the randomness is proportionally the
-  // same, just tighter overall.
-  mobile: { seedW: 968, seedH: 2800, gap: 32, gapJitter: 0.55, columns: 3, columnJitter: 0.08, minTileH: 156, maxTileH: 265, absMinW: 130 },
-  tablet: { seedW: 1550, seedH: 3200, gap: 42, gapJitter: 0.55, columns: 4, columnJitter: 0.1, minTileH: 186, maxTileH: 335, absMinW: 156 },
-  desktop: { seedW: 2309, seedH: 3600, gap: 51, gapJitter: 0.55, columns: 6, columnJitter: 0.12, minTileH: 216, maxTileH: 408, absMinW: 186 },
+  // Reduced column gap (~50% tighter) and doubled row gap with rich size randomness
+  mobile: { seedW: 968, seedH: 4200, colGap: 16, rowGap: 64, gapJitter: 0.35, columns: 3, columnJitter: 0.16, minTileH: 100, maxTileH: 360, absMinW: 90 },
+  tablet: { seedW: 1550, seedH: 4800, colGap: 22, rowGap: 84, gapJitter: 0.35, columns: 4, columnJitter: 0.18, minTileH: 120, maxTileH: 440, absMinW: 110 },
+  desktop: { seedW: 2309, seedH: 5400, colGap: 24, rowGap: 104, gapJitter: 0.35, columns: 6, columnJitter: 0.22, minTileH: 140, maxTileH: 520, absMinW: 130 },
 };
 
-/** Artworks stay well short of filling their column even at the high end —
- *  small pieces in a much bigger field, not a handful of billboard tiles. */
+/** Artworks span from compact accent pieces to prominent hero tiles for organic size randomness */
 const KIND_SCALE: Record<CanvasItem["kind"], [number, number]> = {
-  curator: [0.9, 1],
-  artist: [0.9, 1],
-  venue: [0.9, 1],
-  artwork: [0.5, 0.82],
+  curator: [0.75, 1],
+  artist: [0.75, 1],
+  venue: [0.75, 1],
+  artwork: [0.42, 0.98],
 };
 
 export function getCanvasTier(viewportWidth: number): CanvasTier {
@@ -253,38 +249,33 @@ function packMasonry(
   artworks?: ArtworkCard[],
 ): { items: CanvasItem[]; colWidths: number[]; colPeriods: number[] } {
   const config = TIER_CONFIG[tier];
-  const { seedW, seedH, gap, gapJitter, columns, columnJitter, minTileH, maxTileH, absMinW } = config;
-  const gapLo = gap * (1 - gapJitter);
-  const gapHi = gap * (1 + gapJitter);
+  const { seedW, seedH, colGap, rowGap, gapJitter, columns, columnJitter, minTileH, maxTileH, absMinW } = config;
+  const gapLo = rowGap * (1 - gapJitter);
+  const gapHi = rowGap * (1 + gapJitter);
   const base = canvasBase(artworks);
 
-  // Jittered column widths, renormalized to exactly fill seedW.
-  const inner = seedW - gap * (columns + 1);
+  // Jittered column widths with reduced column gap, renormalized to exactly fill seedW.
+  const inner = seedW - colGap * (columns + 1);
   const rawWeights = Array.from({ length: columns }, (_, i) => 1 + pseudoRandom(i * 7 + 3) * columnJitter);
   const weightSum = rawWeights.reduce((s, w) => s + w, 0);
   const colWidths = rawWeights.map((w) => (inner * w) / weightSum);
   const colX: number[] = [];
   {
-    let x = gap;
+    let x = colGap;
     for (const w of colWidths) {
       colX.push(x);
-      x += w + gap;
+      x += w + colGap;
     }
   }
   const colHeights = new Array(columns).fill(0);
   // How far behind the shortest column another column can be and still be up
-  // for picking next. Always choosing the single shortest column marched every
-  // column forward in lockstep, which read as rows no matter how jittered the
-  // tile sizes were — this lets columns fall in and out of sync instead.
+  // for picking next. This lets columns fall in and out of sync naturally.
   const colSlack = ((minTileH + maxTileH) / 2) * 0.6;
 
   const items: CanvasItem[] = [];
   let n = 0;
 
-  // Keep going until EVERY column has reached the target height — never stop
-  // while one column is still short, or that column leaves a bare gap before
-  // the next tiled repeat starts. Columns may overshoot the target by less
-  // than one tile's height; that's normal masonry raggedness, not a seam.
+  // Keep going until EVERY column has reached the target height
   while (Math.min(...colHeights) < seedH && n < base.length * 10) {
     const minH = Math.min(...colHeights);
     const candidates: number[] = [];
@@ -303,17 +294,17 @@ function packMasonry(
     const colW = colWidths[col];
 
     const [scaleLo, scaleHi] = KIND_SCALE[draft.kind];
-    const scaleT = (pseudoRandom(n * 9 + col * 4) + 1) / 2;
+    // Noticeable size randomness so images have distinct variety
+    const scaleT = (pseudoRandom(n * 19 + col * 7) + 1) / 2;
     const scale = scaleLo + (scaleHi - scaleLo) * scaleT;
     const tileW = clamp(Math.round(colW * scale), absMinW, Math.round(colW));
     const tileH = clamp(Math.round(tileW / aspect), minTileH, maxTileH);
 
-    // Center each tile horizontally in its column per client feedback
-    // (column width stays jittered; tiles within a column share a center).
+    // Center each tile horizontally in its column
     const slack = colW - tileW;
     const xInCol = Math.round(slack / 2);
 
-    // Irregular spacing above this tile — never the same value twice in a row.
+    // Doubled vertical row spacing with organic irregularity
     const gapT = (pseudoRandom(n * 13 + col * 6) + 1) / 2;
     const tileGap = Math.round(gapLo + (gapHi - gapLo) * gapT);
 
@@ -334,9 +325,8 @@ function packMasonry(
     colHeights[col] += tileH + tileGap;
   }
 
-  // Each column's own period — where its content ends and its own pattern
-  // repeats. These differ across columns (that's the point).
-  const colPeriods = colHeights.map((h) => Math.round(h + gap));
+  // Each column's own period — where its content ends and its own pattern repeats.
+  const colPeriods = colHeights.map((h) => Math.round(h + rowGap));
   return { items, colWidths: colWidths.map((w) => Math.round(w)), colPeriods };
 }
 
@@ -350,7 +340,7 @@ export type CanvasPack = {
 const packCache = new Map<string, CanvasPack>();
 
 /** Bust layout cache after packing rules change (dev / HMR safety). */
-const PACK_VERSION = "artworks-only-v12-centered-columns";
+const PACK_VERSION = "artworks-only-v14-tight-colgap-double-rowgap-varied-sizes";
 
 export function getCanvasPack(
   tier: CanvasTier = "desktop",
