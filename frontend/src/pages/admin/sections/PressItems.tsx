@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
 import { swapSortOrder } from "../../../lib/admin/reorder";
+import { requireSupabase } from "../../../lib/supabase";
 import { refreshPressItems } from "../../../lib/pressCms";
+import { slugify } from "../../../lib/admin/slugify";
 import { FormField } from "../../../components/admin/FormField";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
@@ -37,6 +39,69 @@ const EMPTY: Partial<PressItem> & { _image?: string } = {
   _image: "",
 };
 
+async function loadPressImage(entityId: string): Promise<string> {
+  const sb = requireSupabase();
+  const { data } = await sb
+    .from("asset_links")
+    .select("assets(public_url, storage_path, status)")
+    .eq("entity_type", "press_item")
+    .eq("entity_id", entityId)
+    .eq("role", "cover")
+    .limit(1)
+    .maybeSingle();
+  const asset = data?.assets as
+    | { public_url: string | null; storage_path: string | null; status: string }
+    | { public_url: string | null; storage_path: string | null; status: string }[]
+    | null
+    | undefined;
+  const row = Array.isArray(asset) ? asset[0] : asset;
+  if (!row || row.status === "failed") return "";
+  return row.public_url || row.storage_path || "";
+}
+
+async function upsertPressImage(entityId: string, url: string) {
+  const sb = requireSupabase();
+  const { data: existing } = await sb
+    .from("asset_links")
+    .select("asset_id")
+    .eq("entity_type", "press_item")
+    .eq("entity_id", entityId)
+    .eq("role", "cover")
+    .maybeSingle();
+
+  if (existing?.asset_id) {
+    const { error } = await sb
+      .from("assets")
+      .update({ public_url: url, status: "ready", variant: "card" } as never)
+      .eq("id", existing.asset_id);
+    if (error) throw error;
+  } else {
+    const assetId = `cms-cover-press-${entityId}`;
+    const { error: assetError } = await sb.from("assets").upsert(
+      {
+        id: assetId,
+        bucket: "sb-assets-public",
+        storage_path: `cms/press/${entityId}/cover`,
+        public_url: url,
+        variant: "card",
+        status: "ready",
+        sort_order: 0,
+      } as never,
+      { onConflict: "id" },
+    );
+    if (assetError) throw assetError;
+    const { error: linkError } = await sb.from("asset_links").upsert(
+      {
+        asset_id: assetId,
+        entity_type: "press_item",
+        entity_id: entityId,
+        role: "cover",
+      } as never,
+    );
+    if (linkError) throw linkError;
+  }
+}
+
 export function PressItems({ notify, confirm }: SectionProps) {
   const { rows, loading, create, update, remove, reload } = useSupabaseCrud<PressItem>(
     "press_items",
@@ -45,23 +110,34 @@ export function PressItems({ notify, confirm }: SectionProps) {
   const [editing, setEditing] = useState<(Partial<PressItem> & { _image?: string }) | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const openEdit = async (row?: PressItem) => {
+    if (!row) {
+      setEditing({ ...EMPTY, sort_order: rows.length });
+      return;
+    }
+    const image = await loadPressImage(row.id);
+    setEditing({ ...row, _image: image });
+  };
+
   const save = async () => {
     if (!editing?.title) return;
     setBusy(true);
     try {
       const { _image, ...data } = editing;
-      void _image;
-      if (!data.slug) data.slug = data.title!.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+      data.slug = slugify(data.title!);
       if (data.sort_order == null) data.sort_order = rows.length;
+      const savedId = data.id ?? crypto.randomUUID();
       if (data.id) {
         const { id, ...patch } = data;
         await update(id, patch);
         notify("success", "Press item updated");
       } else {
-        data.id = crypto.randomUUID();
+        data.id = savedId;
         await create(data as never);
         notify("success", "Press item created");
       }
+      if (_image) await upsertPressImage(savedId, _image);
+      await refreshPressItems();
       setEditing(null);
     } catch (e: unknown) {
       notify("error", e instanceof Error ? e.message : "Failed to save");
@@ -115,7 +191,7 @@ export function PressItems({ notify, confirm }: SectionProps) {
         <h2 className="adm-section__title">Press</h2>
         <button
           className="adm-btn adm-btn--primary"
-          onClick={() => setEditing({ ...EMPTY, sort_order: rows.length })}
+          onClick={() => openEdit()}
         >
           + Add Article
         </button>
@@ -128,7 +204,6 @@ export function PressItems({ notify, confirm }: SectionProps) {
       {editing && (
         <div className="adm-card">
           <FormField label="Title / Heading" value={editing.title ?? ""} onChange={(v) => setEditing({ ...editing, title: v })} required />
-          <FormField label="Slug" value={editing.slug ?? ""} onChange={(v) => setEditing({ ...editing, slug: v })} placeholder="Auto-generated" />
           <div className="adm-form-row">
             <FormField label="Published Date" value={editing.published_at ?? ""} onChange={(v) => setEditing({ ...editing, published_at: v })} type="date" />
             <FormField label="External URL" value={editing.external_url ?? ""} onChange={(v) => setEditing({ ...editing, external_url: v })} placeholder="https://..." />
@@ -190,7 +265,7 @@ export function PressItems({ notify, confirm }: SectionProps) {
                       <MoveButtons index={i} total={rows.length} onMove={(delta) => move(r, delta)} />
                       <button
                         className="adm-btn adm-btn--secondary adm-btn--small"
-                        onClick={() => setEditing({ ...r, _image: "" })}
+                        onClick={() => openEdit(r)}
                       >
                         Edit
                       </button>
