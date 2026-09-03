@@ -1,0 +1,13 @@
+.brand-arrow {
+  display: inline-block;
+  vertical-align: middle;
+  flex: none;
+  color: inherit;
+  transition: transform 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-arrow {
+    transition: none;
+  }
+}

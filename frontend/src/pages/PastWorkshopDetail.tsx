@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
+import { BrandArrow } from "../components/BrandArrow";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import { usePastWorkshop } from "../lib/programmes";
 import "./PastWorkshopDetail.css";
@@ -58,7 +59,7 @@ export function PastWorkshopDetail() {
 
       <div className="fig-grid past-workshop-detail__section workshop-reveal">
         <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
-          <span className="past-workshop-detail__back-arrow" aria-hidden>←</span>
+          <BrandArrow direction="left" />
           <span>BACK</span>
         </Link>
         <div className="fig-c4-9">
@@ -111,7 +112,7 @@ export function PastWorkshopDetail() {
 
       <div className="fig-grid past-workshop-detail__nav">
         <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
-          <span className="past-workshop-detail__back-arrow" aria-hidden>←</span>
+          <BrandArrow direction="left" />
           <span>BACK</span>
         </Link>
         {next ? (

@@ -1,9 +1,3 @@
-/* Figma Frame 73 (1:972 / 1:1040): right-aligned two-line label + gap + mark.
-   Bumped bold + a bigger, closer mark versus the literal Figma spec (regular
-   weight, 31x52 mark, 20px gap) per direct visual reference from the user —
-   both lines' tracking is tuned so they align flush on both edges (first and
-   last letter), e.g. Explore/Edition's 2.7px / 4px split. */
-
 .cta-link {
   display: inline-flex;
   align-items: center;
@@ -27,32 +21,42 @@
   text-transform: uppercase;
 }
 
-.cta-link__arrow {
+.cta-link--left .cta-link__label {
+  text-align: left;
+}
+
+/* Unified arrow size inside CTA link */
+.cta-link .brand-arrow {
   display: block;
   flex: none;
-  width: 36px;
-  height: 60px;
-}
-
-.cta-link--next .cta-link__arrow {
   width: 44px;
-  height: 75px;
-}
-
-.cta-link:hover .cta-link__arrow {
-  transform: translateX(4px);
-}
-
-.cta-link__arrow {
+  height: 44px;
   transition: transform 0.25s ease;
 }
 
+/* Direction-aware hover micro-interactions */
+.cta-link--right:hover .brand-arrow {
+  transform: translateX(4px);
+}
+
+.cta-link--left:hover .brand-arrow {
+  transform: translateX(-4px);
+}
+
+.cta-link--down:hover .brand-arrow {
+  transform: translateY(4px);
+}
+
+.cta-link--up:hover .brand-arrow {
+  transform: translateY(-4px);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .cta-link__arrow {
+  .cta-link .brand-arrow {
     transition: none;
   }
 
-  .cta-link:hover .cta-link__arrow {
+  .cta-link:hover .brand-arrow {
     transform: none;
   }
 }

@@ -495,18 +495,18 @@
   align-self: center;
 }
 
-.detail__back-arrow {
-  display: inline-block;
-  font-size: 1.1em;
+.detail__back .brand-arrow {
+  width: 44px;
+  height: 44px;
   transition: transform 0.25s ease;
 }
 
-.detail__back:hover .detail__back-arrow {
+.detail__back:hover .brand-arrow {
   transform: translateX(-4px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .detail__back:hover .detail__back-arrow {
+  .detail__back:hover .brand-arrow {
     transform: none;
   }
 }

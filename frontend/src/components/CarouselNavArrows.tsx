@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { sampleCarouselNavTone, type CarouselNavTone } from "../lib/carouselNavTone";
+import { BrandArrow } from "./BrandArrow";
 import "./CarouselNavArrows.css";
 
 type Tone = CarouselNavTone | "unknown";
@@ -41,7 +42,7 @@ export function CarouselNavArrows({ slideSrc, onPrev, onNext }: Props) {
         aria-label="Previous slide"
         onClick={onPrev}
       >
-        <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
+        <BrandArrow direction="left" />
       </button>
       <button
         type="button"
@@ -50,7 +51,7 @@ export function CarouselNavArrows({ slideSrc, onPrev, onNext }: Props) {
         aria-label="Next slide"
         onClick={onNext}
       >
-        <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
+        <BrandArrow direction="right" />
       </button>
     </>
   );

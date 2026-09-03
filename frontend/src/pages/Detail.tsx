@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
+import { BrandArrow } from "../components/BrandArrow";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import { HighlightText } from "../components/HighlightText";
 import { ImageCrossfadeStack } from "../components/ImageCrossfadeStack";
@@ -82,7 +83,7 @@ export function Detail() {
       <div className="detail">
         <div className="fig-grid detail__section">
           <Link className="fig-c1-3 detail__back" to={back}>
-            <span className="detail__back-arrow" aria-hidden>←</span>
+            <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
           <p className="fig-c4-12">Entry not found</p>
@@ -105,7 +106,7 @@ export function Detail() {
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
-            <span className="detail__back-arrow" aria-hidden>←</span>
+            <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
           <CtaLink
@@ -208,7 +209,7 @@ export function Detail() {
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
-            <span className="detail__back-arrow" aria-hidden>←</span>
+            <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
           <CtaLink
@@ -298,7 +299,7 @@ export function Detail() {
 
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
-            <span className="detail__back-arrow" aria-hidden>←</span>
+            <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
           <CtaLink
@@ -316,7 +317,7 @@ export function Detail() {
     <div className="detail">
       <div className="fig-grid detail__section">
         <Link className="fig-c1-3 detail__back" to={back}>
-          <span className="detail__back-arrow" aria-hidden>←</span>
+          <BrandArrow direction="left" />
           <span>BACK</span>
         </Link>
         <p className="fig-c4-12">Entry not found</p>

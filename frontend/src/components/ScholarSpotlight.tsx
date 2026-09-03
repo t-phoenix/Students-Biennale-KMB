@@ -4,6 +4,7 @@ import { gsap, prefersReducedMotion } from "../lib/motion";
 import { useModalPortal } from "../lib/useModalPortal";
 import { ArtworkDetailBody } from "./ArtworkDetailBody";
 import { CtaLink } from "./CtaLink";
+import { BrandArrow } from "./BrandArrow";
 import type { ArtworkCard } from "../data/site";
 import { RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../lib/programmes/fallbacks";
 import type { RazaScholar } from "../lib/programmes/types";
@@ -97,7 +98,7 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
             className="fig-c1-3 detail__back scholar-spotlight__back-btn"
             onClick={onClose}
           >
-            <span className="detail__back-arrow" aria-hidden>←</span>
+            <BrandArrow direction="left" />
             <span>BACK</span>
           </button>
           {next ? (

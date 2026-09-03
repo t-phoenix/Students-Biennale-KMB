@@ -111,18 +111,18 @@
   align-self: start;
 }
 
-.past-workshop-detail__back-arrow {
-  display: inline-block;
-  font-size: 1.1em;
+.past-workshop-detail__back .brand-arrow {
+  width: 44px;
+  height: 44px;
   transition: transform 0.25s ease;
 }
 
-.past-workshop-detail__back:hover .past-workshop-detail__back-arrow {
+.past-workshop-detail__back:hover .brand-arrow {
   transform: translateX(-4px);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .past-workshop-detail__back:hover .past-workshop-detail__back-arrow {
+  .past-workshop-detail__back:hover .brand-arrow {
     transform: none;
   }
 }

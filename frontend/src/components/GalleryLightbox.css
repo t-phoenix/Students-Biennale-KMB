@@ -77,14 +77,10 @@
   transition: background 0.2s ease;
 }
 
-/* /icons/arrow-switch.svg — already white, points left by default. */
-.gallery-lightbox__nav img {
-  width: 18px;
-  height: 24px;
-}
-
-.gallery-lightbox__next img {
-  transform: scaleX(-1);
+.gallery-lightbox__nav .brand-arrow {
+  width: 44px;
+  height: 44px;
+  color: #ffffff;
 }
 
 .gallery-lightbox__nav:hover {

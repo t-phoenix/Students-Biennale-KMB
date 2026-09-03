@@ -247,20 +247,6 @@
   margin-top: 60px;
 }
 
-.programmes__more--collapse .cta-link__arrow {
-  transform: scaleY(-1);
-}
-
-.programmes__more--collapse .cta-link:hover .cta-link__arrow {
-  transform: scaleY(-1) translateX(4px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .programmes__more--collapse .cta-link__arrow {
-    transform: none;
-  }
-}
-
 .programmes__awards {
   row-gap: 24px;
 }

@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useModalPortal } from "../lib/useModalPortal";
 import { PreloadedImage } from "./PreloadedImage";
+import { BrandArrow } from "./BrandArrow";
 import "./GalleryLightbox.css";
 
 type Props = {
@@ -104,10 +105,10 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
         {images.length > 1 ? (
           <>
             <button type="button" className="gallery-lightbox__nav gallery-lightbox__prev" onClick={goPrev} aria-label="Previous image">
-              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
+              <BrandArrow direction="left" />
             </button>
             <button type="button" className="gallery-lightbox__nav gallery-lightbox__next" onClick={goNext} aria-label="Next image">
-              <img src="/icons/arrow-switch.svg" alt="" aria-hidden />
+              <BrandArrow direction="right" />
             </button>
             <div className="gallery-lightbox__counter">
               {index + 1} / {images.length}

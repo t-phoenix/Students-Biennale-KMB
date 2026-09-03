@@ -187,6 +187,12 @@
 
 .edition-overview__nav {
   padding-top: 60px;
+  align-items: center;
+}
+
+.edition-overview__nav .fig-cta-end {
+  grid-column: 10 / -1;
+  justify-self: end;
 }
 
 @media (max-width: 899px) {

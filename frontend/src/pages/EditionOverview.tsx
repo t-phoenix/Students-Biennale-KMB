@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
+import { BrandArrow } from "../components/BrandArrow";
 import { HighlightText } from "../components/HighlightText";
 import { getEditionOverview } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
@@ -379,25 +380,30 @@ export function EditionOverview() {
         </div>
       ) : null}
 
-      {edition.nextId ? (
-        <div className="fig-grid edition-overview__nav">
-          {isPreviousEdition ? (
+      <div className="fig-grid edition-overview__nav">
+        <Link className="fig-c1-3 detail__back" to="/#editions">
+          <BrandArrow direction="left" />
+          <span>BACK</span>
+        </Link>
+        {edition.nextId ? (
+          isPreviousEdition ? (
             <CtaLink
               className="fig-cta-end"
               to={`/editions/${edition.nextId}`}
               lines={["Students' Biennale", nextLabel]}
               spacing={["0.1em", "0.1em"]}
-              variant="next"
+              direction="right"
             />
           ) : (
             <CtaLink
               className="fig-cta-end"
               to={`/editions/${edition.nextId}`}
               lines={["Next", "Edition"]}
+              direction="right"
             />
-          )}
-        </div>
-      ) : null}
+          )
+        ) : null}
+      </div>
     </div>
   );
 }
