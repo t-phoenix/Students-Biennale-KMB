@@ -4,18 +4,26 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { usePressItems } from "../lib/pressCms";
+import { PRESS } from "../data/site";
 import "./Press.css";
 
 export function Press() {
   const root = useRef<HTMLDivElement>(null);
   const featureRef = useRef<HTMLElement>(null);
   const [params, setParams] = useSearchParams();
-  const { items: articles } = usePressItems();
+  const { items: cmsArticles } = usePressItems();
+  const articles = cmsArticles.length > 0 ? cmsArticles : PRESS;
 
   const articleId = params.get("article") ?? articles[0]?.id;
 
   const featured = useMemo(
-    () => articles.find((p) => p.id === articleId) ?? articles[0],
+    () =>
+      articles.find(
+        (p) =>
+          p.id === articleId ||
+          (articleId === "warm-panic" && p.id === "panic") ||
+          (articleId === "power-of-peta" && p.id === "peta"),
+      ) ?? articles[0],
     [articleId, articles],
   );
 
@@ -31,6 +39,11 @@ export function Press() {
     },
     { dependencies: [featured?.id], scope: root },
   );
+
+  const handleSelectArticle = (id: string) => {
+    setParams({ article: id });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   if (!featured) {
     return (
@@ -57,10 +70,8 @@ export function Press() {
         </div>
         <article ref={featureRef} className="press__feature fig-c4-9">
           {featured.image ? (
-            <img className="press__feature-media" src={featured.image} alt="" />
-          ) : (
-            <div className="press__feature-media" aria-hidden />
-          )}
+            <img className="press__feature-media" src={featured.image} alt={featured.title} />
+          ) : null}
           {featured.body ? (
             <div className="press__body">
               {featured.body.split("\n\n").map((para) => (
@@ -80,13 +91,15 @@ export function Press() {
 
       {/* Related list spans cols 4–12, CTA locked to col 12 right (Figma 1:795 / 1:829) */}
       <div className="fig-grid press__related">
-          <ul className="press__list fig-c4-12">
-            {articles.filter((p) => p.id !== featured.id).map((item) => (
+        <ul className="press__list fig-c4-12">
+          {articles
+            .filter((p) => p.id !== featured.id)
+            .map((item) => (
               <li key={item.id} className={item.teaser ? "is-teaser" : undefined}>
                 {item.teaser ? (
-                  <button type="button" onClick={() => setParams({ article: item.id })}>
+                  <button type="button" onClick={() => handleSelectArticle(item.id)}>
                     <div className="press__teaser fig-band-9">
-                      {item.image ? <img src={item.image} alt="" /> : <div aria-hidden />}
+                      {item.image ? <img src={item.image} alt={item.title} /> : null}
                       <div className="press__teaser-copy">
                         <div className="press__teaser-head">
                           <span>{item.title}</span>
@@ -97,20 +110,20 @@ export function Press() {
                     </div>
                   </button>
                 ) : (
-                  <button type="button" onClick={() => setParams({ article: item.id })}>
+                  <button type="button" onClick={() => handleSelectArticle(item.id)}>
                     <span>{item.title}</span>
                     <time>{item.date}</time>
                   </button>
                 )}
               </li>
             ))}
-          </ul>
-          <CtaLink
-            className="fig-cta-end press__more"
-            to="/press"
-            lines={["View", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-          />
+        </ul>
+        <CtaLink
+          className="fig-cta-end press__more"
+          to="/press"
+          lines={["View", "MORE"]}
+          spacing={["0.26em", "0.135em"]}
+        />
       </div>
     </div>
   );
