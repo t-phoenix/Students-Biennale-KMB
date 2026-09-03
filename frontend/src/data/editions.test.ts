@@ -4,8 +4,8 @@ import { TEAM_COLS, getEditionOverview } from "./editions";
 describe("editions data", () => {
   it("includes correct 2025-26 team members with correct spellings", () => {
     const allMembers = TEAM_COLS.flatMap((col) => col.flatMap(([, ...people]) => people));
-    expect(allMembers).toContain("Ananthen Suresh");
-    expect(allMembers).toContain("Abhinill Agarwal");
+    expect(allMembers).toContain("Ananthan Suresh");
+    expect(allMembers).toContain("Abhinil Agarwal");
     expect(allMembers).toContain("Mario D'Souza");
     expect(allMembers).toContain("Mashoor Ali M");
     expect(allMembers).toContain("Rebecca Martin");

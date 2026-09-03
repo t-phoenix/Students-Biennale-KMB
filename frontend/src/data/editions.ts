@@ -37,7 +37,7 @@ export const SENSING_GROUNDS_NOTE = {
 export const TEAM_COLS: readonly (readonly (readonly string[])[])[] = [
   [
     ["Director of Programmes", "Mario D'Souza"],
-    ["Programme Managers", "Mashoor Ali M", "Ananthen Suresh", "Rebecca Martin"],
+    ["Programme Managers", "Mashoor Ali M", "Ananthan Suresh", "Rebecca Martin"],
     ["Programmes Assistants", "Nikhita Thevanoor", "Maanav Jalan"],
   ],
   [
@@ -47,7 +47,7 @@ export const TEAM_COLS: readonly (readonly (readonly string[])[])[] = [
   ],
   [
     ["Social Media and Catalogue", "Mishal MA"],
-    ["Web Design and Services", "Abhinill Agarwal", "Anand Peter", "Prajesh MP", "Vishnulal CR"],
+    ["Web Design and Services", "Abhinil Agarwal", "Anand Peter", "Prajesh MP", "Vishnulal CR"],
   ],
 ];
 
