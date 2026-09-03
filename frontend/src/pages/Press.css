@@ -126,10 +126,6 @@
   line-height: var(--type-body-line);
 }
 
-.press__more {
-  margin-top: 28px;
-}
-
 @media (max-width: 899px) {
   .press__head {
     padding-top: 32px;

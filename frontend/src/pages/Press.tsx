@@ -1,7 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
-import { CtaLink } from "../components/CtaLink";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { usePressItems } from "../lib/pressCms";
 import "./Press.css";
@@ -78,7 +77,7 @@ export function Press() {
         </article>
       </div>
 
-      {/* Related list spans cols 4–12, CTA locked to col 12 right (Figma 1:795 / 1:829) */}
+      {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       <div className="fig-grid press__related">
           <ul className="press__list fig-c4-12">
             {articles.filter((p) => p.id !== featured.id).map((item) => (
@@ -98,12 +97,6 @@ export function Press() {
               </li>
             ))}
           </ul>
-          <CtaLink
-            className="fig-cta-end press__more"
-            to="/press"
-            lines={["View", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-          />
       </div>
     </div>
   );
