@@ -56,18 +56,18 @@ export const TIER_CONFIG: Record<
     absMinW: number;
   }
 > = {
-  // Comfortable vertical row spacing and slightly scaled-down tile bounds to eliminate thin gaps
-  mobile: { seedW: 968, seedH: 4800, colGap: 16, rowGap: 64, gapJitter: 0.28, columns: 3, columnJitter: 0.16, minTileH: 80, maxTileH: 330, absMinW: 75 },
-  tablet: { seedW: 1550, seedH: 5400, colGap: 20, rowGap: 80, gapJitter: 0.28, columns: 4, columnJitter: 0.18, minTileH: 100, maxTileH: 410, absMinW: 90 },
-  desktop: { seedW: 2309, seedH: 6000, colGap: 24, rowGap: 96, gapJitter: 0.28, columns: 6, columnJitter: 0.22, minTileH: 120, maxTileH: 490, absMinW: 110 },
+  // Golden-ratio visual balance: minimum tiles are clearly readable (~210px), hero tiles fill the column (~360px), with consistent breathing room
+  mobile: { seedW: 968, seedH: 4800, colGap: 16, rowGap: 56, gapJitter: 0.20, columns: 3, columnJitter: 0.12, minTileH: 140, maxTileH: 290, absMinW: 140 },
+  tablet: { seedW: 1550, seedH: 5400, colGap: 20, rowGap: 72, gapJitter: 0.20, columns: 4, columnJitter: 0.14, minTileH: 160, maxTileH: 360, absMinW: 160 },
+  desktop: { seedW: 2309, seedH: 6000, colGap: 24, rowGap: 88, gapJitter: 0.20, columns: 6, columnJitter: 0.16, minTileH: 180, maxTileH: 420, absMinW: 180 },
 };
 
-/** Artworks span from compact accent pieces to balanced prominent hero pieces */
+/** Balanced scale span: compact accent (0.58) -> standard (0.78) -> hero (0.98) */
 const KIND_SCALE: Record<CanvasItem["kind"], [number, number]> = {
-  curator: [0.70, 0.96],
-  artist: [0.70, 0.96],
-  venue: [0.70, 0.96],
-  artwork: [0.34, 0.94],
+  curator: [0.80, 0.98],
+  artist: [0.80, 0.98],
+  venue: [0.80, 0.98],
+  artwork: [0.58, 0.98],
 };
 
 export function getCanvasTier(viewportWidth: number): CanvasTier {
@@ -294,15 +294,15 @@ function packMasonry(
 
     const [scaleLo, scaleHi] = KIND_SCALE[draft.kind];
     
-    // True multi-harmonic random distribution with balanced hero, medium, and compact sizes
+    // Balanced multi-harmonic distribution across accent (0.58), standard (0.78), and hero (0.98) tiers
     const r1 = (pseudoRandom(n * 37 + col * 19 + 71) + 1) / 2;
     const r2 = (pseudoRandom(n * 53 + col * 31 + 13) + 1) / 2;
-    let scaleT = r1 * 0.7 + r2 * 0.3;
-    if (scaleT > 0.72) {
-      // Balanced hero boost
-      scaleT = 0.80 + (scaleT - 0.72) * 0.55;
-    } else if (scaleT < 0.28) {
-      // Compact accent pieces
+    let scaleT = r1 * 0.65 + r2 * 0.35;
+    if (scaleT > 0.70) {
+      // Hero tier: prominent focal artworks (up to 0.98)
+      scaleT = 0.80 + (scaleT - 0.70) * 0.60;
+    } else if (scaleT < 0.30) {
+      // Compact accent tier (down to 0.58)
       scaleT = scaleT * 0.85;
     }
     scaleT = clamp(scaleT, 0, 1);
@@ -315,7 +315,7 @@ function packMasonry(
     const slack = colW - tileW;
     const xInCol = Math.round(slack / 2);
 
-    // Organic vertical spacing with comfortable row gap and controlled jitter
+    // Organic vertical spacing with balanced row gap and controlled jitter
     const gapT = (pseudoRandom(n * 29 + col * 43 + 97) + 1) / 2;
     const tileGap = Math.round(gapLo + (gapHi - gapLo) * gapT);
 
@@ -351,7 +351,7 @@ export type CanvasPack = {
 const packCache = new Map<string, CanvasPack>();
 
 /** Bust layout cache after packing rules change (dev / HMR safety). */
-const PACK_VERSION = "artworks-spaced-comfortable-v17";
+const PACK_VERSION = "artworks-golden-ratio-balance-v18";
 
 export function getCanvasPack(
   tier: CanvasTier = "desktop",
