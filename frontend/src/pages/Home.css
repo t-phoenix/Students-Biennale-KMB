@@ -761,7 +761,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-top: 24px;
+  margin-top: 30px;
 }
 
 .home-about__sponsor-logo {
@@ -773,7 +773,7 @@
 }
 
 .home-about__sponsor-caption {
-  margin-top: 20px;
+  margin-top: 28px;
   margin-bottom: 0;
   font-size: 16px;
   font-weight: 400;
