@@ -841,6 +841,7 @@ export function Home() {
               to="/press"
               lines={["VIEW", "MORE"]}
               spacing={["0.26em", "0.135em"]}
+              direction="right"
             />
           </div>
         </section>
