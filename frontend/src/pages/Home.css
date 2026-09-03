@@ -734,10 +734,13 @@
 }
 
 .home-about__sponsors .fig-label {
+  margin: 0;
+  padding: 0;
   letter-spacing: 0.05em;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
-  line-height: var(--type-subtitle-line);
+  line-height: 28px;
+  text-transform: uppercase;
 }
 
 .home-about__sponsor-content {
@@ -748,9 +751,10 @@
 
 .home-about__sponsor-label {
   margin: 0;
+  padding: 0;
   font-size: 18px;
   font-weight: 500;
-  line-height: 36px;
+  line-height: 28px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   text-align: left;
@@ -761,7 +765,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-top: 30px;
+  margin-top: 28px;
 }
 
 .home-about__sponsor-logo {
@@ -773,11 +777,11 @@
 }
 
 .home-about__sponsor-caption {
-  margin-top: 28px;
+  margin-top: 56px;
   margin-bottom: 0;
   font-size: 16px;
   font-weight: 400;
-  line-height: 36px;
+  line-height: 28px;
   letter-spacing: 0;
   color: var(--color-text-primary);
   text-align: left;
