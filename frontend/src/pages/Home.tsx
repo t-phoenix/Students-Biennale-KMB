@@ -939,23 +939,6 @@ export function Home() {
                       ))}
                     </div>
                   ))}
-                  {i === 0 && (
-                    <div className="home-about__supported">
-                      <p className="home-about__supported-label">SUPPORTED BY</p>
-                      <div className="home-about__supported-logo-wrap">
-                        <img
-                          className="home-about__supported-logo"
-                          src="/home/logo-tata-trusts.png"
-                          alt="Tata Trusts"
-                          width={212}
-                          height={21}
-                        />
-                      </div>
-                      <p className="home-about__supported-caption">
-                        The Kochi Biennale Foundation is grateful for their support.
-                      </p>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -964,15 +947,19 @@ export function Home() {
           <div className="fig-grid home-about__sponsors">
             <h3 className="fig-label fig-label--sub">SPONSORS</h3>
             <div className="home-about__sponsor-content fig-c4-12">
+              <p className="home-about__sponsor-label">SUPPORTED BY</p>
               <div className="home-about__sponsor-logo-wrap">
                 <img
                   className="home-about__sponsor-logo"
                   src="/home/logo-tata-trusts.png"
                   alt="Tata Trusts"
-                  width={197}
-                  height={19}
+                  width={212}
+                  height={21}
                 />
               </div>
+              <p className="home-about__sponsor-caption">
+                The Kochi Biennale Foundation is grateful for their support.
+              </p>
             </div>
           </div>
         </section>
