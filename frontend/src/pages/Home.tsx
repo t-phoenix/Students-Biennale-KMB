@@ -751,11 +751,7 @@ export function Home() {
         {/* Upcoming programmes */}
         <section id="programmes" className="home-section home-programmes">
           <div className="fig-grid home-programmes__top">
-            <h2 className="fig-label fig-heading">
-              UPCOMING
-              <br />
-              PROGRAMMES
-            </h2>
+            <h2 className="fig-label fig-heading">PROGRAMMES</h2>
             <div className="home-programmes__banner fig-c4-12">
               {homeBannerUrl ? <img src={homeBannerUrl} alt="" /> : null}
             </div>
@@ -780,16 +776,6 @@ export function Home() {
                   <span className="fig-subheading__underline" aria-hidden />
                 </Link>
               ))}
-              <button
-                type="button"
-                className={`fig-subheading${programmesHover === "raza" ? " is-selected" : ""}`}
-                onClick={() => setRazaModalOpen(true)}
-                onMouseEnter={() => setProgrammesHover("raza")}
-                onMouseLeave={() => setProgrammesHover(null)}
-              >
-                RAZA SCHOLARSHIP
-                <span className="fig-subheading__underline" aria-hidden />
-              </button>
             </div>
             <div ref={programmesThumbsRef} className="home-programmes__thumbs fig-c4-12">
               {[
