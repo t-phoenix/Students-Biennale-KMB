@@ -271,6 +271,10 @@ function packMasonry(
   const colHeights = new Array(columns).fill(0);
   const colSlack = ((minTileH + maxTileH) / 2) * 0.6;
 
+  // Track the most recent tile placed per column to enforce size contrast
+  type SizeTier = 0 | 1 | 2; // 0: Compact, 1: Medium, 2: Hero
+  const lastTileInCol: Array<{ tier: SizeTier; y: number } | null> = new Array(columns).fill(null);
+
   const items: CanvasItem[] = [];
   let n = 0;
 
@@ -294,18 +298,47 @@ function packMasonry(
 
     const [scaleLo, scaleHi] = KIND_SCALE[draft.kind];
     
-    // Balanced multi-harmonic distribution across accent (0.58), standard (0.78), and hero (0.98) tiers
-    const r1 = (pseudoRandom(n * 37 + col * 19 + 71) + 1) / 2;
-    const r2 = (pseudoRandom(n * 53 + col * 31 + 13) + 1) / 2;
-    let scaleT = r1 * 0.65 + r2 * 0.35;
-    if (scaleT > 0.70) {
-      // Hero tier: prominent focal artworks (up to 0.98)
-      scaleT = 0.80 + (scaleT - 0.70) * 0.60;
-    } else if (scaleT < 0.30) {
-      // Compact accent tier (down to 0.58)
-      scaleT = scaleT * 0.85;
+    // Neighbor contrast rule: similar sized tiles MUST NOT come next to each other
+    const prevTile = lastTileInCol[col];
+    const leftTile = col > 0 ? lastTileInCol[col - 1] : null;
+    const rightTile = col < columns - 1 ? lastTileInCol[col + 1] : null;
+    const currentY = colHeights[col];
+
+    const forbidden = new Set<SizeTier>();
+    if (prevTile) {
+      // Must not match immediately preceding tile in the same column
+      forbidden.add(prevTile.tier);
     }
-    scaleT = clamp(scaleT, 0, 1);
+    // Check horizontal neighbors within overlapping Y vicinity
+    const overlapThreshold = (minTileH + maxTileH) * 0.7;
+    if (leftTile && Math.abs(currentY - leftTile.y) < overlapThreshold) {
+      forbidden.add(leftTile.tier);
+    }
+    if (rightTile && Math.abs(currentY - rightTile.y) < overlapThreshold) {
+      forbidden.add(rightTile.tier);
+    }
+
+    let allowedTiers: SizeTier[] = ([0, 1, 2] as SizeTier[]).filter((t) => !forbidden.has(t));
+    if (allowedTiers.length === 0) {
+      allowedTiers = ([0, 1, 2] as SizeTier[]).filter((t) => t !== prevTile?.tier);
+    }
+
+    const tierPickR = (pseudoRandom(n * 41 + col * 17 + 83) + 1) / 2;
+    const chosenTier = allowedTiers[Math.min(allowedTiers.length - 1, Math.floor(tierPickR * allowedTiers.length))];
+
+    // Sub-jitter within the selected tier band
+    const subR = (pseudoRandom(n * 67 + col * 29 + 11) + 1) / 2;
+    let scaleT = 0.5;
+    if (chosenTier === 0) {
+      // Compact accent tier: scale approx 0.58 - 0.69
+      scaleT = 0.02 + subR * 0.26;
+    } else if (chosenTier === 1) {
+      // Medium standard tier: scale approx 0.73 - 0.84
+      scaleT = 0.38 + subR * 0.26;
+    } else {
+      // Hero prominent tier: scale approx 0.89 - 0.98
+      scaleT = 0.78 + subR * 0.20;
+    }
 
     const scale = scaleLo + (scaleHi - scaleLo) * scaleT;
     const tileW = clamp(Math.round(colW * scale), absMinW, Math.round(colW * (scaleHi > 1 ? scaleHi : 1)));
@@ -318,6 +351,9 @@ function packMasonry(
     // Organic vertical spacing with balanced row gap and controlled jitter
     const gapT = (pseudoRandom(n * 29 + col * 43 + 97) + 1) / 2;
     const tileGap = Math.round(gapLo + (gapHi - gapLo) * gapT);
+    const tileY = Math.round(colHeights[col] + tileGap);
+
+    lastTileInCol[col] = { tier: chosenTier, y: tileY };
 
     items.push({
       id: draft.id,
@@ -328,7 +364,7 @@ function packMasonry(
       bio: draft.bio,
       tags: draft.tags,
       x: Math.round(colX[col] + xInCol),
-      y: Math.round(colHeights[col] + tileGap),
+      y: tileY,
       width: tileW,
       height: tileH,
       col,
@@ -351,7 +387,7 @@ export type CanvasPack = {
 const packCache = new Map<string, CanvasPack>();
 
 /** Bust layout cache after packing rules change (dev / HMR safety). */
-const PACK_VERSION = "artworks-golden-ratio-balance-v18";
+const PACK_VERSION = "artworks-no-adjacent-similar-sizes-v19";
 
 export function getCanvasPack(
   tier: CanvasTier = "desktop",
