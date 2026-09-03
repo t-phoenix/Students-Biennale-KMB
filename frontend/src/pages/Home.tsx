@@ -872,10 +872,13 @@ export function Home() {
           </div>
           <div className="fig-grid home-about__block">
             <div className="home-about__logo-wrap fig-c1-3">
-              <div className="home-about__logo-sb" aria-label="Students' Biennale">
-                <img src="/home/logo-sb-mark-about.svg" alt="" width={72} height={100} />
-                <img src="/home/logo-sb-word-about.svg" alt="Students' Biennale" width={120} height={48} />
-              </div>
+              <img
+                className="home-about__logo-sb"
+                src="/home/logo-sb-about.svg"
+                alt="Students' Biennale"
+                width={212}
+                height={102}
+              />
             </div>
             <div className="home-about__sb-copy fig-c4-9">
               <p className="fig-body">

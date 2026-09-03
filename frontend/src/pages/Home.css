@@ -666,23 +666,11 @@
 }
 
 .home-about__logo-sb {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.home-about__logo-sb img:first-child {
-  width: 64px;
-  height: 90px;
-  object-fit: contain;
-  flex-shrink: 0;
-}
-
-.home-about__logo-sb img:last-child {
-  width: 120px;
+  width: 212px;
   height: auto;
+  max-width: 100%;
   object-fit: contain;
-  flex-shrink: 0;
+  display: block;
 }
 
 .home-about__sb-copy {
