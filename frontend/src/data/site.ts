@@ -1036,7 +1036,7 @@ With emphasis on alternative education beyond the classroom and learning from pr
 
 Mario D'Souza, Director of Programmes, Kochi Biennale Foundation, said, "Each edition of the Students' Biennale is a learning exercise. We work with students, educators, curators, and artists to understand the needs and shortcomings of art education in India."
 
-He added, "For this edition, we examine what other forms of nourishing practice are possible outside of the market and grant economy. We invited curators as peers, who could exemplify and share these "other" frameworks across independent artist-run initiatives, residency models, collective work, teaching, and self-publishing, amongst others. We aspire to build a peer group and artist-to-artist network that is concerned with the 'now'. We want to learn together - about and with each other's contexts and challenges. We want to listen."
+He added, "For this edition, we examine what other forms of nourishing practice are possible outside of the market and grant economy. We invited curators as peers, who could exemplify and share these 'other' frameworks across independent artist-run initiatives, residency models, collective work, teaching, and self-publishing, amongst others. We aspire to build a peer group and artist-to-artist network that is concerned with the 'now'. We want to learn together - about and with each other's contexts and challenges. We want to listen."
 
 The curators/collectives for the seven regions are:
 
@@ -1054,31 +1054,74 @@ Anga Art Collective leads workshops in the seven north-eastern states and Sikkim
     image: "/press/walkthrough.jpg",
     excerpt:
       "Book a guided walk-through of the Biennale exhibitions, led by our trained art mediators.",
+    body: `Guided walk-throughs of the Students' Biennale exhibitions at Kochi offer visitors an in-depth engagement with the artworks, artistic processes, and curatorial frameworks across all participating venues. Led by trained art mediators, the tours unpack regional methodologies, material investigations, and student research across state-funded institutions in India.
+
+Walkthroughs are conducted daily throughout the exhibition period from 13 December 2025 to 31 March 2026 across Fort Kochi and Mattancherry. Special thematic sessions are designed for student groups, educational institutions, researchers, and public visitors.
+
+Each walkthrough provides unique contextual insights into how young artists negotiate regional pedagogical traditions, institutional constraints, and collective care. Tours can be scheduled in English, Malayalam, Hindi, and regional languages upon request.
+
+Prior registration is recommended for large groups and academic delegations. To reserve a dedicated mediator for your visit, please contact our mediation desk or email us through the enquiry portal.`,
   },
   {
     id: "guide-map",
     title: "The Ultimate Guide & Map to the Kochi-Muziris Biennale 2025/26 Venues",
     date: "15 Feb 2026",
+    teaser: true,
+    image: "/home/press-featured.jpg",
     excerpt: "A practical guide to navigating Biennale venues across Fort Kochi.",
+    body: `Navigating the Students' Biennale across Fort Kochi and Mattancherry invites visitors into historic heritage structures, community halls, warehouses, and open courtyards. Each venue hosts exhibitions shaped in dialogue with local architectural character, spatial memory, and neighborhood histories.
+
+Primary exhibition venues include VKL Warehouse, St. Andrews Parish Hall, BMS Warehouse, Space Gallery, and David Hall. Each site features dedicated mediation desks, visitor guides, accessibility ramps, and seating areas.
+
+Visitors are encouraged to explore venues by walking or cycling along the historic waterfront corridors of Fort Kochi and Bazaar Road. Information kiosks at Aspinwall House, Pepper House, and VKL Warehouse distribute complimentary printed pocket maps and venue timetables.
+
+For assistance with accessibility, group transport, or special visitor services, the Biennale information team is available on-site daily from 10:00 AM to 6:00 PM.`,
   },
   {
     id: "st-andrews",
     title: "St. Andrews Parish Hall - Students' Biennale at Kochi",
     date: "31 Mar 2026",
+    teaser: true,
+    image: "/artworks/where-memories-are-immured.jpg",
     excerpt: "On the Students' Biennale presentation at St. Andrews Parish Hall.",
+    body: `St. Andrews Parish Hall in Fort Kochi serves as one of the primary exhibition sites for the Students' Biennale 2025-26. Featuring site-responsive installations, moving-image presentations, and sculpture, the hall brings together student artists engaging with themes of home, domesticity, labour, and collective memory.
+
+The presentations reflect rigorous material experimentation developed over months of regional workshops and peer mentorship, transforming the historic parish hall into an open forum for public exchange and pedagogy.
+
+Central works at St. Andrews Parish Hall include large-scale architectural interventions, printmaking installations, and sonic landscapes that question institutional narratives of authorial labor. The venue hosts weekly open conversations between exhibiting student artists, visiting curators, and local community members.
+
+Admission is free and open to all visitors throughout the duration of the Biennale.`,
     url: "https://catsofkochi.com/st-andrews-parish-hall-students-biennale-at-kochi/",
   },
   {
     id: "panic",
     title: "A warm kind of panic",
     date: "31 Dec 2025",
+    teaser: true,
+    image: "/artworks/labour-of-the-imagined.jpg",
     excerpt: "Critical writing on works from Sensing Grounds.",
+    body: `Reflecting on the curatorial framework of Sensing Grounds, this essay traces how student artists navigate institutional boundaries, resource limitations, and collective solidarity. Rather than presenting finished spectacles, the works embrace uncertainty, process, and active listening as disobedient methodologies.
+
+Across multiple mediums, the artists interrogate what absence carries, how memory adheres to materials, and what modes of community care emerge when artistic production is separated from commercial imperatives.
+
+The essay investigates the tension between domestic space and pedagogic apparatuses, examining how student cohorts from state-run fine arts colleges articulate resistance through tactile intimacy and unhurried material enquiry.
+
+Published as part of the Students' Biennale Critical Writing Series, 'A warm kind of panic' provides critical accompaniment to the regional exhibitions across Fort Kochi.`,
   },
   {
     id: "peta",
     title: "The Power of the Peta / Honour",
     date: "31 Dec 2025",
+    teaser: true,
+    image: "/artworks/panopticon.jpg",
     excerpt: "Critical writing from the edition.",
+    body: `Examining emblems of authority, pride, and labor, 'The Power of the Peta / Honour' considers how regional symbols and ceremonial headwear are recontextualized by young artists in contemporary India. The works unpack hierarchies of authorship, craft histories, and ritual traditions to question contemporary dynamics of caste, class, and statehood.
+
+The project demonstrates the vital role of the Students' Biennale in cultivating critical inquiry and self-reflexivity within regional art education.
+
+Through textiles, cast sculptures, and archival fragments, the artists interrogate how honorific garments simultaneously confer social status and enforce disciplinary structures within institutional frameworks.
+
+The exhibition text accompanies the presentation across VKL Warehouse and BMS Warehouse during the 2025-26 edition.`,
   },
 ];
 

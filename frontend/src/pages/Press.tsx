@@ -12,7 +12,34 @@ export function Press() {
   const featureRef = useRef<HTMLElement>(null);
   const [params, setParams] = useSearchParams();
   const { items: cmsArticles } = usePressItems();
-  const articles = cmsArticles.length > 0 ? cmsArticles : PRESS;
+
+  const articles = useMemo(() => {
+    const map = new Map<string, (typeof PRESS)[number]>();
+    for (const item of PRESS) {
+      map.set(item.id, { ...item });
+    }
+    for (const cms of cmsArticles) {
+      if (!cms.title || !cms.title.trim()) continue;
+      const existing = map.get(cms.id);
+      if (existing) {
+        map.set(cms.id, {
+          ...existing,
+          ...cms,
+          image: cms.image || existing.image,
+          body: cms.body || existing.body,
+          excerpt: cms.excerpt || existing.excerpt,
+          date: cms.date || existing.date,
+        });
+      } else {
+        map.set(cms.id, {
+          ...cms,
+          image: cms.image || "/press/featured.jpg",
+          body: cms.body || cms.excerpt,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [cmsArticles]);
 
   const articleId = params.get("article") ?? articles[0]?.id;
 
@@ -32,10 +59,10 @@ export function Press() {
       const el = featureRef.current;
       if (!el) return;
       if (prefersReducedMotion()) {
-        gsap.set(el, { autoAlpha: 1 });
+        gsap.set(el, { opacity: 1, clearProps: "all" });
         return;
       }
-      gsap.fromTo(el, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35, ease: "power2.out" });
+      gsap.fromTo(el, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" });
     },
     { dependencies: [featured?.id], scope: root },
   );
