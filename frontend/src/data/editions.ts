@@ -1,5 +1,5 @@
 import editionSearchTagsData from "./edition-search-tags.json";
-import { ARTISTS, LATEST_EDITION, PREVIOUS_EDITIONS } from "./site";
+import { LATEST_EDITION, PREVIOUS_EDITIONS } from "./site";
 import type { SearchIndexEntry } from "../lib/catalogue/types";
 
 export const EDITION_SHORT = `The Students Biennale 2025-26 was realised by bringing together  70 projects under 4 artist duos and and 3 artist's collectives taking on 7 curatorial frameworks which culminates into one exhibition. The programme has successfully been able to achieve this with the participation of more than 200 student artists selected from over 150+ art institutions across the country.
@@ -194,14 +194,28 @@ const EDITION_2014_VENUES = ["Mohammed Ali Warehouse", "KVA Brothers"];
 
 const ALL_EDITIONS = [LATEST_EDITION.id, ...PREVIOUS_EDITIONS];
 
-/** Unique participating institutions, taken from the artist records we hold. */
+/** Unique participating institutions from remote catalogue overview when available. */
 function institutionsForLatest(): string[] {
-  return [...new Set(ARTISTS.map((a) => a.institution))].sort((a, b) => a.localeCompare(b));
+  return [];
 }
 
-/** Short searchable names for sparse previous editions (no long-form prose). */
+/** 2025–26 venues named in the edition overview copy. */
+const LATEST_EDITION_VENUES = [
+  "Vallabhdas Kanji Ltd. (VKL) Warehouse",
+  "VKL Warehouse",
+  "BMS Warehouse",
+  "Arthshila Kochi",
+  "St. Andrews Parish Hall",
+  "Space Gallery",
+  "David Hall",
+];
+
+/** Short searchable names for edition credits (team / artists / venues / institutions). */
 export type EditionSearchTags = {
+  /** Curators, advisors, and other named curatorial credits. */
   curators: string[];
+  /** Programme / production / org team names under THE TEAM. */
+  team: string[];
   artists: string[];
   artworks: string[];
   venues: string[];
@@ -209,7 +223,41 @@ export type EditionSearchTags = {
   title: string;
 };
 
-function namesFromTeam(
+function normalizeTagName(name: string): string {
+  return name.trim().replace(/\.+$/, "").replace(/\s+/g, " ");
+}
+
+function uniqNames(names: Iterable<string>): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of names) {
+    const name = normalizeTagName(raw);
+    if (!name) continue;
+    const key = name.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(name);
+  }
+  return out;
+}
+
+/** Every person name under a team grid (all roles). */
+export function allPeopleFromTeam(
+  team: readonly (readonly (readonly string[])[])[],
+): string[] {
+  const out: string[] = [];
+  for (const col of team) {
+    for (const row of col) {
+      const [, ...people] = row;
+      for (const person of people) {
+        if (person) out.push(person);
+      }
+    }
+  }
+  return uniqNames(out);
+}
+
+function namesFromTeamRoles(
   team: readonly (readonly (readonly string[])[])[],
   roles: string[],
 ): string[] {
@@ -224,43 +272,30 @@ function namesFromTeam(
       }
     }
   }
-  return out;
+  return uniqNames(out);
 }
 
-export function getEditionSearchTags(yearId: string): EditionSearchTags {
-  const fromJson = (editionSearchTagsData as Record<string, EditionSearchTags & { title: string }>)[
-    yearId
-  ];
-  if (fromJson) {
-    return {
-      title: fromJson.title || "Students' Biennale",
-      curators: fromJson.curators ?? [],
-      artists: fromJson.artists ?? [],
-      artworks: fromJson.artworks ?? [],
-      venues: fromJson.venues ?? [],
-      institutions: fromJson.institutions ?? [],
-    };
+/** Drop prose fragments that were scraped into artist/institution tag lists. */
+function looksLikeCreditName(value: string): boolean {
+  const t = normalizeTagName(value);
+  if (t.length < 2 || t.length > 90) return false;
+  if (/[;:]/.test(t)) return false;
+  if (/,.*,.*,/.test(t) && t.length > 60 && /\b(works|speak|series|intervention)\b/i.test(t)) {
+    return false;
   }
-  if (yearId === "2014-15") {
-    return {
-      title: "Students' Biennale",
-      curators: namesFromTeam(EDITION_2014_TEAM, [
-        "Curators",
-        "Curatorial Advisor",
-        "Project Advisor",
-        "Director of Programmes",
-        "Programme Coordinator",
-        "Advisors",
-      ]),
-      artists: [],
-      artworks: [],
-      venues: [...EDITION_2014_VENUES],
-      institutions: [...EDITION_2014_INSTITUTIONS],
-    };
+  if (
+    /^(and|where|of|language|intersectional|transparency|24|delicacy|subtlety)$/i.test(t)
+  ) {
+    return false;
   }
+  return /[A-Za-z]/.test(t);
+}
+
+function emptyTags(title = "Students' Biennale"): EditionSearchTags {
   return {
-    title: "Students' Biennale",
+    title,
     curators: [],
+    team: [],
     artists: [],
     artworks: [],
     venues: [],
@@ -268,9 +303,67 @@ export function getEditionSearchTags(yearId: string): EditionSearchTags {
   };
 }
 
+export function getEditionSearchTags(yearId: string): EditionSearchTags {
+  const fromJson = (editionSearchTagsData as Record<string, Partial<EditionSearchTags> & { title?: string }>)[
+    yearId
+  ];
+  const base: EditionSearchTags = fromJson
+    ? {
+        title: fromJson.title || "Students' Biennale",
+        curators: uniqNames(fromJson.curators ?? []),
+        team: uniqNames(fromJson.team ?? []),
+        artists: uniqNames((fromJson.artists ?? []).filter(looksLikeCreditName)),
+        artworks: uniqNames((fromJson.artworks ?? []).filter(looksLikeCreditName)),
+        venues: uniqNames(fromJson.venues ?? []),
+        institutions: uniqNames((fromJson.institutions ?? []).filter(looksLikeCreditName)),
+      }
+    : emptyTags();
+
+  if (yearId === LATEST_EDITION.id) {
+    return {
+      ...base,
+      title: base.title || "Students' Biennale",
+      team: uniqNames([...base.team, ...allPeopleFromTeam(TEAM_COLS)]),
+      venues: uniqNames([...base.venues, ...LATEST_EDITION_VENUES]),
+    };
+  }
+
+  if (yearId === "2014-15") {
+    const curators = uniqNames([
+      ...base.curators,
+      ...namesFromTeamRoles(EDITION_2014_TEAM, ["Curators"]),
+    ]);
+    const team = uniqNames([
+      ...base.team,
+      ...allPeopleFromTeam(EDITION_2014_TEAM).filter(
+        (name) => !curators.some((c) => c.toLowerCase() === name.toLowerCase()),
+      ),
+    ]);
+    return {
+      title: base.title || "Students' Biennale",
+      curators,
+      team,
+      artists: base.artists,
+      artworks: base.artworks,
+      venues: uniqNames([...base.venues, ...EDITION_2014_VENUES]),
+      institutions: uniqNames([...base.institutions, ...EDITION_2014_INSTITUTIONS]),
+    };
+  }
+
+  return base;
+}
+
 /** Build a compact search_index from short edition tags (client-side bridge). */
 export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): SearchIndexEntry[] {
   const route = `/editions/${yearId}`;
+  const curators = uniqNames(tags.curators);
+  const curatorKeys = new Set(curators.map((n) => n.toLowerCase()));
+  const team = uniqNames(tags.team).filter((n) => !curatorKeys.has(n.toLowerCase()));
+  const artists = uniqNames(tags.artists);
+  const artworks = uniqNames(tags.artworks);
+  const venues = uniqNames(tags.venues);
+  const institutions = uniqNames(tags.institutions);
+
   const entries: SearchIndexEntry[] = [
     {
       entity_type: "edition",
@@ -279,14 +372,14 @@ export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): Se
       subtitle: `Students' Biennale ${yearId}`,
       route,
       field_title: tags.title,
-      field_curator: tags.curators.join(", ") || undefined,
-      field_artist: tags.artists.join(", ") || undefined,
-      field_venue: tags.venues.join(", ") || undefined,
-      field_institution: tags.institutions.join(", ") || undefined,
+      field_curator: [...curators, ...team].join(", ") || undefined,
+      field_artist: artists.join(", ") || undefined,
+      field_venue: venues.join(", ") || undefined,
+      field_institution: institutions.join(", ") || undefined,
       field_edition: yearId,
     },
   ];
-  for (const name of tags.curators) {
+  for (const name of curators) {
     entries.push({
       entity_type: "person",
       entity_id: `credit-curator-${yearId}-${name}`,
@@ -298,7 +391,18 @@ export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): Se
       field_edition: yearId,
     });
   }
-  for (const name of tags.artists) {
+  for (const name of team) {
+    entries.push({
+      entity_type: "person",
+      entity_id: `credit-team-${yearId}-${name}`,
+      title: name,
+      subtitle: `Team · ${yearId}`,
+      route,
+      field_title: name,
+      field_edition: yearId,
+    });
+  }
+  for (const name of artists) {
     entries.push({
       entity_type: "person",
       entity_id: `credit-artist-${yearId}-${name}`,
@@ -310,7 +414,7 @@ export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): Se
       field_edition: yearId,
     });
   }
-  for (const name of tags.venues) {
+  for (const name of venues) {
     entries.push({
       entity_type: "venue",
       entity_id: `credit-venue-${yearId}-${name}`,
@@ -322,7 +426,7 @@ export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): Se
       field_edition: yearId,
     });
   }
-  for (const name of tags.artworks) {
+  for (const name of artworks) {
     entries.push({
       entity_type: "artwork",
       entity_id: `credit-artwork-${yearId}-${name}`,
@@ -334,7 +438,7 @@ export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): Se
       field_edition: yearId,
     });
   }
-  for (const name of tags.institutions) {
+  for (const name of institutions) {
     entries.push({
       entity_type: "institution",
       entity_id: `credit-institution-${yearId}-${name}`,
@@ -347,6 +451,31 @@ export function searchIndexFromTags(yearId: string, tags: EditionSearchTags): Se
     });
   }
   return entries;
+}
+
+/** Merge tag-based credits into a catalogue search index (team / venues / institutions). */
+export function mergeTagSearchIndex(catalogue: {
+  years: string;
+  searchIndex: SearchIndexEntry[];
+  venues?: Array<{ name: string }>;
+  institutions?: string[];
+}): SearchIndexEntry[] {
+  const tags = getEditionSearchTags(catalogue.years);
+  const enriched: EditionSearchTags = {
+    ...tags,
+    venues: uniqNames([
+      ...tags.venues,
+      ...(catalogue.venues ?? []).map((v) => v.name),
+    ]),
+    institutions: uniqNames([
+      ...tags.institutions,
+      ...(catalogue.institutions ?? []),
+    ]),
+  };
+  const fromTags = searchIndexFromTags(catalogue.years, enriched);
+  const seen = new Set(catalogue.searchIndex.map((row) => row.entity_id));
+  const extras = fromTags.filter((row) => !seen.has(row.entity_id));
+  return extras.length ? [...catalogue.searchIndex, ...extras] : catalogue.searchIndex;
 }
 
 export function getEditionOverview(yearId: string): EditionOverviewData {

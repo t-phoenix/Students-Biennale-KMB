@@ -5,6 +5,12 @@
   padding-bottom: 80px;
 }
 
+.edition-overview mark {
+  background: color-mix(in srgb, var(--color-text-primary) 18%, transparent);
+  color: inherit;
+  padding: 0 0.05em;
+}
+
 /* Full-bleed hero (1440 × 820 in Figma). */
 .edition-overview__hero {
   position: relative;

@@ -1,17 +1,35 @@
 import type { MappedCatalogue, SearchIndexEntry } from "./types";
 
 /** Client-side tagged filter. Does not call Postgres.
- *  Matches when any alphanumeric token in the parts starts with the query
- *  (prefix), so "raja" hits "Rajat" / "Rajasthan" but not mid-token "Maharaja".
+ *  Matches when query tokens are ordered prefixes of the text tokens,
+ *  so "vkl w" hits "VKL Warehouse" and "faiza h" hits "Faiza Hasan".
  */
 export function matchesQuery(query: string, ...parts: Array<string | null | undefined>): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
+  const queryTokens = q.split(/[^a-z0-9]+/).filter(Boolean);
+  if (!queryTokens.length) return true;
+
   return parts.some((part) => {
     const text = (part ?? "").toLowerCase();
     if (!text) return false;
     const tokens = text.split(/[^a-z0-9]+/).filter(Boolean);
-    return tokens.some((token) => token.startsWith(q));
+    if (!tokens.length) return false;
+
+    let cursor = 0;
+    for (const needle of queryTokens) {
+      let found = false;
+      while (cursor < tokens.length) {
+        if (tokens[cursor].startsWith(needle)) {
+          found = true;
+          cursor += 1;
+          break;
+        }
+        cursor += 1;
+      }
+      if (!found) return false;
+    }
+    return true;
   });
 }
 
@@ -49,25 +67,64 @@ export function taggedText(
     .toLowerCase();
 }
 
-/** Split text into segments for `<mark>` rendering. Case-insensitive. */
+/** Split text into segments for `<mark>` rendering. Case-insensitive.
+ *  Highlights each query token (so "vkl w" marks both words in "VKL Warehouse").
+ */
 export function highlightSegments(
   text: string,
   query: string,
 ): Array<{ text: string; match: boolean }> {
   const q = query.trim();
   if (!q || !text) return [{ text, match: false }];
+
+  const needles = [
+    ...new Set(
+      q
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean),
+    ),
+  ].sort((a, b) => b.length - a.length);
+  if (!needles.length) return [{ text, match: false }];
+
   const lower = text.toLowerCase();
-  const needle = q.toLowerCase();
-  const parts: Array<{ text: string; match: boolean }> = [];
-  let start = 0;
-  let idx = lower.indexOf(needle, start);
-  while (idx !== -1) {
-    if (idx > start) parts.push({ text: text.slice(start, idx), match: false });
-    parts.push({ text: text.slice(idx, idx + needle.length), match: true });
-    start = idx + needle.length;
-    idx = lower.indexOf(needle, start);
+  const marks: Array<{ start: number; end: number }> = [];
+  for (const needle of needles) {
+    let from = 0;
+    while (from < lower.length) {
+      const idx = lower.indexOf(needle, from);
+      if (idx === -1) break;
+      // Prefer token-boundary-ish matches (start, or non-alnum before).
+      const prev = idx === 0 ? "" : lower[idx - 1];
+      if (idx === 0 || /[^a-z0-9]/.test(prev)) {
+        marks.push({ start: idx, end: idx + needle.length });
+      }
+      from = idx + needle.length;
+    }
   }
-  if (start < text.length) parts.push({ text: text.slice(start), match: false });
+  if (!marks.length) return [{ text, match: false }];
+
+  marks.sort((a, b) => a.start - b.start || b.end - a.end);
+  const merged: Array<{ start: number; end: number }> = [];
+  for (const mark of marks) {
+    const last = merged[merged.length - 1];
+    if (last && mark.start <= last.end) {
+      last.end = Math.max(last.end, mark.end);
+    } else {
+      merged.push({ ...mark });
+    }
+  }
+
+  const parts: Array<{ text: string; match: boolean }> = [];
+  let cursor = 0;
+  for (const mark of merged) {
+    if (mark.start > cursor) {
+      parts.push({ text: text.slice(cursor, mark.start), match: false });
+    }
+    parts.push({ text: text.slice(mark.start, mark.end), match: true });
+    cursor = mark.end;
+  }
+  if (cursor < text.length) parts.push({ text: text.slice(cursor), match: false });
   return parts.length ? parts : [{ text, match: false }];
 }
 
@@ -146,7 +203,14 @@ export function isSparseCatalogue(
   );
 }
 
-export type SearchHitKind = "curator" | "artwork" | "artist" | "venue" | "previous-edition";
+export type SearchHitKind =
+  | "curator"
+  | "team"
+  | "artwork"
+  | "artist"
+  | "venue"
+  | "institution"
+  | "previous-edition";
 
 export type SearchHit = {
   kind: SearchHitKind;
@@ -161,9 +225,11 @@ export type SearchHit = {
 
 export type EditionSearchResults = {
   curators: SearchHit[];
+  team: SearchHit[];
   artworks: SearchHit[];
   artists: SearchHit[];
   venues: SearchHit[];
+  institutions: SearchHit[];
   previousEditions: SearchHit[];
 };
 
@@ -262,6 +328,9 @@ function indexHitToSearchHit(
   if (entry.entity_type === "person" && entry.field_curator) {
     return { kind: "curator", ...base };
   }
+  if (entry.entity_type === "person" && entry.subtitle?.startsWith("Team")) {
+    return { kind: "team", ...base };
+  }
   if (entry.entity_type === "person" && entry.field_artist) {
     return { kind: "artist", ...base };
   }
@@ -273,7 +342,7 @@ function indexHitToSearchHit(
   }
   if (entry.entity_type === "institution" || entry.field_institution) {
     return {
-      kind: "artist",
+      kind: "institution",
       title: entry.title,
       subtitle: entry.subtitle ?? `Institution · ${editionYears.replace("-", "–")}`,
       href,
@@ -286,6 +355,7 @@ function indexHitToSearchHit(
   if (entry.field_curator) return { kind: "curator", ...base };
   if (entry.field_artist) return { kind: "artist", ...base };
   if (entry.field_venue) return { kind: "venue", ...base };
+  if (entry.entity_type === "person") return { kind: "team", ...base };
   return null;
 }
 
@@ -295,6 +365,7 @@ function pushIndexHits(
   query: string,
   catalogue: Pick<MappedCatalogue, "years" | "heroUrl" | "heroUrls" | "searchIndex" | "title" | "institutions">,
   asPreviousSection: boolean,
+  onlyKinds?: ReadonlySet<SearchHitKind>,
 ) {
   const hits = matchIndexEntries(query, indexEntriesForCatalogue(catalogue));
   const specific = hits.filter((hit) => hit.entry.entity_type !== "edition");
@@ -308,13 +379,28 @@ function pushIndexHits(
     }
     const searchHit = indexHitToSearchHit(hit, catalogue, query);
     if (!searchHit) continue;
+    if (onlyKinds && !onlyKinds.has(searchHit.kind)) continue;
     if (searchHit.kind === "previous-edition") {
       pushHit(results.previousEditions, seen, searchHit);
       continue;
     }
+    if (searchHit.kind === "team") {
+      pushHit(results.team, seen, searchHit);
+      continue;
+    }
+    if (searchHit.kind === "institution") {
+      pushHit(results.institutions, seen, searchHit);
+      continue;
+    }
+    if (searchHit.kind === "venue") {
+      const titleKey = searchHit.title.toLowerCase();
+      if (results.venues.some((row) => row.title.toLowerCase() === titleKey)) continue;
+      pushHit(results.venues, seen, searchHit);
+      continue;
+    }
     const bucket = results[`${searchHit.kind}s` as keyof Pick<
       EditionSearchResults,
-      "curators" | "artworks" | "artists" | "venues"
+      "curators" | "artworks" | "artists"
     >];
     pushHit(bucket, seen, searchHit);
   }
@@ -329,15 +415,25 @@ export function searchEditionCatalog(
   const q = query.trim();
   const empty: EditionSearchResults = {
     curators: [],
+    team: [],
     artworks: [],
     artists: [],
     venues: [],
+    institutions: [],
     previousEditions: [],
   };
   if (!q) return empty;
 
   const seen = new Set<string>();
-  const results = { ...empty, curators: [], artworks: [], artists: [], venues: [], previousEditions: [] };
+  const results: EditionSearchResults = {
+    curators: [],
+    team: [],
+    artworks: [],
+    artists: [],
+    venues: [],
+    institutions: [],
+    previousEditions: [],
+  };
 
   for (const curator of current.curators) {
     const zone = current.zones.find((z) => z.curators.some((c) => c.id === curator.id));
@@ -425,8 +521,11 @@ export function searchEditionCatalog(
     });
   }
 
+  // Credit tags: full index for sparse editions; team/institutions for the live catalogue.
   if (isSparseCatalogue(current)) {
     pushIndexHits(results, seen, q, current, false);
+  } else {
+    pushIndexHits(results, seen, q, current, false, new Set(["team", "institution", "venue"]));
   }
 
   for (const catalogue of all) {
@@ -440,9 +539,11 @@ export function searchEditionCatalog(
 export function hasSearchResults(results: EditionSearchResults): boolean {
   return (
     results.curators.length > 0 ||
+    results.team.length > 0 ||
     results.artworks.length > 0 ||
     results.artists.length > 0 ||
     results.venues.length > 0 ||
+    results.institutions.length > 0 ||
     results.previousEditions.length > 0
   );
 }

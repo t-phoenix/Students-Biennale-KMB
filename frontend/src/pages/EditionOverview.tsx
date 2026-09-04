@@ -5,7 +5,7 @@ import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { HighlightText } from "../components/HighlightText";
-import { getEditionOverview } from "../data/editions";
+import { getEditionOverview, getEditionSearchTags } from "../data/editions";
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue, useEditionCatalogue } from "../lib/catalogue";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
@@ -66,6 +66,18 @@ function InstitutionsList({
   );
 }
 
+/** Pipe-separated credit names from edition search tags (sparse previous editions). */
+function TaggedCreditsList({
+  names,
+  highlight,
+}: {
+  names: readonly string[];
+  highlight: string;
+}) {
+  if (!names.length) return null;
+  return <InstitutionsList names={names} highlight={highlight} />;
+}
+
 /**
  * Edition overview — Figma "Previous Editions Page" (929:4591).
  * Previous editions use the right-aligned title rail, three-column team, pipe-separated
@@ -85,6 +97,26 @@ export function EditionOverview() {
   const { catalogue } = useEditionCatalogue(yearId);
   const { catalogues } = useCatalogue();
   const isPreviousEdition = yearId !== LATEST_EDITION.id;
+  const searchTags = getEditionSearchTags(yearId);
+  const showTaggedCredits =
+    isPreviousEdition &&
+    !fallback.team.length &&
+    !catalogue.teamBody &&
+    (searchTags.curators.length > 0 ||
+      searchTags.team.length > 0 ||
+      searchTags.artists.length > 0 ||
+      searchTags.venues.length > 0 ||
+      searchTags.artworks.length > 0);
+
+  useEffect(() => {
+    const q = highlight.trim();
+    if (!q || !root.current) return;
+    const timer = window.setTimeout(() => {
+      const mark = root.current?.querySelector("mark");
+      mark?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [highlight, yearId, catalogue.teamBody, catalogue.institutions, showTaggedCredits]);
   const yearIds = catalogues.map((row) => row.years);
   const yearIndex = yearIds.indexOf(yearId);
   const nextId = yearIndex > 0 ? yearIds[yearIndex - 1] : fallback.nextId;
@@ -351,6 +383,43 @@ export function EditionOverview() {
             className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal"
           >
             <HighlightText text={catalogue.teamBody} query={highlight} />
+          </div>
+        </div>
+      ) : showTaggedCredits && (searchTags.curators.length || searchTags.team.length) ? (
+        <div className="fig-grid edition-overview__section">
+          <h2 className="fig-label fig-label--sub edition-overview__reveal">CURATORS & TEAM</h2>
+          <div className="fig-c4-12 edition-overview__reveal">
+            <TaggedCreditsList
+              names={[...searchTags.curators, ...searchTags.team]}
+              highlight={highlight}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {showTaggedCredits && searchTags.artists.length ? (
+        <div className="fig-grid edition-overview__section">
+          <h2 className="fig-label fig-label--sub edition-overview__reveal">ARTISTS</h2>
+          <div className="fig-c4-12 edition-overview__reveal">
+            <TaggedCreditsList names={searchTags.artists} highlight={highlight} />
+          </div>
+        </div>
+      ) : null}
+
+      {showTaggedCredits && searchTags.venues.length ? (
+        <div className="fig-grid edition-overview__section">
+          <h2 className="fig-label fig-label--sub edition-overview__reveal">VENUES</h2>
+          <div className="fig-c4-12 edition-overview__reveal">
+            <TaggedCreditsList names={searchTags.venues} highlight={highlight} />
+          </div>
+        </div>
+      ) : null}
+
+      {showTaggedCredits && searchTags.artworks.length ? (
+        <div className="fig-grid edition-overview__section">
+          <h2 className="fig-label fig-label--sub edition-overview__reveal">PROJECTS</h2>
+          <div className="fig-c4-12 edition-overview__reveal">
+            <TaggedCreditsList names={searchTags.artworks} highlight={highlight} />
           </div>
         </div>
       ) : null}

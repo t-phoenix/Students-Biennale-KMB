@@ -72,6 +72,16 @@ export function Detail() {
   );
 
   useEffect(() => {
+    const q = highlight.trim();
+    if (!q || kindSeg === "artworks") return;
+    const timer = window.setTimeout(() => {
+      const mark = root.current?.querySelector("mark");
+      mark?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "center" });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [highlight, id, kindSeg]);
+
+  useEffect(() => {
     if (kindSeg !== "artworks" || !id) return;
     prefetchNextArtwork(catalogue.artworks, id);
   }, [kindSeg, id, catalogue.artworks]);
@@ -124,6 +134,10 @@ export function Detail() {
     const c = data.item;
     const zone = catalogue.zones.find((z) => z.curators.some((x) => x.id === c.id));
     const members = zone ? [c, ...zone.curators.filter((x) => x.id !== c.id)] : [c];
+    // Prefer the clicked curator's individual note (Zone 6), else the shared zone note.
+    const noteTitle = c.noteTitle || zone?.noteTitle;
+    const noteAttribution = c.noteAttribution;
+    const noteBody = c.noteBody || zone?.noteBody;
 
     return (
       <div ref={root} className="detail">
@@ -174,14 +188,21 @@ export function Detail() {
           </div>
         ))}
 
-        {zone?.noteBody ? (
+        {noteBody ? (
           <div className="fig-grid detail__section">
             <p className="fig-label detail__label detail-reveal">Curatorial note</p>
             <div className="fig-c4-9 detail-reveal">
-              {zone.noteTitle ? (
-                <h2 className="detail__note-title">{zone.noteTitle}</h2>
+              {noteTitle ? (
+                <h2 className="detail__note-title">{noteTitle}</h2>
               ) : null}
-              <p className="fig-body">{zone.noteBody}</p>
+              {noteAttribution ? (
+                <p className="detail__note-attribution">{noteAttribution}</p>
+              ) : null}
+              {noteBody.split(/\n\s*\n/).map((para) => (
+                <p key={para.slice(0, 48)} className="fig-body">
+                  {para}
+                </p>
+              ))}
             </div>
           </div>
         ) : null}

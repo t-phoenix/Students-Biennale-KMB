@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { artworkImages, curatorsForArtwork, type ArtworkCard } from "../data/site";
+import { artworkImages, type ArtworkCard } from "../data/site";
+import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
@@ -21,6 +22,7 @@ type Props = {
  *  with each caller since it differs by context. */
 export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   const { yearId = "2025-26" } = useParams();
+  const { catalogue } = useEditionCatalogue(yearId);
   const [heroIndex, setHeroIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,7 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
   const dotsTone = useCarouselDotsTone(slide ?? "", "center");
   const upcomingSlides = slides.filter((url) => url !== slide);
-  const curated = curatorsForArtwork(a);
+  const curated = curatorsForArtworkIn(a, catalogue.zones);
   const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
   const goNext = () => setHeroIndex((i) => (i + 1) % slides.length);
 

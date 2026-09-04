@@ -72,9 +72,11 @@ function Section({
 export function EditionSearchResultsPanel({ query, results }: Props) {
   const hasAny =
     results.curators.length > 0 ||
+    results.team.length > 0 ||
     results.artworks.length > 0 ||
     results.artists.length > 0 ||
     results.venues.length > 0 ||
+    results.institutions.length > 0 ||
     results.previousEditions.length > 0;
 
   if (!hasAny) {
@@ -88,9 +90,11 @@ export function EditionSearchResultsPanel({ query, results }: Props) {
   return (
     <div className="edition-search-results">
       <Section title="Curators" hits={results.curators} query={query} />
+      <Section title="Team" hits={results.team} query={query} />
       <Section title="Artworks" hits={results.artworks} query={query} />
       <Section title="Artists" hits={results.artists} query={query} />
       <Section title="Venues" hits={results.venues} query={query} />
+      <Section title="Institutions" hits={results.institutions} query={query} />
       <Section title="Previous editions" hits={results.previousEditions} query={query} />
     </div>
   );

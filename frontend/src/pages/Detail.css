@@ -362,6 +362,12 @@
   text-transform: uppercase;
 }
 
+.detail__note-attribution {
+  margin: -12px 0 24px;
+  font-size: var(--type-body-size);
+  color: var(--color-text-secondary);
+}
+
 /* Wider gutter above between the Artists grid and Curated By block. */
 .detail__curated-by {
   margin: 56px 0 0;

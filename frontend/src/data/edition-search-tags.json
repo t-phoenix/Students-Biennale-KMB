@@ -82,7 +82,8 @@
       "Mohammed Ali Warehouse",
       "KVA Brothers",
       "Mattancherry"
-    ]
+    ],
+    "team": []
   },
   "2016-17": {
     "title": "Later the atelier ate her",
@@ -119,7 +120,8 @@
     "venues": [
       "Mohammed Ali Warehouse",
       "Mattancherry"
-    ]
+    ],
+    "team": []
   },
   "2018-19": {
     "title": "Making as Thinking",
@@ -136,7 +138,8 @@
     "institutions": [],
     "venues": [
       "Mattancherry"
-    ]
+    ],
+    "team": []
   },
   "2020-21": {
     "title": "States of Disarray: Practice as Restitution",
@@ -150,7 +153,8 @@
     "artists": [],
     "artworks": [],
     "institutions": [],
-    "venues": []
+    "venues": [],
+    "team": []
   },
   "2022-23": {
     "title": "In the Making",
@@ -359,6 +363,7 @@
       "Ambedkar University Delhi",
       "University of Kashmir, Jammu and Kashmir"
     ],
-    "venues": []
+    "venues": [],
+    "team": []
   }
 }

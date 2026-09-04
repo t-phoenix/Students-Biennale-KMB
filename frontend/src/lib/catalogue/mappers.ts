@@ -1,17 +1,13 @@
 import {
-  ARTISTS,
-  ARTWORKS,
-  CURATOR_ZONES,
   LATEST_EDITION,
   PREVIOUS_EDITIONS,
-  VENUES,
   type ArtistCard,
   type ArtworkCard,
   type CuratorCard,
   type CuratorZone,
   type VenueCard,
 } from "../../data/site";
-import { getEditionSearchTags, searchIndexFromTags } from "../../data/editions";
+import { getEditionSearchTags, mergeTagSearchIndex, searchIndexFromTags } from "../../data/editions";
 import { taggedText } from "./search";
 import type {
   MappedCatalogue,
@@ -25,63 +21,6 @@ import type {
   SnapshotZone,
 } from "./types";
 
-const CURATOR_LOCAL: Record<string, { image: string; focus?: string }> = {
-  savyasachi: { image: "/curators/savyasachi.png", focus: "center bottom" },
-  sukanya: { image: "/curators/sukanya.png", focus: "center bottom" },
-  gabaa: { image: "/curators/gabaa.png", focus: "center bottom" },
-  seethal: { image: "/curators/seethal.png", focus: "center bottom" },
-  sudheesh: { image: "/curators/sudheesh.png", focus: "center bottom" },
-  anga: { image: "/curators/anga.png", focus: "center bottom" },
-  secular: { image: "/curators/secular.png", focus: "center bottom" },
-  ashok: { image: "/curators/ashok.png", focus: "center bottom" },
-  chinar: { image: "/curators/chinar.png", focus: "center bottom" },
-  salman: { image: "/curators/salman.png", focus: "center bottom" },
-};
-
-const VENUE_LOCAL: Record<string, { image?: string; images?: string[]; address?: string }> = {
-  "st-andrews": {
-    image: "/venues/st-andrews.jpg",
-    images: ["/venues/st-andrews-hero.jpg", "/venues/st-andrews-2.jpg", "/venues/st-andrews-3.jpg"],
-    address: "Elphinstone Road, Fort Kochi",
-  },
-  vkl: {
-    image: "/venues/vkl.jpg",
-    images: ["/venues/vkl.jpg"],
-    address: "Fort Kochi, Kerala",
-  },
-  bms: {
-    image: "/venues/bms.jpg",
-    images: ["/venues/bms.jpg"],
-    address: "Bazaar Road, Mattancherry",
-  },
-  arthshila: {
-    image: "/venues/arthshila.jpg",
-    images: ["/venues/arthshila.jpg"],
-    address: "Fort Kochi, Kerala",
-  },
-  "david-hall": {
-    image: "/venues/david-hall.jpg",
-    images: ["/venues/david-hall.jpg"],
-    address: "Parade Ground, Fort Kochi",
-  },
-  space: {
-    image: "/venues/space.jpg",
-    images: ["/venues/space.jpg"],
-    address: "Fort Kochi, Kerala",
-  },
-};
-
-function localCuratorImage(
-  name: string,
-  slug?: string | null,
-): { image?: string; focus?: string } {
-  const blob = `${slug ?? ""} ${name}`.toLowerCase();
-  for (const [key, value] of Object.entries(CURATOR_LOCAL)) {
-    if (blob.includes(key)) return value;
-  }
-  return {};
-}
-
 function uniqueUrls(...values: Array<string | string[] | null | undefined>): string[] {
   const out: string[] = [];
   const seen = new Set<string>();
@@ -94,16 +33,6 @@ function uniqueUrls(...values: Array<string | string[] | null | undefined>): str
     }
   }
   return out;
-}
-
-function localArtworkByTitle(title: string): ArtworkCard | undefined {
-  const needle = title.trim().toLowerCase();
-  return ARTWORKS.find(
-    (row) =>
-      row.title.toLowerCase() === needle ||
-      needle.includes(row.title.toLowerCase()) ||
-      row.title.toLowerCase().includes(needle),
-  );
 }
 
 function venueLocalKey(id: string, name: string): string | undefined {
@@ -121,32 +50,67 @@ function displayYear(years: string): string {
   return years.replace("-", " – ");
 }
 
+/** Split "Title\\n\\nBody" (and optional "Curated by …" line) from catalogue notes. */
+function parseCuratorialNote(raw: string | null | undefined): {
+  title?: string;
+  attribution?: string;
+  body?: string;
+} {
+  const text = (raw ?? "").trim();
+  if (!text) return {};
+  const parts = text.split(/\n\s*\n/);
+  if (parts.length === 1) return { body: parts[0].trim() };
+  const head = parts[0].trim();
+  const body = parts.slice(1).join("\n\n").trim();
+  const lines = head.split("\n").map((l) => l.trim()).filter(Boolean);
+  let title = lines[0];
+  let attribution: string | undefined;
+  if (lines[1]?.toLowerCase().startsWith("curated by")) {
+    attribution = lines[1];
+  } else {
+    const mashed = title.match(/^(Conditions of Practice)\s+(Curated by .+)$/i);
+    if (mashed) {
+      title = mashed[1];
+      attribution = mashed[2];
+    }
+  }
+  return { title, attribution, body: body || undefined };
+}
+
+/** Ignore Zone 7's "for now" note when it was pasted into another zone's common field. */
+function isLeakedForNowNote(zoneNumber: number, raw: string | null | undefined): boolean {
+  if (zoneNumber === 7) return false;
+  return Boolean(raw?.trim().toLowerCase().startsWith("for now"));
+}
+
 function mapCurator(person: SnapshotPerson, zone: SnapshotZone): CuratorCard {
-  const local = localCuratorImage(person.name, person.slug);
+  const parsed = parseCuratorialNote(person.individual_curatorial_note);
   return {
     id: person.id,
     name: person.name,
     region: zone.label,
-    note: person.individual_curatorial_note || zone.region || zone.label,
+    note: zone.region || zone.label,
     bio: person.bio ?? undefined,
-    image: person.cover_url || local.image,
-    focus: local.focus,
+    image: person.cover_url || undefined,
+    noteTitle: parsed.title,
+    noteAttribution: parsed.attribution,
+    noteBody: parsed.body,
   };
 }
 
 function mapZone(zone: SnapshotZone): CuratorZone {
   const assistants = zone.assistants.map((a) => a.name).filter(Boolean);
-  const localZone = CURATOR_ZONES.find(
-    (z) => z.id === zone.id || z.label.toLowerCase() === zone.label.toLowerCase(),
-  );
+  const raw = zone.common_curatorial_note;
+  const usable = raw && !isLeakedForNowNote(zone.number, raw) ? raw : null;
+  const parsed = parseCuratorialNote(usable);
   return {
     id: zone.id,
     label: zone.label,
-    states: zone.region || localZone?.states || "",
+    states: zone.region || "",
     curators: zone.curators.map((person) => mapCurator(person, zone)),
-    curatorialAssistant: assistants.length ? assistants.join(", ") : localZone?.curatorialAssistant,
-    noteTitle: localZone?.noteTitle,
-    noteBody: zone.common_curatorial_note ?? localZone?.noteBody,
+    curatorialAssistant: assistants.length ? assistants.join(", ") : undefined,
+    noteTitle: parsed.title,
+    noteBody: parsed.body,
   };
 }
 
@@ -156,19 +120,18 @@ function mapArtwork(
   _zones: CuratorZone[],
   index: SearchIndexEntry[],
 ): ArtworkCard {
-  const local = localArtworkByTitle(artwork.title);
   const materials = artwork.contributors
     .map((c) => c.materials)
     .filter((value): value is string => Boolean(value));
-  const images = uniqueUrls(artwork.cover_url, artwork.gallery_urls, local?.image, local?.images);
+  const images = uniqueUrls(artwork.cover_url, artwork.gallery_urls);
   const image = images[0];
   return {
     id: artwork.id,
     slug: artwork.slug,
     title: artwork.title,
-    venue: artwork.venue_name || local?.venue || "",
+    venue: artwork.venue_name || "",
     year: displayYear(years),
-    description: artwork.description || local?.description || "",
+    description: artwork.description || "",
     artists: artwork.contributors.map((c) => ({
       name: c.display_name,
       institution: c.institution_name || "",
@@ -178,9 +141,9 @@ function mapArtwork(
         ? materials
         : artwork.materials_summary
           ? [artwork.materials_summary]
-          : local?.materials ?? [],
-    dimensions: artwork.dimensions_summary || local?.dimensions || "",
-    zoneId: artwork.zone_id ?? local?.zoneId,
+          : [],
+    dimensions: artwork.dimensions_summary || "",
+    zoneId: artwork.zone_id ?? undefined,
     image,
     images,
     imageWidth: artwork.cover_width ?? undefined,
@@ -201,31 +164,36 @@ function mapVenue(
   venue: SnapshotVenue,
   index: SearchIndexEntry[],
   years?: string,
+  extraImages: string[] = [],
 ): VenueCard {
   const key = venueLocalKey(venue.id, venue.name);
-  const local = key ? VENUE_LOCAL[key] : undefined;
-  const staticVenue = VENUES.find(
-    (row) => row.name.toLowerCase() === venue.name.toLowerCase() || (key && row.id === key),
-  );
-  const images = uniqueUrls(
-    venue.cover_url,
-    venue.gallery_urls,
-    local?.image,
-    local?.images,
-    staticVenue?.image,
-    staticVenue?.images,
-  );
+  let cover = venue.cover_url;
+  let gallery = [...(venue.gallery_urls ?? [])];
+  // Mislabelled St. Andrews cover in snapshot (jos9237 is a VKL photograph).
+  if (key === "st-andrews" && cover && /jos9237/i.test(cover)) {
+    const replacement = gallery.find((url) => !/jos9237/i.test(url));
+    if (replacement) {
+      gallery = gallery.filter((url) => url !== replacement);
+      cover = replacement;
+    } else {
+      cover = undefined;
+    }
+  }
+  if (key === "st-andrews") {
+    gallery = gallery.filter((url) => !/jos9237/i.test(url));
+  }
+  const images = uniqueUrls(cover, gallery, extraImages);
   return {
     id: venue.id,
     name: venue.name,
-    address: local?.address || staticVenue?.address || "",
-    hours: staticVenue?.hours || "Open during exhibition hours",
-    description: venue.history || staticVenue?.description || "",
+    address: "",
+    hours: "Open during exhibition hours",
+    description: venue.history || "",
     image: images[0],
     images,
-    mapUrl: venue.map_url || staticVenue?.mapUrl,
-    tourUrl: venue.virtual_tour_url || staticVenue?.tourUrl,
-    searchText: taggedText(index, venue.id, venue.name, local?.address || staticVenue?.address, years),
+    mapUrl: venue.map_url || undefined,
+    tourUrl: venue.virtual_tour_url || undefined,
+    searchText: taggedText(index, venue.id, venue.name, years),
   };
 }
 
@@ -253,7 +221,19 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
       years,
     ),
   }));
-  const venues = (payload.venues ?? []).map((venue) => mapVenue(venue, index, years));
+  const venuesRaw = payload.venues ?? [];
+  const jos9237FromStAndrews = venuesRaw
+    .filter((v) => venueLocalKey(v.id, v.name) === "st-andrews")
+    .flatMap((v) => uniqueUrls(v.cover_url, v.gallery_urls))
+    .filter((url) => /jos9237/i.test(url));
+  const venues = venuesRaw.map((venue) =>
+    mapVenue(
+      venue,
+      index,
+      years,
+      venueLocalKey(venue.id, venue.name) === "vkl" ? jos9237FromStAndrews : [],
+    ),
+  );
   const institutions = [
     ...new Set(artists.map((a) => a.institution).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b));
@@ -296,64 +276,15 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
     artists,
     venues,
     institutions,
-    searchIndex: index,
+    searchIndex: mergeTagSearchIndex({
+      years,
+      searchIndex: index,
+      venues,
+      institutions,
+    }),
     generatedAt: row.generated_at,
     source: "remote",
     teamBody: teamSection?.body ?? null,
-  };
-}
-
-function withSearch(card: ArtworkCard): ArtworkCard {
-  return {
-    ...card,
-    searchText: [card.title, card.venue, card.year, ...card.artists.map((a) => a.name)]
-      .join(" ")
-      .toLowerCase(),
-  };
-}
-
-export function staticCurrentCatalogue(): MappedCatalogue {
-  const zones = CURATOR_ZONES.map((z) => ({
-    ...z,
-    curators: z.curators.map((c) => ({
-      ...c,
-      searchText: [c.name, c.region, z.label].join(" ").toLowerCase(),
-    })),
-  }));
-  const artworks = ARTWORKS.map(withSearch);
-  const artists = ARTISTS.map((a) => ({
-    ...a,
-    searchText: [a.name, a.institution, a.zone].join(" ").toLowerCase(),
-  }));
-  const venues = VENUES.map((v) => ({
-    ...v,
-    searchText: [v.name, v.address].join(" ").toLowerCase(),
-  }));
-  return {
-    editionId: `edition-${LATEST_EDITION.id}`,
-    years: LATEST_EDITION.id,
-    number: 6,
-    title: "Sensing Grounds",
-    slug: LATEST_EDITION.id,
-    overview: null,
-    overallCuratorialNote: null,
-    isCurrent: true,
-    heroUrl: null,
-    heroUrls: [],
-    galleryUrls: [],
-    sections: [],
-    zones,
-    curators: zones.flatMap((z) => z.curators),
-    artworks,
-    artists,
-    venues,
-    institutions: [...new Set(ARTISTS.map((a) => a.institution))].sort((a, b) =>
-      a.localeCompare(b),
-    ),
-    searchIndex: [],
-    generatedAt: "static",
-    source: "static",
-    teamBody: null,
   };
 }
 
@@ -390,7 +321,11 @@ export function mapLiveEdition(
     artists: [],
     venues: [],
     institutions: [],
-    searchIndex: [],
+    searchIndex: mergeTagSearchIndex({
+      years: edition.years,
+      searchIndex: [],
+      institutions: [],
+    }),
     generatedAt: "live-edition",
     source: "remote",
     teamBody: teamSection?.body ?? null,
@@ -420,7 +355,11 @@ export function emptyEditionCatalogue(years: string, number: number): MappedCata
     artists: [],
     venues: [],
     institutions: tags.institutions,
-    searchIndex,
+    searchIndex: mergeTagSearchIndex({
+      years,
+      searchIndex,
+      institutions: tags.institutions,
+    }),
     generatedAt: "static",
     source: "static",
     teamBody: null,
@@ -429,20 +368,25 @@ export function emptyEditionCatalogue(years: string, number: number): MappedCata
 
 export function mergeCatalogues(remote: MappedCatalogue[]): MappedCatalogue[] {
   const byYears = new Map(remote.map((row) => [row.years, row]));
-  const fallback = staticCurrentCatalogue();
-  const current = byYears.get(LATEST_EDITION.id);
-  if (!current || (current.artworks.length === 0 && current.zones.length === 0)) {
-    byYears.set(LATEST_EDITION.id, fallback);
+  // Current edition comes only from Supabase snapshots — no local catalogue swap.
+  if (!byYears.has(LATEST_EDITION.id)) {
+    byYears.set(LATEST_EDITION.id, emptyEditionCatalogue(LATEST_EDITION.id, 6));
   }
   for (const [i, years] of PREVIOUS_EDITIONS.entries()) {
     const existing = byYears.get(years);
+    const seeded = emptyEditionCatalogue(years, existing?.number || 5 - i);
     if (!existing) {
-      byYears.set(years, emptyEditionCatalogue(years, 5 - i));
+      byYears.set(years, seeded);
       continue;
     }
-    // Sparse remote packs: always merge tag-based search index for cross-edition search.
+    // Prefer tag-based search index for sparse previous editions (snapshot index is often empty).
+    const searchIndex =
+      existing.searchIndex.length && (existing.artworks.length > 0 || existing.zones.length > 0)
+        ? existing.searchIndex
+        : seeded.searchIndex.length
+          ? seeded.searchIndex
+          : existing.searchIndex;
     if (existing.artworks.length === 0 && existing.zones.length === 0) {
-      const seeded = emptyEditionCatalogue(years, existing.number || 5 - i);
       const heroUrls =
         existing.heroUrls.length > 0
           ? existing.heroUrls
@@ -457,11 +401,20 @@ export function mergeCatalogues(remote: MappedCatalogue[]): MappedCatalogue[] {
         heroUrl: existing.heroUrl || seeded.heroUrl || heroUrls[0] || null,
         heroUrls,
         institutions: existing.institutions.length ? existing.institutions : seeded.institutions,
-        searchIndex: seeded.searchIndex.length ? seeded.searchIndex : existing.searchIndex,
+        searchIndex,
       });
+      continue;
+    }
+    if (searchIndex !== existing.searchIndex) {
+      byYears.set(years, { ...existing, searchIndex });
     }
   }
-  return [...byYears.values()].sort((a, b) => b.number - a.number);
+  return [...byYears.values()]
+    .map((row) => ({
+      ...row,
+      searchIndex: mergeTagSearchIndex(row),
+    }))
+    .sort((a, b) => b.number - a.number);
 }
 
 export function findCard<T extends { id: string; slug?: string }>(
