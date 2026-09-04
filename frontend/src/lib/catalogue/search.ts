@@ -325,22 +325,15 @@ function indexHitToSearchHit(
     image,
   };
 
-  if (entry.entity_type === "person" && entry.field_curator) {
-    return { kind: "curator", ...base };
-  }
-  if (entry.entity_type === "person" && entry.subtitle?.startsWith("Team")) {
-    return { kind: "team", ...base };
-  }
-  if (entry.entity_type === "person" && entry.field_artist) {
-    return { kind: "artist", ...base };
-  }
-  if (entry.entity_type === "venue" || entry.field_venue) {
-    return { kind: "venue", ...base };
-  }
+  // Classify by entity_type first. Artwork rows carry field_venue / field_institution
+  // for search text — those must not be re-bucketed as venues or institutions.
   if (entry.entity_type === "artwork") {
     return { kind: "artwork", ...base };
   }
-  if (entry.entity_type === "institution" || entry.field_institution) {
+  if (entry.entity_type === "venue") {
+    return { kind: "venue", ...base };
+  }
+  if (entry.entity_type === "institution") {
     return {
       kind: "institution",
       title: entry.title,
@@ -352,10 +345,33 @@ function indexHitToSearchHit(
       image,
     };
   }
+  if (entry.entity_type === "programme") {
+    return null;
+  }
+  if (entry.entity_type === "person") {
+    if (entry.field_curator) return { kind: "curator", ...base };
+    if (entry.subtitle?.startsWith("Team")) return { kind: "team", ...base };
+    if (entry.field_artist) return { kind: "artist", ...base };
+    return { kind: "team", ...base };
+  }
+
+  // Untyped credit-tag fallbacks (edition-search-tags.json).
   if (entry.field_curator) return { kind: "curator", ...base };
+  if (entry.subtitle?.startsWith("Team")) return { kind: "team", ...base };
   if (entry.field_artist) return { kind: "artist", ...base };
   if (entry.field_venue) return { kind: "venue", ...base };
-  if (entry.entity_type === "person") return { kind: "team", ...base };
+  if (entry.field_institution) {
+    return {
+      kind: "institution",
+      title: entry.title,
+      subtitle: entry.subtitle ?? `Institution · ${editionYears.replace("-", "–")}`,
+      href,
+      matchedSnippet,
+      editionYears,
+      source: "previous-meta",
+      image,
+    };
+  }
   return null;
 }
 

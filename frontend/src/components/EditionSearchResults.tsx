@@ -58,8 +58,11 @@ function Section({
 }) {
   if (!hits.length) return null;
   return (
-    <section className="edition-search-section">
-      <h2 className="edition-search-section__title">{title}</h2>
+    <section className="edition-search-section" aria-label={title}>
+      <h2 className="edition-search-section__title">
+        {title}
+        <span className="edition-search-section__count"> ({hits.length})</span>
+      </h2>
       <div className="edition-search-section__list">
         {hits.map((hit) => (
           <HitRow key={`${hit.kind}-${hit.href}-${hit.matchedSnippet}`} hit={hit} query={query} />
