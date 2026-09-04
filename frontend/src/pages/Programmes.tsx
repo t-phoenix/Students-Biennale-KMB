@@ -231,9 +231,9 @@ export function Programmes() {
       </section>
       ) : null}
 
-      <section id="workshops" className="programmes__block fig-grid prog-reveal">
-        <h1 className="fig-label fig-subheading">UPCOMING WORKSHOPS</h1>
-        {upcomingWorkshops.length ? (
+      {upcomingWorkshops.length ? (
+        <section id="workshops" className="programmes__block fig-grid prog-reveal">
+          <h1 className="fig-label fig-subheading">UPCOMING WORKSHOPS</h1>
           <div className="programmes__cards fig-c4-12 fig-sub-3">
             {upcomingWorkshops.map((p) => (
               <article key={p.id}>
@@ -253,10 +253,8 @@ export function Programmes() {
               </article>
             ))}
           </div>
-        ) : (
-          <SectionEmpty>No upcoming workshops at the moment. Please check back later.</SectionEmpty>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
