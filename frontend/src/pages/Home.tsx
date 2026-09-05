@@ -949,17 +949,45 @@ export function Home() {
 
           <div className="fig-grid home-about__sponsors">
             <h3 className="fig-label fig-label--sub">SPONSORS</h3>
-            <div className="home-about__sponsor-content fig-c4-12">
-              <p className="home-about__sponsor-label">SUPPORTED BY</p>
-              <div className="home-about__sponsor-logo-wrap">
-                <img
-                  className="home-about__sponsor-logo"
-                  src="/home/logo-tata-trusts.png"
-                  alt="Tata Trusts"
-                  width={212}
-                  height={21}
-                />
+            <div className="home-about__sponsors-cols fig-c4-12 fig-sub-3">
+              <div className="home-about__sponsor-group">
+                <h4 className="home-about__sponsor-heading">SUPPORTED BY</h4>
+                <div className="home-about__sponsor-logo-wrap">
+                  <img
+                    className="home-about__sponsor-logo"
+                    src="/home/logo-tata-trusts.png"
+                    alt="Tata Trusts"
+                    width={212}
+                    height={21}
+                  />
+                </div>
               </div>
+
+              <div className="home-about__sponsor-group">
+                <h4 className="home-about__sponsor-heading">OTHER DONORS</h4>
+                <ul className="home-about__sponsor-list">
+                  <li>Anant Foundation for the Arts</li>
+                  <li>Arthshila</li>
+                  <li>Mrinalini Mukherjee Foundation</li>
+                  <li>Institut Français India</li>
+                  <li>TARQ</li>
+                  <li>Raza Foundation</li>
+                </ul>
+              </div>
+
+              <div className="home-about__sponsor-group">
+                <h4 className="home-about__sponsor-heading">VENUE SUPPORT</h4>
+                <ul className="home-about__sponsor-list">
+                  <li>Arthshila Kochi</li>
+                  <li>David Hall</li>
+                  <li>CGH Group</li>
+                  <li>VKL Warehouse</li>
+                  <li>Jaiveer Mariwala</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="fig-c4-12 home-about__sponsor-caption-wrap">
               <p className="home-about__sponsor-caption">
                 The Kochi Biennale Foundation is grateful for their support.
               </p>
