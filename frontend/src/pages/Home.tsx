@@ -48,19 +48,47 @@ const SENSING_STRIP_IMAGES = [
   "/artworks/milk-distributors.jpg",
 ];
 
-const PRESS_LIST = [
+const HOME_PRESS_ITEMS = [
+  {
+    id: "kbf-curators",
+    title: "KBF Announces Curators For Students' Biennale 2025-26",
+    date: "4 Dec 2025",
+    excerpt:
+      "The Kochi Biennale Foundation (KBF) has announced the curators for Students' Biennale, a key educational initiative of the Kochi Biennale Foundation for budding young artists. The programme works with state-funded art colleges across India, encouraging emerging artists to reflect on their practice and showcase their work on an international stage.",
+    image: "/home/press-featured.jpg",
+  },
   {
     id: "guide-map",
     title: "The Ultimate Guide & Map to the Kochi-Muziris Biennale 2025/26 Venues",
     date: "15 Feb 2026",
+    excerpt:
+      "A comprehensive walkthrough and visitor guide navigating all major exhibition spaces, student projects, and collateral events across Fort Kochi and Mattancherry.",
+    image: "/press/walkthrough.jpg",
   },
   {
     id: "st-andrews",
     title: "St. Andrews Parish Hall -Students' Biennale at Kochi",
     date: "31 Mar 2026",
+    excerpt:
+      "Exploring regional material histories, architectural memory, and pedagogical transformations at the historic St. Andrews Parish Hall venue.",
+    image: "/venues/st-andrews.jpg",
   },
-  { id: "warm-panic", title: "A warm kind of panic", date: "31 Dec 2025" },
-  { id: "power-of-peta", title: "The Power of the Peta / Honour", date: "31 Dec 2025" },
+  {
+    id: "warm-panic",
+    title: "A warm kind of panic",
+    date: "31 Dec 2025",
+    excerpt:
+      "Critical perspectives and disobedient practices: reflections on sensing grounds, institutional hierarchies, and emerging voices in contemporary Indian art education.",
+    image: "/home/sensing-side.jpg",
+  },
+  {
+    id: "power-of-peta",
+    title: "The Power of the Peta / Honour",
+    date: "31 Dec 2025",
+    excerpt:
+      "Examining traditional crafts, embodied knowledge systems, and collective enquiries into labour, memory, and everyday defiance.",
+    image: "/home/thumb-workshops.jpg",
+  },
 ];
 
 export function Home() {
@@ -80,6 +108,7 @@ export function Home() {
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
+  const [hoveredPressId, setHoveredPressId] = useState<string>("kbf-curators");
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
 
@@ -326,22 +355,10 @@ export function Home() {
               0
             )
               .fromTo(
-                press.querySelector(".home-press__featured-img"),
-                { autoAlpha: 0, scale: 1.03 },
-                { autoAlpha: 1, scale: 1, duration: 1.1, ease: "power3.out" },
-                0.06
-              )
-              .fromTo(
-                press.querySelector(".home-press__featured"),
+                press.querySelectorAll(".home-press__item"),
                 { autoAlpha: 0, y: 8 },
-                { autoAlpha: 1, y: 0, duration: 0.95, ease: "power3.out" },
-                0.12
-              )
-              .fromTo(
-                press.querySelectorAll(".home-press__list li"),
-                { autoAlpha: 0, y: 8 },
-                { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.07, ease: "power3.out" },
-                0.16
+                { autoAlpha: 1, y: 0, duration: 0.75, stagger: 0.06, ease: "power3.out" },
+                0.08
               )
               .fromTo(
                 press.querySelector(".home-press__more"),
@@ -810,35 +827,46 @@ export function Home() {
         <section id="press" className="home-section home-press">
           <div className="fig-grid">
             <h2 className="fig-label fig-heading">PRESS</h2>
-            <img className="home-press__featured-img fig-c4-6" src="/home/press-featured.jpg" alt="" />
-            <article className="home-press__featured fig-c7-12">
-              <div>
-                <div className="home-press__featured-head">
-                  <h3>KBF Announces Curators For Students&apos; Biennale 2025-26</h3>
-                  <time>4 Dec 2025</time>
-                </div>
-                <p className="fig-body">
-                  The Kochi Biennale Foundation (KBF) has announced the curators for Students&apos;
-                  Biennale, a key educational initiative of the Kochi Biennale Foundation for budding
-                  young artists. The programme works with state-funded art colleges across India,
-                  encouraging emerging artists to reflect on their practice and showcase their work
-                  on an international stage.
-                </p>
-                <Link to="/press?article=kbf-curators" className="home-text-btn">
-                  Read more...
-                </Link>
-              </div>
-            </article>
-            <ul className="home-press__list fig-c4-12">
-              {PRESS_LIST.map((item) => (
-                <li key={item.id}>
-                  <Link to={`/press?article=${item.id}`}>
-                    <span>{item.title}</span>
-                    <time>{item.date}</time>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="home-press__items fig-c4-12">
+              {HOME_PRESS_ITEMS.map((item) => {
+                const isExpanded = hoveredPressId === item.id;
+                return (
+                  <article
+                    key={item.id}
+                    className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
+                    onMouseEnter={() => setHoveredPressId(item.id)}
+                  >
+                    {isExpanded ? (
+                      <div className="home-press__expanded">
+                        <img
+                          className="home-press__featured-img"
+                          src={item.image}
+                          alt=""
+                        />
+                        <div className="home-press__featured-copy">
+                          <div className="home-press__featured-head">
+                            <h3>{item.title}</h3>
+                            <time>{item.date}</time>
+                          </div>
+                          <p className="fig-body">{item.excerpt}</p>
+                          <Link to={`/press?article=${item.id}`} className="home-text-btn">
+                            Read more...
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <Link
+                        to={`/press?article=${item.id}`}
+                        className="home-press__collapsed"
+                      >
+                        <span className="home-press__collapsed-title">{item.title}</span>
+                        <time className="home-press__collapsed-date">{item.date}</time>
+                      </Link>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
             <CtaLink
               className="fig-cta-end home-press__more"
               to="/press"

@@ -569,26 +569,77 @@
 }
 
 /* Press */
-.home-press__featured-img {
+.home-press__items {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-press__item {
+  border-top: 1px solid var(--color-neutral-gray-light);
+  transition: padding 0.25s ease;
+}
+
+.home-press__item:last-child {
+  border-bottom: 1px solid var(--color-neutral-gray-light);
+}
+
+.home-press__item.is-expanded {
+  padding-block: 28px;
+}
+
+.home-press__collapsed {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 0;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.home-press__collapsed:hover {
+  opacity: 0.7;
+}
+
+.home-press__collapsed-title {
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.home-press__collapsed-date {
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-size);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.home-press__expanded {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  align-items: start;
+}
+
+.home-press__expanded .home-press__featured-img {
+  grid-column: 1 / span 3;
   width: 100%;
   height: 251px;
   object-fit: cover;
-  margin-bottom: 48px;
+  display: block;
+  margin-bottom: 0;
 }
 
-.home-press__featured {
-  margin-bottom: 48px;
-}
-
-.home-press__featured > div {
+.home-press__featured-copy {
+  grid-column: 4 / span 6;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-/* gap is a real reserved column (not just space-between leftover) so a
-   long single-line title can't crowd the date the way it did at 16px —
-   it wraps within its own flexible width instead. */
 .home-press__featured-head {
   display: flex;
   justify-content: space-between;
@@ -600,13 +651,6 @@
 .home-press__featured-head h3 {
   flex: 1 1 auto;
   min-width: 0;
-}
-
-.home-press__featured-head time {
-  flex: 0 0 auto;
-}
-
-.home-press__featured h3 {
   margin: 0;
   font-size: var(--type-subtitle-size);
   line-height: var(--type-subtitle-line);
@@ -615,44 +659,17 @@
   max-width: 492px;
 }
 
-.home-press__featured time {
+.home-press__featured-head time {
+  flex: 0 0 auto;
   color: var(--color-text-secondary);
   font-size: var(--type-body-size);
   white-space: nowrap;
 }
 
-.home-press__featured p,
-.home-press__featured .fig-body {
+.home-press__featured-copy p,
+.home-press__featured-copy .fig-body {
   margin: 0;
   max-width: 524px;
-}
-
-.home-press__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  border-top: 1px solid var(--color-neutral-gray-light);
-}
-
-.home-press__list li {
-  border-bottom: 1px solid var(--color-neutral-gray-light);
-}
-
-.home-press__list a {
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-  padding: 18px 0;
-  font-size: var(--type-subtitle-size);
-  line-height: var(--type-subtitle-line);
-  font-weight: 500;
-}
-
-.home-press__list time {
-  color: var(--color-text-secondary);
-  font-size: var(--type-body-size);
-  font-weight: 400;
-  white-space: nowrap;
 }
 
 /* About */
@@ -843,10 +860,23 @@
     flex: 1 1 calc(50% - 10px);
   }
 
-  .home-press__featured-img {
+  .home-press__expanded {
+    grid-template-columns: 1fr;
+    row-gap: 20px;
+  }
+
+  .home-press__expanded .home-press__featured-img {
+    grid-column: 1 / -1;
     height: auto;
     aspect-ratio: 324 / 251;
-    margin-bottom: 24px;
+  }
+
+  .home-press__featured-copy {
+    grid-column: 1 / -1;
+  }
+
+  .home-press__collapsed {
+    padding: 14px 0;
   }
 
   .home-about__logo-wrap {
