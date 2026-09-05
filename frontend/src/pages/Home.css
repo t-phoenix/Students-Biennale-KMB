@@ -734,12 +734,13 @@
 
 .home-about__sponsors .fig-label {
   margin: 0;
-  padding: 0;
   letter-spacing: 0.05em;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 500;
   line-height: 28px;
   text-transform: uppercase;
+  text-align: right;
+  padding-inline-end: var(--grid-gutter);
 }
 
 .home-about__sponsor-content {
@@ -764,7 +765,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-top: 28px;
+  margin-top: 19px;
 }
 
 .home-about__sponsor-logo {
@@ -780,7 +781,7 @@
   margin-bottom: 0;
   font-size: 16px;
   font-weight: 400;
-  line-height: 28px;
+  line-height: 36px;
   letter-spacing: 0;
   color: var(--color-text-primary);
   text-align: left;
