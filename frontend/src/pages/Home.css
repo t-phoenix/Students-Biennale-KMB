@@ -500,7 +500,7 @@
 }
 
 .home-programmes__banner {
-  aspect-ratio: 985 / 450;
+  height: 450px;
   background: var(--color-primary-dark);
   overflow: hidden;
 }
@@ -509,7 +509,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
+  max-width: none;
 }
 
 .home-programmes__bottom {
