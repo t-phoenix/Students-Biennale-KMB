@@ -1,0 +1,208 @@
+export interface TypographyStyleProps {
+  fontFamily: string;
+  fontSize: string;
+  fontWeight: string;
+  fontWeightLabel: string;
+  lineHeight: string;
+  letterSpacing: string;
+  textTransform: string;
+  color?: string;
+}
+
+export interface TypographyChangeRecord {
+  id: string;
+  timestamp: number;
+  route: string;
+  domPath: string;
+  cssSelector: string;
+  textSnippet: string;
+  currentTag: string;
+  proposedTag: string;
+  original: TypographyStyleProps;
+  modified: TypographyStyleProps;
+  notes?: string;
+}
+
+const STORAGE_KEY = "typography_inspector_audit_records_v1";
+
+export function getWeightLabel(weight: string): string {
+  const w = parseInt(weight, 10);
+  if (w <= 300) return `${weight} (Light)`;
+  if (w === 400) return `${weight} (Regular)`;
+  if (w === 500) return `${weight} (Medium)`;
+  if (w === 600) return `${weight} (Semi-Bold)`;
+  if (w === 700) return `${weight} (Bold)`;
+  if (w >= 800) return `${weight} (Extra-Bold)`;
+  return weight;
+}
+
+export function extractComputedTypography(el: HTMLElement): TypographyStyleProps {
+  const style = window.getComputedStyle(el);
+  const rawFamily = style.fontFamily || "";
+  // Extract primary clean font family name (e.g. '"Degular Variable", sans-serif' -> 'Degular Variable')
+  const cleanFamily = rawFamily.split(",")[0].replace(/['"]/g, "").trim();
+
+  return {
+    fontFamily: cleanFamily || rawFamily,
+    fontSize: style.fontSize,
+    fontWeight: style.fontWeight,
+    fontWeightLabel: getWeightLabel(style.fontWeight),
+    lineHeight: style.lineHeight === "normal" ? "normal" : style.lineHeight,
+    letterSpacing: style.letterSpacing === "normal" ? "normal" : style.letterSpacing,
+    textTransform: style.textTransform || "none",
+    color: style.color,
+  };
+}
+
+export function getUniqueSelector(el: HTMLElement): { cssSelector: string; domPath: string } {
+  const path: string[] = [];
+  let curr: HTMLElement | null = el;
+
+  while (curr && curr !== document.body && curr !== document.documentElement) {
+    let segment = curr.tagName.toLowerCase();
+    if (curr.id) {
+      segment += `#${curr.id}`;
+      path.unshift(segment);
+      break;
+    } else if (curr.classList.length > 0) {
+      // Filter out inspector classes
+      const meaningfulClasses = Array.from(curr.classList).filter(
+        (c) => !c.startsWith("type-insp-") && !c.startsWith("is-selected")
+      );
+      if (meaningfulClasses.length > 0) {
+        segment += `.${meaningfulClasses.slice(0, 2).join(".")}`;
+      }
+    }
+    path.unshift(segment);
+    curr = curr.parentElement;
+  }
+
+  const domPath = path.join(" > ");
+  const cssSelector = path.length > 2 ? path.slice(-2).join(" ") : domPath;
+
+  return { cssSelector, domPath };
+}
+
+export const ChangesStore = {
+  getAll(): TypographyChangeRecord[] {
+    try {
+      const data = localStorage.getItem(STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  save(record: TypographyChangeRecord): void {
+    const list = this.getAll();
+    const existingIndex = list.findIndex(
+      (r) => r.domPath === record.domPath && r.route === record.route
+    );
+
+    if (existingIndex >= 0) {
+      list[existingIndex] = record;
+    } else {
+      list.push(record);
+    }
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent("typography-inspector-updated"));
+  },
+
+  remove(id: string): void {
+    const list = this.getAll().filter((r) => r.id !== id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    window.dispatchEvent(new CustomEvent("typography-inspector-updated"));
+  },
+
+  clearAll(): void {
+    localStorage.removeItem(STORAGE_KEY);
+    window.dispatchEvent(new CustomEvent("typography-inspector-updated"));
+  },
+
+  applyAllStoredToDom(): void {
+    const records = this.getAll();
+    records.forEach((record) => {
+      try {
+        const elements = document.querySelectorAll(record.domPath);
+        elements.forEach((node) => {
+          const el = node as HTMLElement;
+          if (record.modified.fontSize) el.style.fontSize = record.modified.fontSize;
+          if (record.modified.fontWeight) el.style.fontWeight = record.modified.fontWeight;
+          if (record.modified.lineHeight && record.modified.lineHeight !== "normal") {
+            el.style.lineHeight = record.modified.lineHeight;
+          }
+          if (record.modified.letterSpacing && record.modified.letterSpacing !== "normal") {
+            el.style.letterSpacing = record.modified.letterSpacing;
+          }
+          if (record.modified.textTransform) el.style.textTransform = record.modified.textTransform;
+        });
+      } catch {
+        // Selector may not be on current page
+      }
+    });
+  },
+
+  generateMarkdownReport(): string {
+    const records = this.getAll();
+    if (records.length === 0) {
+      return "# Typography Audit Report\n\n*No changes recorded yet.*";
+    }
+
+    let md = `# Typography Audit & Design Spec Sheet\n`;
+    md += `*Generated by Typography Inspector on ${new Date().toLocaleString()}*\n\n`;
+    md += `Total Changes Recorded: **${records.length}**\n\n`;
+
+    // Group by route
+    const routes = Array.from(new Set(records.map((r) => r.route)));
+
+    routes.forEach((route) => {
+      md += `## Route: \`${route}\`\n\n`;
+      md += `| # | Element Text | Current Tag | Target Tag | Original Style | Modified Style | Notes |\n`;
+      md += `|---|---|---|---|---|---|---|\n`;
+
+      const routeRecords = records.filter((r) => r.route === route);
+      routeRecords.forEach((r, idx) => {
+        const orig = `${r.original.fontSize} / ${r.original.fontWeightLabel} / lh: ${r.original.lineHeight} / ls: ${r.original.letterSpacing} / ${r.original.textTransform}`;
+        const mod = `${r.modified.fontSize} / ${r.modified.fontWeightLabel} / lh: ${r.modified.lineHeight} / ls: ${r.modified.letterSpacing} / ${r.modified.textTransform}`;
+        const snippet = r.textSnippet.replace(/\|/g, "\\|").slice(0, 40);
+        md += `| ${idx + 1} | "${snippet}" | \`<${r.currentTag}>\` | **\`<${r.proposedTag}>\`** | ${orig} | **${mod}** | ${r.notes || "-"} |\n`;
+      });
+
+      md += `\n`;
+    });
+
+    md += `## Suggested CSS Rules\n\n\`\`\`css\n`;
+    records.forEach((r) => {
+      md += `/* ${r.textSnippet.slice(0, 30)} (Page: ${r.route}) */\n`;
+      md += `${r.cssSelector} {\n`;
+      if (r.modified.fontSize !== r.original.fontSize) md += `  font-size: ${r.modified.fontSize};\n`;
+      if (r.modified.fontWeight !== r.original.fontWeight) md += `  font-weight: ${r.modified.fontWeight};\n`;
+      if (r.modified.lineHeight !== r.original.lineHeight) md += `  line-height: ${r.modified.lineHeight};\n`;
+      if (r.modified.letterSpacing !== r.original.letterSpacing) md += `  letter-spacing: ${r.modified.letterSpacing};\n`;
+      if (r.modified.textTransform !== r.original.textTransform) md += `  text-transform: ${r.modified.textTransform};\n`;
+      md += `}\n\n`;
+    });
+    md += `\`\`\`\n`;
+
+    return md;
+  },
+
+  generateCssDiff(): string {
+    const records = this.getAll();
+    if (records.length === 0) return "/* No changes recorded */";
+
+    return records
+      .map((r) => {
+        return `/* Element: "${r.textSnippet.slice(0, 35)}" | Route: ${r.route} | Tag: <${r.proposedTag}> */
+${r.cssSelector} {
+  font-size: ${r.modified.fontSize};
+  font-weight: ${r.modified.fontWeight};
+  line-height: ${r.modified.lineHeight};
+  letter-spacing: ${r.modified.letterSpacing};
+  text-transform: ${r.modified.textTransform};
+}`;
+      })
+      .join("\n\n");
+  },
+};

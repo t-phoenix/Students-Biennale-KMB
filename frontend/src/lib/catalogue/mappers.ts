@@ -7,8 +7,16 @@ import {
   type CuratorZone,
   type VenueCard,
 } from "../../data/site";
+import {
+  ARTISTS as LOCAL_FALLBACK_ARTISTS,
+  ARTWORKS as LOCAL_FALLBACK_ARTWORKS,
+  CURATOR_ZONES as LOCAL_FALLBACK_ZONES,
+  CURATORS as LOCAL_FALLBACK_CURATORS,
+  VENUES as LOCAL_FALLBACK_VENUES,
+} from "../../data/archive/catalogueLocalFallback";
 import { getEditionSearchTags, mergeTagSearchIndex, searchIndexFromTags } from "../../data/editions";
 import { taggedText } from "./search";
+
 import type {
   MappedCatalogue,
   SearchIndexEntry,
@@ -335,25 +343,36 @@ export function mapLiveEdition(
 export function emptyEditionCatalogue(years: string, number: number): MappedCatalogue {
   const tags = getEditionSearchTags(years);
   const searchIndex = searchIndexFromTags(years, tags);
-  const staticHero = years === "2014-15" ? "/editions/2014-15/hero.jpg" : null;
+  const isCurrent = years === LATEST_EDITION.id;
+  const staticHero = isCurrent ? "/home/hero.jpg" : years === "2014-15" ? "/editions/2014-15/hero.jpg" : null;
+  const staticHeroUrls = isCurrent
+    ? ["/home/hero.jpg", "/home/sensing-wide.jpg", "/home/sensing-side.jpg"]
+    : staticHero
+      ? [staticHero]
+      : [];
+
   return {
     editionId: `edition-${years}`,
     years,
     number,
-    title: tags.title || "Students' Biennale",
+    title: tags.title || (isCurrent ? "Students' Biennale 2025–26" : "Students' Biennale"),
     slug: years,
-    overview: null,
-    overallCuratorialNote: null,
-    isCurrent: years === LATEST_EDITION.id,
+    overview: isCurrent
+      ? "Sensing Grounds explores regional ecologies, pedagogical experiments, and site-specific inquiries across 7 distinct curatorial zones in Fort Kochi and Mattancherry."
+      : null,
+    overallCuratorialNote: isCurrent
+      ? "Sensing Grounds proposes that art-making and curatorial practice cannot be separated from the environments, ecologies, and communities in which they are embedded. Across seven distinct curatorial zones, student artists and curators engage with the urgent questions of our time."
+      : null,
+    isCurrent,
     heroUrl: staticHero,
-    heroUrls: staticHero ? [staticHero] : [],
-    galleryUrls: [],
+    heroUrls: staticHeroUrls,
+    galleryUrls: isCurrent ? ["/home/hero.jpg", "/home/sensing-wide.jpg", "/home/sensing-side.jpg"] : [],
     sections: [],
-    zones: [],
-    curators: [],
-    artworks: [],
-    artists: [],
-    venues: [],
+    zones: isCurrent ? LOCAL_FALLBACK_ZONES : [],
+    curators: isCurrent ? LOCAL_FALLBACK_CURATORS : [],
+    artworks: isCurrent ? LOCAL_FALLBACK_ARTWORKS : [],
+    artists: isCurrent ? LOCAL_FALLBACK_ARTISTS : [],
+    venues: isCurrent ? LOCAL_FALLBACK_VENUES : [],
     institutions: tags.institutions,
     searchIndex: mergeTagSearchIndex({
       years,
@@ -368,10 +387,27 @@ export function emptyEditionCatalogue(years: string, number: number): MappedCata
 
 export function mergeCatalogues(remote: MappedCatalogue[]): MappedCatalogue[] {
   const byYears = new Map(remote.map((row) => [row.years, row]));
-  // Current edition comes only from Supabase snapshots — no local catalogue swap.
-  if (!byYears.has(LATEST_EDITION.id)) {
-    byYears.set(LATEST_EDITION.id, emptyEditionCatalogue(LATEST_EDITION.id, 6));
+  // Current edition fallback if not in remote or if remote is empty
+  const currentExisting = byYears.get(LATEST_EDITION.id);
+  const currentSeeded = emptyEditionCatalogue(LATEST_EDITION.id, 6);
+
+  if (!currentExisting || (currentExisting.artworks.length === 0 && currentExisting.zones.length === 0)) {
+    byYears.set(LATEST_EDITION.id, {
+      ...(currentExisting ?? {}),
+      ...currentSeeded,
+      title: currentExisting?.title || currentSeeded.title,
+      overview: currentExisting?.overview || currentSeeded.overview,
+      overallCuratorialNote: currentExisting?.overallCuratorialNote || currentSeeded.overallCuratorialNote,
+      heroUrl: currentExisting?.heroUrl || currentSeeded.heroUrl,
+      heroUrls: currentExisting?.heroUrls?.length ? currentExisting.heroUrls : currentSeeded.heroUrls,
+      zones: currentExisting?.zones?.length ? currentExisting.zones : currentSeeded.zones,
+      curators: currentExisting?.curators?.length ? currentExisting.curators : currentSeeded.curators,
+      artworks: currentExisting?.artworks?.length ? currentExisting.artworks : currentSeeded.artworks,
+      artists: currentExisting?.artists?.length ? currentExisting.artists : currentSeeded.artists,
+      venues: currentExisting?.venues?.length ? currentExisting.venues : currentSeeded.venues,
+    });
   }
+
   for (const [i, years] of PREVIOUS_EDITIONS.entries()) {
     const existing = byYears.get(years);
     const seeded = emptyEditionCatalogue(years, existing?.number || 5 - i);
@@ -416,6 +452,7 @@ export function mergeCatalogues(remote: MappedCatalogue[]): MappedCatalogue[] {
     }))
     .sort((a, b) => b.number - a.number);
 }
+
 
 export function findCard<T extends { id: string; slug?: string }>(
   items: T[],

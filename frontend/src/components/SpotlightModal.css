@@ -90,10 +90,12 @@
 }
 
 .spotlight__title-divider {
-  width: 100%;
+  width: calc(100% + var(--grid-margin));
+  margin-left: calc(-1 * var(--grid-margin));
   height: 1px;
   background: #000;
-  margin: 16px 0 14px;
+  margin-top: 16px;
+  margin-bottom: 14px;
 }
 
 .spotlight__attribution {
@@ -155,6 +157,11 @@
 
   .spotlight__title {
     text-align: left;
+  }
+
+  .spotlight__title-divider {
+    margin-left: 0;
+    width: 100%;
   }
 
   .spotlight__attribution {

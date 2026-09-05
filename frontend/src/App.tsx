@@ -22,6 +22,7 @@ import { Admin } from "./pages/admin/Admin";
 import { CatalogueProvider } from "./lib/catalogue";
 import { HomeCmsProvider } from "./lib/homeCms";
 import { EDITIONS_PATH, LATEST_EDITION } from "./data/site";
+import { TypographyInspector } from "./dev/type-inspector/TypographyInspector";
 
 export default function App() {
   return (
@@ -59,9 +60,11 @@ export default function App() {
               />
             </Route>
           </Routes>
+          <TypographyInspector />
           <SpeedInsights />
         </HomeCmsProvider>
       </BrowserRouter>
     </CatalogueProvider>
   );
 }
+

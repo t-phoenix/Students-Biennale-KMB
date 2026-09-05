@@ -1,10 +1,11 @@
 import {
   AWARDS_INTERNATIONAL,
   AWARDS_NATIONAL,
+  PAST_WORKSHOPS,
   RAZA_SCHOLAR_ARTWORKS,
   RAZA_SCHOLARS,
 } from "../../data/site";
-import type { AwardWinnerCard, MappedProgrammes } from "./types";
+import type { AwardWinnerCard, MappedProgrammes, ResidencyProgramme, UpcomingWorkshop } from "./types";
 
 export const DEFAULT_RAZA = {
   title: "RAZA - STUDENTS' BIENNALE SCHOLARSHIP",
@@ -40,15 +41,59 @@ const DEFAULT_NATIONAL_AWARDS: AwardWinnerCard[] = AWARDS_NATIONAL.map((w) => ({
   artists: [{ name: w.name, institution: w.institution }],
 }));
 
-/** Default programmes payload when CMS has no published rows. */
-export const EMPTY_PROGRAMMES: MappedProgrammes = {
-  upcomingWorkshops: [],
-  pastWorkshops: [],
+const DUMMY_UPCOMING_WORKSHOPS: UpcomingWorkshop[] = [
+  {
+    id: "ws-1",
+    slug: "sukanya-deb-delhi",
+    title: "How to not answer a phone call?",
+    date: "12 - 14 March 2026",
+    place: "New Delhi",
+    blurb: "Critical writing, voice, and conversational methodologies with Merv Espina and Sukanya Deb.",
+    image: "/home/thumb-workshops.jpg",
+  },
+  {
+    id: "ws-2",
+    slug: "savyasachi-1-jaipur",
+    title: "Subverting Failures: Material Experiments",
+    date: "20 - 22 April 2026",
+    place: "Jaipur",
+    blurb: "Sculptural processes, material breakdowns, and casting with Priyesh Gothwal.",
+    image: "/home/sensing-side.jpg",
+  },
+];
+
+const DUMMY_RESIDENCIES: ResidencyProgramme[] = [
+  {
+    id: "res-1",
+    slug: "marseille-exchange",
+    title: "France–India Student Residency Exchange",
+    host: "Beaux-Arts de Marseille & KBF",
+    period: "January – April 2026",
+    venue: "Marseille, France",
+    awardees: "Rutuja Sonawane & Mohammad Riyaz",
+    copy: "A reciprocal semester-long intensive research and studio residency in southern France.",
+    description: "Supported by the French Institute in India (IFI), the Raza Foundation, and Beaux-Arts de Marseille.",
+    heroImage: "/home/thumb-residencies.jpg",
+    galleryImages: [
+      "/home/thumb-residencies.jpg",
+      "/home/sensing-wide.jpg",
+      "/home/press-featured.jpg",
+    ],
+    moreHref: "/programmes/raza-scholarship",
+  },
+];
+
+/** Local fallback programmes payload when CMS is unconfigured or has no published rows. */
+export const LOCAL_FALLBACK_PROGRAMMES: MappedProgrammes = {
+  upcomingWorkshops: DUMMY_UPCOMING_WORKSHOPS,
+  pastWorkshops: PAST_WORKSHOPS,
   awardsInternational: DEFAULT_INTL_AWARDS,
   awardsNational: DEFAULT_NATIONAL_AWARDS,
   raza: DEFAULT_RAZA,
-  residencies: [],
+  residencies: DUMMY_RESIDENCIES,
 };
+
+export const EMPTY_PROGRAMMES: MappedProgrammes = LOCAL_FALLBACK_PROGRAMMES;
 
 export { RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS };
 
@@ -61,5 +106,6 @@ export const LEGACY_WORKSHOP_IDS: Record<string, string> = {
   "jorahaal-forest": "anga-art-collective",
 };
 
-/** @deprecated Use EMPTY_PROGRAMMES for empty CMS state. Kept for tests/migration only. */
-export const FALLBACK_PROGRAMMES = EMPTY_PROGRAMMES;
+/** @deprecated Use LOCAL_FALLBACK_PROGRAMMES for fallback CMS state. */
+export const FALLBACK_PROGRAMMES = LOCAL_FALLBACK_PROGRAMMES;
+
