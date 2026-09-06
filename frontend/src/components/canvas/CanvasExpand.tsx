@@ -3,6 +3,7 @@ import { type CanvasItem } from "../../data/site";
 import { findCard, useAllArtworks } from "../../lib/catalogue";
 import { prefetchArtworkGallery } from "../../lib/predictivePrefetch";
 import { ArtworkDetailBody } from "../ArtworkDetailBody";
+import { BrandArrow } from "../BrandArrow";
 import { CtaLink } from "../CtaLink";
 import { gsap, useGSAP, prefersReducedMotion } from "../../lib/motion";
 import "./CanvasExpand.css";
@@ -126,28 +127,45 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
         ref={sheetRef}
         className={`canvas-expand__sheet${artwork ? " canvas-expand__sheet--artwork" : ""}`}
       >
-        <button type="button" className="canvas-expand__back" onClick={animateClose}>
-          BACK
-        </button>
         {artwork ? (
           <>
             <ArtworkDetailBody artwork={artwork} />
-            <div className="canvas-expand__full-page">
-              <CtaLink
-                variant="next"
-                to={`/editions/2025-26/artworks/${artwork.id}`}
-                lines={["View", "full page"]}
-                spacing={["0.135em", "0.135em"]}
-              />
+            <div className="fig-grid canvas-expand__nav">
+              <button
+                type="button"
+                className="fig-c1-3 canvas-expand__bottom-back"
+                onClick={animateClose}
+              >
+                <BrandArrow direction="left" />
+                <span>BACK</span>
+              </button>
+              <div className="canvas-expand__full-page">
+                <CtaLink
+                  variant="next"
+                  to={`/editions/2025-26/artworks/${artwork.id}`}
+                  lines={["View", "full page"]}
+                  spacing={["0.135em", "0.135em"]}
+                />
+              </div>
             </div>
           </>
         ) : (
-          <>
+          <div className="canvas-expand__custom">
             <p className="canvas-expand__kind">{item.kind}</p>
             <h2>{item.name}</h2>
             <p className="canvas-expand__meta">{item.meta}</p>
             {item.bio ? <p className="canvas-expand__bio">{item.bio}</p> : null}
-          </>
+            <div className="fig-grid canvas-expand__nav">
+              <button
+                type="button"
+                className="fig-c1-3 canvas-expand__bottom-back"
+                onClick={animateClose}
+              >
+                <BrandArrow direction="left" />
+                <span>BACK</span>
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

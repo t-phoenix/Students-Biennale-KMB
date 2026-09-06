@@ -117,8 +117,9 @@ export function DiscoverArtworks() {
     <div ref={rootRef} className="discover">
       <div
         ref={searchBarRef}
-        className="discover__search"
+        className={`discover__search${expand ? " is-hidden" : ""}`}
         onPointerEnter={untuckHeader}
+        aria-hidden={Boolean(expand)}
       >
         <label className="discover__search-field">
           <input

@@ -1,14 +1,14 @@
 .canvas-expand {
   position: fixed;
   inset: 0;
-  z-index: 150;
+  z-index: 1100;
   pointer-events: none;
 }
 
 .canvas-expand__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(0, 0, 0, 0.4);
   border: 0;
   cursor: pointer;
   pointer-events: auto;
@@ -16,55 +16,28 @@
 
 .canvas-expand__sheet {
   position: fixed;
-  top: var(--header-h);
+  top: var(--header-h, var(--nav-height, 72px));
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 1;
   background: var(--color-neutral-white);
   color: var(--color-text-primary);
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   pointer-events: auto;
-  padding: 40px var(--page-pad);
   will-change: transform, opacity;
+  scrollbar-width: thin;
 }
 
-/* Full artwork content brings its own .fig-grid horizontal margin and a
-   genuinely full-bleed hero — drop the sheet's padding entirely (not just
-   inline) so the hero reaches every edge instead of floating in a white
-   margin, matching the real artwork page. */
 .canvas-expand__sheet--artwork {
   padding: 0;
 }
 
-.canvas-expand__sheet--artwork .canvas-expand__back {
-  position: absolute;
-  top: 24px;
-  left: var(--page-pad);
-  z-index: 3;
-  margin-bottom: 0;
-  padding: 8px 14px;
-  background: rgba(255, 255, 255, 0.15);
-  color: var(--color-neutral-white);
-}
-
-.canvas-expand__sheet--artwork .canvas-expand__back:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-.canvas-expand__full-page {
-  padding: 40px var(--page-pad) 0;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.canvas-expand__back {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin-bottom: 24px;
-  font-size: var(--type-caption-size);
-  letter-spacing: 0.08em;
+/* Custom non-artwork filler / placeholder / curator expanded state */
+.canvas-expand__custom {
+  padding: 64px var(--page-pad);
+  max-width: 900px;
 }
 
 .canvas-expand__kind {
@@ -75,18 +48,121 @@
 }
 
 .canvas-expand__sheet h2 {
-  margin: 8px 0;
-  font-size: clamp(28px, 4vw, 40px);
+  margin: 12px 0 8px;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.15;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .canvas-expand__meta {
   color: var(--color-text-secondary);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
 }
 
 .canvas-expand__bio {
   max-width: 720px;
-  margin-top: 24px;
+  margin-top: 32px;
   line-height: var(--type-body-line);
+  font-size: var(--type-body-size);
+}
+
+/* Inside CanvasExpand: adjust hero height so the title section below visibly peeks with clear space */
+.canvas-expand__sheet .detail__hero--cover {
+  height: calc(100dvh - var(--header-h, var(--nav-height, 72px)) - 84px);
+  min-height: 440px;
+  max-height: 820px;
+}
+
+.canvas-expand__sheet .detail__section {
+  padding-top: 81px;
+}
+
+/* Bottom Navigation Bar with BACK and View full page */
+.canvas-expand__nav {
+  padding-top: 81px;
+  padding-bottom: 96px;
+  align-items: center;
+}
+
+.canvas-expand__bottom-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  align-self: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.canvas-expand__bottom-back:hover {
+  opacity: 0.7;
+}
+
+.canvas-expand__bottom-back .brand-arrow {
+  width: 44px;
+  height: 44px;
+  transition: transform 0.25s var(--ease-craft, ease);
+}
+
+.canvas-expand__bottom-back:hover .brand-arrow {
+  transform: translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-expand__bottom-back:hover .brand-arrow {
+    transform: none;
+  }
+}
+
+.canvas-expand__full-page {
+  grid-column: 4 / -1;
+  justify-self: end;
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 899px) {
+  .canvas-expand__sheet {
+    top: var(--nav-height-mobile, 56px);
+  }
+
+  .canvas-expand__sheet .detail__hero--cover {
+    height: calc(100dvh - var(--nav-height-mobile, 56px) - 60px);
+    min-height: 320px;
+  }
+
+  .canvas-expand__sheet .detail__section {
+    padding-top: 40px;
+  }
+
+  .canvas-expand__custom {
+    padding: 32px var(--page-pad);
+  }
+
+  .canvas-expand__nav {
+    padding-top: 48px;
+    padding-bottom: 64px;
+    row-gap: 24px;
+  }
+
+  .canvas-expand__bottom-back {
+    grid-column: 1 / -1;
+  }
+
+  .canvas-expand__full-page {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
 }
