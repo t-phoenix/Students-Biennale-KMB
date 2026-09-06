@@ -140,111 +140,136 @@
   text-transform: lowercase;
 }
 
-.programmes__completed {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.programmes__completed li {
-  border-top: 1px solid var(--color-neutral-gray-light);
-  font-size: var(--type-subtitle-size);
-}
-
-.programmes__completed a {
+.programmes__past-items {
   display: flex;
+  flex-direction: column;
+}
+
+.programmes__past-item {
+  border-top: 1px solid var(--color-neutral-gray-light);
+  transition: padding 0.25s ease;
+}
+
+.programmes__past-item:last-child {
+  border-bottom: 1px solid var(--color-neutral-gray-light);
+}
+
+.programmes__past-item.is-expanded {
+  padding-block: 28px;
+}
+
+.programmes__past-collapsed {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 24px;
   padding: 18px 0;
-  color: inherit;
   text-decoration: none;
+  color: inherit;
+  cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
-/* "Half open" — the workshop with real content shows a thumbnail and a
-   description snippet, but only while hovered/focused ("half open when
-   only cursor is top of the content" per client feedback); at rest it
-   reads as a plain single-line row like the others. */
-.programmes__completed li.is-open a {
-  align-items: center;
-  padding: 18px 0;
-  transition: opacity 0.2s ease, align-items 0.2s ease, padding 0.2s ease;
+.programmes__past-collapsed:hover {
+  opacity: 0.7;
 }
 
-.programmes__completed li.is-open a:hover,
-.programmes__completed li.is-open a:focus-within {
-  align-items: flex-start;
-  padding: 24px 0;
+.programmes__past-collapsed-title {
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  font-weight: 500;
+  color: var(--color-text-primary);
 }
 
-.programmes__completed li.is-open .programmes__past-thumb,
-.programmes__completed li.is-open .programmes__past-snippet {
-  display: none;
+.programmes__past-collapsed-date {
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-size);
+  font-weight: 400;
+  white-space: nowrap;
 }
 
-.programmes__completed li.is-open a:hover .programmes__past-thumb,
-.programmes__completed li.is-open a:hover .programmes__past-snippet,
-.programmes__completed li.is-open a:focus-within .programmes__past-thumb,
-.programmes__completed li.is-open a:focus-within .programmes__past-snippet {
-  display: block;
+.programmes__past-expanded {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  align-items: start;
 }
 
-/* Excludes .is-open — its hover reveals content instead of dimming, and
-   doing both at once read as contradictory. */
-.programmes__completed li:not(.is-open) a:hover {
-  opacity: 0.65;
-}
-
-.programmes__past-thumb {
-  flex-shrink: 0;
-  display: block;
-  width: 160px;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: var(--color-neutral-gray-mid);
-}
-
-.programmes__past-thumb img {
+.programmes__past-expanded .programmes__past-featured-img {
+  grid-column: 1 / span 3;
   width: 100%;
-  height: 100%;
+  height: 251px;
   object-fit: cover;
   display: block;
+  margin-bottom: 0;
 }
 
-.programmes__past-body {
-  flex: 1;
-  min-width: 0;
+.programmes__past-featured-placeholder {
+  grid-column: 1 / span 3;
+  width: 100%;
+  height: 251px;
+  background: var(--color-neutral-gray-mid);
+  display: block;
 }
 
-.programmes__past-head {
+.programmes__past-featured-copy {
+  grid-column: 4 / span 6;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.programmes__past-featured-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 24px;
+  gap: 32px;
+  align-items: flex-start;
+  margin-bottom: 0;
 }
 
-.programmes__past-title {
-  display: block;
+.programmes__past-featured-head h3 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  font-weight: 500;
+  text-transform: uppercase;
+  max-width: 492px;
 }
 
-.programmes__past-sub {
-  display: block;
-  margin-top: 4px;
+.programmes__past-featured-head time {
+  flex: 0 0 auto;
+  color: var(--color-text-secondary);
+  font-size: var(--type-body-size);
+  white-space: nowrap;
+}
+
+.programmes__past-facilitators {
+  margin: 0;
   font-size: var(--type-caption-size);
   color: var(--color-text-secondary);
+  line-height: 1.4;
 }
 
-.programmes__past-snippet {
-  display: block;
-  margin-top: 12px;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  color: var(--color-text-secondary);
-  max-width: 68ch;
+.programmes__past-description {
+  margin: 0;
+  max-width: 524px;
 }
 
-.programmes__more {
-  margin-top: 60px;
+.programmes__past-more-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  width: fit-content;
+  font: inherit;
+  cursor: pointer;
+  font-style: italic;
+  text-transform: lowercase;
+  color: inherit;
 }
 
 .programmes__awards {
@@ -491,6 +516,26 @@
 @media (max-width: 899px) {
   .programmes__block {
     padding-block: 40px;
+  }
+
+  .programmes__past-expanded {
+    grid-template-columns: 1fr;
+    row-gap: 20px;
+  }
+
+  .programmes__past-expanded .programmes__past-featured-img,
+  .programmes__past-featured-placeholder {
+    grid-column: 1 / -1;
+    height: auto;
+    aspect-ratio: 324 / 251;
+  }
+
+  .programmes__past-featured-copy {
+    grid-column: 1 / -1;
+  }
+
+  .programmes__past-collapsed {
+    padding: 14px 0;
   }
 
   .programmes__raza-rail {

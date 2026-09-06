@@ -23,7 +23,7 @@ export function Programmes() {
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
-  const [expandedPast, setExpandedPast] = useState(false);
+  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("phone-call");
   const [expandedIntlAwards, setExpandedIntlAwards] = useState(false);
   const [expandedNationalAwards, setExpandedNationalAwards] = useState(false);
   const { heroCovers } = useProgrammesCovers();
@@ -31,8 +31,6 @@ export function Programmes() {
   const dotsTone = useCarouselDotsTone(currentHeroSrc, "right");
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
-
-  const visiblePastWorkshops = expandedPast ? pastWorkshops : pastWorkshops.slice(0, 2);
   const awardsPreviewCount = 3;
   const intlAwardsEffective =
     awardsInternational.length > 0 ? awardsInternational : EMPTY_PROGRAMMES.awardsInternational;
@@ -259,47 +257,68 @@ export function Programmes() {
       <section className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
         {pastWorkshops.length ? (
-        <ul className="programmes__completed fig-c4-12">
-          {visiblePastWorkshops.map((item) => {
-            const isOpen = Boolean(item.description);
-            return (
-              <li key={item.id} className={isOpen ? "is-open" : undefined}>
-                <Link to={`/programmes/past-workshops/${item.id}`}>
-                  {isOpen && item.heroImage ? (
-                    <span className="programmes__past-thumb">
-                      <img src={item.heroImage} alt="" />
-                    </span>
-                  ) : null}
-                  <div className="programmes__past-body">
-                    <div className="programmes__past-head">
-                      <span className="programmes__past-title">{item.title}</span>
-                      <span>{item.year}</span>
+          <div className="programmes__past-items fig-c4-12">
+            {pastWorkshops.map((item) => {
+              const isExpanded = (hoveredWorkshopId || pastWorkshops[0]?.id) === item.id;
+              return (
+                <article
+                  key={item.id}
+                  className={`programmes__past-item${isExpanded ? " is-expanded" : ""}`}
+                  onMouseEnter={() => setHoveredWorkshopId(item.id)}
+                >
+                  {isExpanded ? (
+                    <div className="programmes__past-expanded">
+                      {item.heroImage ? (
+                        <img
+                          className="programmes__past-featured-img"
+                          src={item.heroImage}
+                          alt=""
+                        />
+                      ) : (
+                        <div className="programmes__past-featured-placeholder" aria-hidden />
+                      )}
+                      <div className="programmes__past-featured-copy">
+                        <div className="programmes__past-featured-head">
+                          <h3>{item.title}</h3>
+                          <time>{item.year}</time>
+                        </div>
+                        {item.facilitators ? (
+                          <span className="programmes__past-facilitators">
+                            Facilitators: {item.facilitators}
+                          </span>
+                        ) : null}
+                        {item.description ? (
+                          <p className="fig-body programmes__past-description">
+                            {item.description.length > 220
+                              ? `${item.description.slice(0, 220).trimEnd()}…`
+                              : item.description}
+                          </p>
+                        ) : null}
+                        <Link
+                          to={`/programmes/past-workshops/${item.id}`}
+                          className="home-text-btn programmes__past-more-btn"
+                        >
+                          Read more...
+                        </Link>
+                      </div>
                     </div>
-                    <span className="programmes__past-sub">Facilitators: {item.facilitators}</span>
-                    {isOpen ? (
-                      <span className="programmes__past-snippet">
-                        {item.description!.length > 180
-                          ? `${item.description!.slice(0, 180).trimEnd()}…`
-                          : item.description}
-                      </span>
-                    ) : null}
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                  ) : (
+                    <Link
+                      to={`/programmes/past-workshops/${item.id}`}
+                      className="programmes__past-collapsed"
+                      onClick={() => setHoveredWorkshopId(item.id)}
+                    >
+                      <span className="programmes__past-collapsed-title">{item.title}</span>
+                      <time className="programmes__past-collapsed-date">{item.year}</time>
+                    </Link>
+                  )}
+                </article>
+              );
+            })}
+          </div>
         ) : (
           <SectionEmpty>No past workshops published yet.</SectionEmpty>
         )}
-        {pastWorkshops.length > 2 ? (
-          <CtaLink
-            className={`fig-cta-end programmes__more${expandedPast ? " programmes__more--collapse" : ""}`}
-            lines={expandedPast ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-            onClick={() => setExpandedPast((open) => !open)}
-          />
-        ) : null}
       </section>
 
       {/* Order: International Awards, with Raza Scholarship nested right after

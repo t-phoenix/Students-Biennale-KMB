@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { useProgrammes } from "../lib/programmes";
@@ -8,6 +8,7 @@ import "./PastWorkshops.css";
 export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
   const { pastWorkshops } = useProgrammes();
+  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("phone-call");
 
   useGSAP(
     () => {
@@ -29,36 +30,65 @@ export function PastWorkshops() {
       <div className="fig-grid past-workshops__section past-workshops-reveal">
         <h1 className="fig-label fig-subheading">PAST WORKSHOPS</h1>
         {pastWorkshops.length ? (
-        <ul className="past-workshops__list fig-c4-12">
-          {pastWorkshops.map((item) => {
-            const isOpen = Boolean(item.description);
-            return (
-              <li key={item.id} className={isOpen ? "is-open" : undefined}>
-                <Link to={`/programmes/past-workshops/${item.id}`}>
-                  {isOpen && item.heroImage ? (
-                    <span className="past-workshops__thumb">
-                      <img src={item.heroImage} alt="" />
-                    </span>
-                  ) : null}
-                  <span className="past-workshops__body">
-                    <span className="past-workshops__row-head">
-                      <span className="past-workshops__title">{item.title}</span>
-                      <span className="past-workshops__year">{item.year}</span>
-                    </span>
-                    <span className="past-workshops__sub">Facilitators: {item.facilitators}</span>
-                    {isOpen ? (
-                      <span className="past-workshops__snippet">
-                        {item.description!.length > 220
-                          ? `${item.description!.slice(0, 220).trimEnd()}…`
-                          : item.description}
-                      </span>
-                    ) : null}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+          <div className="past-workshops__items fig-c4-12">
+            {pastWorkshops.map((item) => {
+              const isExpanded = (hoveredWorkshopId || pastWorkshops[0]?.id) === item.id;
+              return (
+                <article
+                  key={item.id}
+                  className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
+                  onMouseEnter={() => setHoveredWorkshopId(item.id)}
+                >
+                  {isExpanded ? (
+                    <div className="past-workshops__expanded">
+                      {item.heroImage ? (
+                        <img
+                          className="past-workshops__featured-img"
+                          src={item.heroImage}
+                          alt=""
+                        />
+                      ) : (
+                        <div className="past-workshops__featured-placeholder" aria-hidden />
+                      )}
+                      <div className="past-workshops__featured-copy">
+                        <div className="past-workshops__featured-head">
+                          <h3>{item.title}</h3>
+                          <time>{item.year}</time>
+                        </div>
+                        {item.facilitators ? (
+                          <span className="past-workshops__facilitators">
+                            Facilitators: {item.facilitators}
+                          </span>
+                        ) : null}
+                        {item.description ? (
+                          <p className="fig-body past-workshops__description">
+                            {item.description.length > 220
+                              ? `${item.description.slice(0, 220).trimEnd()}…`
+                              : item.description}
+                          </p>
+                        ) : null}
+                        <Link
+                          to={`/programmes/past-workshops/${item.id}`}
+                          className="home-text-btn past-workshops__more-btn"
+                        >
+                          Read more...
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <Link
+                      to={`/programmes/past-workshops/${item.id}`}
+                      className="past-workshops__collapsed"
+                      onClick={() => setHoveredWorkshopId(item.id)}
+                    >
+                      <span className="past-workshops__collapsed-title">{item.title}</span>
+                      <time className="past-workshops__collapsed-date">{item.year}</time>
+                    </Link>
+                  )}
+                </article>
+              );
+            })}
+          </div>
         ) : (
           <SectionEmpty>No past workshops published yet.</SectionEmpty>
         )}

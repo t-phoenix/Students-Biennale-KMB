@@ -529,28 +529,60 @@ export type PastWorkshop = {
  *  full detail-page content from Figma 7:183 — is appended at the end rather than
  *  disturbing that preview. */
 export const PAST_WORKSHOPS: PastWorkshop[] = [
-  { id: "phone-call", title: "How to not answer a phone call?", year: "2025", facilitators: "Merv Espina and Sukanya Deb, New Delhi" },
-  { id: "subverting-failures", title: "Subverting Failures", year: "2025", facilitators: "Ujjwal Utkarsh, Priyesh Gothwal and Savyasachi Anju Prabir, Jaipur" },
-  { id: "uncertainties-welcomed", title: "Uncertainties Welcomed", year: "2025", facilitators: "Aditya Joshi & Maksud Ali Mondal, Goa" },
-  { id: "editing-as-meaning-making", title: "Editing as Meaning Making", year: "2024", facilitators: "Urna Sinha & Varsha Nair, Baroda" },
+  {
+    id: "phone-call",
+    title: "How to not answer a phone call?",
+    year: "2025",
+    facilitators: "Merv Espina and Sukanya Deb, New Delhi",
+    heroImage: "/home/thumb-workshops.jpg",
+    description:
+      "Critical writing, voice, and conversational methodologies with Merv Espina and Sukanya Deb, engaging listening practices, unmaking institutional norms, and sonic explorations in contemporary artistic research.",
+  },
+  {
+    id: "subverting-failures",
+    title: "Subverting Failures",
+    year: "2025",
+    facilitators: "Ujjwal Utkarsh, Priyesh Gothwal and Savyasachi Anju Prabir, Jaipur",
+    heroImage: "/programmes/workshop-2.jpg",
+    description:
+      "Material experiments, casting, and sculptural breakdowns exploring failure as a generative site of artistic inquiry, studio production, and critical reflection.",
+  },
+  {
+    id: "uncertainties-welcomed",
+    title: "Uncertainties Welcomed",
+    year: "2025",
+    facilitators: "Aditya Joshi & Maksud Ali Mondal, Goa",
+    heroImage: "/programmes/workshop-3.jpg",
+    description:
+      "Investigating organic matter, decay, ecology, and bio-art practices through site-specific fieldwork and open-ended pedagogical inquiries along coastal environments.",
+  },
+  {
+    id: "editing-as-meaning-making",
+    title: "Editing as Meaning Making",
+    year: "2024",
+    facilitators: "Urna Sinha & Varsha Nair, Baroda",
+    heroImage: "/programmes/workshop-1.jpg",
+    description:
+      "Editorial strategies, sequencing, bookmaking, and archival curation exploring narrative constructions, artist publications, and textual interventions.",
+  },
   {
     id: "jorahaal-forest",
     title: "Jorahaal, Forest as Pedagogue: a kNOw School Workshop",
     year: "2025",
     facilitators: "Jogen Das, Anga Art Collective",
     location: "Bhalla, Assam, October 2025",
-    heroImage: "/programmes/workshop-detail-hero.jpg",
+    heroImage: "/editions/2014-15/workshop-1.jpg",
     description:
       "This workshop took place in Gyandeep Puthibharal, a community hall situated in Bhalla village near Rani Reserve Forest, Assam, with selected candidates from the Northeast Indian region for the Students' Biennale. The layered interactive relations of the forest and the paddy, rural and the intruding urbanity, human and non-human elements, and so on provided the context to generate pedagogical questions, methodologies, and their implications for art practices. Participants visited farmer and artist Jogen Das' home-studio, who also guided a walking session across his paddy field and the adjacent Sal Kathoni, the Sal forest. Das guided our attention to the regenerative agency of the forest, where small shrubs and plants, both local and invasive, come together, contradicting the logic of monoculture. Students were encouraged to take photographs, write field notes, draw sketches, record sounds, and collect objects. The workshop screened The Full Moon, a two-channel experimental animated video created by collective member Dhrubajit Sarma, and read two texts, In Praise of Floods by James C Scott and The Mushroom at the End of the World by Anna Lowenhaupt Tsing. The conceptual and historical framings of Zomia, capitalist ruins, and contamination as collaboration were introduced, advancing the workshops' thematic concerns. Two participants—Tokpam Henthoiba and Laishram Niketan—held a musical recitation session with the Manipuri musical instrument, Pena.",
     galleryImages: [
-      "/programmes/workshop-gallery-1.jpg",
-      "/programmes/workshop-gallery-2.jpg",
-      "/programmes/workshop-gallery-3.jpg",
-      "/programmes/workshop-gallery-4.jpg",
-      "/programmes/workshop-gallery-5.jpg",
-      "/programmes/workshop-gallery-6.jpg",
-      "/programmes/workshop-gallery-7.jpg",
-      "/programmes/workshop-gallery-8.jpg",
+      "/editions/2014-15/workshop-1.jpg",
+      "/editions/2014-15/workshop-2.jpg",
+      "/editions/2014-15/workshop-3.jpg",
+      "/editions/2014-15/workshop-4.jpg",
+      "/editions/2014-15/workshop-5.jpg",
+      "/editions/2014-15/workshop-6.jpg",
+      "/editions/2014-15/workshop-7.jpg",
+      "/editions/2014-15/workshop-8.jpg",
     ],
   },
 ];
