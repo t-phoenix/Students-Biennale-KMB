@@ -39,52 +39,60 @@ export function PastWorkshops() {
                   className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
                   onMouseEnter={() => setHoveredWorkshopId(item.id)}
                 >
-                  {isExpanded ? (
-                    <div className="past-workshops__expanded">
-                      {item.heroImage ? (
-                        <img
-                          className="past-workshops__featured-img"
-                          src={item.heroImage}
-                          alt=""
-                        />
-                      ) : (
-                        <div className="past-workshops__featured-placeholder" aria-hidden />
-                      )}
-                      <div className="past-workshops__featured-copy">
-                        <div className="past-workshops__featured-head">
-                          <h3>{item.title}</h3>
-                          <time>{item.year}</time>
-                        </div>
-                        {item.facilitators ? (
-                          <span className="past-workshops__facilitators">
-                            Facilitators: {item.facilitators}
-                          </span>
-                        ) : null}
-                        {item.description ? (
-                          <p className="fig-body past-workshops__description">
-                            {item.description.length > 220
-                              ? `${item.description.slice(0, 220).trimEnd()}…`
-                              : item.description}
-                          </p>
-                        ) : null}
-                        <Link
-                          to={`/programmes/past-workshops/${item.id}`}
-                          className="home-text-btn past-workshops__more-btn"
-                        >
-                          Read more...
-                        </Link>
-                      </div>
-                    </div>
-                  ) : (
+                  <div className="past-workshops__collapsed-wrap" aria-hidden={isExpanded}>
                     <Link
                       to={`/programmes/past-workshops/${item.id}`}
                       className="past-workshops__collapsed"
+                      tabIndex={isExpanded ? -1 : 0}
                       onClick={() => setHoveredWorkshopId(item.id)}
                     >
                       <span className="past-workshops__collapsed-title">{item.title}</span>
                       <time className="past-workshops__collapsed-date">{item.year}</time>
                     </Link>
-                  )}
+                  </div>
+
+                  <div className="past-workshops__expanded-wrap" aria-hidden={!isExpanded}>
+                    <div className="past-workshops__expanded-inner">
+                      <div className="past-workshops__expanded">
+                        {item.heroImage ? (
+                          <div className="past-workshops__featured-img-wrap">
+                            <img
+                              className="past-workshops__featured-img"
+                              src={item.heroImage}
+                              alt=""
+                              loading="lazy"
+                            />
+                          </div>
+                        ) : (
+                          <div className="past-workshops__featured-img-wrap past-workshops__featured-placeholder" aria-hidden />
+                        )}
+                        <div className="past-workshops__featured-copy">
+                          <div className="past-workshops__featured-head">
+                            <h3>{item.title}</h3>
+                            <time>{item.year}</time>
+                          </div>
+                          {item.facilitators ? (
+                            <span className="past-workshops__facilitators">
+                              Facilitators: {item.facilitators}
+                            </span>
+                          ) : null}
+                          {item.description ? (
+                            <p className="fig-body past-workshops__description">
+                              {item.description.length > 220
+                                ? `${item.description.slice(0, 220).trimEnd()}…`
+                                : item.description}
+                            </p>
+                          ) : null}
+                          <Link
+                            to={`/programmes/past-workshops/${item.id}`}
+                            className="home-text-btn past-workshops__more-btn"
+                          >
+                            Read more...
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </article>
               );
             })}

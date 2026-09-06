@@ -218,10 +218,10 @@ export function Home() {
         gsap.fromTo(
           el,
           { height: 0 },
-          { height: target, duration: 0.45, ease: "power2.out" }
+          { height: target, duration: 0.55, ease: "power3.out" }
         );
       } else {
-        gsap.to(el, { height: 0, duration: 0.32, ease: "power2.in" });
+        gsap.to(el, { height: 0, duration: 0.45, ease: "power3.inOut" });
       }
     },
     { dependencies: [editionExpanded], scope: rootRef }
@@ -839,36 +839,44 @@ export function Home() {
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
                     onMouseEnter={() => setHoveredPressId(item.id)}
                   >
-                    {isExpanded ? (
-                      <div className="home-press__expanded">
-                        {item.image ? (
-                          <img
-                            className="home-press__featured-img"
-                            src={item.image}
-                            alt=""
-                          />
-                        ) : null}
-                        <div className="home-press__featured-copy">
-                          <div className="home-press__featured-head">
-                            <h3>{item.title}</h3>
-                            <time>{item.date}</time>
-                          </div>
-                          <p className="fig-body">{item.excerpt}</p>
-                          <Link to={`/press?article=${item.id}`} className="home-text-btn">
-                            Read more...
-                          </Link>
-                        </div>
-                      </div>
-                    ) : (
+                    <div className="home-press__collapsed-wrap" aria-hidden={isExpanded}>
                       <Link
                         to={`/press?article=${item.id}`}
                         className="home-press__collapsed"
+                        tabIndex={isExpanded ? -1 : 0}
                         onClick={() => setHoveredPressId(item.id)}
                       >
                         <span className="home-press__collapsed-title">{item.title}</span>
                         <time className="home-press__collapsed-date">{item.date}</time>
                       </Link>
-                    )}
+                    </div>
+
+                    <div className="home-press__expanded-wrap" aria-hidden={!isExpanded}>
+                      <div className="home-press__expanded-inner">
+                        <div className="home-press__expanded">
+                          {item.image ? (
+                            <div className="home-press__featured-img-wrap">
+                              <img
+                                className="home-press__featured-img"
+                                src={item.image}
+                                alt=""
+                                loading="lazy"
+                              />
+                            </div>
+                          ) : null}
+                          <div className="home-press__featured-copy">
+                            <div className="home-press__featured-head">
+                              <h3>{item.title}</h3>
+                              <time>{item.date}</time>
+                            </div>
+                            <p className="fig-body">{item.excerpt}</p>
+                            <Link to={`/press?article=${item.id}`} className="home-text-btn">
+                              Read more...
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </article>
                 );
               })}

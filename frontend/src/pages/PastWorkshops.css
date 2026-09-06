@@ -21,18 +21,32 @@
 
 .past-workshops__item {
   border-top: 1px solid var(--color-neutral-gray-light);
-  transition: padding 0.25s ease;
+  overflow: hidden;
+  position: relative;
 }
 
 .past-workshops__item:last-child {
   border-bottom: 1px solid var(--color-neutral-gray-light);
 }
 
-.past-workshops__item.is-expanded {
-  padding-block: 28px;
+/* Collapsed Header / Trigger */
+.past-workshops__collapsed-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  opacity: 1;
+  transition: grid-template-rows 0.48s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
+              opacity 0.32s ease;
+}
+
+.past-workshops__item.is-expanded .past-workshops__collapsed-wrap {
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .past-workshops__collapsed {
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -41,11 +55,11 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.25s ease;
 }
 
 .past-workshops__collapsed:hover {
-  opacity: 0.7;
+  opacity: 0.65;
 }
 
 .past-workshops__collapsed-title {
@@ -62,20 +76,67 @@
   white-space: nowrap;
 }
 
+/* Expanded Card Drawer */
+.past-workshops__expanded-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
+              opacity 0.38s ease;
+}
+
+.past-workshops__item.is-expanded .past-workshops__expanded-wrap {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.past-workshops__expanded-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding-block: 0;
+  transition: padding 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
+}
+
+.past-workshops__item.is-expanded .past-workshops__expanded-inner {
+  padding-block: 28px;
+}
+
 .past-workshops__expanded {
   display: grid;
   grid-template-columns: repeat(9, minmax(0, 1fr));
   column-gap: var(--grid-gutter);
   align-items: start;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.42s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s,
+              transform 0.45s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s;
 }
 
-.past-workshops__expanded .past-workshops__featured-img {
+.past-workshops__item.is-expanded .past-workshops__expanded {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.past-workshops__featured-img-wrap {
   grid-column: 1 / span 3;
   width: 100%;
   height: 251px;
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+}
+
+.past-workshops__featured-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
   margin-bottom: 0;
+  transform: scale(1.04);
+  transition: transform 0.65s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
+}
+
+.past-workshops__item.is-expanded .past-workshops__featured-img {
+  transform: scale(1);
 }
 
 .past-workshops__featured-placeholder {
@@ -157,6 +218,7 @@
     row-gap: 20px;
   }
 
+  .past-workshops__featured-img-wrap,
   .past-workshops__expanded .past-workshops__featured-img,
   .past-workshops__featured-placeholder {
     grid-column: 1 / -1;
