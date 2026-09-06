@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import "./CatalogueList.css";
 
@@ -48,11 +48,86 @@ export function CatalogueList({
 }: CatalogueListProps) {
   const [activeId, setActiveId] = useState(rows[0]?.id ?? "");
   const [shown, setShown] = useState(pageSize);
+  const previewRef = useRef<HTMLElement>(null);
+  const animFrameRef = useRef<number | null>(null);
+  const velocityRef = useRef<number>(0);
 
   const visible = rows.slice(0, shown);
   const shownId = rows.some((r) => r.id === activeId) ? activeId : rows[0]?.id;
   const preview = previewFor && shownId ? previewFor(shownId) : null;
   const custom = renderPreview && shownId ? renderPreview(shownId) : null;
+
+  // Auto-reset scroll position when selecting a new catalogue item
+  useEffect(() => {
+    if (previewRef.current) {
+      previewRef.current.scrollTop = 0;
+    }
+  }, [shownId]);
+
+  const stopAutoScroll = useCallback(() => {
+    if (animFrameRef.current !== null) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+    velocityRef.current = 0;
+  }, []);
+
+  const runAutoScroll = useCallback(() => {
+    const el = previewRef.current;
+    if (!el || velocityRef.current === 0) {
+      stopAutoScroll();
+      return;
+    }
+    el.scrollTop += velocityRef.current;
+    animFrameRef.current = requestAnimationFrame(runAutoScroll);
+  }, [stopAutoScroll]);
+
+  // Proximity-based auto-scroll when cursor approaches upper/lower bounds of the container
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLElement>) => {
+      const el = previewRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const height = rect.height;
+      if (height <= 0) return;
+
+      const threshold = Math.min(110, height * 0.22);
+      let speed = 0;
+
+      if (y < threshold && y >= 0) {
+        const intensity = 1 - y / threshold;
+        speed = -Math.round(intensity * 10);
+      } else if (y > height - threshold && y <= height) {
+        const intensity = 1 - (height - y) / threshold;
+        speed = Math.round(intensity * 10);
+      }
+
+      velocityRef.current = speed;
+      if (speed !== 0 && animFrameRef.current === null) {
+        animFrameRef.current = requestAnimationFrame(runAutoScroll);
+      } else if (speed === 0) {
+        stopAutoScroll();
+      }
+    },
+    [runAutoScroll, stopAutoScroll],
+  );
+
+  const handleMouseLeave = useCallback(() => {
+    stopAutoScroll();
+  }, [stopAutoScroll]);
+
+  const handleWheel = useCallback((e: React.WheelEvent<HTMLElement>) => {
+    e.stopPropagation();
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (animFrameRef.current !== null) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="catalogue fig-band-9">
@@ -104,47 +179,57 @@ export function CatalogueList({
         ) : null}
       </div>
 
-      {custom ? (
-        <aside className="catalogue__preview" aria-live="polite">
-          {custom}
-        </aside>
-      ) : null}
-
-      {preview ? (
-        <aside className="catalogue__preview" aria-live="polite">
-          <div className="catalogue__preview-media">
-            {preview.image ? <img src={preview.image} alt="" /> : null}
-          </div>
-
-          <div className="catalogue__preview-head">
-            <h3>{preview.title}</h3>
-            {preview.year ? <span>{preview.year}</span> : null}
-          </div>
-
-          <dl className="catalogue__preview-meta">
-            {preview.fields.map((field) => (
-              <div key={field.label}>
-                <dt>{field.label}</dt>
-                <dd>
-                  {field.values.map((v) => (
-                    <span key={v}>{v}</span>
-                  ))}
-                </dd>
+      {custom || preview ? (
+        <aside
+          ref={previewRef}
+          className="catalogue__preview"
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          data-lenis-prevent-touch
+          aria-live="polite"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onWheel={handleWheel}
+        >
+          {custom ? (
+            custom
+          ) : preview ? (
+            <>
+              <div className="catalogue__preview-media">
+                {preview.image ? <img src={preview.image} alt="" /> : null}
               </div>
-            ))}
 
-            {preview.note ? (
-              <div className="catalogue__preview-note">
-                <dt>Note :</dt>
-                <dd>
-                  <p>{preview.note}</p>
-                  {preview.noteHref ? (
-                    <Link to={preview.noteHref}>Read More...</Link>
-                  ) : null}
-                </dd>
+              <div className="catalogue__preview-head">
+                <h3>{preview.title}</h3>
+                {preview.year ? <span>{preview.year}</span> : null}
               </div>
-            ) : null}
-          </dl>
+
+              <dl className="catalogue__preview-meta">
+                {preview.fields.map((field) => (
+                  <div key={field.label}>
+                    <dt>{field.label}</dt>
+                    <dd>
+                      {field.values.map((v) => (
+                        <span key={v}>{v}</span>
+                      ))}
+                    </dd>
+                  </div>
+                ))}
+
+                {preview.note ? (
+                  <div className="catalogue__preview-note">
+                    <dt>Note :</dt>
+                    <dd>
+                      <p>{preview.note}</p>
+                      {preview.noteHref ? (
+                        <Link to={preview.noteHref}>Read More...</Link>
+                      ) : null}
+                    </dd>
+                  </div>
+                ) : null}
+              </dl>
+            </>
+          ) : null}
         </aside>
       ) : null}
     </div>

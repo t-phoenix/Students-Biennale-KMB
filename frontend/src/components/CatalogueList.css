@@ -124,29 +124,35 @@
   max-height: calc(100vh - var(--nav-height, 60px) - 48px);
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 12px;
-  padding-bottom: 32px;
+  padding-right: 14px;
+  padding-bottom: 36px;
   box-sizing: border-box;
   overscroll-behavior: contain;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
+  scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
 }
 
+/* Very thin 2px single-line scrollbar */
 .catalogue__preview::-webkit-scrollbar {
-  width: 3px;
+  width: 2px;
 }
 
 .catalogue__preview::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 1px;
 }
 
 .catalogue__preview::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 3px;
+  background: var(--color-text-primary, #111111);
+  opacity: 0.35;
+  border-radius: 1px;
+  transition: opacity 0.2s ease, background 0.2s ease;
 }
 
+.catalogue__preview:hover::-webkit-scrollbar-thumb,
 .catalogue__preview::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--color-text-primary, #111111);
+  opacity: 0.85;
 }
 
 .catalogue__preview-media {
