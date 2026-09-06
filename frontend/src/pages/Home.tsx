@@ -30,6 +30,7 @@ import { prefetchHomeDestinations } from "../lib/predictivePrefetch";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
+import { usePressItems } from "../lib/pressCms";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -108,7 +109,7 @@ export function Home() {
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
-  const [hoveredPressId, setHoveredPressId] = useState<string>("kbf-curators");
+  const [hoveredPressId, setHoveredPressId] = useState<string>("");
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
 
@@ -124,6 +125,8 @@ export function Home() {
     useProgrammes();
   const { homeBannerUrl } = useProgrammesCovers();
   const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
+  const { items: cmsPressItems } = usePressItems();
+  const pressItems = cmsPressItems.length > 0 ? cmsPressItems : HOME_PRESS_ITEMS;
   const covers = dynamicCovers;
   const cards: ActiveUpdateCard[] = cmsCards.map((c) => {
     const mode = normalizeCardMode(c.card_type);
@@ -828,8 +831,8 @@ export function Home() {
           <div className="fig-grid">
             <h2 className="fig-label fig-heading">PRESS</h2>
             <div className="home-press__items fig-c4-12">
-              {HOME_PRESS_ITEMS.map((item) => {
-                const isExpanded = hoveredPressId === item.id;
+              {pressItems.map((item) => {
+                const isExpanded = (hoveredPressId || pressItems[0]?.id) === item.id;
                 return (
                   <article
                     key={item.id}
@@ -838,11 +841,13 @@ export function Home() {
                   >
                     {isExpanded ? (
                       <div className="home-press__expanded">
-                        <img
-                          className="home-press__featured-img"
-                          src={item.image}
-                          alt=""
-                        />
+                        {item.image ? (
+                          <img
+                            className="home-press__featured-img"
+                            src={item.image}
+                            alt=""
+                          />
+                        ) : null}
                         <div className="home-press__featured-copy">
                           <div className="home-press__featured-head">
                             <h3>{item.title}</h3>
@@ -858,6 +863,7 @@ export function Home() {
                       <Link
                         to={`/press?article=${item.id}`}
                         className="home-press__collapsed"
+                        onClick={() => setHoveredPressId(item.id)}
                       >
                         <span className="home-press__collapsed-title">{item.title}</span>
                         <time className="home-press__collapsed-date">{item.date}</time>
