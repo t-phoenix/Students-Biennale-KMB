@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { CanvasItem } from "../data/site";
+import type { ArtworkCard, CanvasItem } from "../data/site";
 import { InfiniteCanvas } from "../components/canvas/InfiniteCanvas";
 import { CanvasExpand } from "../components/canvas/CanvasExpand";
 import { useAllArtworks } from "../lib/catalogue";
@@ -113,6 +113,21 @@ export function DiscoverArtworks() {
     setExpand({ item, origin: el.getBoundingClientRect() });
   }, []);
 
+  const onNext = useCallback((nextArtwork: ArtworkCard) => {
+    setExpand((prev) => {
+      if (!prev) return null;
+      const nextItem: CanvasItem = {
+        ...prev.item,
+        id: `aw-${nextArtwork.id}`,
+        kind: "artwork",
+        name: nextArtwork.title,
+        image: nextArtwork.image || "",
+        meta: nextArtwork.artists.map((a) => a.name).join(", "),
+      };
+      return { item: nextItem, origin: prev.origin };
+    });
+  }, []);
+
   return (
     <div ref={rootRef} className="discover">
       <div
@@ -166,6 +181,7 @@ export function DiscoverArtworks() {
           item={expand.item}
           origin={expand.origin}
           onClose={() => setExpand(null)}
+          onNext={onNext}
         />
       ) : null}
     </div>

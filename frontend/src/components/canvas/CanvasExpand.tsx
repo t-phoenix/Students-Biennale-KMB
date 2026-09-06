@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { type CanvasItem } from "../../data/site";
+import { type ArtworkCard, type CanvasItem } from "../../data/site";
 import { findCard, useAllArtworks } from "../../lib/catalogue";
 import { prefetchArtworkGallery } from "../../lib/predictivePrefetch";
 import { ArtworkDetailBody } from "../ArtworkDetailBody";
@@ -12,6 +12,7 @@ type Props = {
   item: CanvasItem;
   origin: DOMRect;
   onClose: () => void;
+  onNext?: (nextArtwork: ArtworkCard) => void;
 };
 
 /** Canvas tiles are seeded as "aw-" + ArtworkCard.id; tiled copies append
@@ -21,7 +22,7 @@ function canvasArtworkId(itemId: string): string | undefined {
   return itemId.slice(3).replace(/__c\d+-\d+$/, "");
 }
 
-export function CanvasExpand({ item, origin, onClose }: Props) {
+export function CanvasExpand({ item, origin, onClose, onNext }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLButtonElement>(null);
@@ -31,9 +32,25 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
     return id ? findCard(artworks, id) : undefined;
   }, [artworks, item.id]);
 
+  const artworkIdx = useMemo(() => {
+    if (!artwork) return -1;
+    return artworks.findIndex((x) => x.id === artwork.id);
+  }, [artworks, artwork]);
+
+  const nextArtwork = useMemo(() => {
+    if (artworkIdx < 0 || !artworks.length) return undefined;
+    return artworks[(artworkIdx + 1) % artworks.length];
+  }, [artworks, artworkIdx]);
+
   useEffect(() => {
     prefetchArtworkGallery(artwork);
   }, [artwork]);
+
+  const goNextArtwork = useCallback(() => {
+    if (!nextArtwork || !onNext) return;
+    onNext(nextArtwork);
+    sheetRef.current?.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+  }, [nextArtwork, onNext]);
 
   // FLIP transform that makes the full-size sheet exactly overlay the
   // clicked tile's position/size — computed once on open, reused in reverse
@@ -92,7 +109,7 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
         .to(backdrop, { autoAlpha: 1, duration: 0.25, ease: "power2.out" }, 0)
         .to(sheet, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.55, ease: "power3.out" }, 0);
     },
-    { dependencies: [item.id, origin], scope: rootRef }
+    { dependencies: [origin], scope: rootRef }
   );
 
   useEffect(() => {
@@ -139,14 +156,15 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
                 <BrandArrow direction="left" />
                 <span>BACK</span>
               </button>
-              <div className="canvas-expand__full-page">
-                <CtaLink
-                  variant="next"
-                  to={`/editions/2025-26/artworks/${artwork.id}`}
-                  lines={["View", "full page"]}
-                  spacing={["0.135em", "0.135em"]}
-                />
-              </div>
+              {nextArtwork && onNext ? (
+                <div className="canvas-expand__next-wrap">
+                  <CtaLink
+                    className="canvas-expand__next"
+                    onClick={goNextArtwork}
+                    lines={["NEXT"]}
+                  />
+                </div>
+              ) : null}
             </div>
           </>
         ) : (
