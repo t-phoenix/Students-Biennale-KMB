@@ -121,6 +121,32 @@
   position: sticky;
   top: calc(var(--nav-height) + 24px);
   min-width: 0;
+  max-height: calc(100vh - var(--nav-height, 60px) - 48px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 12px;
+  padding-bottom: 32px;
+  box-sizing: border-box;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
+}
+
+.catalogue__preview::-webkit-scrollbar {
+  width: 3px;
+}
+
+.catalogue__preview::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.catalogue__preview::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.catalogue__preview::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.45);
 }
 
 .catalogue__preview-media {
@@ -290,5 +316,9 @@
   .catalogue__preview {
     position: static;
     margin-top: 40px;
+    max-height: none;
+    overflow-y: visible;
+    padding-right: 0;
+    padding-bottom: 0;
   }
 }
