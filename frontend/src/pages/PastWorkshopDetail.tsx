@@ -58,10 +58,6 @@ export function PastWorkshopDetail() {
       )}
 
       <div className="fig-grid past-workshop-detail__section workshop-reveal">
-        <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
-          <BrandArrow direction="left" />
-          <span>BACK</span>
-        </Link>
         <div className="fig-c4-9">
           <h1 className="past-workshop-detail__title">{workshop.title}</h1>
           <div className="past-workshop-detail__meta">
