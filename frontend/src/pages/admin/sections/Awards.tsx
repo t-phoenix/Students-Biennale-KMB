@@ -121,7 +121,9 @@ export function Awards({ notify, confirm }: SectionProps) {
         sb
           .from("programmes")
           .select("id, title, subtype, sort_order")
-          .in("subtype", ["international-award", "national-award"])
+          .or(
+            "subtype.in.(international-award,national-award),id.eq.programme-raza-students-biennale-scholarship",
+          )
           .order("sort_order"),
         sb
           .from("award_winners")
@@ -230,6 +232,11 @@ export function Awards({ notify, confirm }: SectionProps) {
         programmes.some((p) => p.id === w.programmeId && p.subtype === "national-award"),
       ),
     [programmes, winners],
+  );
+  const raza = useMemo(
+    () =>
+      winners.filter((w) => w.programmeId === "programme-raza-students-biennale-scholarship"),
+    [winners],
   );
 
   const artworkOptions = useMemo(
@@ -424,8 +431,15 @@ export function Awards({ notify, confirm }: SectionProps) {
     );
   }
 
-  const renderTable = (label: string, rows: WinnerView[], subtype: string) => {
-    const programme = programmes.find((p) => p.subtype === subtype);
+  const renderTable = (
+    label: string,
+    rows: WinnerView[],
+    subtype: string,
+    programmeId?: string,
+  ) => {
+    const programme = programmeId
+      ? programmes.find((p) => p.id === programmeId)
+      : programmes.find((p) => p.subtype === subtype);
     return (
       <div style={{ marginBottom: 32 }}>
         <div className="adm-section__header">
@@ -657,6 +671,12 @@ export function Awards({ notify, confirm }: SectionProps) {
       )}
 
       {renderTable("International Awards", international, "international-award")}
+      {renderTable(
+        "Raza - Students' Biennale Scholarship",
+        raza,
+        "residency",
+        "programme-raza-students-biennale-scholarship",
+      )}
       {renderTable("National Awards", national, "national-award")}
     </div>
   );

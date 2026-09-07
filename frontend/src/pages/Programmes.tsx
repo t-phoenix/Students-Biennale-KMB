@@ -52,24 +52,10 @@ export function Programmes() {
 
   const razaAwardCards = [
     {
-      id: "kaki-weiss",
-      name: "Kaki Weiss",
-      artwork: "Tabut",
-      institution: "Beaux Arts de Marseille, France",
-      image: "/programmes/raza-kaki-weiss.jpg",
-    },
-    {
-      id: "nina-durel",
-      name: "Nina Durel",
-      artwork: "Inseamm",
-      institution: "Beaux Arts de Marseille, France",
-      image: "/programmes/raza-nina-durel.jpg",
-    },
-    {
       id: "rutuja-sonawane",
       name: "Rutuja Sonawane",
       artwork: "The People’s Orchestra",
-      institution: "Sir J. J. School of Art, Mumbai, Maharashtra",
+      institution: "Sir JJ School of Art, Mumbai, Maharashtra",
       image: "/programmes/raza-rutuja-sonawane.jpg",
     },
     {
@@ -78,6 +64,20 @@ export function Programmes() {
       artwork: "Inheritance of the hand",
       institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh",
       image: "/programmes/raza-mohammad-riyaz.jpg",
+    },
+    {
+      id: "kaki-weiss",
+      name: "Kaki Weiss",
+      artwork: "",
+      institution: "Beaux Arts de Marseille, France",
+      image: "/programmes/raza-kaki-weiss.jpg",
+    },
+    {
+      id: "nina-durel",
+      name: "Nina Durel",
+      artwork: "",
+      institution: "Beaux Arts de Marseille, France",
+      image: "/programmes/raza-nina-durel.jpg",
     },
   ];
 
@@ -389,8 +389,8 @@ export function Programmes() {
                   <img src={s.image} alt={s.name} />
                 </div>
                 <h3>{s.name}</h3>
-                <p>Artwork : {s.artwork}</p>
-                <p>{s.institution}</p>
+                {s.artwork ? <p>Artwork : {s.artwork}</p> : null}
+                {s.institution ? <p>{s.institution}</p> : null}
               </button>
             ))}
           </div>

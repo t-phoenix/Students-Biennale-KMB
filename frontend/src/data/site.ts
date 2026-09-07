@@ -588,10 +588,10 @@ export const PAST_WORKSHOPS: PastWorkshop[] = [
 ];
 
 export const RAZA_SCHOLARS: { id: string; name: string; image: string }[] = [
-  { id: "kaki-weiss", name: "Kaki Weiss", image: "/programmes/raza-kaki-weiss.jpg" },
-  { id: "nina-durel", name: "Nina Durel", image: "/programmes/raza-nina-durel.jpg" },
   { id: "rutuja-sonawane", name: "Rutuja Sonawane", image: "/programmes/raza-rutuja-sonawane.jpg" },
   { id: "mohammad-riyaz", name: "Mohammad Riyaz", image: "/programmes/raza-mohammad-riyaz.jpg" },
+  { id: "kaki-weiss", name: "Kaki Weiss", image: "/programmes/raza-kaki-weiss.jpg" },
+  { id: "nina-durel", name: "Nina Durel", image: "/programmes/raza-nina-durel.jpg" },
 ];
 
 export const RAZA_SCHOLAR_ARTWORKS: ArtworkCard[] = [
