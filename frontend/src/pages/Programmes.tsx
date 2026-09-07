@@ -69,14 +69,14 @@ export function Programmes() {
       id: "kaki-weiss",
       name: "Kaki Weiss",
       artwork: "",
-      institution: "Beaux Arts de Marseille, France",
+      institution: "",
       image: "/programmes/raza-kaki-weiss.jpg",
     },
     {
       id: "nina-durel",
       name: "Nina Durel",
       artwork: "",
-      institution: "Beaux Arts de Marseille, France",
+      institution: "",
       image: "/programmes/raza-nina-durel.jpg",
     },
   ];

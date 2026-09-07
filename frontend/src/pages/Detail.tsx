@@ -45,8 +45,8 @@ export function Detail() {
           item: {
             id: scholar.id,
             name: scholar.name,
-            institution: "Beaux Arts de Marseille, France",
-            zone: "Zone 1",
+            institution: "",
+            zone: "",
           },
         };
       }

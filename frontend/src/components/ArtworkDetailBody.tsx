@@ -163,35 +163,43 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
         <span className="fig-c10-12 detail__year detail-reveal">{a.year}</span>
       </div>
 
-      <div className="fig-grid detail__section">
-        <dl className="fig-c4-12 detail__meta detail-reveal">
-          <div>
-            <dt>Venue :</dt>
-            <dd>
-              <HighlightText text={a.venue} query={highlightQuery} />
-            </dd>
-          </div>
-          <div>
-            <dt>Materials &amp; Dimensions :</dt>
-            <dd>
-              <p>
-                {[a.materials.filter(Boolean).join(", "), a.dimensions]
-                  .filter(Boolean)
-                  .join(" | ")}
-              </p>
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      <div className="fig-grid detail__section">
-        <p className="fig-label fig-subheading detail__label detail-reveal">Description</p>
-        <div className="fig-c4-9 fig-body detail-reveal detail__desc">
-          {a.description.split(/\n\n+/).map((para, i) => (
-            <p key={`${i}-${para.slice(0, 48)}`}>{para}</p>
-          ))}
+      {(a.venue?.trim() || a.materials.some(Boolean) || a.dimensions?.trim()) ? (
+        <div className="fig-grid detail__section">
+          <dl className="fig-c4-12 detail__meta detail-reveal">
+            {a.venue?.trim() ? (
+              <div>
+                <dt>Venue :</dt>
+                <dd>
+                  <HighlightText text={a.venue} query={highlightQuery} />
+                </dd>
+              </div>
+            ) : null}
+            {a.materials.some(Boolean) || a.dimensions?.trim() ? (
+              <div>
+                <dt>Materials &amp; Dimensions :</dt>
+                <dd>
+                  <p>
+                    {[a.materials.filter(Boolean).join(", "), a.dimensions]
+                      .filter(Boolean)
+                      .join(" | ")}
+                  </p>
+                </dd>
+              </div>
+            ) : null}
+          </dl>
         </div>
-      </div>
+      ) : null}
+
+      {a.description?.trim() ? (
+        <div className="fig-grid detail__section">
+          <p className="fig-label fig-subheading detail__label detail-reveal">Description</p>
+          <div className="fig-c4-9 fig-body detail-reveal detail__desc">
+            {a.description.split(/\n\n+/).map((para, i) => (
+              <p key={`${i}-${para.slice(0, 48)}`}>{para}</p>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <div className="fig-grid detail__section">
         <p className="fig-label fig-subheading detail__label detail-reveal">Artists</p>
@@ -201,9 +209,11 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
               <strong>
                 <HighlightText text={artist.name} query={highlightQuery} />
               </strong>
-              <span>
-                <HighlightText text={artist.institution} query={highlightQuery} />
-              </span>
+              {artist.institution?.trim() ? (
+                <span>
+                  <HighlightText text={artist.institution} query={highlightQuery} />
+                </span>
+              ) : null}
             </div>
           ))}
         </div>

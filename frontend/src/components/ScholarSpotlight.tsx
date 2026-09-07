@@ -16,21 +16,31 @@ type Props = {
   onClose: () => void;
 };
 
-const RAZA_LOREM =
-  "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since 1966, when designers at Letraset and James Mosley, the librarian at St Bride Printing Library in London, took a 1914 Cicero translation and scrambled it to make dummy text for Letraset's Body Type sheets. It has survived not only many decades, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised thanks to these sheets and more recently with desktop publishing software like Aldus PageMaker and Microsoft Word including versions of Lorem Ipsum.";
-
 function placeholderArtwork(scholar: RazaScholar): ArtworkCard {
   const known = RAZA_SCHOLAR_ARTWORKS.find((artwork) => artwork.id === scholar.id);
-  if (known) return { ...known, artists: [{ name: scholar.name, institution: known.artists[0]?.institution ?? "" }] };
+  if (known) {
+    return {
+      ...known,
+      venue: known.venue?.trim() || "",
+      artists: [
+        {
+          name: scholar.name,
+          institution: known.artists[0]?.institution?.trim() || "",
+        },
+      ],
+    };
+  }
   return {
     id: scholar.id,
-    title: "Lorem Ipsum",
-    venue: "Lorem Ipsum",
+    title: scholar.name,
+    venue: "",
     year: "2025 - 26",
-    description: `${RAZA_LOREM}\n\n${RAZA_LOREM}`,
+    description: "",
     artists: [{ name: scholar.name, institution: "" }],
-    materials: ["Lorem Ipsum | Variable", "Lorem Ipsum | Variable", "Lorem Ipsum | Variable"],
-    dimensions: "Variable",
+    materials: [],
+    dimensions: "",
+    image: scholar.image,
+    images: scholar.image ? [scholar.image] : [],
   };
 }
 
