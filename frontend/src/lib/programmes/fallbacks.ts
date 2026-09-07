@@ -9,7 +9,7 @@ import type { AwardWinnerCard, MappedProgrammes, ResidencyProgramme, UpcomingWor
 
 export const DEFAULT_RAZA = {
   title: "RAZA - STUDENTS' BIENNALE SCHOLARSHIP",
-  subtitle: "Students' Biennale 2025–26 x Beaux Arts de Marseille",
+  subtitle: "STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE",
   intro: [
     "The 2025-26 edition marked the launch of a new, first-of-its-kind collaborative exchange between the Students' Biennale and Beaux-Arts de Marseille; a two-phase, reciprocal residency model designed to build sustained artistic dialogue between India and France.",
     "In the first phase, Kaki Weiss and Nina Durel, selected through an open call at Beaux-Arts de Marseille, travelled to Kochi for a two-week residency from 1-15 December 2025, supported jointly by the French Institute in India (IFI), the Kochi Biennale Foundation, and Beaux-Arts de Marseille. During their residency, they created new work in dialogue with the city and the wider cohort of participating student artists, which was exhibited as part of the 2025-26 Students' Biennale.",

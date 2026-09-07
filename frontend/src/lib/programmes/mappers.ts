@@ -14,7 +14,7 @@ import type {
 } from "./types";
 
 const AWARD_FALLBACK_IMAGE = "/programmes/award.jpg";
-const RAZA_SUBTITLE = "te(a)m-plurality, curatorial note by GABAA";
+const RAZA_SUBTITLE = "STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE";
 const RAZA_PHOTOS: Record<string, string> = {
   "kaki-weiss": "/programmes/raza-kaki-weiss.jpg",
   "nina-durel": "/programmes/raza-nina-durel.jpg",
@@ -430,7 +430,7 @@ export function mapProgrammes(
   const upcoming = workshops.filter((row) => row.state === "upcoming");
   const past = workshops.filter((row) => row.state !== "upcoming");
   const residencies = sorted
-    .filter((row) => row.subtype === "residency")
+    .filter((row) => row.subtype === "residency" && !isRazaResidency(row))
     .map((row) => mapResidency(row, assets));
   const razaRow = sorted.find((row) => isRazaResidency(row));
   const national = sorted.find((row) => row.subtype === "national-award");

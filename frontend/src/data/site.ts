@@ -623,11 +623,11 @@ export const RAZA_SCHOLAR_ARTWORKS: ArtworkCard[] = [
   },
   {
     id: "rutuja-sonawane",
-    title: "Lorem Ipsum",
-    venue: "Lorem Ipsum",
+    title: "The People’s Orchestra",
+    venue: "VKL Warehouse",
     year: "2025 - 26",
     description: "Catalogue text for this work is being finalised.",
-    artists: [{ name: "Rutuja Sonawane", institution: "Sir J. J. School of Art, Mumbai" }],
+    artists: [{ name: "Rutuja Sonawane", institution: "Sir JJ School of Art, Mumbai, Maharashtra" }],
     materials: ["Mixed media installation"],
     dimensions: "Variable",
     image: "/programmes/raza-rutuja-sonawane.jpg",
@@ -635,11 +635,16 @@ export const RAZA_SCHOLAR_ARTWORKS: ArtworkCard[] = [
   },
   {
     id: "mohammad-riyaz",
-    title: "Lorem Ipsum",
-    venue: "Lorem Ipsum",
+    title: "Inheritance of the hand",
+    venue: "VKL Warehouse",
     year: "2025 - 26",
     description: "Catalogue text for this work is being finalised.",
-    artists: [{ name: "Mohammad Riyaz", institution: "Government College of Fine Arts, Chennai" }],
+    artists: [
+      {
+        name: "Mohammad Riyaz",
+        institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh",
+      },
+    ],
     materials: ["Mixed media installation"],
     dimensions: "Variable",
     image: "/programmes/raza-mohammad-riyaz.jpg",
@@ -654,13 +659,18 @@ export const AWARDS_INTERNATIONAL: AwardWinner[] = [
   { name: "Aswathy GS", artwork: "Staged Narratives", institution: "Raja Ravi Varma College of Fine Arts, Mavelikkara, Kerala", artworkId: "staged-narratives-aswathy" },
   { name: "Kailash Khanjode", artwork: "Ginning Justice, 2025", institution: "Government College of Art, Nagpur, Maharashtra", artworkId: "ginning-justice-kailash" },
   { name: "Sachin Banne", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "ginning-justice-sachin" },
+  { name: "Sai Gitanjali Poluru", artwork: "Root System Analysis I", institution: "Shiv Nadar University, Delhi/NCR", artworkId: "root-system-analysis-i" },
 ];
 
 /** National Awards — Figma 1:1692 / Group 276. */
 export const AWARDS_NATIONAL: AwardWinner[] = [
-  { name: "Abhishek Kholapudi", artwork: "Mirage of the Three, 2025", institution: "Suravaram Pratap Reddy Telugu University, Hyderabad", artworkId: "mirage-of-the-three" },
-  { name: "Pratik Khurkutiya", artwork: "The quiet beneath the rubble", institution: "The Maharaja Sayajirao University of Baroda", artworkId: "rubble" },
-  { name: "M. Imran Ahmed", artwork: "Staged Narratives", institution: "Government College of Fine Arts, Chennai", artworkId: "staged-narratives-imran" },
+  { name: "Abhishek Kolapudi", artwork: "Mirage of the Three, 2025", institution: "Suravaram Pratap Reddy Telugu University, Hyderabad", artworkId: "mirage-of-the-three" },
+  { name: "Pratik Khurkutiya", artwork: "The Quiet Beneath the Rubble", institution: "Maharaja Sayajirao University, Baroda, Gujarat", artworkId: "the-quiet-beneath-the-rubble" },
+  { name: "M Imran Ahamed", artwork: "Staged Narratives", institution: "Government College of Fine Arts, Chennai", artworkId: "staged-narratives" },
+  { name: "Reppandee Lepcha", artwork: "Shifting Landscapes", institution: "Visva Bharati University, Santiniketan", artworkId: "shifting-landscapes" },
+  { name: "Rohit Athavale", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "ginning-justice" },
+  { name: "Urgain Zawa", artwork: "Sacred Scapes", institution: "Maharaja Sayajirao University, Baroda", artworkId: "sacred-scapes" },
+  { name: "Durgesh Prajapati", artwork: "Expressions of Fragility", institution: "Banaras Hindu University, Varanasi, Uttar Pradesh", artworkId: "expression-of-fragility" },
 ];
 
 export type ProgrammeCard = {
