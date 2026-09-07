@@ -52,20 +52,6 @@ export function Programmes() {
 
   const razaAwardCards = [
     {
-      id: "rutuja-sonawane",
-      name: "Rutuja Sonawane",
-      artwork: "The People’s Orchestra",
-      institution: "Sir JJ School of Art, Mumbai, Maharashtra",
-      image: "/programmes/raza-rutuja-sonawane.jpg",
-    },
-    {
-      id: "mohammad-riyaz",
-      name: "Mohammad Riyaz",
-      artwork: "Inheritance of the hand",
-      institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh",
-      image: "/programmes/raza-mohammad-riyaz.jpg",
-    },
-    {
       id: "kaki-weiss",
       name: "Kaki Weiss",
       artwork: "",
@@ -78,6 +64,20 @@ export function Programmes() {
       artwork: "",
       institution: "",
       image: "/programmes/raza-nina-durel.jpg",
+    },
+    {
+      id: "rutuja-sonawane",
+      name: "Rutuja Sonawane",
+      artwork: "The People’s Orchestra",
+      institution: "Sir JJ School of Art, Mumbai, Maharashtra",
+      image: "/programmes/raza-rutuja-sonawane.jpg",
+    },
+    {
+      id: "mohammad-riyaz",
+      name: "Mohammad Riyaz",
+      artwork: "Inheritance of the hand",
+      institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh",
+      image: "/programmes/raza-mohammad-riyaz.jpg",
     },
   ];
 

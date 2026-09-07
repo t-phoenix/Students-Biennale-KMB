@@ -132,7 +132,13 @@ export function Detail() {
 
   if (data.kind === "curator" && data.item) {
     const c = data.item;
-    const zone = catalogue.zones.find((z) => z.curators.some((x) => x.id === c.id));
+    const zoneIndex = catalogue.zones.findIndex((z) => z.curators.some((x) => x.id === c.id));
+    const zone = zoneIndex >= 0 ? catalogue.zones[zoneIndex] : undefined;
+    const nextZone =
+      zoneIndex >= 0 && zoneIndex < catalogue.zones.length - 1
+        ? catalogue.zones[zoneIndex + 1]
+        : undefined;
+    const nextCurator = nextZone?.curators[0];
     const members = zone ? [c, ...zone.curators.filter((x) => x.id !== c.id)] : [c];
     // Prefer the clicked curator's individual note (Zone 6), else the shared zone note.
     const noteTitle = c.noteTitle || zone?.noteTitle;
@@ -221,7 +227,7 @@ export function Detail() {
                     <span className="detail__cards-media" aria-hidden />
                   )}
                   <strong>{a.title}</strong>
-                  <span>Venue : {a.venue}</span>
+                  {a.venue?.trim() ? <span>Venue : {a.venue}</span> : null}
                 </Link>
               ))}
             </div>
@@ -233,12 +239,22 @@ export function Detail() {
             <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
-          <CtaLink
-            className="detail__next"
-            to={`/editions/${yearId}/artworks`}
-            lines={["View", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-          />
+          {nextCurator ? (
+            <CtaLink
+              className="detail__next"
+              variant="next"
+              to={`/editions/${yearId}/curators/${nextCurator.id}`}
+              lines={["NEXT"]}
+              ariaLabel={`Next zone: ${nextZone?.label ?? nextCurator.name}`}
+            />
+          ) : (
+            <CtaLink
+              className="detail__next"
+              to={`/editions/${yearId}/artworks`}
+              lines={["View", "MORE"]}
+              spacing={["0.26em", "0.135em"]}
+            />
+          )}
         </div>
       </div>
     );
