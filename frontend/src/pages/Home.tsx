@@ -1022,9 +1022,7 @@ export function Home() {
                 <ul className="home-about__sponsor-list">
                   <li>Arthshila Kochi</li>
                   <li>David Hall</li>
-                  <li>CGH Group</li>
                   <li>VKL Warehouse</li>
-                  <li>Jaiveer Mariwala</li>
                 </ul>
               </div>
             </div>
