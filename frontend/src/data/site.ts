@@ -94,7 +94,7 @@ const IMAGE_NATURAL: Record<string, { w: number; h: number }> = {
   "/curators/ashok.png": { w: 1500, h: 1600 },
   "/curators/chinar.png": { w: 1204, h: 1600 },
   "/curators/gabaa.png": { w: 1600, h: 1067 },
-  "/curators/salman.png": { w: 1552, h: 1190 },
+  "/curators/salman.png": { w: 960, h: 1280 },
   "/curators/savyasachi.png": { w: 1600, h: 1064 },
   "/curators/secular.png": { w: 1600, h: 1280 },
   "/curators/seethal.png": { w: 1242, h: 1600 },
