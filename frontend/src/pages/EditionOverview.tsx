@@ -7,7 +7,6 @@ import { BrandArrow } from "../components/BrandArrow";
 import { HighlightText } from "../components/HighlightText";
 import {
   getEditionOverview,
-  getEditionSearchTags,
   type CuratorBio,
   type EditionDownload,
   type InstitutionWithArtists,
@@ -189,17 +188,7 @@ function EditionDownloadsList({
   );
 }
 
-/** Pipe-separated credit names from edition search tags. */
-function TaggedCreditsList({
-  names,
-  highlight,
-}: {
-  names: readonly string[];
-  highlight: string;
-}) {
-  if (!names.length) return null;
-  return <InstitutionsList names={names} highlight={highlight} />;
-}
+
 
 /**
  * Dynamic Edition overview — Loads all content, titles, notes, and credits with CMS-first priority
@@ -218,7 +207,6 @@ export function EditionOverview() {
   const { catalogue } = useEditionCatalogue(yearId);
   const { catalogues } = useCatalogue();
   const isPreviousEdition = yearId !== LATEST_EDITION.id;
-  const searchTags = getEditionSearchTags(yearId);
 
   // Extract dynamic sections with fallback to static data
   const title =
@@ -362,17 +350,6 @@ function cleanIntroParagraphs(
 
   const team = fallback.team;
 
-  const showTaggedCredits =
-    isPreviousEdition &&
-    !curatorBios.length &&
-    !catalogue.teamBody &&
-    (!team || team.length === 0) &&
-    (searchTags.curators.length > 0 ||
-      searchTags.team.length > 0 ||
-      searchTags.artists.length > 0 ||
-      searchTags.venues.length > 0 ||
-      searchTags.artworks.length > 0);
-
   useEffect(() => {
     const q = highlight.trim();
     if (!q || !root.current) return;
@@ -389,7 +366,6 @@ function cleanIntroParagraphs(
     yearId,
     catalogue.teamBody,
     catalogue.institutions,
-    showTaggedCredits,
   ]);
 
   const yearIds = catalogues.map((row) => row.years);
@@ -635,7 +611,7 @@ function cleanIntroParagraphs(
         </div>
       ) : null}
 
-      {/* Curator Bios (2020-21, 2022-23 or CMS curator bios) */}
+      {/* Curator Bios (2020-21, 2022-23) */}
       {curatorBios.length > 0 ? (
         <div className="fig-grid edition-overview__section">
           <div
@@ -649,21 +625,6 @@ function cleanIntroParagraphs(
           </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <CuratorBiosGrid bios={curatorBios} highlight={highlight} />
-          </div>
-        </div>
-      ) : catalogue.teamBody ? (
-        <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
-            THE TEAM
-          </div>
-          <div className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal">
-            <HighlightText text={catalogue.teamBody} query={highlight} />
           </div>
         </div>
       ) : team && team.length > 0 ? (
@@ -681,23 +642,13 @@ function cleanIntroParagraphs(
             <TeamGrid team={team} highlight={highlight} />
           </div>
         </div>
-      ) : showTaggedCredits &&
-        (searchTags.curators.length || searchTags.team.length) ? (
+      ) : !isPreviousEdition && catalogue.teamBody ? (
         <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
-            CURATORS & TEAM
+          <div className="fig-label fig-label--sub edition-overview__reveal">
+            THE TEAM
           </div>
-          <div className="fig-c4-12 edition-overview__reveal">
-            <TaggedCreditsList
-              names={[...searchTags.curators, ...searchTags.team]}
-              highlight={highlight}
-            />
+          <div className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal">
+            <HighlightText text={catalogue.teamBody} query={highlight} />
           </div>
         </div>
       ) : null}
@@ -755,67 +706,6 @@ function cleanIntroParagraphs(
       {/* Downloads (2018-19, 2022-23 or CMS downloads) */}
       {downloads.length > 0 ? (
         <EditionDownloadsList downloads={downloads} />
-      ) : null}
-
-      {/* Tagged Credits Fallbacks */}
-      {showTaggedCredits && searchTags.artists.length ? (
-        <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
-            ARTISTS
-          </div>
-          <div className="fig-c4-12 edition-overview__reveal">
-            <TaggedCreditsList
-              names={searchTags.artists}
-              highlight={highlight}
-            />
-          </div>
-        </div>
-      ) : null}
-
-      {showTaggedCredits && searchTags.venues.length ? (
-        <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
-            VENUES
-          </div>
-          <div className="fig-c4-12 edition-overview__reveal">
-            <TaggedCreditsList
-              names={searchTags.venues}
-              highlight={highlight}
-            />
-          </div>
-        </div>
-      ) : null}
-
-      {showTaggedCredits && searchTags.artworks.length ? (
-        <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
-            PROJECTS
-          </div>
-          <div className="fig-c4-12 edition-overview__reveal">
-            <TaggedCreditsList
-              names={searchTags.artworks}
-              highlight={highlight}
-            />
-          </div>
-        </div>
       ) : null}
 
       {/* Workshop / Photographic Gallery */}
