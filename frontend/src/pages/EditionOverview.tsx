@@ -38,17 +38,20 @@ function CuratorBiosGrid({
   highlight: string;
 }) {
   return (
-    <div className="edition-overview__curator-bios">
-      {bios.map((profile) => (
-        <div key={profile.name} className="edition-overview__bio-card">
-          <h3 className="edition-overview__bio-name">
-            <HighlightText text={profile.name} query={highlight} />
-          </h3>
-          <p className="edition-overview__bio-text fig-body">
-            <HighlightText text={profile.bio} query={highlight} />
-          </p>
-        </div>
-      ))}
+    <div className="edition-overview__curators-wrapper">
+      <h3 className="edition-overview__team-category">Curators</h3>
+      <div className="edition-overview__curator-bios">
+        {bios.map((profile) => (
+          <div key={profile.name} className="edition-overview__bio-card">
+            <h4 className="edition-overview__bio-name">
+              <HighlightText text={profile.name} query={highlight} />
+            </h4>
+            <p className="edition-overview__bio-text fig-body">
+              <HighlightText text={profile.bio} query={highlight} />
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -60,18 +63,19 @@ function TeamGrid({
   team: readonly (readonly (readonly string[])[])[];
   highlight: string;
 }) {
-  const colsClass = `edition-overview__team-grid--cols-${Math.min(Math.max(team.length, 1), 3)}`;
+  const colsCount = Math.min(Math.max(team.length, 1), 3);
+  const colsClass = `edition-overview__team-grid--cols-${colsCount}`;
   return (
     <div className={`edition-overview__team-grid ${colsClass}`}>
       {team.map((col, colIdx) => (
         <div key={colIdx} className="edition-overview__team-col">
           {col.map(([role, ...members]) => (
             <div key={role} className="edition-overview__role">
-              <strong>
+              <strong className="edition-overview__role-title">
                 <HighlightText text={role} query={highlight} />
               </strong>
               {members.map((person) => (
-                <span key={person}>
+                <span key={person} className="edition-overview__role-member">
                   <HighlightText text={person} query={highlight} />
                 </span>
               ))}
@@ -311,9 +315,11 @@ function cleanIntroParagraphs(
       : fallback.curatorialNote;
 
   // Participating Institutions
-  const institutions = catalogue.institutions.length
-    ? catalogue.institutions
-    : fallback.institutions;
+  const institutions = isPreviousEdition
+    ? fallback.institutions
+    : catalogue.institutions.length
+      ? catalogue.institutions
+      : fallback.institutions;
 
   const institutionsWithArtists = fallback.institutionsWithArtists ?? [];
 

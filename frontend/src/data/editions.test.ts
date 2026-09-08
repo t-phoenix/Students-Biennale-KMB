@@ -36,7 +36,7 @@ describe("editions data", () => {
     expect(ed2022.nextId).toBe("2025-26");
     expect(ed2022.title).toBe("In the Making");
     expect(ed2022.curatorBios?.length).toBe(7);
-    expect(ed2022.institutionsWithArtists?.length).toBe(54);
+    expect(ed2022.institutionsWithArtists?.length).toBe(53);
     expect(ed2022.downloads?.length).toBe(1);
 
     const ed2025 = getEditionOverview("2025-26");

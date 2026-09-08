@@ -152,28 +152,52 @@
   font-size: var(--type-subtitle-size);
 }
 
+/* Team category header (e.g. "Curators" above 3-column bios grid) */
+.edition-overview__team-category {
+  margin: 0 0 32px 0;
+  font-family: var(--font-degular, "Degular Variable", sans-serif);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 36px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+}
+
 /* Team role columns — 66px gap at 1440 (Figma 66:50, 66:1042). */
 .edition-overview__team-grid {
-  display: grid;
-  column-gap: 66px;
-  row-gap: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 66px;
+  align-items: flex-start;
   min-width: 0;
 }
 
-.edition-overview__team-grid--cols-1 {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 320px;
+.edition-overview__team-grid--cols-1 .edition-overview__team-col {
+  width: 223px;
+  max-width: 100%;
 }
 
-.edition-overview__team-grid--cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.edition-overview__team-grid--cols-2 .edition-overview__team-col {
+  width: 223px;
+  max-width: 100%;
 }
 
-.edition-overview__team-grid--cols-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.edition-overview__team-grid--cols-3 .edition-overview__team-col:nth-child(1),
+.edition-overview__team-grid--cols-3 .edition-overview__team-col:nth-child(3) {
+  width: 223px;
+  max-width: 100%;
+}
+
+.edition-overview__team-grid--cols-3 .edition-overview__team-col:nth-child(2) {
+  width: 315px;
+  max-width: 100%;
 }
 
 .edition-overview__team-col {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
   min-width: 0;
 }
 
@@ -181,12 +205,14 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 32px;
-  font-size: 18px;
-  line-height: 36px;
-  color: var(--color-text-primary);
 }
 
-.edition-overview__role strong {
+.edition-overview__role:last-child {
+  margin-bottom: 0;
+}
+
+.edition-overview__role-title {
+  font-family: var(--font-degular, "Degular Variable", sans-serif);
   font-size: 18px;
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -196,8 +222,9 @@
   margin-bottom: 0;
 }
 
-.edition-overview__role span {
-  font-size: 18px;
+.edition-overview__role-member {
+  font-family: var(--font-degular, "Degular Variable", sans-serif);
+  font-size: 16px;
   font-weight: 400;
   line-height: 36px;
   color: var(--color-text-primary);
@@ -210,12 +237,19 @@
 }
 
 /* Curator biographical profiles (2020-21, 2022-23) — 3 column grid */
+.edition-overview__curators-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .edition-overview__curator-bios {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  column-gap: var(--grid-gutter, 20px);
-  row-gap: 56px;
+  grid-template-columns: repeat(3, minmax(0, 285px));
+  column-gap: 18px;
+  row-gap: 48px;
   min-width: 0;
+  max-width: 893px;
 }
 
 .edition-overview__bio-card {
@@ -227,6 +261,7 @@
 
 .edition-overview__bio-name {
   margin: 0;
+  font-family: var(--font-degular, "Degular Variable", sans-serif);
   font-size: 18px;
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -237,6 +272,7 @@
 
 .edition-overview__bio-text {
   margin: 0;
+  font-family: var(--font-degular, "Degular Variable", sans-serif);
   font-size: 16px;
   line-height: 1.7;
   color: var(--color-text-primary);
@@ -372,10 +408,15 @@
     row-gap: 32px;
   }
 
-  .edition-overview__team-grid--cols-2,
-  .edition-overview__team-grid--cols-3 {
-    grid-template-columns: 1fr;
-    row-gap: 24px;
+  .edition-overview__team-grid {
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .edition-overview__team-grid--cols-1 .edition-overview__team-col,
+  .edition-overview__team-grid--cols-2 .edition-overview__team-col,
+  .edition-overview__team-grid--cols-3 .edition-overview__team-col {
+    width: 100%;
   }
 
   .edition-overview__gallery {
