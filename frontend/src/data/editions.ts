@@ -406,20 +406,20 @@ const ED_2020_21: EditionOverviewData = {
       bio: "Adip Dutta is an artist based in Kolkata. He studied at the University of Calcutta and Rabindra Bharati University, Kolkata. His work has been shown in solo and group exhibitions in Kolkata, Dubai, London, Tokyo and New Delhi, among other places. Adip is also a member of the Faculty of Arts at Rabindra Bharati University.",
     },
     {
-      name: "Suresh K Nair",
-      bio: "Suresh K Nair has studied at the Institute of Mural Painting, Guruvayur, FTII, Pune, Visva Bharati University, Santiniketan, and Temple University, Philadelphia. His mural work can be seen in several countries besides India, including the UK, Bangladesh, USA, Portugal and the UAE. Suresh teaches at the Faculty of Visual Arts, Banaras Hindu University, Banaras.",
-    },
-    {
       name: "Archana Hande",
       bio: "Archana Hande holds degrees in Fine Arts from Visva Bharati, Santiniketan and MS University, Baroda. Solo exhibitions of her work have been held in Bombay, Perth, Rome and New Delhi. She has also shown in numerous biennials and galleries, including in Jakarta, Guangzhou, and Yokohama. Archana is currently based in Bangalore.",
     },
     {
-      name: "Vasudha Thozhur",
-      bio: "Vasudha Thozhur studied at the College of Arts and Crafts, Madras, and at the School of Art and Design at Croydon College, UK. Her work has been shown in exhibitions around the world, including in Berlin, Bombay, Bern, and Chicago. Her institutional work has involved teaching and juries at MSU Baroda, NID Ahmedabad and IICD Jaipur. She presently teaches at the Shiv Nadar University, Dadri.",
-    },
-    {
       name: "Manoj Vyloor",
       bio: "Manoj Vyloor is an artist working between Kochi and Thiruvananthapuram. He completed his post-graduation in Graphic Arts from MS University, Baroda and is currently the Principal of the College of Fine Arts, Thiruvananthapuram. He has had solo exhibitions in Kochi, Baroda and Paris, and has also shown in exhibitions around the world, including in London, New Delhi, Dubai, Kuala Lumpur and Bombay.",
+    },
+    {
+      name: "Suresh K Nair",
+      bio: "Suresh K Nair has studied at the Institute of Mural Painting, Guruvayur, FTII, Pune, Visva Bharati University, Santiniketan, and Temple University, Philadelphia. His mural work can be seen in several countries besides India, including the UK, Bangladesh, USA, Portugal and the UAE. Suresh teaches at the Faculty of Visual Arts, Banaras Hindu University, Banaras.",
+    },
+    {
+      name: "Vasudha Thozhur",
+      bio: "Vasudha Thozhur studied at the College of Arts and Crafts, Madras, and at the School of Art and Design at Croydon College, UK. Her work has been shown in exhibitions around the world, including in Berlin, Bombay, Bern, and Chicago. Her institutional work has involved teaching and juries at MSU Baroda, NID Ahmedabad and IICD Jaipur. She presently teaches at the Shiv Nadar University, Dadri.",
     },
   ],
   team: [],
@@ -464,16 +464,16 @@ const ED_2022_23: EditionOverviewData = {
       bio: "Afrah Shafiq is a Goa-based multimedia artist. Her work emerges from extensive field research, documentary practices and archival material. It ruptures existing narratives, seeks the invisible, and creates new, subversive ways of looking at the familiar. Her work combines text, sound, animation, code, interactivity and the handmade, and maintains poetry within technology. She is currently a fellow at the Field Research Programme of the Garage Museum of Contemporary Art in Moscow.",
     },
     {
+      name: "Amshu Chukki",
+      bio: "Amshu Chukki is a multidisciplinary artist from Bengaluru who investigates new ways to articulate ideas of landscape and cities lying between the visible and not-so-visible interconnections between life, cinema, urbanity, infrastructure, politics, and fiction. In using an array of different media, various textures of material and location converge in his work in the conversation with history, fantasy, site and resistance. His second solo show \"Different Danny and Other Stories\" was recently shown at Chatterjee & Lal, Mumbai.",
+    },
+    {
+      name: "Anga Art Collective",
+      bio: "Assam-based Anga Art Collective was founded in 2010, to critically engage with visuality and materiality based on the geographical and social landscape. Through regional and cultural specificities, the group examines the potential of artistic responses borne of them. They nurse the notion of a studio space breaking itself to become a process, imagining a fluid structure for the collective rather than a closed ensemble. They believe in sharing knowledge and collaborating with rural communities, academics, and activists.",
+    },
+    {
       name: "Arushi Vats",
       bio: "Arushi Vats is a curator and writer based in New Delhi, India. Her essays have been published in Art India Magazine, Runway Journal, Alternative South Asia Photography, LSE International History, Critical Collective, Write | Art | Connect; and in catalogues and anthologies by Serendipity Arts Foundation, New Delhi; Museum of Art and Photography, Bangalore (forthcoming, December 2022). She has attended residencies at La Napoule Art Foundation, France (2022) and the digital Momus Emerging Critics Residency (2021).",
-    },
-    {
-      name: "Suvani Suri",
-      bio: "Suvani Suri is an artist/ researcher, working with sound, text, and intermedia assemblages and is actively engaged in thinking through listening. Her practice is informed by the techno-politics of sound, aural/oral histories and critical imaginations activated by the relational and speculative capacities of voice. Alongside, she composes for video/ performance works and her pedagogical interests conflate with a sustained inquiry into the digital and sonic sensorium.",
-    },
-    {
-      name: "Amshu Chukki",
-      bio: "Amshu Chukki is a multidisciplinary artist from Bengaluru who investigates new ways to articulate ideas of landscape and cities lying between the visible and not-so-visible interconnections between life, cinema, urbanity, infrastructure, politics, and fiction. In using an array of different media, various textures of material and location converge in his work in the conversation with history, fantasy, site and resistance. His second solo show \\\"Different Danny and Other Stories\\\" was recently shown at Chatterjee & Lal, Mumbai.",
     },
     {
       name: "Premjish Achari",
@@ -484,8 +484,8 @@ const ED_2022_23: EditionOverviewData = {
       bio: "Saviya Lopes and Yogesh Barve are visual art practitioners at Clark House Initiative, Mumbai. The core of their practice lies in creating visuals and engaging in conversations that are part of their own social and cultural experiences. The intersection of their practices is in archives, history, community and education. Saviya and Yogesh were both invited to the 11th Gwangju Biennale as fellows for the Eighth Climate (what does art do?) Forum in 2016.",
     },
     {
-      name: "Anga Art Collective",
-      bio: "Assam-based Anga Art Collective was founded in 2010, to critically engage with visuality and materiality based on the geographical and social landscape. Through regional and cultural specificities, the group examines the potential of artistic responses borne of them. They nurse the notion of a studio space breaking itself to become a process, imagining a fluid structure for the collective rather than a closed ensemble. They believe in sharing knowledge and collaborating with rural communities, academics, and activists.",
+      name: "Suvani Suri",
+      bio: "Suvani Suri is an artist/ researcher, working with sound, text, and intermedia assemblages and is actively engaged in thinking through listening. Her practice is informed by the techno-politics of sound, aural/oral histories and critical imaginations activated by the relational and speculative capacities of voice. Alongside, she composes for video/ performance works and her pedagogical interests conflate with a sustained inquiry into the digital and sonic sensorium.",
     },
   ],
   institutionsWithArtists: [
@@ -560,16 +560,7 @@ const ED_2022_23: EditionOverviewData = {
     "/hero/hero4.jpg",
     "/hero/hero5.jpg",
   ],
-  galleryImages: [
-    "/hero/hero1.jpg",
-    "/hero/hero2.jpg",
-    "/hero/hero3.jpg",
-    "/hero/hero4.jpg",
-    "/hero/hero5.jpg",
-    "/hero/hero1.jpg",
-    "/hero/hero2.jpg",
-    "/hero/hero3.jpg",
-  ],
+  galleryImages: [],
   nextId: "2025-26",
 };
 
