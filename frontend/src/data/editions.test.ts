@@ -1,51 +1,46 @@
 import { describe, expect, it } from "vitest";
-import { TEAM_COLS, getEditionOverview } from "./editions";
+import { getEditionOverview } from "./editions";
 
 describe("editions data", () => {
-  it("includes correct 2025-26 team members with correct spellings", () => {
-    const allMembers = TEAM_COLS.flatMap((col) => col.flatMap(([, ...people]) => people));
-    expect(allMembers).toContain("Ananthan Suresh");
-    expect(allMembers).toContain("Abhinil Agarwal");
-    expect(allMembers).toContain("Mario D'Souza");
-    expect(allMembers).toContain("Mashoor Ali M");
-    expect(allMembers).toContain("Rebecca Martin");
-    expect(allMembers).toContain("Nikhita Thevanoor");
-    expect(allMembers).toContain("Maanav Jalan");
-    expect(allMembers).toContain("Harshada Vijay");
-    expect(allMembers).toContain("DC Charan");
-    expect(allMembers).toContain("Hiran Unnikrishnan");
-    expect(allMembers).toContain("Niyas Issahak");
-    expect(allMembers).toContain("Anzil Muhammed K");
-    expect(allMembers).toContain("Mishal MA");
-    expect(allMembers).toContain("Anand Peter");
-    expect(allMembers).toContain("Prajesh MP");
-    expect(allMembers).toContain("Vishnulal CR");
-  });
+  it("provides clean schema and chronological nextId for all editions", () => {
+    const ed2014 = getEditionOverview("2014-15");
+    expect(ed2014.id).toBe("2014-15");
+    expect(ed2014.nextId).toBe("2016-17");
+    expect(ed2014.team.length).toBe(3); // 3 columns
+    expect(ed2014.institutions.length).toBe(37);
+    expect(ed2014.galleryImages.length).toBe(8);
 
-  it("contains all 3 columns with matching roles", () => {
-    expect(TEAM_COLS).toHaveLength(3);
-    const col1Roles = TEAM_COLS[0].map(([r]) => r);
-    const col2Roles = TEAM_COLS[1].map(([r]) => r);
-    const col3Roles = TEAM_COLS[2].map(([r]) => r);
+    const ed2016 = getEditionOverview("2016-17");
+    expect(ed2016.id).toBe("2016-17");
+    expect(ed2016.nextId).toBe("2018-19");
+    expect(ed2016.title).toBe("Later the atelier ate her");
+    expect(ed2016.team.length).toBe(2); // 2 columns
+    expect(ed2016.galleryImages.length).toBe(8);
 
-    expect(col1Roles).toEqual([
-      "Director of Programmes",
-      "Programme Managers",
-      "Programmes Assistants",
-    ]);
-    expect(col2Roles).toEqual([
-      "Production Managers",
-      "Production Assistants",
-      "Accounts Manager",
-    ]);
-    expect(col3Roles).toEqual([
-      "Social Media and Catalogue",
-      "Web Design and Services",
-    ]);
-  });
+    const ed2018 = getEditionOverview("2018-19");
+    expect(ed2018.id).toBe("2018-19");
+    expect(ed2018.nextId).toBe("2020-21");
+    expect(ed2018.title).toBe("Making as Thinking");
+    expect(ed2018.curatorialNote).toBeDefined();
+    expect(ed2018.curatorialNote?.paragraphs.length).toBe(4);
+    expect(ed2018.downloads?.length).toBe(2);
 
-  it("provides overview data for 2025-26 edition with team", () => {
-    const overview = getEditionOverview("2025-26");
-    expect(overview.team).toEqual(TEAM_COLS);
+    const ed2020 = getEditionOverview("2020-21");
+    expect(ed2020.id).toBe("2020-21");
+    expect(ed2020.nextId).toBe("2022-23");
+    expect(ed2020.title).toBe("States of Disarray: Practice as Restitution");
+    expect(ed2020.curatorBios?.length).toBe(5);
+
+    const ed2022 = getEditionOverview("2022-23");
+    expect(ed2022.id).toBe("2022-23");
+    expect(ed2022.nextId).toBe("2025-26");
+    expect(ed2022.title).toBe("In the Making");
+    expect(ed2022.curatorBios?.length).toBe(7);
+    expect(ed2022.institutionsWithArtists?.length).toBe(54);
+    expect(ed2022.downloads?.length).toBe(1);
+
+    const ed2025 = getEditionOverview("2025-26");
+    expect(ed2025.id).toBe("2025-26");
+    expect(ed2025.nextId).toBeUndefined();
   });
 });
