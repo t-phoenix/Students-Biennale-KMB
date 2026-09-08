@@ -204,7 +204,7 @@
 .edition-overview__role {
   display: flex;
   flex-direction: column;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .edition-overview__role:last-child {

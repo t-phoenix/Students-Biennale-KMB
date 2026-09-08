@@ -300,12 +300,13 @@ function cleanIntroParagraphs(
     ? (fallback.galleryImages?.length ? fallback.galleryImages : catalogue.galleryUrls)
     : (catalogue.galleryUrls.length ? catalogue.galleryUrls : fallback.galleryImages);
 
-  // Curators with bios: from CMS if present, else from fallback
+  // Curators with bios: from fallback for previous editions, else from CMS
   const cmsCuratorBios: CuratorBio[] = catalogue.curators
     .filter((c) => Boolean(c.bio))
     .map((c) => ({ name: c.name, bio: c.bio! }));
-  const curatorBios =
-    cmsCuratorBios.length > 0 ? cmsCuratorBios : (fallback.curatorBios ?? []);
+  const curatorBios = isPreviousEdition
+    ? (fallback.curatorBios ?? [])
+    : (cmsCuratorBios.length > 0 ? cmsCuratorBios : (fallback.curatorBios ?? []));
 
   // Curatorial note
   const curatorialNoteSection = catalogue.sections?.find(
