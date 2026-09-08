@@ -233,9 +233,45 @@ export function EditionOverview() {
     ? (fallback.titleLines || splitEditionSubtitle(title, subtitle).lines)
     : [subtitle];
 
-  const intro = catalogue.overview
-    ? catalogue.overview.split("\n\n").filter(Boolean)
+function cleanIntroParagraphs(
+  paragraphs: string[],
+  isPreviousEdition: boolean,
+  title: string,
+  subtitle: string,
+): string[] {
+  if (!isPreviousEdition) return paragraphs;
+  return paragraphs.filter((p) => {
+    const trimmed = p.trim();
+    if (!trimmed) return false;
+    if (
+      /^(The\s+)?Students['’]?\s*Biennale\s*(Inaugural\s*Edition)?\s*(\(\s*\d{4}\s*[-–]\s*\d{2}\s*\)|\d{4}\s*[-–]\s*\d{2})?$/i.test(
+        trimmed,
+      )
+    ) {
+      return false;
+    }
+    if (
+      /^(The\s+)?(Inaugural\s*Edition|Later the atelier ate her|Making as Thinking|States of Disarray:?\s*Practice as Restitution|In the Making)\s*(\(\s*\d{4}\s*[-–]\s*\d{2}\s*\)|\d{4}\s*[-–]\s*\d{2})?$/i.test(
+        trimmed,
+      )
+    ) {
+      return false;
+    }
+    if (
+      trimmed.toLowerCase() === title.toLowerCase() ||
+      trimmed.toLowerCase() === subtitle.toLowerCase()
+    ) {
+      return false;
+    }
+    return true;
+  });
+}
+
+  const rawIntro = catalogue.overview
+    ? catalogue.overview.split("\n\n").map((p) => p.trim()).filter(Boolean)
     : fallback.intro;
+
+  const intro = cleanIntroParagraphs(rawIntro, isPreviousEdition, title, subtitle);
 
   const heroImages = (() => {
     if (catalogue.heroUrls.length) return catalogue.heroUrls;
