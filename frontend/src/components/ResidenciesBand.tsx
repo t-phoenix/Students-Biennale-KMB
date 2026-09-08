@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { crossfadeSlides, initSlideStack } from "../lib/imageSlider";
 import { preloadUrls } from "../lib/preloadImages";
+import { CarouselNavArrows } from "./CarouselNavArrows";
 import "./ResidenciesBand.css";
 
 export type ResidencySlide = {
@@ -36,6 +37,16 @@ export function ResidenciesBand({ slides }: Props) {
   const [index, setIndex] = useState(0);
   const safeIndex = slides.length ? Math.min(index, slides.length - 1) : 0;
   const slide = slides[safeIndex];
+  const hasMany = slides.length > 1;
+
+  const goToSlide = useCallback(
+    (next: number) => {
+      if (!slides.length) return;
+      const len = slides.length;
+      setIndex(((next % len) + len) % len);
+    },
+    [slides.length],
+  );
 
   useEffect(() => {
     setIndex((current) => (slides.length ? Math.min(current, slides.length - 1) : 0));
@@ -58,6 +69,33 @@ export function ResidenciesBand({ slides }: Props) {
     prevIndex.current = safeIndex;
   }, [safeIndex, slides.length]);
 
+  useEffect(() => {
+    if (!hasMany) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const section = sectionRef.current;
+      if (!section) return;
+      const target = event.target as Node | null;
+      // Ignore when typing in form fields elsewhere on the page.
+      if (target instanceof HTMLElement) {
+        const tag = target.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable) return;
+      }
+      const rect = section.getBoundingClientRect();
+      const inView =
+        rect.top < window.innerHeight * 0.85 && rect.bottom > window.innerHeight * 0.15;
+      if (!inView) return;
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goToSlide(safeIndex - 1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goToSlide(safeIndex + 1);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [goToSlide, hasMany, safeIndex]);
+
   useGSAP(
     () => {
       const wrap = bgWrapRef.current;
@@ -75,16 +113,13 @@ export function ResidenciesBand({ slides }: Props) {
             end: "bottom top",
             scrub: true,
           },
-        }
+        },
       );
     },
-    { scope: sectionRef, dependencies: [slides.length] }
+    { scope: sectionRef, dependencies: [slides.length] },
   );
 
   if (!slide) return null;
-
-  const hasMany = slides.length > 1;
-  const goToSlide = (next: number) => setIndex(next);
 
   return (
     <section
@@ -92,6 +127,7 @@ export function ResidenciesBand({ slides }: Props) {
       id="residencies"
       className="residencies-band"
       aria-label="Residencies"
+      tabIndex={hasMany ? 0 : undefined}
     >
       <h2 className="residencies-band__label">Residencies</h2>
 
@@ -111,6 +147,14 @@ export function ResidenciesBand({ slides }: Props) {
           />
         ))}
       </div>
+
+      {hasMany ? (
+        <CarouselNavArrows
+          slideSrc={slide.image}
+          onPrev={() => goToSlide(safeIndex - 1)}
+          onNext={() => goToSlide(safeIndex + 1)}
+        />
+      ) : null}
 
       <div className="residencies-band__card-slot">
         <div className="residencies-band__card">

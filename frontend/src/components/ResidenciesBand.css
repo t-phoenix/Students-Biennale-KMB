@@ -182,6 +182,19 @@
   background: var(--color-neutral-white);
 }
 
+/* Keep carousel arrows above the photo and clear of the right-hand info card. */
+.residencies-band .carousel-nav {
+  z-index: 4;
+}
+
+.residencies-band .carousel-nav--next {
+  /* Sit just left of the info card instead of under it. */
+  right: max(
+    calc(var(--grid-margin) + 64px),
+    calc((100% - 1440px) / 2 + 152px + min(355px, 42vw) + 12px)
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
   .residencies-band__bg {
     transition: none;
@@ -212,6 +225,14 @@
   .residencies-band__card {
     height: auto;
     max-height: none;
+  }
+
+  .residencies-band .carousel-nav {
+    top: 42%;
+  }
+
+  .residencies-band .carousel-nav--next {
+    right: var(--grid-margin);
   }
 
   .residencies-band__dots {
