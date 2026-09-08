@@ -430,7 +430,7 @@ export function mapProgrammes(
   const upcoming = workshops.filter((row) => row.state === "upcoming");
   const past = workshops.filter((row) => row.state !== "upcoming");
   const residencies = sorted
-    .filter((row) => row.subtype === "residency" && !isRazaResidency(row))
+    .filter((row) => row.subtype === "residency")
     .map((row) => mapResidency(row, assets));
   const razaRow = sorted.find((row) => isRazaResidency(row));
   const national = sorted.find((row) => row.subtype === "national-award");

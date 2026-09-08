@@ -3,7 +3,7 @@ import { EMPTY_PROGRAMMES } from "./fallbacks";
 import { mapProgrammes } from "./mappers";
 import type { AwardWinnerRow, MappedProgrammes, ProgrammeAsset, ProgrammeRow } from "./types";
 
-const STORAGE_KEY = "sb-programmes-v13";
+const STORAGE_KEY = "sb-programmes-v14";
 const PROGRAMME_SELECT =
   "id, subtype, state, title, slug, summary, body, dates, place, host, awardees, sort_order, published, programme_facilitators(display_name, sort_order)";
 
