@@ -214,18 +214,8 @@ const ED_2014_15: EditionOverviewData = {
   "Department of Fine Arts, Sree Sankaracharya University of Sanskrit, Kalady",
   "Government College of Fine Arts, Kumbakonam"
 ],
-  heroImage: "/editions/2014-15/hero.png",
-  heroImages: ["/editions/2014-15/hero.png"],
-  galleryImages: [
-    "/editions/2014-15/gallery-1.png",
-    "/editions/2014-15/gallery-2.png",
-    "/editions/2014-15/gallery-3.png",
-    "/editions/2014-15/gallery-4.png",
-    "/editions/2014-15/gallery-5.png",
-    "/editions/2014-15/gallery-6.png",
-    "/editions/2014-15/gallery-7.png",
-    "/editions/2014-15/gallery-8.png",
-  ],
+  heroImages: [],
+  galleryImages: [],
   nextId: "2016-17",
 };
 
@@ -286,18 +276,8 @@ const ED_2016_17: EditionOverviewData = {
     ],
   ],
   institutions: [],
-  heroImage: "/editions/2016-17/hero.png",
-  heroImages: ["/editions/2016-17/hero.png"],
-  galleryImages: [
-    "/editions/2016-17/gallery-1.png",
-    "/editions/2016-17/gallery-2.png",
-    "/editions/2016-17/gallery-3.png",
-    "/editions/2016-17/gallery-4.png",
-    "/editions/2016-17/gallery-5.png",
-    "/editions/2016-17/gallery-6.png",
-    "/editions/2016-17/gallery-7.png",
-    "/editions/2016-17/gallery-8.png",
-  ],
+  heroImages: [],
+  galleryImages: [],
   nextId: "2018-19",
 };
 
@@ -356,18 +336,8 @@ const ED_2018_19: EditionOverviewData = {
     },
   ],
   institutions: [],
-  heroImage: "/editions/2018-19/hero.png",
-  heroImages: ["/editions/2018-19/hero.png"],
-  galleryImages: [
-    "/editions/2018-19/gallery-1.png",
-    "/editions/2018-19/gallery-2.png",
-    "/editions/2018-19/gallery-3.png",
-    "/editions/2018-19/gallery-4.png",
-    "/editions/2018-19/gallery-5.png",
-    "/editions/2018-19/gallery-6.png",
-    "/editions/2018-19/gallery-7.png",
-    "/editions/2018-19/gallery-8.png",
-  ],
+  heroImages: [],
+  galleryImages: [],
   nextId: "2020-21",
 };
 
@@ -417,18 +387,8 @@ const ED_2020_21: EditionOverviewData = {
 ],
   team: [],
   institutions: [],
-  heroImage: "/editions/2020-21/hero.png",
-  heroImages: ["/editions/2020-21/hero.png"],
-  galleryImages: [
-    "/editions/2018-19/gallery-1.png",
-    "/editions/2018-19/gallery-2.png",
-    "/editions/2018-19/gallery-3.png",
-    "/editions/2018-19/gallery-4.png",
-    "/editions/2018-19/gallery-5.png",
-    "/editions/2018-19/gallery-6.png",
-    "/editions/2018-19/gallery-7.png",
-    "/editions/2018-19/gallery-8.png",
-  ],
+  heroImages: [],
+  galleryImages: [],
   nextId: "2022-23",
 };
 
@@ -699,8 +659,7 @@ const ED_2022_23: EditionOverviewData = {
       href: "#",
     },
   ],
-  heroImage: "/editions/2022-23/hero.png",
-  heroImages: ["/editions/2022-23/hero.png"],
+  heroImages: [],
   galleryImages: [],
   nextId: "2025-26",
 };
@@ -734,16 +693,7 @@ export function getEditionOverview(yearId: string): EditionOverviewData {
     intro: [EDITION_SHORT, EDITION_MORE],
     team: TEAM_COLS,
     institutions: [],
-    galleryImages: [
-      "/editions/2014-15/gallery-1.png",
-      "/editions/2014-15/gallery-2.png",
-      "/editions/2014-15/gallery-3.png",
-      "/editions/2014-15/gallery-4.png",
-      "/editions/2014-15/gallery-5.png",
-      "/editions/2014-15/gallery-6.png",
-      "/editions/2014-15/gallery-7.png",
-      "/editions/2014-15/gallery-8.png",
-    ],
+    galleryImages: [],
   };
 }
 

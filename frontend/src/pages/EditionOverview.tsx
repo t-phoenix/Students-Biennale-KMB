@@ -282,23 +282,33 @@ function cleanIntroParagraphs(
   const intro = cleanIntroParagraphs(rawIntro, isPreviousEdition, title, subtitle);
 
   const heroImages = (() => {
-    if (isPreviousEdition) {
-      if (fallback.heroImages?.length) return fallback.heroImages;
-      if (fallback.heroImage) return [fallback.heroImage];
-      if (catalogue.heroUrls.length) return catalogue.heroUrls;
-      if (catalogue.heroUrl) return [catalogue.heroUrl];
-      return [];
-    }
-    if (catalogue.heroUrls.length) return catalogue.heroUrls;
-    if (catalogue.heroUrl) return [catalogue.heroUrl];
-    if (fallback.heroImages?.length) return fallback.heroImages;
-    if (fallback.heroImage) return [fallback.heroImage];
+    const fromCatalogue = (catalogue.heroUrls.length
+      ? catalogue.heroUrls
+      : catalogue.heroUrl
+        ? [catalogue.heroUrl]
+        : []
+    ).filter((src) => Boolean(src?.trim()));
+    if (fromCatalogue.length) return fromCatalogue;
+    // Previous editions: only render heroes that came from the catalogue snapshot.
+    if (isPreviousEdition) return [];
+    if (fallback.heroImages?.length) return fallback.heroImages.filter((src) => Boolean(src?.trim()));
+    if (fallback.heroImage?.trim()) return [fallback.heroImage];
     return [];
   })();
 
-  const galleryImages = isPreviousEdition
-    ? (fallback.galleryImages?.length ? fallback.galleryImages : catalogue.galleryUrls)
-    : (catalogue.galleryUrls.length ? catalogue.galleryUrls : fallback.galleryImages);
+  // Gallery is DB/snapshot only — never fall back to static placeholder paths.
+  const [galleryImages, setGalleryImages] = useState<string[]>(() =>
+    (catalogue.galleryUrls ?? []).filter((src) => Boolean(src?.trim())),
+  );
+
+  useEffect(() => {
+    setGalleryImages((catalogue.galleryUrls ?? []).filter((src) => Boolean(src?.trim())));
+  }, [catalogue.galleryUrls, yearId]);
+
+  const dismissGalleryImage = useCallback((src: string) => {
+    setGalleryImages((prev) => prev.filter((item) => item !== src));
+  }, []);
+
 
   // Curators with bios: from fallback for previous editions, else from CMS
   const cmsCuratorBios: CuratorBio[] = catalogue.curators
@@ -709,7 +719,7 @@ function cleanIntroParagraphs(
         <EditionDownloadsList downloads={downloads} />
       ) : null}
 
-      {/* Workshop / Photographic Gallery */}
+      {/* Workshop / Photographic Gallery — catalogue snapshot URLs only */}
       {galleryImages.length > 0 ? (
         <div className="fig-grid edition-overview__gallery">
           {galleryImages.map((src, i) => (
@@ -717,7 +727,11 @@ function cleanIntroParagraphs(
               key={src + i}
               className="edition-overview__slot edition-overview__reveal"
             >
-              <img src={src} alt="" />
+              <img
+                src={src}
+                alt=""
+                onError={() => dismissGalleryImage(src)}
+              />
             </div>
           ))}
         </div>

@@ -8,14 +8,15 @@ describe("editions data", () => {
     expect(ed2014.nextId).toBe("2016-17");
     expect(ed2014.team.length).toBe(3); // 3 columns
     expect(ed2014.institutions.length).toBe(38);
-    expect(ed2014.galleryImages.length).toBe(8);
+    // Gallery images come from catalogue snapshots / assets, not static fallbacks.
+    expect(ed2014.galleryImages.length).toBe(0);
 
     const ed2016 = getEditionOverview("2016-17");
     expect(ed2016.id).toBe("2016-17");
     expect(ed2016.nextId).toBe("2018-19");
     expect(ed2016.title).toBe("Later the atelier ate her");
     expect(ed2016.team.length).toBe(2); // 2 columns
-    expect(ed2016.galleryImages.length).toBe(8);
+    expect(ed2016.galleryImages.length).toBe(0);
 
     const ed2018 = getEditionOverview("2018-19");
     expect(ed2018.id).toBe("2018-19");
