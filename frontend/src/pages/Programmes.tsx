@@ -54,7 +54,7 @@ export function Programmes() {
     {
       id: "kaki-weiss",
       name: "Kaki Weiss",
-      artwork: "",
+      artwork: "Tabut",
       institution: "Beaux Arts de Marseille, France",
       image: "/programmes/raza-kaki-weiss.jpg",
     },
