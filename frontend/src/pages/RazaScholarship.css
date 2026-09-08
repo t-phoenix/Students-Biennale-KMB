@@ -1,108 +1,174 @@
-.raza-scholarship {
+.raza-page {
   width: 100%;
+  padding-top: 80px;
+  padding-bottom: 80px;
 }
 
-.raza-scholarship__content {
-  margin-bottom: 4rem;
+.raza-page__grid {
+  align-items: start;
 }
 
-.raza-scholarship__title {
-  font-family: "Degular Variable", sans-serif;
+/* Left Rail */
+.raza-page__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  padding-right: var(--grid-gutter, 20px);
+}
+
+.raza-page__rail-title {
+  font-family: inherit;
   font-size: 24px;
   font-weight: 500;
-  letter-spacing: 2.4px;
-  text-transform: uppercase;
-  margin-bottom: 1rem;
   line-height: 1.2;
-}
-
-.raza-scholarship__subtitle {
-  font-family: "Degular Variable", sans-serif;
-  font-size: 16px;
-  color: #545454;
-  line-height: 1.7;
-  margin-bottom: 2rem;
-}
-
-.raza-scholarship__description {
-  margin-bottom: 2rem;
-}
-
-.raza-scholarship__description p {
-  font-family: "Degular Variable", sans-serif;
-  font-size: 16px;
-  line-height: 1.7;
-  color: #000;
-  margin-bottom: 1rem;
-}
-
-.raza-scholarship__scholars-list {
-  font-family: "Degular Variable", sans-serif;
-  font-size: 16px;
-}
-
-.raza-scholarship__scholars-label {
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 2px;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  margin-bottom: 0.5rem;
+  color: var(--color-text-primary, #000000);
+  margin: 0 0 16px;
+  max-width: 295px;
 }
 
-.raza-scholarship__scholars-text {
+.raza-page__rail-divider {
+  width: 100%;
+  max-width: 295px;
+  height: 1px;
+  background: var(--color-border, #000000);
+  margin-bottom: 12px;
+}
+
+.raza-page__rail-subtitle {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
   line-height: 1.7;
-  color: #000;
-}
-
-.raza-scholarship__scholars-section {
-  margin-bottom: 4rem;
-}
-
-.raza-scholarship__scholar {
-  position: relative;
-}
-
-.raza-scholarship__scholar-image {
-  display: block;
-  width: 100%;
-  aspect-ratio: 327 / 210;
-  object-fit: cover;
-  background: var(--color-neutral-gray-mid);
-  margin-bottom: 1rem;
-}
-
-.raza-scholarship__scholar-link {
-  display: block;
-  width: 100%;
-  border: 0;
-  background: transparent;
-  padding: 0;
-  font: inherit;
-  text-align: left;
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-
-.raza-scholarship__scholar h2 {
-  font-family: "Degular Variable", sans-serif;
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+  color: var(--color-text-muted, #545454);
   margin: 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #000;
+  max-width: 295px;
+}
+
+/* Right Main Area */
+.raza-page__main {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* 2-Column Curatorial Text */
+.raza-page__editorial {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--grid-gutter, 20px);
+}
+
+.raza-page__col p {
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-primary, #000000);
+  margin: 0 0 20px;
+}
+
+.raza-page__col p:last-child {
+  margin-bottom: 0;
+}
+
+/* 2x2 Scholars Grid */
+.raza-page__scholars {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 48px var(--grid-gutter, 20px);
+  margin-top: 16px;
+}
+
+.raza-page__scholar-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.raza-page__scholar-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  color: inherit;
+}
+
+.raza-page__scholar-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 426 / 319;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+
+.raza-page__scholar-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.raza-page__scholar-btn:hover .raza-page__scholar-media img {
+  transform: scale(1.04);
+}
+
+.raza-page__scholar-name {
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  margin: 16px 0 8px;
+  color: var(--color-text-primary, #000000);
   transition: opacity 0.2s ease;
 }
 
-.raza-scholarship__scholar-link:hover h2 {
+.raza-page__scholar-btn:hover .raza-page__scholar-name {
   opacity: 0.7;
 }
 
-@media (max-width: 768px) {
-  .raza-scholarship__title {
-    font-size: 18px;
+.raza-page__scholar-caption {
+  font-family: inherit;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-muted, #545454);
+  margin: 0;
+}
+
+/* Navigation footer */
+.raza-page__nav {
+  padding-top: 60px;
+  align-items: center;
+}
+
+@media (max-width: 899px) {
+  .raza-page {
+    padding-top: 40px;
+    padding-bottom: 60px;
+  }
+
+  .raza-page__rail {
+    align-items: flex-start;
+    text-align: left;
+    padding-right: 0;
+    margin-bottom: 28px;
+  }
+
+  .raza-page__rail-title,
+  .raza-page__rail-divider,
+  .raza-page__rail-subtitle {
+    max-width: 100%;
+  }
+
+  .raza-page__editorial,
+  .raza-page__scholars {
+    grid-template-columns: 1fr;
+    gap: 24px;
   }
 }

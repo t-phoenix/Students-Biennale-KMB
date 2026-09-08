@@ -55,21 +55,21 @@ export function Programmes() {
       id: "kaki-weiss",
       name: "Kaki Weiss",
       artwork: "",
-      institution: "",
+      institution: "Beaux Arts de Marseille, France",
       image: "/programmes/raza-kaki-weiss.jpg",
     },
     {
       id: "nina-durel",
       name: "Nina Durel",
-      artwork: "",
-      institution: "",
+      artwork: "Inseamm",
+      institution: "Beaux Arts de Marseille, France",
       image: "/programmes/raza-nina-durel.jpg",
     },
     {
       id: "rutuja-sonawane",
       name: "Rutuja Sonawane",
       artwork: "The People’s Orchestra",
-      institution: "Sir JJ School of Art, Mumbai, Maharashtra",
+      institution: "Sir J. J. School of Art, Mumbai, Maharashtra",
       image: "/programmes/raza-rutuja-sonawane.jpg",
     },
     {
@@ -364,10 +364,10 @@ export function Programmes() {
                 type="button"
                 className="programmes__raza-title-btn"
                 onClick={() => setRazaModalOpen(true)}
-                aria-label="Open Raza - Students' Biennale Scholarship Spotlight"
+                aria-label="Open Students' Biennale 2025–26 x Beaux Arts de Marseille Spotlight"
                 title="Click to spotlight Raza - Students' Biennale Scholarship"
               >
-                <span>RAZA - STUDENTS&apos; BIENNALE SCHOLARSHIP</span>
+                <span>STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE</span>
                 <span className="programmes__raza-title-arrow" aria-hidden>↗</span>
               </button>
             </div>
@@ -377,13 +377,7 @@ export function Programmes() {
                 key={s.id}
                 type="button"
                 className="programmes__award"
-                onClick={() => {
-                  if (s.id === "kaki-weiss" || s.id === "nina-durel") {
-                    setOpenScholarId(s.id);
-                  } else {
-                    setRazaModalOpen(true);
-                  }
-                }}
+                onClick={() => setOpenScholarId(s.id)}
               >
                 <div className="programmes__award-media">
                   <img src={s.image} alt={s.name} />
