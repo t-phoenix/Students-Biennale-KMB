@@ -102,8 +102,8 @@
 
 .residencies-band__card dl > div {
   display: grid;
-  grid-template-columns: 5.75rem 1fr;
-  column-gap: 10px;
+  grid-template-columns: max-content 1fr;
+  column-gap: 0;
   font-size: 16px;
   line-height: 30px;
 }
@@ -114,7 +114,7 @@
 }
 
 .residencies-band__card dt::after {
-  content: " :";
+  content: ": ";
 }
 
 .residencies-band__card dd {
