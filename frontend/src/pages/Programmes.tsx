@@ -28,7 +28,7 @@ export function Programmes() {
   const [expandedNationalAwards, setExpandedNationalAwards] = useState(false);
   const { heroCovers } = useProgrammesCovers();
   const currentHeroSrc = heroCovers[heroSlide]?.image_url ?? heroCovers[0]?.image_url ?? "";
-  const dotsTone = useCarouselDotsTone(currentHeroSrc, "right");
+  const dotsTone = useCarouselDotsTone(currentHeroSrc, "center");
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
   const awardsPreviewCount = 3;

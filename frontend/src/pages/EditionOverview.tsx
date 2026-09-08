@@ -86,15 +86,23 @@ function TeamGrid({
 function CuratorialNoteSection({
   note,
   highlight,
+  isPreviousEdition,
 }: {
   note: { title: string; paragraphs: string[] };
   highlight: string;
+  isPreviousEdition: boolean;
 }) {
   return (
     <div className="fig-grid edition-overview__section edition-overview__curatorial-note">
-      <h2 className="fig-label fig-label--sub edition-overview__reveal">
+      <div
+        className={
+          isPreviousEdition
+            ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+            : "fig-label fig-label--sub edition-overview__reveal"
+        }
+      >
         {note.title.toUpperCase()}
-      </h2>
+      </div>
       <div className="fig-c4-9 edition-overview__curatorial-body edition-overview__reveal">
         {note.paragraphs.map((para, i) => (
           <p key={i} className="fig-body">
@@ -142,7 +150,7 @@ function InstitutionsAndArtistsList({
           </strong>
           {item.artists ? (
             <span className="edition-overview__artists-names">
-              {" "}(<HighlightText text={item.artists} query={highlight} />)
+              {" — "}<HighlightText text={item.artists} query={highlight} />
             </span>
           ) : null}
         </span>
@@ -222,7 +230,7 @@ export function EditionOverview() {
     : "2025–26";
 
   const subtitleLines = isPreviousEdition
-    ? splitEditionSubtitle(title, subtitle).lines
+    ? (fallback.titleLines || splitEditionSubtitle(title, subtitle).lines)
     : [subtitle];
 
   const intro = catalogue.overview
@@ -356,7 +364,7 @@ export function EditionOverview() {
   }, []);
 
   const currentHeroSrc = heroImages[slide] ?? heroImages[0] ?? "";
-  const dotsTone = useCarouselDotsTone(currentHeroSrc, "right");
+  const dotsTone = useCarouselDotsTone(currentHeroSrc, "center");
 
   useGSAP(
     () => {
@@ -565,27 +573,45 @@ export function EditionOverview() {
       {/* Curator Bios (2020-21, 2022-23 or CMS curator bios) */}
       {curatorBios.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             THE TEAM
-          </h2>
+          </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <CuratorBiosGrid bios={curatorBios} highlight={highlight} />
           </div>
         </div>
       ) : catalogue.teamBody ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             THE TEAM
-          </h2>
+          </div>
           <div className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal">
             <HighlightText text={catalogue.teamBody} query={highlight} />
           </div>
         </div>
       ) : team && team.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             THE TEAM
-          </h2>
+          </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <TeamGrid team={team} highlight={highlight} />
           </div>
@@ -593,9 +619,15 @@ export function EditionOverview() {
       ) : showTaggedCredits &&
         (searchTags.curators.length || searchTags.team.length) ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             CURATORS & TEAM
-          </h2>
+          </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <TaggedCreditsList
               names={[...searchTags.curators, ...searchTags.team]}
@@ -607,15 +639,25 @@ export function EditionOverview() {
 
       {/* Curatorial Note (2018-19 or from CMS) */}
       {curatorialNote ? (
-        <CuratorialNoteSection note={curatorialNote} highlight={highlight} />
+        <CuratorialNoteSection
+          note={curatorialNote}
+          highlight={highlight}
+          isPreviousEdition={isPreviousEdition}
+        />
       ) : null}
 
       {/* Participating Institutions & Artists (2022-23) or Participating Institutions (2014-15, 2016-17, 2018-19, 2020-21) */}
       {institutionsWithArtists.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             PARTICIPATING INSTITUTIONS AND ARTISTS
-          </h2>
+          </div>
           <InstitutionsAndArtistsList
             items={institutionsWithArtists}
             highlight={highlight}
@@ -623,9 +665,15 @@ export function EditionOverview() {
         </div>
       ) : institutions.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             PARTICIPATING INSTITUTIONS
-          </h2>
+          </div>
           {isPreviousEdition ? (
             <InstitutionsList names={institutions} highlight={highlight} />
           ) : (
@@ -647,9 +695,15 @@ export function EditionOverview() {
       {/* Tagged Credits Fallbacks */}
       {showTaggedCredits && searchTags.artists.length ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             ARTISTS
-          </h2>
+          </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <TaggedCreditsList
               names={searchTags.artists}
@@ -661,9 +715,15 @@ export function EditionOverview() {
 
       {showTaggedCredits && searchTags.venues.length ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             VENUES
-          </h2>
+          </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <TaggedCreditsList
               names={searchTags.venues}
@@ -675,9 +735,15 @@ export function EditionOverview() {
 
       {showTaggedCredits && searchTags.artworks.length ? (
         <div className="fig-grid edition-overview__section">
-          <h2 className="fig-label fig-label--sub edition-overview__reveal">
+          <div
+            className={
+              isPreviousEdition
+                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
+                : "fig-label fig-label--sub edition-overview__reveal"
+            }
+          >
             PROJECTS
-          </h2>
+          </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <TaggedCreditsList
               names={searchTags.artworks}

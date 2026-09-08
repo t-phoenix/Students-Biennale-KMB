@@ -155,11 +155,14 @@
 
 .residencies-band__dots {
   position: absolute;
-  right: max(var(--grid-margin), calc((100% - 1440px) / 2 + 152px));
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
   bottom: 36px;
   z-index: 4;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
   gap: 8px;
   margin: 0;
   padding: 0;
@@ -212,7 +215,10 @@
   }
 
   .residencies-band__dots {
-    right: var(--grid-margin);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
     bottom: 24px;
+    justify-content: center;
   }
 }

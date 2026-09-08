@@ -7,7 +7,7 @@ describe("editions data", () => {
     expect(ed2014.id).toBe("2014-15");
     expect(ed2014.nextId).toBe("2016-17");
     expect(ed2014.team.length).toBe(3); // 3 columns
-    expect(ed2014.institutions.length).toBe(37);
+    expect(ed2014.institutions.length).toBe(38);
     expect(ed2014.galleryImages.length).toBe(8);
 
     const ed2016 = getEditionOverview("2016-17");

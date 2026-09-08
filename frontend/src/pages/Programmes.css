@@ -51,10 +51,14 @@
 
 .programmes__hero-dots {
   position: absolute;
-  right: var(--grid-margin);
+  left: 50%;
+  right: auto;
   bottom: 24px;
+  transform: translateX(-50%);
   z-index: 3;
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 8px;
 }
 

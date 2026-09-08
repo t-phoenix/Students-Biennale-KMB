@@ -90,10 +90,15 @@
 
 .detail__hero-dots {
   position: absolute;
-  right: var(--grid-margin);
-  top: 24px;
+  left: 50%;
+  right: auto;
+  bottom: 24px;
+  top: auto;
+  transform: translateX(-50%);
   z-index: 3;
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 8px;
 }
 
@@ -112,23 +117,26 @@
 }
 
 .detail__hero-dots--venue {
-  right: 16px;
+  left: 50%;
+  right: auto;
   bottom: 16px;
+  top: auto;
+  transform: translateX(-50%);
+  justify-content: center;
 }
 
 .detail__hero-dots--venue button {
   border-color: var(--color-neutral-white);
 }
 
-/* Artwork hero dots — centered at the bottom of the cover (Figma 121:2),
-   a separate modifier from --venue so the shared base rule and the venue
-   carousel's own bottom-right placement stay untouched. */
+/* Artwork hero dots — centered at the bottom of the cover (Figma 121:2) */
 .detail__hero-dots--artwork {
   left: 50%;
   right: auto;
   top: auto;
   bottom: 24px;
   transform: translateX(-50%);
+  justify-content: center;
 }
 
 .detail__hero-dots--artwork button {
