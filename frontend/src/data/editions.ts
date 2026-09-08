@@ -107,25 +107,6 @@ export type EditionSearchTags = {
   institutions: string[];
 };
 
-const COMMON_HERO_IMAGES = [
-  "/hero/hero1.jpg",
-  "/hero/hero2.jpg",
-  "/hero/hero3.jpg",
-  "/hero/hero4.jpg",
-  "/hero/hero5.jpg",
-];
-
-const COMMON_GALLERY_IMAGES = [
-  "/hero/hero1.jpg",
-  "/hero/hero2.jpg",
-  "/hero/hero3.jpg",
-  "/hero/hero4.jpg",
-  "/hero/hero5.jpg",
-  "/hero/hero1.jpg",
-  "/hero/hero2.jpg",
-  "/hero/hero3.jpg",
-];
-
 /* =========================================================================
  * 2014-15: Inaugural Edition (Figma Frame 66:2)
  * ========================================================================= */
@@ -136,7 +117,7 @@ const ED_2014_15: EditionOverviewData = {
   titleLines: ["Students' Biennale", "Inaugural Edition", "2014 - 15"],
   intro: [
   "The inaugural Students' Biennale was presented from 13 December 2014 to 29 March 2015 as part of the Second Kochi-Muziris Biennale, marking the beginning of what has since become the Kochi Biennale Foundation's largest and most far-reaching educational initiative.",
-  "Conceived under the Foundation's Higher Education Programme in collaboration with the Foundation for Indian Contemporary Art \\(FICA\\) and the Foundation for Indian Art Education \\(FIAE\\), the Students' Biennale was established to create an alternative platform for students from art institutions across India to reflect on their practices, engage in critical dialogue, and present their work within the context of an international contemporary art exhibition.",
+  "Conceived under the Foundation's Higher Education Programme in collaboration with the Foundation for Indian Contemporary Art (FICA) and the Foundation for Indian Art Education (FIAE), the Students' Biennale was established to create an alternative platform for students from art institutions across India to reflect on their practices, engage in critical dialogue, and present their work within the context of an international contemporary art exhibition.",
   "From its inception, the Students' Biennale has pursued a dual objective: to examine the diverse conditions of art education and pedagogy across India while simultaneously introducing emerging artists to the wider discursive and professional ecosystem of the Kochi-Muziris Biennale. By situating student practices within an international exhibition framework, the programme sought to foster new forms of exchange between young practitioners, educators, curators, and audiences.",
   "The first edition brought together more than 100 works by students from 37 art institutions spanning the country, including schools in Srinagar, Jabalpur, Visakhapatnam, Thrissur, Imphal, Bhubaneswar, Mysore, among many others. The participating institutions reflected the breadth of India's art education landscape from colonial-era academies established over 150 years ago, to institutions founded in the years following Independence as part of the nation's cultural development, as well as newer schools established over the past few decades.",
   "The selection process itself became a significant pedagogical undertaking. A team of 15 emerging curators travelled extensively across India over a period of three months, visiting art schools, engaging with students and faculty, and developing an understanding of the varied contexts in which artistic practices were being nurtured. Conceived as a process of peer learning, these visits encouraged dialogue rather than evaluation, allowing each curator to respond independently to the questions, urgencies, and possibilities they encountered.",
@@ -148,20 +129,20 @@ const ED_2014_15: EditionOverviewData = {
     [
       [
         "Curators",
-        "Faiza Hasan",
-        "Sumaiya Raza Khan",
-        "Krupa Desai",
-        "Charu Maithani",
-        "Parni Ray",
-        "Arko Datto",
-        "Lina Vincent",
-        "Pallavi Paul",
-        "Jigna Padhiar",
-        "Pranamita Borgohain",
-        "Aryakrishnan Ramakrishnan",
-        "Anannya Mehtta",
-        "Sachin",
-        "Vaishnavi Ramnathan",
+        "Faiza Hasan\\",
+        "Sumaiya Raza Khan\\",
+        "Krupa Desai\\",
+        "Charu Maithani\\",
+        "Parni Ray\\",
+        "Arko Datto\\",
+        "Lina Vincent\\",
+        "Pallavi Paul\\",
+        "Jigna Padhiar\\",
+        "Pranamita Borgohain\\",
+        "Aryakrishnan Ramakrishnan\\",
+        "Anannya Mehtta\\",
+        "Sachin\\",
+        "Vaishnavi Ramnathan\\",
         "Geetika Arora"
       ],
     ],
@@ -203,7 +184,7 @@ const ED_2014_15: EditionOverviewData = {
   "College of Art, Delhi",
   "School of Culture and Creative Expressions, Ambedkar University, Delhi",
   "Government College of Fine Arts, Thrissur",
-  "RLV \\( Radha Lakshmi Vilasam\\) College of Music and Fine Arts, Tripunithura",
+  "RLV ( Radha Lakshmi Vilasam) College of Music and Fine Arts, Tripunithura",
   "Institute of Music and Fine Arts, University of Kashmir, Srinagar",
   "Faculty of Visual Arts, Banaras Hindu University",
   "Department of Fine Arts, Aligarh Muslim University",
@@ -220,7 +201,7 @@ const ED_2014_15: EditionOverviewData = {
   "Govt. College of Arts and Crafts, Kolkata",
   "Faculty of Fine Arts, Rabindra Bharati University, Kolkata",
   "Government College of Art and Crafts, Assam",
-  "Government College of Art and Crafts, Khallikote \\(Ganjam\\), Odisha",
+  "Government College of Art and Crafts, Khallikote (Ganjam), Odisha",
   "B.K.College of Art & Crafts, Bhubaneswar",
   "Institute of Music & Fine Arts, Jammu",
   "Faculty of Fine Arts, Jamia Milia Islamia, New Delhi",
@@ -233,8 +214,18 @@ const ED_2014_15: EditionOverviewData = {
   "Department of Fine Arts, Sree Sankaracharya University of Sanskrit, Kalady",
   "Government College of Fine Arts, Kumbakonam"
 ],
-  heroImages: COMMON_HERO_IMAGES,
-  galleryImages: COMMON_GALLERY_IMAGES,
+  heroImage: "/editions/2014-15/hero.png",
+  heroImages: ["/editions/2014-15/hero.png"],
+  galleryImages: [
+    "/editions/2014-15/gallery-1.png",
+    "/editions/2014-15/gallery-2.png",
+    "/editions/2014-15/gallery-3.png",
+    "/editions/2014-15/gallery-4.png",
+    "/editions/2014-15/gallery-5.png",
+    "/editions/2014-15/gallery-6.png",
+    "/editions/2014-15/gallery-7.png",
+    "/editions/2014-15/gallery-8.png",
+  ],
   nextId: "2016-17",
 };
 
@@ -247,13 +238,13 @@ const ED_2016_17: EditionOverviewData = {
   subtitle: "Later the\natelier ate her\n2016 - 17",
   titleLines: ["Later the", "atelier ate her", "2016 - 17"],
   intro: [
-  "Presented as part of the Third Kochi-Muziris Biennale, the Second Students' Biennale built upon the foundations established by the inaugural edition, significantly expanding its reach, ambition, and pedagogical framework. Organised by the Kochi Biennale Foundation in collaboration with the Foundation for Indian Contemporary Art \\(FICA\\) and the Foundation for Indian Art Education \\(FIAE\\), the programme continued its commitment to strengthening art education in India by creating sustained connections between art schools, students, educators, curators, and the wider contemporary art community.",
+  "Presented as part of the Third Kochi-Muziris Biennale, the Second Students' Biennale built upon the foundations established by the inaugural edition, significantly expanding its reach, ambition, and pedagogical framework. Organised by the Kochi Biennale Foundation in collaboration with the Foundation for Indian Contemporary Art (FICA) and the Foundation for Indian Art Education (FIAE), the programme continued its commitment to strengthening art education in India by creating sustained connections between art schools, students, educators, curators, and the wider contemporary art community.",
   "Conceived as more than an exhibition, the Students' Biennale operates as a long-term educational initiative that uses the international platform of the Kochi-Muziris Biennale to foster critical dialogue, collaboration, and experimentation within art institutions across the country. Central to this vision is the belief that the Biennale can serve not only as a site for exhibiting artworks, but also as a catalyst for rethinking pedagogical practices and creating lasting networks of exchange.",
   "Following a year-long research process that began in late 2015, the second edition opened on 13 December 2016 under the title Later the atelier ate her and ran concurrent to the 3rd edition of the Kochi-Muziris Biennale until 29 March 2017. The exhibition represented an unprecedented expansion of the programme, bringing together over 400 student artists from 55 art institutions across India through the work of 15 emerging curators, and unfolding across seven exhibition venues in Kochi.",
   "The participating institutions reflected the remarkable diversity of India's art education landscape, ranging from nearly two-century-old colonial academies and early twentieth-century national art schools to post-Independence institutions, polytechnic colleges, and recently established art schools. Extending from Imphal to Jabalpur, Kumbakonam to Surat, the edition sought to acknowledge the distinct histories, pedagogies, and regional contexts that shape contemporary artistic practice across the country.",
   "At the heart of the programme was an extensive process of research and peer learning. Each curator worked closely with a group of institutions over the course of a year, visiting campuses, engaging in conversations with students and faculty, and developing exhibitions that emerged from these sustained encounters. Rather than simply selecting works for display, the curators facilitated critical dialogue, collaborative projects, workshops, and new modes of artistic inquiry, transforming the exhibition into an evolving educational process.",
   "The second edition unfolded during a period of significant debate around the future of public education, artistic freedom, and democratic institutions in India. Against this broader social and political backdrop, Later the atelier ate her reflected on the role of art schools as spaces for critical thinking and collective imagination. The participating students and curators grappled with questions surrounding artistic agency, censorship, public engagement, collaboration, and the changing nature of contemporary artistic practice.",
-  "The Foundation for Indian Contemporary Art \\(FICA\\) played a key role in mentoring the curatorial team through workshops and ongoing guidance, while the curators, in turn, developed collaborative platforms that encouraged students to engage in research, collective art-making, and interdisciplinary dialogue. Together, these exchanges reimagined the role of the art student not as an isolated practitioner, but as someone deeply embedded within larger social, cultural, and political realities.",
+  "The Foundation for Indian Contemporary Art (FICA) played a key role in mentoring the curatorial team through workshops and ongoing guidance, while the curators, in turn, developed collaborative platforms that encouraged students to engage in research, collective art-making, and interdisciplinary dialogue. Together, these exchanges reimagined the role of the art student not as an isolated practitioner, but as someone deeply embedded within larger social, cultural, and political realities.",
   "By expanding its geographical reach, strengthening relationships with institutions, and foregrounding education as a collaborative process, the second Students' Biennale demonstrated the transformative potential of sustained engagement between artists, educators, and students. It reaffirmed the programme's commitment to nurturing emerging practitioners while contributing to broader conversations around the future of contemporary art education in India.",
   "SB 2016-17 was presented across seven venues in the historic Mattancherry - Jew Town area of Fort Kochi: M.K. Trades, Kotachery Brothers & co., Arjuna Art Gallery, Heritage Arts, Mattancherry Temple Property, Mohammed Ali Warehouse and Fadi Hall."
 ],
@@ -261,20 +252,20 @@ const ED_2016_17: EditionOverviewData = {
     [
       [
         "Curators",
-        "Adwait Singh",
-        "Aryakrishnan Ramakrishnan",
-        "Ajit Kumar",
-        "Faiza Hasan",
-        "C.P. Krishnapriya",
-        "Harshita Bathwal",
-        "Naveen Mahantesh",
-        "Noman Amouri",
-        "Paribartana Mohanty",
-        "Rajyashree Goody",
-        "Sarojini Lewis",
-        "Shatavisha Mustafi",
-        "Shruti Ramlingiah",
-        "Sumitra Sunder",
+        "Adwait Singh\\",
+        "Aryakrishnan Ramakrishnan\\",
+        "Ajit Kumar\\",
+        "Faiza Hasan\\",
+        "C.P. Krishnapriya\\",
+        "Harshita Bathwal\\",
+        "Naveen Mahantesh\\",
+        "Noman Amouri\\",
+        "Paribartana Mohanty\\",
+        "Rajyashree Goody\\",
+        "Sarojini Lewis\\",
+        "Shatavisha Mustafi\\",
+        "Shruti Ramlingiah\\",
+        "Sumitra Sunder\\",
         "Vivek Chockalingam"
       ],
     ],
@@ -295,8 +286,18 @@ const ED_2016_17: EditionOverviewData = {
     ],
   ],
   institutions: [],
-  heroImages: COMMON_HERO_IMAGES,
-  galleryImages: COMMON_GALLERY_IMAGES,
+  heroImage: "/editions/2016-17/hero.png",
+  heroImages: ["/editions/2016-17/hero.png"],
+  galleryImages: [
+    "/editions/2016-17/gallery-1.png",
+    "/editions/2016-17/gallery-2.png",
+    "/editions/2016-17/gallery-3.png",
+    "/editions/2016-17/gallery-4.png",
+    "/editions/2016-17/gallery-5.png",
+    "/editions/2016-17/gallery-6.png",
+    "/editions/2016-17/gallery-7.png",
+    "/editions/2016-17/gallery-8.png",
+  ],
   nextId: "2018-19",
 };
 
@@ -309,11 +310,11 @@ const ED_2018_19: EditionOverviewData = {
   subtitle: "Making as Thinking\n2018 - 19",
   titleLines: ["Making as Thinking", "2018 - 19"],
   intro: [
-  "The Third Students' Biennale, presented as part of the Fourth Kochi-Muziris Biennale, marked a significant evolution of the programme by expanding beyond the exhibition format into a broader platform for research, dialogue, and critical engagement with art education. Developed by the Kochi Biennale Foundation in collaboration with the Foundation for Indian Contemporary Art \\(FICA\\), the edition adopted a multi-layered approach that brought together an exhibition, an expanded educational programme, field-based research, workshops, and an international conference, reaffirming the Foundation's long-term commitment to strengthening contemporary art education in India.",
+  "The Third Students' Biennale, presented as part of the Fourth Kochi-Muziris Biennale, marked a significant evolution of the programme by expanding beyond the exhibition format into a broader platform for research, dialogue, and critical engagement with art education. Developed by the Kochi Biennale Foundation in collaboration with the Foundation for Indian Contemporary Art (FICA), the edition adopted a multi-layered approach that brought together an exhibition, an expanded educational programme, field-based research, workshops, and an international conference, reaffirming the Foundation's long-term commitment to strengthening contemporary art education in India.",
   "At the heart of the exhibition was the theme Making as Thinking, which proposed artistic practice as a form of inquiry and knowledge production. Rather than viewing making as the final stage of artistic creation, the exhibition foregrounded creative practice itself as a process of thinking, questioning, experimenting, and learning.",
   "The exhibition was developed through an open call for applications and was curated by a team of six curators, who selected projects by emerging artists from across India. For the first time, the Students' Biennale also broadened its geographical scope by inviting participation from students across the SAARC region, including Afghanistan, Bangladesh, Bhutan, India, Maldives, Nepal, Pakistan, Sri Lanka, and Myanmar. Production support was provided to selected participants, enabling them to realise ambitious new works and present them within the context of the Kochi-Muziris Biennale.",
   "The exhibition included around 109 projects by 200 student-artists, and was shown over seven venues in Mattancherry, between 13 December, 2018 and 29 March, 2019.",
-  "Beyond the exhibition, the third edition introduced the Expanded Education Programme \\(EEP\\) which was a landmark initiative that sought to examine the broader ecosystems from which artistic practices emerge. Conceived as a long-term research project, the EEP investigated the conditions of art education by engaging directly with institutions, educators, students, and local learning environments across India.",
+  "Beyond the exhibition, the third edition introduced the Expanded Education Programme (EEP) which was a landmark initiative that sought to examine the broader ecosystems from which artistic practices emerge. Conceived as a long-term research project, the EEP investigated the conditions of art education by engaging directly with institutions, educators, students, and local learning environments across India.",
   "The programme emerged at a time when conversations around the future of art education were gaining urgency internationally. Questions surrounding accessibility, relevance, institutional structures, curriculum, public education, and the evolving role of artists and educators informed the development of the initiative. The Expanded Education Programme sought to situate these global discussions within the specific realities of higher art education in India, creating opportunities for critical reflection while remaining attentive to local contexts and pedagogical practices.",
   "As part of the programme, nine workshops were organised at art schools and educational institutions across the country. Led by artists, curators, performers, art historians, institution-builders, and educators, these workshops created spaces for collaborative learning, experimentation, and dialogue between students and teachers. Rather than prescribing uniform approaches to education, each workshop responded to the specific needs and circumstances of its host institution, encouraging participants to imagine new possibilities for artistic learning and practice.",
   "The research and conversations generated through the Expanded Education Programme culminated in the international conference Pedagogical In-Flux and the Art of Education, held in Kochi on 21 - 22 March 2019. Bringing together artists, educators, researchers, and pedagogues from India and abroad, the conference explored the rapidly changing landscape of art education and examined themes including learner-centred pedagogy, artist-led teaching, material practices, technologies of education, and the relationship between place and artistic knowledge production.",
@@ -324,11 +325,11 @@ const ED_2018_19: EditionOverviewData = {
     [
       [
         "Curators",
-        "Sanchayan Ghosh",
-        "Shukla Sawant",
-        "Shruti Ramalingaiah",
-        "Krishnapriya C P",
-        "K P Reji",
+        "Sanchayan Ghosh\\",
+        "Shukla Sawant\\",
+        "Shruti Ramalingaiah\\",
+        "Krishnapriya C P\\",
+        "K P Reji\\",
         "M P Nishad"
       ],
     ],
@@ -355,8 +356,18 @@ const ED_2018_19: EditionOverviewData = {
     },
   ],
   institutions: [],
-  heroImages: COMMON_HERO_IMAGES,
-  galleryImages: COMMON_GALLERY_IMAGES,
+  heroImage: "/editions/2018-19/hero.png",
+  heroImages: ["/editions/2018-19/hero.png"],
+  galleryImages: [
+    "/editions/2018-19/gallery-1.png",
+    "/editions/2018-19/gallery-2.png",
+    "/editions/2018-19/gallery-3.png",
+    "/editions/2018-19/gallery-4.png",
+    "/editions/2018-19/gallery-5.png",
+    "/editions/2018-19/gallery-6.png",
+    "/editions/2018-19/gallery-7.png",
+    "/editions/2018-19/gallery-8.png",
+  ],
   nextId: "2020-21",
 };
 
@@ -383,16 +394,41 @@ const ED_2020_21: EditionOverviewData = {
   "The interactive online exhibition remains accessible as an archive of this edition."
 ],
   curatorBios: [
-    { name: "Adip Dutta", bio: "Adip Dutta is an artist based in Kolkata. He studied at the University of Calcutta and Rabindra Bharati University, Kolkata. His work has been shown in solo and group exhibitions in Kolkata, Dubai, London, Tokyo and New Delhi, among other places. Adip is also a member of the Faculty of Arts at Rabindra Bharati University." },
-    { name: "Archana Hande", bio: "Archana Hande holds degrees in Fine Arts from Visva Bharati, Santiniketan and MS University, Baroda. Solo exhibitions of her work have been held in Bombay, Perth, Rome and New Delhi. She has also shown in numerous biennials and galleries, including in Jakarta, Guangzhou, and Yokohama. Archana is currently based in Bangalore." },
-    { name: "Manoj Vyloor", bio: "Manoj Vyloor is an artist working between Kochi and Thiruvananthapuram. He completed his post-graduation in Graphic Arts from MS University, Baroda and is currently the Principal of the College of Fine Arts, Thiruvananthapuram. He has had solo exhibitions in Kochi, Baroda and Paris, and has also shown in exhibitions around the world, including in London, New Delhi, Dubai, Kuala Lumpur and Bombay." },
-    { name: "Suresh K Nair", bio: "Suresh K Nair has studied at the Institute of Mural Painting, Guruvayur, FTII, Pune, Visva Bharati University, Santiniketan, and Temple University, Philadelphia. His mural work can be seen in several countries besides India, including the UK, Bangladesh, USA, Portugal and the UAE. Suresh teaches at the Faculty of Visual Arts, Banaras Hindu University, Banaras." },
-    { name: "Vasudha Thozhur", bio: "Vasudha Thozhur studied at the College of Arts and Crafts, Madras, and at the School of Art and Design at Croydon College, UK. Her work has been shown in exhibitions around the world, including in Berlin, Bombay, Bern, and Chicago. Her institutional work has involved teaching and juries at MSU Baroda, NID Ahmedabad and IICD Jaipur. She presently teaches at the Shiv Nadar University, Dadri." },
-  ],
+  {
+    "name": "Adip Dutta",
+    "bio": "Adip Dutta is an artist based in Kolkata. He studied at the University of Calcutta and Rabindra Bharati University, Kolkata. His work has been shown in solo and group exhibitions in Kolkata, Dubai, London, Tokyo and New Delhi, among other places. Adip is also a member of the Faculty of Arts at Rabindra Bharati University."
+  },
+  {
+    "name": "Archana Hande",
+    "bio": "Archana Hande holds degrees in Fine Arts from Visva Bharati, Santiniketan and MS University, Baroda. Solo exhibitions of her work have been held in Bombay, Perth, Rome and New Delhi. She has also shown in numerous biennials and galleries, including in Jakarta, Guangzhou, and Yokohama. Archana is currently based in Bangalore."
+  },
+  {
+    "name": "Manoj Vyloor",
+    "bio": "Manoj Vyloor is an artist working between Kochi and Thiruvananthapuram. He completed his post-graduation in Graphic Arts from MS University, Baroda and is currently the Principal of the College of Fine Arts, Thiruvananthapuram. He has had solo exhibitions in Kochi, Baroda and Paris, and has also shown in exhibitions around the world, including in London, New Delhi, Dubai, Kuala Lumpur and Bombay."
+  },
+  {
+    "name": "Suresh K Nair",
+    "bio": "Suresh K Nair has studied at the Institute of Mural Painting, Guruvayur, FTII, Pune, Visva Bharati University, Santiniketan, and Temple University, Philadelphia. His mural work can be seen in several countries besides India, including the UK, Bangladesh, USA, Portugal and the UAE. Suresh teaches at the Faculty of Visual Arts, Banaras Hindu University, Banaras."
+  },
+  {
+    "name": "Vasudha Thozhur",
+    "bio": "Vasudha Thozhur studied at the College of Arts and Crafts, Madras, and at the School of Art and Design at Croydon College, UK. Her work has been shown in exhibitions around the world, including in Berlin, Bombay, Bern, and Chicago. Her institutional work has involved teaching and juries at MSU Baroda, NID Ahmedabad and IICD Jaipur. She presently teaches at the Shiv Nadar University, Dadri."
+  }
+],
   team: [],
   institutions: [],
-  heroImages: COMMON_HERO_IMAGES,
-  galleryImages: COMMON_GALLERY_IMAGES,
+  heroImage: "/editions/2020-21/hero.png",
+  heroImages: ["/editions/2020-21/hero.png"],
+  galleryImages: [
+    "/editions/2018-19/gallery-1.png",
+    "/editions/2018-19/gallery-2.png",
+    "/editions/2018-19/gallery-3.png",
+    "/editions/2018-19/gallery-4.png",
+    "/editions/2018-19/gallery-5.png",
+    "/editions/2018-19/gallery-6.png",
+    "/editions/2018-19/gallery-7.png",
+    "/editions/2018-19/gallery-8.png",
+  ],
   nextId: "2022-23",
 };
 
@@ -411,14 +447,37 @@ const ED_2022_23: EditionOverviewData = {
   "More than an exhibition, In the Making reaffirmed the Students' Biennale as a space for learning, experimentation, and collective exchange. By bringing together diverse voices from across the country, the edition continued the programme's long-standing commitment to nurturing the next generation of artists and contributing to the ongoing evolution of art education in India."
 ],
   curatorBios: [
-    { name: "Afrah Shafiq", bio: "Afrah Shafiq is a Goa-based multimedia artist. Her work emerges from extensive field research, documentary practices and archival material. It ruptures existing narratives, seeks the invisible, and creates new, subversive ways of looking at the familiar. Her work combines text, sound, animation, code, interactivity and the handmade, and maintains poetry within technology. She is currently a fellow at the Field Research Programme of the Garage Museum of Contemporary Art in Moscow." },
-    { name: "Amshu Chukki", bio: "Amshu Chukki is a multidisciplinary artist from Bengaluru who investigates new ways to articulate ideas of landscape and cities lying between the visible and not-so-visible interconnections between life, cinema, urbanity, infrastructure, politics, and fiction. In using an array of different media, various textures of material and location converge in his work in the conversation with history, fantasy, site and resistance. His second solo show \"Different Danny and Other Stories\\" },
-    { name: "Anga Art Collective", bio: "Assam-based Anga Art Collective was founded in 2010, to critically engage with visuality and materiality based on the geographical and social landscape. Through regional and cultural specificities, the group examines the potential of artistic responses borne of them. They nurse the notion of a studio space breaking itself to become a process, imagining a fluid structure for the collective rather than a closed ensemble. They believe in sharing knowledge and collaborating with rural communities, academics, and activists." },
-    { name: "Arushi Vats", bio: "Arushi Vats is a curator and writer based in New Delhi, India. Her essays have been published in Art India Magazine, Runway Journal, Alternative South Asia Photography, LSE International History, Critical Collective, Write | Art | Connect; and in catalogues and anthologies by Serendipity Arts Foundation, New Delhi; Museum of Art and Photography, Bangalore \\(forthcoming, December 2022\\). She has attended residencies at La Napoule Art Foundation, France \\(2022\\) and the digital Momus Emerging Critics Residency \\(2021\\)." },
-    { name: "Premjish Achari", bio: "Premjish Achari teaches art history and theory at Shiv Nadar University, Greater Noida. He initiated Future Collaborations, a platform to promote theoretically and politically informed curation as an essential aspect of contemporary art practice. He recently curated All Canaries Bear Watching, part of the Indo UK collaboration GRID Heritage Project, SAA/JNU, Delhi \\(2022\\), and was editorial supervisor of Lokame Tharavadu \\(‘The World Is One Family’, 2021\\), organised by the Kochi Biennale Foundation." },
-    { name: "Saviya Lopes and Yogesh Barve", bio: "Saviya Lopes and Yogesh Barve are visual art practitioners at Clark House Initiative, Mumbai. The core of their practice lies in creating visuals and engaging in conversations that are part of their own social and cultural experiences. The intersection of their practices is in archives, history, community and education. Saviya and Yogesh were both invited to the 11th Gwangju Biennale as fellows for the Eighth Climate \\(what does art do?\\) Forum in 2016." },
-    { name: "Suvani Suri", bio: "Suvani Suri is an artist/ researcher, working with sound, text, and intermedia assemblages and is actively engaged in thinking through listening. Her practice is informed by the techno-politics of sound, aural/oral histories and critical imaginations activated by the relational and speculative capacities of voice. Alongside, she composes for video/ performance works and her pedagogical interests conflate with a sustained inquiry into the digital and sonic sensorium." },
-  ],
+  {
+    "name": "Afrah Shafiq",
+    "bio": "Afrah Shafiq is a Goa-based multimedia artist. Her work emerges from extensive field research, documentary practices and archival material. It ruptures existing narratives, seeks the invisible, and creates new, subversive ways of looking at the familiar. Her work combines text, sound, animation, code, interactivity and the handmade, and maintains poetry within technology. She is currently a fellow at the Field Research Programme of the Garage Museum of Contemporary Art in Moscow."
+  },
+  {
+    "name": "Amshu Chukki",
+    "bio": "Amshu Chukki is a multidisciplinary artist from Bengaluru who investigates new ways to articulate ideas of landscape and cities lying between the visible and not-so-visible interconnections between life, cinema, urbanity, infrastructure, politics, and fiction. In using an array of different media, various textures of material and location converge in his work in the conversation with history, fantasy, site and resistance. His second solo show \"Different Danny and Other Stories\\"
+  },
+  {
+    "name": "Anga Art Collective",
+    "bio": "Assam-based Anga Art Collective was founded in 2010, to critically engage with visuality and materiality based on the geographical and social landscape. Through regional and cultural specificities, the group examines the potential of artistic responses borne of them. They nurse the notion of a studio space breaking itself to become a process, imagining a fluid structure for the collective rather than a closed ensemble. They believe in sharing knowledge and collaborating with rural communities, academics, and activists."
+  },
+  {
+    "name": "Arushi Vats",
+    "bio": "Arushi Vats is a curator and writer based in New Delhi, India. Her essays have been published in Art India Magazine, Runway Journal, Alternative South Asia Photography, LSE International History, Critical Collective, Write | Art | Connect; and in catalogues and anthologies by Serendipity Arts Foundation, New Delhi; Museum of Art and Photography, Bangalore \\(forthcoming, December 2022\\). She has attended residencies at La Napoule Art Foundation, France \\(2022\\) and the digital Momus Emerging Critics Residency \\(2021\\)."
+  },
+  {
+    "name": "Premjish Achari",
+    "bio": "Premjish Achari teaches art history and theory at Shiv Nadar University, Greater Noida. He initiated Future Collaborations, a platform to promote theoretically and politically informed curation as an essential aspect of contemporary art practice. He recently curated All Canaries Bear Watching, part of the Indo UK collaboration GRID Heritage Project, SAA/JNU, Delhi \\(2022\\), and was editorial supervisor of Lokame Tharavadu \\(‘The World Is One Family’, 2021\\), organised by the Kochi Biennale Foundation."
+  },
+  {
+    "name": "Saviya Lopes and Yogesh Barve",
+    "bio": "Saviya Lopes and Yogesh Barve are visual art practitioners at Clark House Initiative, Mumbai. The core of their practice lies in creating visuals and engaging in conversations that are part of their own social and cultural experiences. The intersection of their practices is in archives, history, community and education. Saviya and Yogesh were both invited to the 11th Gwangju Biennale as fellows for the Eighth Climate \\(what does art do?\\) Forum in 2016."
+  },
+  {
+    "name": "Suvani Suri",
+    "bio": "Suvani Suri is an artist/ researcher, working with sound, text, and intermedia assemblages and is actively engaged in thinking through listening. Her practice is informed by the techno-politics of sound, aural/oral histories and critical imaginations activated by the relational and speculative capacities of voice. Alongside, she composes for video/ performance works and her pedagogical interests conflate with a sustained inquiry into the digital and sonic sensorium."
+  }
+],
+  team: [],
+  institutions: [],
   institutionsWithArtists: [
   {
     "institution": "Chitrakala Parishath, Bangalore",
@@ -602,7 +661,7 @@ const ED_2022_23: EditionOverviewData = {
   },
   {
     "institution": "Film and Television Institute of India, Pune, Maharashtra",
-    "artists": "Adheep Das\nColleges"
+    "artists": "Adheep Das\\\nColleges"
   },
   {
     "institution": "Imphal College, Imphal, Manipur",
@@ -633,7 +692,6 @@ const ED_2022_23: EditionOverviewData = {
     "artists": "Malik Irtiza   |   University of Kashmir, Jammu and Kashmir — Aurooj Nasir, Nasir Hassan, Sadaf Sawlath"
   }
 ],
-  institutions: [],
   downloads: [
     {
       title: "SB Catalogue 2022 -23",
@@ -641,55 +699,68 @@ const ED_2022_23: EditionOverviewData = {
       href: "#",
     },
   ],
-  team: [],
-  heroImages: COMMON_HERO_IMAGES,
-  galleryImages: COMMON_GALLERY_IMAGES,
+  heroImage: "/editions/2022-23/hero.png",
+  heroImages: ["/editions/2022-23/hero.png"],
+  galleryImages: [],
   nextId: "2025-26",
 };
 
-/* =========================================================================
- * 2025-26: Sensing Grounds (Current Live Edition)
- * ========================================================================= */
-const ED_2025_26: EditionOverviewData = {
-  id: "2025-26",
-  title: "Students' Biennale",
-  subtitle: "2025–26",
-  titleLines: ["Students' Biennale", "2025–26"],
-  intro: [EDITION_SHORT, EDITION_MORE],
-  team: TEAM_COLS,
-  institutions: [],
-  curatorialNote: {
-    title: SENSING_GROUNDS_NOTE.title,
-    paragraphs: SENSING_GROUNDS_NOTE.paragraphs,
-  },
-  heroImages: COMMON_HERO_IMAGES,
-  galleryImages: COMMON_GALLERY_IMAGES,
-};
-
-const ALL_EDITIONS: Record<string, EditionOverviewData> = {
+export const EDITIONS_BY_YEAR: Record<string, EditionOverviewData> = {
   "2014-15": ED_2014_15,
   "2016-17": ED_2016_17,
   "2018-19": ED_2018_19,
   "2020-21": ED_2020_21,
   "2022-23": ED_2022_23,
-  "2025-26": ED_2025_26,
 };
 
+export const EDITIONS_FALLBACK_ORDER: readonly EditionOverviewData[] = [
+  ED_2022_23,
+  ED_2020_21,
+  ED_2018_19,
+  ED_2016_17,
+  ED_2014_15,
+];
+
 export function getEditionOverview(yearId: string): EditionOverviewData {
-  return ALL_EDITIONS[yearId] ?? ED_2025_26;
+  if (EDITIONS_BY_YEAR[yearId]) {
+    return EDITIONS_BY_YEAR[yearId];
+  }
+
+  return {
+    id: yearId,
+    title: "Students' Biennale",
+    subtitle: yearId.replace("-", "–"),
+    titleLines: ["Students' Biennale", yearId.replace("-", "–")],
+    intro: [EDITION_SHORT, EDITION_MORE],
+    team: TEAM_COLS,
+    institutions: [],
+    galleryImages: [
+      "/editions/2014-15/gallery-1.png",
+      "/editions/2014-15/gallery-2.png",
+      "/editions/2014-15/gallery-3.png",
+      "/editions/2014-15/gallery-4.png",
+      "/editions/2014-15/gallery-5.png",
+      "/editions/2014-15/gallery-6.png",
+      "/editions/2014-15/gallery-7.png",
+      "/editions/2014-15/gallery-8.png",
+    ],
+  };
 }
 
-export function getEditionSearchTags(yearId: string): EditionSearchTags {
-  const data = (editionSearchTagsData as Record<string, Partial<EditionSearchTags>>)[yearId];
-  return {
-    title: data?.title ?? "",
-    curators: data?.curators ?? [],
-    team: data?.team ?? [],
-    artists: data?.artists ?? [],
-    artworks: data?.artworks ?? [],
-    venues: data?.venues ?? [],
-    institutions: data?.institutions ?? [],
-  };
+const typedSearchTags = editionSearchTagsData as Record<string, EditionSearchTags>;
+
+export function getEditionSearchTags(years: string): EditionSearchTags {
+  return (
+    typedSearchTags[years] || {
+      title: "",
+      curators: [],
+      team: [],
+      artists: [],
+      artworks: [],
+      venues: [],
+      institutions: [],
+    }
+  );
 }
 
 export function searchIndexFromTags(
@@ -774,4 +845,3 @@ export function mergeTagSearchIndex(args: {
 
   return merged;
 }
-

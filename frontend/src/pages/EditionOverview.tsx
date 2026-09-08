@@ -278,6 +278,13 @@ function cleanIntroParagraphs(
   const intro = cleanIntroParagraphs(rawIntro, isPreviousEdition, title, subtitle);
 
   const heroImages = (() => {
+    if (isPreviousEdition) {
+      if (fallback.heroImages?.length) return fallback.heroImages;
+      if (fallback.heroImage) return [fallback.heroImage];
+      if (catalogue.heroUrls.length) return catalogue.heroUrls;
+      if (catalogue.heroUrl) return [catalogue.heroUrl];
+      return [];
+    }
     if (catalogue.heroUrls.length) return catalogue.heroUrls;
     if (catalogue.heroUrl) return [catalogue.heroUrl];
     if (fallback.heroImages?.length) return fallback.heroImages;
@@ -285,9 +292,9 @@ function cleanIntroParagraphs(
     return [];
   })();
 
-  const galleryImages = catalogue.galleryUrls.length
-    ? catalogue.galleryUrls
-    : fallback.galleryImages;
+  const galleryImages = isPreviousEdition
+    ? (fallback.galleryImages?.length ? fallback.galleryImages : catalogue.galleryUrls)
+    : (catalogue.galleryUrls.length ? catalogue.galleryUrls : fallback.galleryImages);
 
   // Curators with bios: from CMS if present, else from fallback
   const cmsCuratorBios: CuratorBio[] = catalogue.curators
