@@ -267,13 +267,29 @@ function cleanIntroParagraphs(
     ) {
       return false;
     }
+
+    // Filter out Participating Institutions headings and pipe-separated lists
+    if (/^Participating\s+Institutions/i.test(trimmed)) {
+      return false;
+    }
+    if ((trimmed.match(/\|/g) || []).length >= 2) {
+      return false;
+    }
+
+    // Filter out Team headers / dumps
+    if (/^(THE\s+TEAM|Curators|Curatorial\s+Advisor|Project\s+Advisor|Advisors)/i.test(trimmed)) {
+      return false;
+    }
+
     return true;
   });
 }
 
-  const rawIntro = catalogue.overview
-    ? catalogue.overview.split("\n\n").map((p) => p.trim()).filter(Boolean)
-    : fallback.intro;
+  const rawIntro = isPreviousEdition
+    ? (fallback.intro.length ? fallback.intro : catalogue.overview ? catalogue.overview.split("\n\n").map((p) => p.trim()).filter(Boolean) : [])
+    : (catalogue.overview
+        ? catalogue.overview.split("\n\n").map((p) => p.trim()).filter(Boolean)
+        : fallback.intro);
 
   const intro = cleanIntroParagraphs(rawIntro, isPreviousEdition, title, subtitle);
 
