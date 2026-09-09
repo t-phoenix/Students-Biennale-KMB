@@ -97,7 +97,7 @@
 
 .gallery-lightbox__counter {
   position: fixed;
-  bottom: 24px;
+  bottom: var(--overlay-bottom-inset, 40px);
   left: 50%;
   transform: translateX(-50%);
   color: var(--color-neutral-white);

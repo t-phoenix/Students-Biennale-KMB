@@ -67,6 +67,7 @@
   --nav-height: 72px;
   --nav-height-mobile: 56px;
   --header-h: 60px;
+  --overlay-bottom-inset: 40px;
 
   /* Motion & Craft Easings */
   --ease-craft: cubic-bezier(0.25, 1, 0.35, 1);

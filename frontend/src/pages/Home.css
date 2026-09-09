@@ -46,7 +46,7 @@
   padding-inline: var(--grid-margin);
   pointer-events: none;
   align-items: end;
-  padding-bottom: 40px;
+  padding-bottom: var(--overlay-bottom-inset, 40px);
 }
 
 .home-hero__stack {
@@ -331,7 +331,7 @@
 .home-hero__dots--centered {
   position: absolute;
   left: 50%;
-  bottom: 40px;
+  bottom: var(--overlay-bottom-inset, 40px);
   transform: translateX(-50%);
   z-index: 3;
   justify-content: center;
@@ -895,7 +895,7 @@
 
   .home-hero__grid {
     row-gap: 24px;
-    padding-bottom: 40px;
+    padding-bottom: var(--overlay-bottom-inset, 40px);
   }
 
   .home-hero__meta {
