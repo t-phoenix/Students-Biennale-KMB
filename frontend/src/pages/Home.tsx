@@ -154,9 +154,11 @@ export function Home() {
   const creditArtist = (currentCover?.artist ?? "").trim();
   const creditInst = (currentCover?.institution ?? "").trim();
   const showCredits = showArtwork || showArtist || showInstitution;
-  const workshopThumb = upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || null;
-  const residencyThumb = residencies[0]?.heroImage || null;
-  const awardsThumb = awardsInternational[0]?.image || awardsNational[0]?.image || null;
+  const workshopThumb =
+    upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "/home/thumb-workshops.jpg";
+  const residencyThumb = residencies[0]?.heroImage || "/home/thumb-residencies.jpg";
+  const awardsThumb =
+    awardsInternational[0]?.image || awardsNational[0]?.image || "/home/thumb-awards.jpg";
   const yearId = current?.years ?? LATEST_EDITION.id;
   const overviewParas = (current?.overview || `${EDITION_SHORT}\n\n${EDITION_MORE}`)
     .split("\n\n")
@@ -776,7 +778,7 @@ export function Home() {
           <div className="fig-grid home-programmes__top">
             <h2 className="fig-label fig-heading">PROGRAMMES</h2>
             <div className="home-programmes__banner fig-c4-12">
-              {homeBannerUrl ? <img src={homeBannerUrl} alt="" /> : null}
+              <img src={homeBannerUrl || "/home/programmes-banner.jpg"} alt="" />
             </div>
           </div>
           <div className="fig-grid home-programmes__bottom">

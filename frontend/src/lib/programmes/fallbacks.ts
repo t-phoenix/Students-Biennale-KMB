@@ -27,7 +27,7 @@ const DEFAULT_INTL_AWARDS: AwardWinnerCard[] = AWARDS_INTERNATIONAL.map((w) => (
   artwork: w.artwork,
   institution: w.institution,
   artworkId: w.artworkId,
-  image: `/artworks/${w.artworkId}.jpg`,
+  image: "/home/thumb-awards.jpg",
   artists: [{ name: w.name, institution: w.institution }],
 }));
 
@@ -37,7 +37,7 @@ const DEFAULT_NATIONAL_AWARDS: AwardWinnerCard[] = AWARDS_NATIONAL.map((w) => ({
   artwork: w.artwork,
   institution: w.institution,
   artworkId: w.artworkId,
-  image: `/artworks/${w.artworkId}.jpg`,
+  image: "/home/thumb-awards.jpg",
   artists: [{ name: w.name, institution: w.institution }],
 }));
 
