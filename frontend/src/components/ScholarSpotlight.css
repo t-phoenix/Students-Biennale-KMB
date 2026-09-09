@@ -30,8 +30,8 @@
 }
 
 .scholar-spotlight__sheet .detail__hero--cover {
-  height: calc(100vh - 50px);
-  height: calc(100dvh - 50px);
+  height: 100vh;
+  height: 100dvh;
 }
 
 .scholar-spotlight__nav {

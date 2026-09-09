@@ -79,13 +79,10 @@
   background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
 }
 
-/* Artwork page cover — genuinely full-screen (Figma 121:2: plain full-bleed
-   photo, no title overlay/scrim — the title moved to its own section below,
-   see .detail__section that follows the hero in ArtworkDetailBody). 50px
-   short of full height so the next section visibly peeks at the fold. */
+/* Artwork page cover — genuinely full-screen */
 .detail__hero--cover {
-  height: calc(100vh - 50px);
-  height: calc(100dvh - 50px);
+  height: 100vh;
+  height: 100dvh;
 }
 
 .detail__hero-dots {

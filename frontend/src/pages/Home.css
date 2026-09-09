@@ -7,15 +7,12 @@
   width: 100%;
 }
 
-/* —— Hero: full-bleed media, overlay on the shared 12-col grid
-   stack = cols 1–3 + trailing gutter · meta = cols 10–12 —— */
-/* 20px short of full height (minus the header) so the next section visibly
-   peeks at the fold, same treatment as the artwork page's hero. */
+/* Full viewport height under the header (100dvh - var(--nav-height)) */
 .home-hero {
   position: relative;
   width: 100%;
-  min-height: calc(100dvh - var(--nav-height) - 20px);
-  height: calc(100dvh - var(--nav-height) - 20px);
+  min-height: calc(100dvh - var(--nav-height));
+  height: calc(100dvh - var(--nav-height));
   overflow: hidden;
   background: var(--color-neutral-gray-light);
   isolation: isolate;
