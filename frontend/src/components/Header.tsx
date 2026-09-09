@@ -6,8 +6,10 @@ import { useCatalogue, useAllArtworks } from "../lib/catalogue";
 import { prefetchRouteHero } from "../lib/predictivePrefetch";
 import {
   type HomeSectionId,
+  type ProgrammeSectionId,
   parseHomeHash,
   scrollToSection,
+  scrollToId,
 } from "../lib/scrollToSection";
 import "./Header.css";
 
@@ -38,7 +40,7 @@ const DROPDOWNS: Record<
       { label: "Kochi Biennale Foundation", to: "/#about-kbf" },
       { label: "Students' Biennale", to: "/#about-sb" },
       { label: "SB 2025-26 Team", to: "/#about-team" },
-      { label: "Sponsors of SB 2025-26", to: "/#about" },
+      { label: "Sponsors of SB 2025-26", to: "/#about-sponsors" },
     ],
   },
 };
@@ -46,12 +48,11 @@ const DROPDOWNS: Record<
 const NAV: {
   hash: HomeSectionId;
   label: string;
-  to?: string;
   hasDropdown?: boolean;
 }[] = [
   { hash: "editions", label: "EDITIONS", hasDropdown: true },
-  { hash: "programmes", label: "PROGRAMMES", to: "/programmes", hasDropdown: true },
-  { hash: "press", label: "PRESS", to: "/press", hasDropdown: false },
+  { hash: "programmes", label: "PROGRAMMES", hasDropdown: true },
+  { hash: "press", label: "PRESS", hasDropdown: false },
   { hash: "about", label: "ABOUT", hasDropdown: true },
 ];
 
@@ -406,10 +407,32 @@ export function Header() {
     closeImmediate();
     if (onHome) {
       scrollToSection(hash);
-      navigate({ pathname: "/", hash }, { replace: true });
+      navigate({ pathname: "/", hash: `#${hash}` }, { replace: true });
       return;
     }
-    navigate({ pathname: "/", hash });
+    navigate({ pathname: "/", hash: `#${hash}` });
+  };
+
+  const handleDropdownClick = (
+    to: string,
+    event: MouseEvent<HTMLAnchorElement>
+  ) => {
+    closeImmediate();
+    if (to.startsWith("/#")) {
+      const hash = to.replace("/#", "") as HomeSectionId;
+      if (onHome) {
+        event.preventDefault();
+        scrollToSection(hash);
+        navigate({ pathname: "/", hash: `#${hash}` }, { replace: true });
+      }
+    } else if (to.startsWith("/programmes#")) {
+      const hash = to.replace("/programmes#", "") as ProgrammeSectionId;
+      if (location.pathname === "/programmes") {
+        event.preventDefault();
+        scrollToId(hash);
+        navigate({ pathname: "/programmes", hash: `#${hash}` }, { replace: true });
+      }
+    }
   };
 
   const warmRoute = useCallback(
@@ -483,40 +506,24 @@ export function Header() {
                 else closeDropdown();
               }}
             >
-              {item.to ? (
-                <Link
-                  to={item.to}
-                  data-label={item.hash}
-                  className={
-                    (item.hash === "editions" && location.pathname.startsWith("/editions")) ||
-                    (item.to && location.pathname.startsWith(item.to)) ||
-                    (onHome && activeSection === item.hash) ||
-                    activeDropdown === item.hash
-                      ? "is-active"
-                      : undefined
-                  }
-                  onClick={closeImmediate}
-                  onMouseEnter={() => warmRoute(item.to!)}
-                  onFocus={() => warmRoute(item.to!)}
-                >
-                  {item.label}
-                </Link>
-              ) : (
-                <a
-                  href={`/#${item.hash}`}
-                  data-label={item.hash}
-                  className={
-                    (item.hash === "editions" && location.pathname.startsWith("/editions")) ||
-                    (onHome && activeSection === item.hash) ||
-                    activeDropdown === item.hash
-                      ? "is-active"
-                      : undefined
-                  }
-                  onClick={(e) => goToSection(item.hash, e)}
-                >
-                  {item.label}
-                </a>
-              )}
+              <a
+                href={`/#${item.hash}`}
+                data-label={item.hash}
+                className={
+                  (item.hash === "editions" && location.pathname.startsWith("/editions")) ||
+                  (item.hash === "programmes" && location.pathname.startsWith("/programmes")) ||
+                  (item.hash === "press" && location.pathname.startsWith("/press")) ||
+                  (onHome && (activeSection === item.hash || (item.hash === "about" && activeSection?.startsWith("about")))) ||
+                  activeDropdown === item.hash
+                    ? "is-active"
+                    : undefined
+                }
+                onClick={(e) => goToSection(item.hash, e)}
+                onMouseEnter={() => warmRoute(`/#${item.hash}`)}
+                onFocus={() => warmRoute(`/#${item.hash}`)}
+              >
+                {item.label}
+              </a>
             </span>
           </span>
         ))}
@@ -548,7 +555,7 @@ export function Header() {
                   key={d.label}
                   to={d.to}
                   className={`site-header__dropdown-item${d.isCurrent ? " is-current" : ""}`}
-                  onClick={closeImmediate}
+                  onClick={(e) => handleDropdownClick(d.to, e)}
                   onMouseEnter={() => warmRoute(d.to)}
                   onFocus={() => warmRoute(d.to)}
                 >

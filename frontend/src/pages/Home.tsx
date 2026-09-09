@@ -896,7 +896,7 @@ export function Home() {
           <div className="fig-grid home-about__intro">
             <h2 className="fig-label fig-heading">ABOUT US</h2>
           </div>
-          <div className="fig-grid home-about__block">
+          <div id="about-kbf" className="fig-grid home-about__block">
             <div className="home-about__logo-wrap fig-c1-3">
               <img
                 className="home-about__logo-kbf"
@@ -916,7 +916,7 @@ export function Home() {
               Foundation.
             </p>
           </div>
-          <div className="fig-grid home-about__block">
+          <div id="about-sb" className="fig-grid home-about__block">
             <div className="home-about__logo-wrap fig-c1-3">
               <img
                 className="home-about__logo-sb"
@@ -967,7 +967,7 @@ export function Home() {
             </div>
           </div>
 
-          <div className="fig-grid home-about__team">
+          <div id="about-team" className="fig-grid home-about__team">
             <h3 className="fig-label fig-label--sub">
               STUDENTS&apos; BIENNALE
               <br />
@@ -989,7 +989,7 @@ export function Home() {
             </div>
           </div>
 
-          <div className="fig-grid home-about__sponsors">
+          <div id="about-sponsors" className="fig-grid home-about__sponsors">
             <h3 className="fig-label fig-label--sub">SPONSORS</h3>
             <div className="home-about__sponsors-cols fig-c4-12 fig-sub-3">
               <div className="home-about__sponsor-group">

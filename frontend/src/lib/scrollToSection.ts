@@ -1,23 +1,42 @@
 import { syncScrollTrigger } from "./motion";
 import { getLenisInstance } from "./lenisSingleton";
 
-export type HomeSectionId = "editions" | "programmes" | "press" | "about";
+export type HomeSectionId =
+  | "editions"
+  | "programmes"
+  | "press"
+  | "about"
+  | "about-kbf"
+  | "about-sb"
+  | "about-team"
+  | "about-sponsors";
 
 export type ProgrammeSectionId = "workshops" | "residencies" | "awards";
 
 const PROGRAMME_SECTIONS = new Set<ProgrammeSectionId>(["workshops", "awards", "residencies"]);
 
+const HOME_SECTIONS = new Set<string>([
+  "editions",
+  "programmes",
+  "press",
+  "about",
+  "about-kbf",
+  "about-sb",
+  "about-team",
+  "about-sponsors",
+]);
+
 export function parseHomeHash(hash: string): HomeSectionId | null {
-  const id = hash.replace(/^#/, "") as HomeSectionId;
-  if (id === "editions" || id === "programmes" || id === "press" || id === "about") {
-    return id;
+  const id = hash.replace(/^#/, "");
+  if (HOME_SECTIONS.has(id)) {
+    return id as HomeSectionId;
   }
   return null;
 }
 
 export function parseProgrammeHash(hash: string): ProgrammeSectionId | null {
   const id = hash.replace(/^#/, "") as ProgrammeSectionId;
-  if (id === "workshops" || id === "residencies" || id === "awards") return id;
+  if (PROGRAMME_SECTIONS.has(id)) return id;
   return null;
 }
 
