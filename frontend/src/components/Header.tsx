@@ -11,6 +11,7 @@ import {
   scrollToSection,
   scrollToId,
 } from "../lib/scrollToSection";
+import { getLenisInstance } from "../lib/lenisSingleton";
 import "./Header.css";
 
 type DropdownItem = { label: string; to: string; isCurrent?: boolean };
@@ -29,7 +30,7 @@ const DROPDOWNS: Record<
   programmes: {
     align: "left",
     items: [
-      { label: "Workshops", to: "/programmes#workshops" },
+      { label: "Workshops", to: "/programmes" },
       { label: "Awards", to: "/programmes#awards" },
       { label: "Residencies", to: "/programmes#residencies" },
     ],
@@ -78,17 +79,11 @@ export function Header() {
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isOpenRef = useRef(false);
 
-  // Smart non-disruptive auto-hiding header
+  // Canvas header tucking on /artworks
   const isHiddenRef = useRef(false);
   const isHoveredRef = useRef(false);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastScrollYRef = useRef(0);
 
   const showHeader = useCallback(() => {
-    if (hideTimerRef.current) {
-      clearTimeout(hideTimerRef.current);
-      hideTimerRef.current = null;
-    }
     const header = headerRef.current;
     if (!header) return;
     if (isHiddenRef.current) {
@@ -131,8 +126,10 @@ export function Header() {
   }, [activeDropdown, showHeader]);
 
   useEffect(() => {
+    // Ensure header is always visible on route change / refresh
+    showHeader();
+
     if (location.pathname === "/artworks") {
-      showHeader();
       const onTuck = (e: Event) => {
         const tucked = Boolean((e as CustomEvent<{ tucked: boolean }>).detail?.tucked);
         if (tucked) {
@@ -149,26 +146,6 @@ export function Header() {
         window.removeEventListener("canvas:tuck-header", onTuck);
       };
     }
-
-    const onScroll = () => {
-      const currentY = window.scrollY;
-      const delta = currentY - lastScrollYRef.current;
-
-      if (currentY <= 50) {
-        showHeader();
-      } else if (delta > 8 && !isHoveredRef.current && !activeDropdown) {
-        hideHeader();
-      } else if (delta < -8) {
-        showHeader();
-      }
-      lastScrollYRef.current = currentY;
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    };
   }, [location.pathname, showHeader, hideHeader, activeDropdown]);
 
   const onHeaderEnter = useCallback(() => {
@@ -181,16 +158,7 @@ export function Header() {
 
   const onHeaderLeave = useCallback(() => {
     isHoveredRef.current = false;
-    if (location.pathname === "/artworks") return;
-    if (window.scrollY > 60 && !activeDropdown) {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-      hideTimerRef.current = setTimeout(() => {
-        if (!isHoveredRef.current && !activeDropdown && window.scrollY > 60) {
-          hideHeader();
-        }
-      }, 1000);
-    }
-  }, [activeDropdown, hideHeader, location.pathname]);
+  }, []);
 
   useEffect(() => {
     if (!onHome) {
@@ -431,6 +399,19 @@ export function Header() {
         event.preventDefault();
         scrollToId(hash);
         navigate({ pathname: "/programmes", hash: `#${hash}` }, { replace: true });
+      }
+    } else if (to === "/programmes") {
+      if (location.pathname === "/programmes") {
+        event.preventDefault();
+        const lenis = getLenisInstance();
+        if (lenis) {
+          lenis.scrollTo(0, { immediate: false });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+        if (location.hash) {
+          navigate({ pathname: "/programmes", hash: "" }, { replace: true });
+        }
       }
     }
   };

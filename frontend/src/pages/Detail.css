@@ -79,10 +79,10 @@
   background: linear-gradient(120deg, var(--color-primary-dark), var(--color-neutral-gray-dark));
 }
 
-/* Artwork page cover — genuinely full-screen */
+/* Artwork page cover — genuinely full-screen under the fixed header */
 .detail__hero--cover {
-  height: 100vh;
-  height: 100dvh;
+  height: calc(100dvh - var(--nav-height));
+  min-height: calc(100dvh - var(--nav-height));
 }
 
 .detail__hero-dots {
@@ -529,6 +529,11 @@
 }
 
 @media (max-width: 899px) {
+  .detail__hero--cover {
+    height: calc(100dvh - var(--nav-height-mobile));
+    min-height: calc(100dvh - var(--nav-height-mobile));
+  }
+
   .detail__section {
     padding-top: 40px;
   }

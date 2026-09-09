@@ -68,11 +68,11 @@
   font-size: var(--type-body-size);
 }
 
-/* Inside CanvasExpand: adjust hero height so the title section below visibly peeks with clear space */
+/* Inside CanvasExpand: full screen hero cover under the fixed header */
 .canvas-expand__sheet .detail__hero--cover {
-  height: calc(100dvh - var(--header-h, var(--nav-height, 72px)) - 84px);
-  min-height: 440px;
-  max-height: 820px;
+  height: calc(100dvh - var(--header-h, var(--nav-height, 72px)));
+  min-height: calc(100dvh - var(--header-h, var(--nav-height, 72px)));
+  max-height: none;
 }
 
 .canvas-expand__sheet .detail__section {
@@ -147,8 +147,9 @@
   }
 
   .canvas-expand__sheet .detail__hero--cover {
-    height: calc(100dvh - var(--nav-height-mobile, 56px) - 60px);
-    min-height: 320px;
+    height: calc(100dvh - var(--nav-height-mobile, 56px));
+    min-height: calc(100dvh - var(--nav-height-mobile, 56px));
+    max-height: none;
   }
 
   .canvas-expand__sheet .detail__section {
