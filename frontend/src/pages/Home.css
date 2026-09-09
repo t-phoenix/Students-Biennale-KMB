@@ -379,6 +379,14 @@
   padding-block: 81px 72px;
 }
 
+.home-edition {
+  min-height: calc(100dvh - var(--nav-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
 .home-edition__body {
   display: flex;
   flex-direction: column;
@@ -493,6 +501,11 @@
 
 /* Programmes */
 .home-programmes {
+  min-height: calc(100dvh - var(--nav-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
   background: var(--color-neutral-gray-light);
 }
 
@@ -566,6 +579,14 @@
 }
 
 /* Press */
+.home-press {
+  min-height: calc(100dvh - var(--nav-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
 .home-press__items {
   display: flex;
   flex-direction: column;
@@ -888,6 +909,12 @@
 /* Tier C — the grid drops to 6 columns and every span goes full width, so the
    hero overlay stacks and the right-margin peek is dropped. */
 @media (max-width: 899px) {
+  .home-edition,
+  .home-programmes,
+  .home-press {
+    min-height: auto;
+  }
+
   .home-hero {
     height: auto;
     min-height: 70dvh;
