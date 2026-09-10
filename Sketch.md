@@ -19,7 +19,7 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 - **Change Colors** — Press `1` (White `#ffffff`), `2` (Red `#ec3b43` - default), or `3` (Black `#000000`).
 - **Soft Exit** — Press `P`, `Esc`, or scroll wheel to exit back to navigation while **preserving all strokes on the page**.
 - **Hard Exit** — Double-click, hover/click header or footer, route change, or 10s auto-exit timeout to **exit and clear all strokes**.
-- **Page-Space Anchoring** — Strokes are recorded in absolute page coordinates and translated with scroll offset, staying perfectly pinned to content as you scroll.
+- **Element-Anchored Strokes** — Each stroke is pinned to the actual DOM element drawn on (as a fraction of its live bounding box), not a page coordinate — so it tracks scroll, resize, and layout reflow automatically. See [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model) below.
 
 ### Visual Feedback
 - **Cursor Follower with Difference Blend** — Sleek cursor-following element using `mix-blend-mode: difference` for automatic high contrast against any background.
@@ -55,6 +55,26 @@ Since the automation tooling used to test this couldn't dispatch real `pointermo
 - **Soft exit** — pressing `P` while sketching returned to `navigate` mode with the stroke pixel count unchanged (strokes kept).
 - **Hard exit** — triggering a client-side route change (via `history.pushState` + `popstate`, matching how React Router navigates) dropped the stroke pixel count to zero (strokes cleared).
 
+> **Note:** the page-space coordinate model described in the "Stroke coordinates" row above was itself replaced shortly after this audit — see the next section. Everything else in this table still holds.
+
+## Element-Anchored Redraw (supersedes page-space model)
+
+After the production-parity rewrite above, real usage surfaced two problems with the page-space (`clientX + scrollX`) approach:
+
+1. **Drift on reflow.** Page-space math only stays correct if the page's layout never shifts after a stroke is drawn. Any reflow — a lazy-loaded image popping in, a responsive breakpoint change, dynamic content pushing things down — silently drifts the ink away from the thing it was drawn on, even though the coordinate math was "correct" relative to a scroll offset frozen at draw time. This read as a parallax-like drift/lag while scrolling.
+2. **Cost of staying in sync.** Chasing that drift meant polling `requestAnimationFrame` indefinitely for as long as any stroke existed on the page — even while completely idle — which is wasted CPU with no way to know it's safe to stop.
+
+**The fix:** each stroke now stores a reference to the actual DOM element under the pointer at draw time (found via `elementFromPoint`, with the canvas's own hit-testing briefly disabled so it doesn't just return itself), plus each point as a **fraction of that element's bounding box** (`fx`, `fy`) rather than an absolute pixel. On every redraw, position is recomputed from the element's live `getBoundingClientRect()` — so scroll, resize, and layout reflow are all handled for free by the browser's own layout engine. No scroll-offset bookkeeping exists anymore. Stroke width also scales proportionally if the anchor element itself resizes (e.g. a responsive image shrinking at a narrower breakpoint) — matching the original ask that sketches work correctly "even in any screen size and responsive too."
+
+Because correctness no longer depends on *when* redraw runs — only smoothness does — the continuous per-frame RAF loop was replaced with an rAF-throttled scheduler: real `scroll` / `resize` / Lenis-`scroll` events call `scheduleRedraw()`, which coalesces any burst into at most one repaint per animation frame and costs nothing at all when nothing is happening.
+
+**Verified in-browser:**
+- Drew on a specific element (the hero background image); scrolling 120px moved both that element's actual `getBoundingClientRect().top` and the ink by exactly 120px in lockstep — confirming genuine element anchoring, not independent scroll math that happens to agree.
+- Instrumented `ctx.clearRect` on the sketch canvas directly: **zero** redraws over 2 full seconds of complete idle (previously ran every frame, indefinitely, for as long as any stroke existed).
+- Fired 50 synthetic `scroll` events in a single burst: exactly **1** redraw resulted, confirming the throttle coalesces correctly.
+
+**Side benefit:** this also resolves the `/artworks` pan-canvas limitation noted earlier — element-anchoring doesn't care whether the page moves via scroll or via that page's drag-pan, since it only ever asks "where is this element right now," which is correct either way.
+
 ## Keyboard Shortcuts
 
 | Key | Action | Mode |
@@ -84,27 +104,30 @@ Since the automation tooling used to test this couldn't dispatch real `pointermo
 
 ### Canvas Implementation
 - Full viewport canvas dynamically matching `window.innerWidth` & `window.innerHeight`.
-- **Page-Space Coordinates:** Points store absolute page position (`clientX + scrollX`, `clientY + scrollY`).
-- **Scroll Sync:** Canvas context translates by `(-scrollX, -scrollY)` during redrawing so ink stays anchored to content.
+- **Element-Anchored Coordinates:** Each point stores its position as a fraction (`fx`, `fy`) of its stroke's anchor element's bounding box, not an absolute pixel — see [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model).
+- **Live Resolution:** On every redraw, each stroke's points are recomputed from `anchor.getBoundingClientRect()`; no scroll or pan offset is tracked or applied anywhere.
 - **Pencil/Crayon Grain Shader:** Renders smooth quadratic bezier curves with overlaid pseudo-random noise ellipses along the stroke path.
-- **Resize & Scroll Resilient:** Automatically recalculates canvas buffer and restores context transformations on window resize and scroll events.
+- **rAF-Throttled Redraw:** `scroll`/`resize`/Lenis-`scroll` events call a scheduler that coalesces to at most one repaint per frame; zero redraw calls happen while idle.
 
 ### Stroke Data Structure
 ```typescript
-interface Point {
-  x: number;      // Page X position (clientX + scrollX)
-  y: number;      // Page Y position (clientY + scrollY)
+interface AnchoredPoint {
+  fx: number;     // fraction of anchor's rect.width from rect.left, at capture time
+  fy: number;     // fraction of anchor's rect.height from rect.top, at capture time
+  t: number;      // performance.now() timestamp, used for speed-sensitive grain width
 }
 
 interface Stroke {
-  points: Point[];           // Array of drawn page points
-  color: SketchColor;        // #ffffff | #ec3b43 | #000000
-  width: number;             // 2-28 pixels (default: 6px)
+  anchor: Element;            // the DOM element this stroke is pinned to
+  anchorWidth: number;        // anchor's rect.width at draw time, for proportional width scaling
+  points: AnchoredPoint[];    // fractional offsets, resolved fresh on every redraw
+  color: SketchColor;         // #ffffff | #ec3b43 | #000000
+  width: number;              // 2-28 pixels (default: 6px), scaled by anchor resize ratio
 }
 ```
 
 ### Rendering Strategy
-1. **During Draw:** Clear viewport → translate by `-scroll` → draw completed strokes (base curve + grain) → draw active stroke.
+1. **On Redraw (triggered by scroll/resize/drawing, throttled to ≤1×/frame):** For each stroke, skip it if its anchor is no longer connected to the DOM or has a zero-size rect; otherwise resolve its points from the anchor's current bounding box and draw (base curve + grain), scaling width by how much the anchor itself has resized since the stroke was drawn.
 2. **On Soft Exit (P / Esc / Wheel):** Transition to `navigate` mode, keeping canvas visible with `pointer-events: none` and existing strokes rendered.
 3. **On Hard Exit (Double-click / Route change / Inactivity / Header hover):** Transition to `navigate` mode and wipe `strokesRef` and canvas.
 
@@ -120,12 +143,13 @@ interface Stroke {
 - `mode` & `modeRef` — Synced state/ref for instant mode transitions without stale closures.
 - `brushColor` & `brushColorRef` — Active brush color (`#ffffff`, `#ec3b43`, `#000000`).
 - `brushWidth` & `brushWidthRef` — Active brush size (2–28px, default 6px).
-- `strokesRef` — Storage of all completed page-anchored strokes.
-- `currentStrokeRef` — Points of the currently streaming stroke.
+- `strokesRef` — Storage of all completed element-anchored strokes.
+- `currentStrokeRef` — Anchored points of the currently streaming stroke.
 - `cursorPos` — Viewport coordinates for the custom cursor follower.
 - `showHUD` — Visibility of the HUD shortcuts overlay.
 - `idleTimerRef` — 2-second inactivity timer that triggers the nudge state.
 - `autoExitTimerRef` — 10-second inactivity watchdog in sketch mode.
+- `redrawScheduledRef` — rAF-throttle flag so bursts of scroll/resize events collapse into one repaint per frame.
 
 ## Testing Checklist
 
@@ -151,7 +175,7 @@ interface Stroke {
 1. **Route-Scoped Persistence** — Drawings persist across scroll and soft exits within the current page, but clear on route navigation or reload.
 2. **No Undo/Redo Keybinding** — Strokes are tracked internally, but UI undo/redo keybindings are scheduled for Phase 2.
 3. **Export to File** — PNG export scheduled for Phase 2.
-4. **`/artworks` pan-canvas not wired to pan-space** — Production has a second coordinate space (`kind: 'archive'`, tracking `panX`/`panY`) for its pannable discovery canvas, so sketches stay pinned during drag-pan there too. This rewrite only implements the scroll-space variant used by every normal page; on `/artworks` the overlay still works, but strokes are anchored to scroll position rather than the pan offset. Wiring this up would mean hooking into whatever exposes the live pan offset in `discoverCanvas.ts`/the Discover page's drag handling.
+4. **Anchor element can be replaced out from under a stroke** — if the specific DOM node a stroke is pinned to gets unmounted and replaced by a new one doing the same job (e.g. a carousel re-rendering to a new slide, rather than just moving/resizing the existing node), that stroke's `anchor.isConnected` goes false and it silently stops rendering on the next redraw rather than re-attaching to the new node. This is a reasonable trade-off for correctness (better to drop a stroke than have it drift to a meaningless position) but is worth knowing about if strokes seem to vanish on pages with that kind of remount-heavy content.
 
 ## Future Enhancements
 
