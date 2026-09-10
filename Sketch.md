@@ -14,17 +14,18 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 ### User Interactions
 - **Idle Detection ("Nudge")** — After 2 seconds of no mouse movement (unless `prefers-reduced-motion` is active), the cursor morphs into a pencil cursor icon + `"press P"` label.
 - **Toggle Sketch Mode** — Press `P` to activate/deactivate sketch mode (active from navigate or nudge).
-- **Draw Strokes** — Click and drag to draw freehand strokes with procedural pencil grain texture.
-- **Adjust Brush Size** — Press `[` to decrease or `]` to increase (2px – 28px, default 6px, step 2px).
-- **Change Colors** — Press `1` (White `#ffffff`), `2` (Red `#ec3b43` - default), or `3` (Black `#000000`).
+- **Draw Strokes** — Click and drag to draw freehand strokes, rendered as a clean smoothed line.
+- **Adjust Brush Size** — Press `[` to decrease or `]` to increase (1px – 28px, default 1px, step 2px).
+- **Change Colors** — Press `1` (White `#ffffff`), `2` (Red `#ec3b43`), or `3` (Black `#000000` - default).
 - **Soft Exit** — Press `P`, `Esc`, or scroll wheel to exit back to navigation while **preserving all strokes on the page**.
 - **Hard Exit** — Double-click, hover/click header or footer, route change, or 10s auto-exit timeout to **exit and clear all strokes**.
 - **Element-Anchored Strokes** — Each stroke is pinned to the actual DOM element drawn on (as a fraction of its live bounding box), not a page coordinate — so it tracks scroll, resize, and layout reflow automatically. See [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model) below.
 
 ### Visual Feedback
 - **Cursor Follower with Difference Blend** — Sleek cursor-following element using `mix-blend-mode: difference` for automatic high contrast against any background.
-- **Procedural Pencil Grain** — Semi-transparent quadratic curve base stroke combined with dynamic hash-noise grain texture for an authentic hand-drawn look.
-- **HUD (Heads-Up Display)** — Bottom-right floating guide showing current keyboard shortcuts, active color, and brush gauge.
+- **Clean Smoothed Line** — Solid quadratic-curve stroke through the captured points, full opacity, rounded caps/joins — no texture or grain overlay.
+
+> **Removed:** an earlier version also showed a bottom-right HUD (keyboard shortcut legend + brush swatch). It was dropped because its text overflowed its box at some viewport sizes; there is currently no on-screen shortcut legend, so [Keyboard Shortcuts](#keyboard-shortcuts) below is the reference.
 
 ## Production Parity Audit
 
@@ -55,7 +56,7 @@ Since the automation tooling used to test this couldn't dispatch real `pointermo
 - **Soft exit** — pressing `P` while sketching returned to `navigate` mode with the stroke pixel count unchanged (strokes kept).
 - **Hard exit** — triggering a client-side route change (via `history.pushState` + `popstate`, matching how React Router navigates) dropped the stroke pixel count to zero (strokes cleared).
 
-> **Note:** the page-space coordinate model described in the "Stroke coordinates" row above was itself replaced shortly after this audit — see the next section. Everything else in this table still holds.
+> **Note:** the page-space coordinate model described in the "Stroke coordinates" row above was itself replaced shortly after this audit — see the next section. The pencil-grain rendering in the "Stroke rendering" row was also later removed by explicit request in favor of a clean smoothed line, and the HUD described in the "HUD copy" row was removed entirely (its text overflowed its box at some viewport sizes). See Drawing System and Keyboard Shortcuts below for the current behavior. Everything else in this table still holds.
 
 ## Element-Anchored Redraw (supersedes page-space model)
 
@@ -80,11 +81,11 @@ Because correctness no longer depends on *when* redraw runs — only smoothness 
 | Key | Action | Mode |
 |-----|--------|------|
 | **P** | Toggle sketch mode on/off | Global / Nudge |
-| **[** | Decrease brush size (min: 2px, step: 2px) | Sketch only |
+| **[** | Decrease brush size (min: 1px, step: 2px) | Sketch only |
 | **]** | Increase brush size (max: 28px, step: 2px) | Sketch only |
 | **1** | Set brush color to White (`#ffffff`) | Sketch only |
-| **2** | Set brush color to Red (`#ec3b43` - default) | Sketch only |
-| **3** | Set brush color to Black (`#000000`) | Sketch only |
+| **2** | Set brush color to Red (`#ec3b43`) | Sketch only |
+| **3** | Set brush color to Black (`#000000` - default) | Sketch only |
 | **Esc** | Soft exit sketch mode (preserves strokes) | Sketch only |
 | **Wheel Scroll** | Soft exit sketch mode (preserves strokes) | Sketch only |
 | **Double-click** | Hard exit sketch mode (clears all strokes) | Sketch only |
@@ -106,7 +107,7 @@ Because correctness no longer depends on *when* redraw runs — only smoothness 
 - Full viewport canvas dynamically matching `window.innerWidth` & `window.innerHeight`.
 - **Element-Anchored Coordinates:** Each point stores its position as a fraction (`fx`, `fy`) of its stroke's anchor element's bounding box, not an absolute pixel — see [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model).
 - **Live Resolution:** On every redraw, each stroke's points are recomputed from `anchor.getBoundingClientRect()`; no scroll or pan offset is tracked or applied anywhere.
-- **Pencil/Crayon Grain Shader:** Renders smooth quadratic bezier curves with overlaid pseudo-random noise ellipses along the stroke path.
+- **Clean Smoothed Line Renderer:** A single quadratic-curve path through the resolved points at full opacity — no grain, texture, or per-segment noise. A single click draws a filled circle.
 - **rAF-Throttled Redraw:** `scroll`/`resize`/Lenis-`scroll` events call a scheduler that coalesces to at most one repaint per frame; zero redraw calls happen while idle.
 
 ### Stroke Data Structure
@@ -114,7 +115,6 @@ Because correctness no longer depends on *when* redraw runs — only smoothness 
 interface AnchoredPoint {
   fx: number;     // fraction of anchor's rect.width from rect.left, at capture time
   fy: number;     // fraction of anchor's rect.height from rect.top, at capture time
-  t: number;      // performance.now() timestamp, used for speed-sensitive grain width
 }
 
 interface Stroke {
@@ -122,12 +122,12 @@ interface Stroke {
   anchorWidth: number;        // anchor's rect.width at draw time, for proportional width scaling
   points: AnchoredPoint[];    // fractional offsets, resolved fresh on every redraw
   color: SketchColor;         // #ffffff | #ec3b43 | #000000
-  width: number;              // 2-28 pixels (default: 6px), scaled by anchor resize ratio
+  width: number;              // 1-28 pixels (default: 1px), scaled by anchor resize ratio
 }
 ```
 
 ### Rendering Strategy
-1. **On Redraw (triggered by scroll/resize/drawing, throttled to ≤1×/frame):** For each stroke, skip it if its anchor is no longer connected to the DOM or has a zero-size rect; otherwise resolve its points from the anchor's current bounding box and draw (base curve + grain), scaling width by how much the anchor itself has resized since the stroke was drawn.
+1. **On Redraw (triggered by scroll/resize/drawing, throttled to ≤1×/frame):** For each stroke, skip it if its anchor is no longer connected to the DOM or has a zero-size rect; otherwise resolve its points from the anchor's current bounding box and draw a smoothed line, scaling width by how much the anchor itself has resized since the stroke was drawn.
 2. **On Soft Exit (P / Esc / Wheel):** Transition to `navigate` mode, keeping canvas visible with `pointer-events: none` and existing strokes rendered.
 3. **On Hard Exit (Double-click / Route change / Inactivity / Header hover):** Transition to `navigate` mode and wipe `strokesRef` and canvas.
 
@@ -136,17 +136,16 @@ interface Stroke {
 ### SketchMode States (4 States)
 - `'navigate'` — Default browsing mode, canvas renders existing strokes with `pointer-events: none`.
 - `'nudge'` — 2-second idle visual hint state showing pencil icon and `"press P"`. Pointer-down does NOT draw.
-- `'sketch'` — Sketch overlay active, HUD visible, cursor follower active, ready to draw.
+- `'sketch'` — Sketch overlay active, cursor follower active, ready to draw.
 - `'drawing'` — Pointer active, actively streaming stroke points.
 
 ### State & Ref Architecture
 - `mode` & `modeRef` — Synced state/ref for instant mode transitions without stale closures.
-- `brushColor` & `brushColorRef` — Active brush color (`#ffffff`, `#ec3b43`, `#000000`).
-- `brushWidth` & `brushWidthRef` — Active brush size (2–28px, default 6px).
+- `brushColor` & `brushColorRef` — Active brush color (`#ffffff`, `#ec3b43`, `#000000` - default).
+- `brushWidth` & `brushWidthRef` — Active brush size (1–28px, default 1px).
 - `strokesRef` — Storage of all completed element-anchored strokes.
 - `currentStrokeRef` — Anchored points of the currently streaming stroke.
 - `cursorPos` — Viewport coordinates for the custom cursor follower.
-- `showHUD` — Visibility of the HUD shortcuts overlay.
 - `idleTimerRef` — 2-second inactivity timer that triggers the nudge state.
 - `autoExitTimerRef` — 10-second inactivity watchdog in sketch mode.
 - `redrawScheduledRef` — rAF-throttle flag so bursts of scroll/resize events collapse into one repaint per frame.
@@ -157,9 +156,9 @@ interface Stroke {
 - [ ] Wait 2 seconds without moving mouse to see the nudge hint (pencil + "press P")
 - [ ] Move mouse or scroll to dismiss nudge hint back to navigate
 - [ ] Press <kbd>P</kbd> to activate sketch mode
-- [ ] Draw freehand strokes with varying brush sizes (<kbd>[</kbd> / <kbd>]</kbd>, 2–28px)
+- [ ] Draw freehand strokes with varying brush sizes (<kbd>[</kbd> / <kbd>]</kbd>, 1–28px)
 - [ ] Switch colors with <kbd>1</kbd> (White), <kbd>2</kbd> (Red), <kbd>3</kbd> (Black)
-- [ ] Verify pencil grain texture renders along stroke paths
+- [ ] Verify strokes render as a clean smoothed line — no grain, texture, or jitter
 - [ ] Scroll page to verify strokes remain anchored to content (not floating on screen)
 - [ ] Press <kbd>Esc</kbd> or <kbd>P</kbd> to soft exit; verify strokes remain visible
 - [ ] Double-click or navigate to another page to verify hard exit clears strokes

@@ -8,12 +8,6 @@ const WHITE = '#ffffff';
 const RED = '#ec3b43';
 const BLACK = '#000000';
 
-const COLOR_NAMES: Record<string, string> = {
-  [WHITE]: 'white',
-  [BLACK]: 'black',
-  [RED]: 'red',
-};
-
 const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
 const IDLE_MS = 2000;
@@ -552,46 +546,6 @@ export function SketchLayer() {
             <span className="scribble-brush__ring" style={{ width: brushWidth, height: brushWidth, borderColor: 'currentColor' }} />
           )}
         </div>
-      )}
-
-      {isSketchActive && (
-        <aside className="scribble-layer__hud">
-          <p className="scribble-layer__hud-title">Sketch</p>
-
-          <div className="scribble-layer__hud-row">
-            <span>Toggle / exit</span>
-            <kbd>P</kbd>
-          </div>
-
-          <div className="scribble-layer__hud-row">
-            <span>Brush size</span>
-            <kbd>[ ]</kbd>
-          </div>
-
-          <div className="scribble-layer__hud-row">
-            <span>Colors</span>
-            <kbd>1 white · 2 red · 3 black</kbd>
-          </div>
-
-          <div className="scribble-layer__hud-row">
-            <span>Exit</span>
-            <kbd>Esc · dbl-click · header/footer · 10s</kbd>
-          </div>
-
-          <div className="scribble-layer__swatch">
-            <span
-              className="scribble-layer__swatch-dot"
-              style={{
-                background: brushColor,
-                width: clampWidth(brushWidth) + 8,
-                height: clampWidth(brushWidth) + 8,
-              }}
-            />
-            <span className="scribble-layer__swatch-label">
-              {COLOR_NAMES[brushColor]} · {brushWidth}px
-            </span>
-          </div>
-        </aside>
       )}
     </div>
   );
