@@ -105,22 +105,21 @@ Dependencies: React hooks only (no external libraries)
 - Direct 2D context rendering
 - Line cap and line join set to 'round' for smooth strokes
 - Hardware accelerated (canvas GPU rendering)
+- **Stroke Persistence:** All completed strokes stored in array and redrawn on each frame
 
 ### Stroke Data Structure
 ```typescript
-interface Point {
-  x: number;      // Cursor X position
-  y: number;      // Cursor Y position
-  t: number;      // Timestamp (for future analytics)
-}
-
 interface Stroke {
-  points: Point[];           // Array of drawn points
-  color: SketchColor;        // #ffffff | #ef3942 | #323031
-  width: number;            // 1-20 pixels
-  space: 'sketch' | 'archive';
+  points: Array<{ x: number; y: number }>;  // Array of drawn points
+  color: SketchColor;                        // #ffffff | #ef3942 | #323031
+  width: number;                             // 1-20 pixels
 }
 ```
+
+### Rendering Strategy
+1. **During Draw:** Clear canvas → redraw all previous strokes → draw current stroke
+2. **After Stroke:** Save completed stroke to array
+3. **On Exit:** Clear canvas and reset stroke array
 
 ## State Management
 
