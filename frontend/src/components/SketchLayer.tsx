@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import './SketchLayer.css';
 
 type SketchMode = 'navigate' | 'sketch' | 'drawing';
 type SketchColor = '#ffffff' | '#ef3942' | '#323031';
@@ -15,12 +16,18 @@ const COLOR_NAMES: Record<SketchColor, string> = {
   '#323031': 'black',
 };
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 interface Stroke {
-  points: Array<{ x: number; y: number }>;
+  points: Point[];
   color: SketchColor;
   width: number;
 }
 
+// Device support check - desktop, laptop, and iPad screens (1024px+)
 function isSketchSupported() {
   if (typeof window === 'undefined') return false;
   return window.innerWidth >= 1024;
@@ -37,9 +44,8 @@ export function SketchLayer() {
 
   const modeRef = useRef<SketchMode>('navigate');
   const strokesRef = useRef<Stroke[]>([]);
-  const currentStrokeRef = useRef<Array<{ x: number; y: number }> | null>(null);
+  const currentStrokeRef = useRef<Point[] | null>(null);
   const autoExitTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const rafIdRef = useRef<number | null>(null);
   const brushColorRef = useRef<SketchColor>('#ef3942');
   const brushWidthRef = useRef(3);
 
@@ -61,56 +67,76 @@ export function SketchLayer() {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    // Continuous render loop - always redraw when in sketch mode
-    const renderLoop = () => {
-      if (!ctxRef.current || !canvas) {
-        rafIdRef.current = requestAnimationFrame(renderLoop);
+    const drawStroke = (stroke: Point[], color: SketchColor, width: number) => {
+      if (!ctxRef.current || stroke.length === 0) return;
+      const c = ctxRef.current;
+      c.strokeStyle = color;
+      c.fillStyle = color;
+      c.lineWidth = width;
+
+      if (stroke.length === 1) {
+        c.beginPath();
+        c.arc(stroke[0].x, stroke[0].y, Math.max(1, width / 2), 0, Math.PI * 2);
+        c.fill();
         return;
       }
 
-      const ctx = ctxRef.current;
-
-      // Only redraw if in sketch/drawing mode
-      if (modeRef.current === 'sketch' || modeRef.current === 'drawing') {
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Redraw all completed strokes
-        for (const stroke of strokesRef.current) {
-          ctx.strokeStyle = stroke.color;
-          ctx.lineWidth = stroke.width;
-          if (stroke.points.length < 2) continue;
-          ctx.beginPath();
-          ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-          for (let i = 1; i < stroke.points.length; i++) {
-            ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-          }
-          ctx.stroke();
-        }
-
-        // Redraw current stroke if drawing
-        if (currentStrokeRef.current && currentStrokeRef.current.length > 1) {
-          ctx.strokeStyle = brushColorRef.current;
-          ctx.lineWidth = brushWidthRef.current;
-          ctx.beginPath();
-          ctx.moveTo(currentStrokeRef.current[0].x, currentStrokeRef.current[0].y);
-          for (let i = 1; i < currentStrokeRef.current.length; i++) {
-            ctx.lineTo(currentStrokeRef.current[i].x, currentStrokeRef.current[i].y);
-          }
-          ctx.stroke();
-        }
+      c.beginPath();
+      c.moveTo(stroke[0].x, stroke[0].y);
+      for (let i = 1; i < stroke.length; i++) {
+        c.lineTo(stroke[i].x, stroke[i].y);
       }
-
-      rafIdRef.current = requestAnimationFrame(renderLoop);
+      c.stroke();
     };
 
-    rafIdRef.current = requestAnimationFrame(renderLoop);
+    const redrawAll = () => {
+      if (!ctxRef.current || !canvas) return;
+      ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (const stroke of strokesRef.current) {
+        drawStroke(stroke.points, stroke.color, stroke.width);
+      }
+
+      if (currentStrokeRef.current && currentStrokeRef.current.length > 0) {
+        drawStroke(currentStrokeRef.current, brushColorRef.current, brushWidthRef.current);
+      }
+    };
+
+    const resetInactivityTimer = () => {
+      if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
+      if (modeRef.current === 'sketch') {
+        autoExitTimerRef.current = setTimeout(() => {
+          updateMode('navigate');
+        }, 10000);
+      }
+    };
+
+    const updateMode = (newMode: SketchMode) => {
+      modeRef.current = newMode;
+      setMode(newMode);
+
+      if (newMode === 'sketch' || newMode === 'drawing') {
+        setShowHUD(true);
+        document.documentElement.classList.add('scribble-hide-cursor');
+        redrawAll();
+      } else {
+        setShowHUD(false);
+        document.documentElement.classList.remove('scribble-hide-cursor');
+        if (ctxRef.current && canvas) {
+          ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        strokesRef.current = [];
+      }
+
+      resetInactivityTimer();
+    };
 
     const handlePointerMove = (e: PointerEvent) => {
       setCursorPos({ x: e.clientX, y: e.clientY });
 
       if (modeRef.current === 'drawing' && currentStrokeRef.current) {
         currentStrokeRef.current.push({ x: e.clientX, y: e.clientY });
+        redrawAll();
       }
     };
 
@@ -119,20 +145,18 @@ export function SketchLayer() {
 
       // Double-click exits
       if (e.detail >= 2) {
-        modeRef.current = 'navigate';
-        setMode('navigate');
-        setShowHUD(false);
-        document.documentElement.classList.remove('scribble-hide-cursor');
-        strokesRef.current = [];
+        updateMode('navigate');
         return;
       }
 
-      modeRef.current = 'drawing';
-      setMode('drawing');
+      updateMode('drawing');
       currentStrokeRef.current = [{ x: e.clientX, y: e.clientY }];
+      redrawAll();
+
       try {
         canvas.setPointerCapture(e.pointerId);
       } catch {}
+      e.preventDefault();
     };
 
     const handlePointerUp = (e: PointerEvent) => {
@@ -143,9 +167,9 @@ export function SketchLayer() {
           width: brushWidthRef.current,
         });
         currentStrokeRef.current = null;
-        modeRef.current = 'sketch';
-        setMode('sketch');
+        updateMode('sketch');
       }
+
       try {
         if (canvas.hasPointerCapture(e.pointerId)) {
           canvas.releasePointerCapture(e.pointerId);
@@ -159,25 +183,9 @@ export function SketchLayer() {
       if (key === 'p') {
         e.preventDefault();
         if (modeRef.current === 'sketch' || modeRef.current === 'drawing') {
-          modeRef.current = 'navigate';
-          setMode('navigate');
-          setShowHUD(false);
-          document.documentElement.classList.remove('scribble-hide-cursor');
-          strokesRef.current = [];
-          if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
+          updateMode('navigate');
         } else {
-          modeRef.current = 'sketch';
-          setMode('sketch');
-          setShowHUD(true);
-          document.documentElement.classList.add('scribble-hide-cursor');
-          if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
-          autoExitTimerRef.current = setTimeout(() => {
-            modeRef.current = 'navigate';
-            setMode('navigate');
-            setShowHUD(false);
-            document.documentElement.classList.remove('scribble-hide-cursor');
-            strokesRef.current = [];
-          }, 10000);
+          updateMode('sketch');
         }
         return;
       }
@@ -186,37 +194,31 @@ export function SketchLayer() {
 
       if (key === 'escape') {
         e.preventDefault();
-        modeRef.current = 'navigate';
-        setMode('navigate');
-        setShowHUD(false);
-        document.documentElement.classList.remove('scribble-hide-cursor');
-        strokesRef.current = [];
-        if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
+        updateMode('navigate');
       } else if (key === '[') {
         e.preventDefault();
         const w = Math.max(1, brushWidthRef.current - 1);
         brushWidthRef.current = w;
         setBrushWidth(w);
+        resetInactivityTimer();
       } else if (key === ']') {
         e.preventDefault();
         const w = Math.min(20, brushWidthRef.current + 1);
         brushWidthRef.current = w;
         setBrushWidth(w);
+        resetInactivityTimer();
       } else if (key in COLORS) {
         e.preventDefault();
         const c = COLORS[key as keyof typeof COLORS];
         brushColorRef.current = c;
         setBrushColor(c);
+        resetInactivityTimer();
       }
     };
 
     const handleWheel = () => {
       if (modeRef.current === 'sketch' || modeRef.current === 'drawing') {
-        modeRef.current = 'navigate';
-        setMode('navigate');
-        setShowHUD(false);
-        document.documentElement.classList.remove('scribble-hide-cursor');
-        strokesRef.current = [];
+        updateMode('navigate');
       }
     };
 
@@ -224,6 +226,11 @@ export function SketchLayer() {
       if (!canvas) return;
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      if (ctxRef.current) {
+        ctxRef.current.lineCap = 'round';
+        ctxRef.current.lineJoin = 'round';
+        redrawAll();
+      }
     };
 
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
@@ -242,7 +249,6 @@ export function SketchLayer() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('resize', handleResize);
-      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
       if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
     };
   }, []);
@@ -252,7 +258,7 @@ export function SketchLayer() {
   const brushSizeForDisplay = brushWidth * 2 + 8;
 
   return (
-    <div className={`scribble-layer ${mode === 'sketch' ? 'is-sketch' : ''}`}>
+    <div className={`scribble-layer ${mode === 'sketch' || mode === 'drawing' ? 'is-sketch' : ''}`}>
       <canvas
         ref={canvasRef}
         className="scribble-layer__canvas"
@@ -263,10 +269,11 @@ export function SketchLayer() {
 
       {(mode === 'sketch' || mode === 'drawing') && (
         <div
-          className="scribble-brush is-sketch"
+          className="scribble-brush"
           style={{
             left: cursorPos.x,
             top: cursorPos.y,
+            color: brushColor,
           }}
         >
           <svg
@@ -279,7 +286,9 @@ export function SketchLayer() {
           >
             <path
               d="M22.5 2.5c.8-.8 2.1-.8 2.9 0l4.1 4.1c.8.8.8 2.1 0 2.9L12.2 26.8a2 2 0 0 1-.9.5l-5.6 1.4a1 1 0 0 1-1.2-1.2l1.4-5.6c.1-.3.3-.6.5-.9L22.5 2.5Z"
-              fill="currentColor"
+              fill={brushColor}
+              stroke="#ffffff"
+              strokeWidth="1.5"
             />
           </svg>
           <span
@@ -287,7 +296,7 @@ export function SketchLayer() {
             style={{
               width: brushSizeForDisplay,
               height: brushSizeForDisplay,
-              borderColor: 'currentColor',
+              borderColor: brushColor,
             }}
           />
         </div>
@@ -322,8 +331,8 @@ export function SketchLayer() {
               className="scribble-layer__swatch-dot"
               style={{
                 background: brushColor,
-                width: brushSizeForDisplay + 8,
-                height: brushSizeForDisplay + 8,
+                width: Math.min(24, Math.max(10, brushSizeForDisplay)),
+                height: Math.min(24, Math.max(10, brushSizeForDisplay)),
               }}
             />
             <span className="scribble-layer__swatch-label">
@@ -332,13 +341,6 @@ export function SketchLayer() {
           </div>
         </aside>
       )}
-
-      <style>{`
-        .scribble-hide-cursor,
-        html.scribble-hide-cursor * {
-          cursor: none !important;
-        }
-      `}</style>
     </div>
   );
 }

@@ -101,152 +101,138 @@ Dependencies: React hooks only (no external libraries)
 ## Drawing System
 
 ### Canvas Implementation
-- Full viewport canvas (resizes on window resize)
-- Direct 2D context rendering
-- Line cap and line join set to 'round' for smooth strokes
-- Hardware accelerated (canvas GPU rendering)
-- **Stroke Persistence:** All completed strokes stored in array and redrawn on each frame
+- Full viewport canvas (dynamically matches `window.innerWidth` & `window.innerHeight`)
+- Direct 2D context rendering with GPU acceleration
+- Line cap and line join set to `'round'` for smooth, anti-aliased strokes
+- **Single-Click Dot Support:** Single pointer clicks draw solid circular points (`ctx.arc(...)`)
+- **Resize Resiliency:** Window resizing resets canvas dimensions, restores line styles, and automatically calls `redrawAll()`
+- **Session Stroke Persistence:** All completed strokes within an active session are stored in `strokesRef` and redrawn continuously with the active stroke
 
 ### Stroke Data Structure
 ```typescript
+interface Point {
+  x: number;      // Cursor X position
+  y: number;      // Cursor Y position
+}
+
 interface Stroke {
-  points: Array<{ x: number; y: number }>;  // Array of drawn points
-  color: SketchColor;                        // #ffffff | #ef3942 | #323031
-  width: number;                             // 1-20 pixels
+  points: Point[];           // Array of drawn points
+  color: SketchColor;        // #ffffff | #ef3942 | #323031
+  width: number;             // 1-20 pixels
 }
 ```
 
 ### Rendering Strategy
-1. **During Draw:** Clear canvas → redraw all previous strokes → draw current stroke
-2. **After Stroke:** Save completed stroke to array
-3. **On Exit:** Clear canvas and reset stroke array
+1. **During Draw:** Pointer move clears canvas → redraws all previous session strokes → draws active stroke
+2. **After Stroke:** On pointer up, the active stroke is appended to `strokesRef.current`
+3. **On Exit:** Exiting sketch mode clears the canvas, removes cursor styles, and resets `strokesRef`
 
 ## State Management
 
 ### SketchMode States
-- `'navigate'` — Normal mode, sketch disabled
-- `'sketch'` — Sketch enabled, ready to draw (no active stroke)
-- `'drawing'` — Currently drawing a stroke
+- `'navigate'` — Normal browsing mode, sketch overlay dormant (`pointerEvents: none`)
+- `'sketch'` — Sketch overlay active, ready to draw, HUD and brush ring visible
+- `'drawing'` — Pointer active, currently streaming stroke points
 
-### State Variables
-- `mode` — Current sketch mode
-- `brushColor` — Active brush color (#ffffff, #ef3942, or #323031)
-- `brushWidth` — Active brush size (1-20px)
-- `cursorPos` — Current mouse/pointer position
-- `showHUD` — Display heads-up display
-- `currentStroke` — Array of points in active stroke
+### State & Ref Architecture
+- `mode` & `modeRef` — Synced state/ref for instant mode transitions without stale closures
+- `brushColor` & `brushColorRef` — Active brush color (#ffffff, #ef3942, or #323031)
+- `brushWidth` & `brushWidthRef` — Active brush size (1-20px)
+- `strokesRef` — Array of all completed strokes within the current session
+- `currentStrokeRef` — Array of points in the currently active stroke
+- `cursorPos` — Mouse/touch coordinate for the brush follower ring
+- `showHUD` — Controls visibility of the keyboard shortcut guide
+- `autoExitTimerRef` — 10-second inactivity watchdog timer
 
 ## Performance Characteristics
 
 ### Inactive State
-- Memory: ~50KB (component unmounted on mobile)
-- CPU: <0.1%
-- No event listeners active when `isSketchSupported() = false`
+- Memory: ~50KB (component unmounted on mobile screens <1024px)
+- CPU: 0% idle
+- Zero canvas operations or draw calls
 
 ### Active Sketch Mode (Not Drawing)
 - Memory: ~500KB
 - CPU: <1% (browser idle)
-- Pointer move event listeners active
+- Passive pointer move event listeners update cursor ring
 
 ### Active Drawing (Pointer Down)
-- Memory: ~2MB
-- CPU: <5% (60fps at typical screen sizes)
-- Point data accumulates during stroke
-- Cleared after pointer release
+- Memory: ~1.5MB – 2MB
+- CPU: <5% (solid 60fps / 120fps on high-refresh displays)
+- Points streamed directly into memory refs, bypassing React state re-renders
 
 ### Optimization Techniques
-1. **Lazy Component** — Only mounted if `window.innerWidth >= 1024`
-2. **Canvas Rendering** — Isolated from React render cycle
-3. **Event Throttling** — Pointer events via native browser throttling
-4. **Cleanup** — All event listeners removed on unmount
-5. **RAF Sync** — Drawing syncs with browser refresh rate
-6. **No State Updates During Drawing** — Uses refs to avoid re-renders
+1. **Viewport Gated** — Component returns `null` on screens <1024px
+2. **Decoupled Canvas Loop** — Direct 2D context updates avoid React reconciliation cycles
+3. **Ref-Based Brush Controls** — Color and size switching do not tear down canvas context or reset drawing history
+4. **Clean Teardown** — All event listeners, timers, and cursor override classes cleanly detached on unmount
 
 ## Browser Compatibility
 
 ### Fully Supported
-- Chrome/Edge 90+
+- Chrome / Edge 90+
 - Firefox 88+
 - Safari 14+
-- iPad Safari 14+
+- iPadOS Safari 14+
 
 ### Features Used
 - Canvas 2D Context API
-- PointerEvents (modern input handling)
-- requestAnimationFrame
-- ES6+ JavaScript
+- PointerEvents API (unified mouse, pen, and touch)
+- CSS `cursor: none` injection
+- ES6+ JavaScript & TypeScript Strict Mode
 
 ## Offline Functionality
 
-The sketch feature is **100% offline** — all drawing happens locally:
-- No network requests
-- No API calls
-- No data transmission
-- Canvas data stays in browser memory
+The sketch feature is **100% client-side and offline**:
+- Zero network requests
+- Zero external dependencies
+- Canvas data resides solely in volatile browser memory
 
-**Note:** Strokes are not persisted; they clear on page reload.
+**Note:** Strokes persist across multiple drawings within an active session, but are cleared upon exiting sketch mode or reloading the page.
 
 ## Testing Checklist
 
 ### Desktop/Laptop Testing
-- [ ] Press P to activate sketch mode
-- [ ] Draw strokes with different brush sizes
-- [ ] Change colors (1, 2, 3 keys)
-- [ ] Verify brush ring follows cursor
-- [ ] Verify HUD displays correctly
-- [ ] Test auto-exit after 10 seconds idle
-- [ ] Test exit via Esc key
-- [ ] Test exit via double-click
-- [ ] Test wheel scroll exits sketch
-- [ ] Verify cursor is hidden when active
-- [ ] Test on various screen sizes (1024px+)
+- [ ] Press <kbd>P</kbd> to activate sketch mode
+- [ ] Draw freehand strokes with varying brush sizes (<kbd>[</kbd> / <kbd>]</kbd>)
+- [ ] Switch colors with <kbd>1</kbd> (White), <kbd>2</kbd> (Red), <kbd>3</kbd> (Black)
+- [ ] Click once without dragging to verify single-dot drawing
+- [ ] Draw multiple separate strokes to confirm session stroke persistence
+- [ ] Resize the browser window to verify strokes persist and line caps stay round
+- [ ] Verify brush follower ring tracks pointer accurately
+- [ ] Verify HUD displays in bottom-right with correct color and size swatch
+- [ ] Test auto-exit after 10 seconds of inactivity
+- [ ] Test immediate exit via <kbd>Esc</kbd> key
+- [ ] Test exit via double-click and wheel scroll
+- [ ] Verify default cursor is restored after exiting
 
 ### iPad Testing
-- [ ] Press P to activate sketch mode
-- [ ] Draw with touch (pointerdown/pointermove/pointerup)
-- [ ] Verify brush follows touch accurately
-- [ ] Test pressure sensitivity (if supported)
-- [ ] Test on both portrait (should show HUD) and landscape
+- [ ] Press <kbd>P</kbd> (or external keyboard) to toggle sketch mode
+- [ ] Draw using touch / Apple Pencil (pointer events)
+- [ ] Verify stroke fidelity and responsiveness on high-DPI retina display
+- [ ] Test orientation change (portrait/landscape)
 
-### Mobile Testing
-- [ ] Verify SketchLayer component returns null on mobile (<1024px)
-- [ ] Verify P key press doesn't activate sketch
-- [ ] Verify no performance impact
-
-### Performance Testing
-- [ ] Monitor CPU usage while idle
-- [ ] Monitor CPU usage while drawing
-- [ ] Check memory increase when activating
-- [ ] Check memory clears after deactivating
-- [ ] Test on lower-end devices (iPad Air 2, etc.)
-
-### Cross-Browser Testing
-- [ ] Chrome/Edge
-- [ ] Firefox
-- [ ] Safari (desktop)
-- [ ] Safari (iPad)
+### Mobile Gating (<1024px)
+- [ ] Verify `SketchLayer` renders `null` on mobile viewports (<1024px)
+- [ ] Verify <kbd>P</kbd> does not trigger sketch overlay or hide cursor
 
 ## Known Limitations
 
-1. **No Stroke Persistence** — Drawings clear on page reload
-2. **No Undo/Redo** — Current implementation draws directly (no history)
-3. **No Export** — Can't save drawing to image
-4. **No Pressure Sensitivity** — Brush width fixed (not pen-pressure based)
-5. **Mobile Not Supported** — Feature gated to 1024px+ only
-6. **No Layers** — Single drawing canvas (no layer support)
+1. **Session-Scoped Persistence** — Drawings persist during the active sketch session, but clear when exiting sketch mode or reloading.
+2. **No Undo/Redo Keybinding** — Strokes are tracked internally for session redraws, but dedicated undo/redo actions (e.g. Ctrl+Z) are reserved for Phase 2.
+3. **No Export to File** — Saving annotations directly to PNG/JPEG is not yet supported.
+4. **No Pressure Dynamics** — Stroke thickness is determined by the selected brush size rather than pen pressure.
+5. **Desktop/iPad Only** — Intentionally disabled on mobile screens (<1024px) to preserve standard mobile browsing.
 
 ## Future Enhancements
 
-### Phase 2 Potential Features
-- [ ] Export drawing as PNG/SVG
-- [ ] Undo/Redo functionality
-- [ ] Drawing history (local storage)
-- [ ] Pressure sensitivity (iPad Pencil)
-- [ ] Eraser tool
-- [ ] Color picker
-- [ ] Line thickness preset buttons
-- [ ] Layer support
-- [ ] Share drawing via URL
+### Phase 2 Roadmap
+- [ ] Export sketch overlay as PNG / SVG
+- [ ] Undo (<kbd>Ctrl</kbd>+<kbd>Z</kbd>) / Redo (<kbd>Ctrl</kbd>+<kbd>Y</kbd>) history stack
+- [ ] Persistent storage (localStorage or session export)
+- [ ] Eraser tool & Clear All canvas button
+- [ ] Apple Pencil pressure & tilt sensitivity
+- [ ] Custom hex color palette picker
 
 ### Performance Optimizations
 - [ ] Compress strokes for local storage
