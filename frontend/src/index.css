@@ -1,6 +1,7 @@
 @import "./styles/tokens.css";
 @import "./styles/degular.css";
 @import "./styles/layout.css";
+@import "./styles/parallax.css";
 
 *,
 *::before,

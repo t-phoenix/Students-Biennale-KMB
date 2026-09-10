@@ -1,0 +1,29 @@
+/* Global Parallax Image Styles */
+
+.has-parallax-container {
+  overflow: hidden !important;
+}
+
+.has-parallax-img {
+  will-change: transform;
+  transform-origin: center center;
+}
+
+/* Ensure media wrapper containers properly constrain parallax transforms */
+figure.has-parallax-container,
+.image-crossfade.has-parallax-container,
+[class*="__media"].has-parallax-container,
+[class*="__frame"].has-parallax-container,
+[class*="__thumb"].has-parallax-container,
+[class*="__cover"].has-parallax-container,
+[class*="__portrait"].has-parallax-container,
+[class*="__banner"].has-parallax-container {
+  overflow: hidden !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .has-parallax-img {
+    transform: none !important;
+    will-change: auto !important;
+  }
+}

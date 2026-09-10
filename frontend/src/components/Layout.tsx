@@ -7,6 +7,7 @@ import { Footer } from "./Footer";
 import { SketchLayer } from "./SketchLayer";
 import { parseHomeHash, parseProgrammeHash, scrollToId } from "../lib/scrollToSection";
 import { setLenisInstance } from "../lib/lenisSingleton";
+import { useImageParallax } from "../lib/parallax";
 import "./Layout.css";
 
 export function Layout() {
@@ -76,6 +77,9 @@ export function Layout() {
     },
     { dependencies: [location.pathname], scope: mainRef }
   );
+
+  // Apply parallax to all content images across every page
+  useImageParallax(mainRef, [location.pathname, location.key]);
 
   // Land at the top of every new page, keyed on location.key (not pathname)
   // so this also fires when navigating to the same path — e.g. clicking the
