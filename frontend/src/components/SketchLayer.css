@@ -1,23 +1,18 @@
-/* Sketch / Scribble Annotation Overlay */
+/* Sketch / Scribble Annotation Overlay - ported 1:1 from production CSS rules */
 
 .scribble-layer {
-  position: fixed;
-  inset: 0;
   pointer-events: none;
-  z-index: 9998;
-}
-
-.scribble-layer.is-sketch {
-  pointer-events: auto;
 }
 
 .scribble-layer__canvas {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
+  z-index: 400;
+  display: block;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
+  touch-action: none;
 }
 
 .scribble-layer.is-sketch .scribble-layer__canvas {
@@ -25,173 +20,120 @@
   cursor: none;
 }
 
-/* Brush ring and icon cursor follower */
+/* Cursor follower - single element for both the idle "press P" hint and the
+   active brush ring. mix-blend-mode gives automatic contrast on any background. */
 .scribble-brush {
   position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
+  z-index: 402;
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: transform 0.05s ease-out;
+  gap: 6px;
+  color: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  transform: translate(-4px, -24px);
 }
 
 .scribble-brush__icon {
-  position: absolute;
-  top: -18px;
-  right: -18px;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
-  pointer-events: none;
+  display: block;
+  flex-shrink: 0;
+}
+
+.scribble-brush__hint {
+  font-family: var(--font-sans, system-ui, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.95;
 }
 
 .scribble-brush__ring {
-  display: block;
+  position: absolute;
+  top: 24px;
+  left: 4px;
+  box-sizing: border-box;
+  border: 1.5px solid;
   border-radius: 50%;
-  border-style: solid;
-  border-width: 1.5px;
-  pointer-events: none;
-  transition: width 0.15s ease, height 0.15s ease, border-color 0.15s ease;
+  opacity: 0.85;
+  transform: translate(-50%, -50%);
 }
 
 /* Heads-Up Display (HUD) */
 .scribble-layer__hud {
   position: fixed;
-  bottom: 32px;
-  right: 32px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  right: var(--gutter, 24px);
+  left: auto;
+  bottom: var(--space-4, 40px);
+  z-index: 401;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 240px;
+  padding: 14px 16px;
+  border: 1px solid var(--line-soft, #e6e6e6);
   border-radius: 12px;
-  padding: 16px 20px;
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-  font-size: 13px;
-  line-height: 1.5;
-  color: #1a1a1a;
-  z-index: 9997;
-  min-width: 210px;
+  color: var(--text, #323031);
+  background: #ffffffeb;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 12px 40px #3230311f, 0 2px 8px #3230310f;
   pointer-events: none;
-  user-select: none;
-  animation: scribbleHudFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes scribbleHudFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
 }
 
 .scribble-layer__hud-title {
+  margin: 0;
+  font-size: 0.62rem;
   font-weight: 700;
-  font-size: 14px;
-  margin: 0 0 12px 0;
-  letter-spacing: -0.01em;
-  color: #111;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.55;
 }
 
 .scribble-layer__hud-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 8px;
-  font-size: 12px;
-  color: #555;
+  gap: 12px;
+  font-size: 0.78rem;
+  line-height: 1.35;
 }
 
 .scribble-layer__hud-row kbd {
-  background: #f1f3f5;
-  border: 1px solid #dee2e6;
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.1);
-  color: #333;
-  padding: 2px 7px;
-  border-radius: 4px;
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 600;
+  font-family: var(--font-sans, inherit);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.7;
 }
 
 .scribble-layer__swatch {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-top: 12px;
-  margin-top: 6px;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .scribble-layer__swatch-dot {
-  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #32303133;
   border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-  transition: transform 0.15s ease, background 0.15s ease;
-  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px #fff9;
 }
 
 .scribble-layer__swatch-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #555;
-  text-transform: capitalize;
+  font-size: 0.72rem;
+  opacity: 0.65;
 }
 
-/* Hide native cursor globally when sketching */
+/* Hide native cursor globally when sketching or showing the idle hint */
 html.scribble-hide-cursor,
 html.scribble-hide-cursor * {
   cursor: none !important;
-}
-
-/* Idle hint - pencil cursor with "Press P" text */
-.scribble-idle-hint {
-  position: fixed;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  animation: scribbleIdleHintFadeIn 0.3s ease-out;
-}
-
-@keyframes scribbleIdleHintFadeIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -50%) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-.scribble-idle-hint__icon {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
-  pointer-events: none;
-}
-
-.scribble-idle-hint__text {
-  font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-  font-size: 13px;
-  font-weight: 600;
-  color: #323031;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  padding: 6px 10px;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  pointer-events: none;
-  white-space: nowrap;
 }
