@@ -21,6 +21,12 @@ function isSketchSupported() {
   return window.innerWidth >= 1024;
 }
 
+interface Stroke {
+  points: Array<{ x: number; y: number }>;
+  color: SketchColor;
+  width: number;
+}
+
 export function SketchLayer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -30,8 +36,15 @@ export function SketchLayer() {
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [showHUD, setShowHUD] = useState(false);
   const modeRef = useRef<SketchMode>('navigate');
-  const currentStrokeRef = useRef<Array<{ x: number; y: number; t: number }> | null>(null);
+  const strokesRef = useRef<Stroke[]>([]); // Store all completed strokes
+  const currentStrokeRef = useRef<Array<{ x: number; y: number }> | null>(null);
   const autoExitTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const brushColorRef = useRef<SketchColor>('#ef3942');
+  const brushWidthRef = useRef(3);
+
+  // Update refs when state changes
+  brushColorRef.current = brushColor;
+  brushWidthRef.current = brushWidth;
 
   // Check device support on mount
   useEffect(() => {
@@ -57,25 +70,22 @@ export function SketchLayer() {
         setShowHUD(true);
         document.documentElement.classList.add('scribble-hide-cursor');
       } else {
+        // Exit sketch mode - clear canvas and strokes
         setShowHUD(false);
         document.documentElement.classList.remove('scribble-hide-cursor');
+        if (ctxRef.current && canvas) {
+          ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        strokesRef.current = [];
       }
 
       // Auto-exit after 10 seconds of inactivity
       if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
       if (newMode === 'sketch') {
         autoExitTimerRef.current = setTimeout(() => {
-          setMode('navigate');
-          modeRef.current = 'navigate';
-          setShowHUD(false);
-          document.documentElement.classList.remove('scribble-hide-cursor');
+          updateMode('navigate');
         }, 10000);
       }
-    };
-
-    const redrawCanvas = () => {
-      if (!ctxRef.current) return;
-      ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
     };
 
     const drawStroke = (stroke: Array<{ x: number; y: number }>, color: SketchColor, width: number) => {
@@ -91,20 +101,28 @@ export function SketchLayer() {
       ctx.stroke();
     };
 
+    const redrawAll = () => {
+      if (!ctxRef.current || !canvas) return;
+      // Draw all completed strokes
+      for (const stroke of strokesRef.current) {
+        drawStroke(stroke.points, stroke.color, stroke.width);
+      }
+      // Draw current stroke if drawing
+      if (currentStrokeRef.current && currentStrokeRef.current.length > 0) {
+        drawStroke(currentStrokeRef.current, brushColorRef.current, brushWidthRef.current);
+      }
+    };
+
     // Event handlers
     const handlePointerMove = (e: PointerEvent) => {
       setCursorPos({ x: e.clientX, y: e.clientY });
 
       if (modeRef.current === 'drawing' && currentStrokeRef.current) {
-        currentStrokeRef.current.push({ x: e.clientX, y: e.clientY, t: performance.now() });
-        redrawCanvas();
-        if (currentStrokeRef.current.length > 1) {
-          drawStroke(
-            currentStrokeRef.current.map(p => ({ x: p.x, y: p.y })),
-            brushColor,
-            brushWidth
-          );
-        }
+        currentStrokeRef.current.push({ x: e.clientX, y: e.clientY });
+        // Redraw all strokes (previous + current)
+        if (!ctxRef.current || !canvas) return;
+        ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
+        redrawAll();
       }
     };
 
@@ -136,6 +154,14 @@ export function SketchLayer() {
 
     const handlePointerUp = (e: PointerEvent) => {
       if (modeRef.current === 'drawing' && currentStrokeRef.current) {
+        // Save completed stroke to history
+        if (currentStrokeRef.current.length > 0) {
+          strokesRef.current.push({
+            points: [...currentStrokeRef.current],
+            color: brushColorRef.current,
+            width: brushWidthRef.current,
+          });
+        }
         currentStrokeRef.current = null;
         updateMode('sketch');
       }
@@ -166,13 +192,16 @@ export function SketchLayer() {
         updateMode('navigate');
       } else if (key === '[') {
         e.preventDefault();
-        setBrushWidth(w => Math.max(1, w - 1));
+        brushWidthRef.current = Math.max(1, brushWidthRef.current - 1);
+        setBrushWidth(brushWidthRef.current);
       } else if (key === ']') {
         e.preventDefault();
-        setBrushWidth(w => Math.min(20, w + 1));
+        brushWidthRef.current = Math.min(20, brushWidthRef.current + 1);
+        setBrushWidth(brushWidthRef.current);
       } else if (key in COLORS) {
         e.preventDefault();
-        setBrushColor(COLORS[key as keyof typeof COLORS]);
+        brushColorRef.current = COLORS[key as keyof typeof COLORS];
+        setBrushColor(brushColorRef.current);
       }
     };
 
@@ -216,7 +245,7 @@ export function SketchLayer() {
       window.removeEventListener('resize', handleResize);
       if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
     };
-  }, [brushColor, brushWidth]);
+  }, []);
 
   if (!isSketchSupported()) return null;
 
