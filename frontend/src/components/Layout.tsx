@@ -4,6 +4,7 @@ import Lenis from "lenis";
 import { gsap, syncScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { SketchLayer } from "./SketchLayer";
 import { parseHomeHash, parseProgrammeHash, scrollToId } from "../lib/scrollToSection";
 import { setLenisInstance } from "../lib/lenisSingleton";
 import "./Layout.css";
@@ -153,6 +154,7 @@ export function Layout() {
         <Outlet />
       </div>
       {isDiscover ? null : <Footer />}
+      <SketchLayer />
     </div>
   );
 }
