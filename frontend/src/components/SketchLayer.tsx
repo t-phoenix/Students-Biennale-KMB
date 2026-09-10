@@ -236,6 +236,7 @@ export function SketchLayer() {
   const brushWidthRef = useRef(6);
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
+  const rafRef = useRef<number | null>(null);
 
   brushColorRef.current = brushColor;
   brushWidthRef.current = brushWidth;
@@ -272,6 +273,37 @@ export function SketchLayer() {
     canvas.style.height = `${h}px`;
     redraw();
   }, [redraw]);
+
+  const readLiveScroll = useCallback(() => {
+    const lenis = (window as unknown as { __lenis?: { scroll?: number } }).__lenis;
+    const y = typeof lenis?.scroll === 'number' ? lenis.scroll : window.scrollY;
+    setSpaceScroll(window.scrollX, y);
+  }, []);
+
+  // Continuous per-frame sync instead of scroll-event-driven sync: Lenis
+  // interpolates the scroll position every animation frame, but native
+  // 'scroll' events dispatch on a throttled task-queue timer, so redrawing
+  // only on those events lags a frame or more behind the visual scroll -
+  // which reads as parallax/drift. Re-reading scroll and redrawing every
+  // RAF tick keeps the ink locked to content with zero perceptible lag.
+  const loop = useCallback(() => {
+    readLiveScroll();
+    redraw();
+
+    const shouldContinue =
+      modeRef.current === 'sketch' ||
+      modeRef.current === 'drawing' ||
+      strokesRef.current.length > 0 ||
+      currentStrokeRef.current !== null;
+
+    rafRef.current = shouldContinue ? requestAnimationFrame(loop) : null;
+  }, [readLiveScroll, redraw]);
+
+  const ensureLoop = useCallback(() => {
+    if (rafRef.current == null) {
+      rafRef.current = requestAnimationFrame(loop);
+    }
+  }, [loop]);
 
   const clearIdleTimer = useCallback(() => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -323,7 +355,8 @@ export function SketchLayer() {
     if (active instanceof HTMLElement) active.blur();
     setModeBoth('sketch');
     startAutoExitTimer();
-  }, [clearIdleTimer, clearAutoExitTimer, setModeBoth, startAutoExitTimer]);
+    ensureLoop();
+  }, [clearIdleTimer, clearAutoExitTimer, setModeBoth, startAutoExitTimer, ensureLoop]);
 
   // Soft exit: keeps strokes on the page (P toggle, Esc, wheel scroll)
   const softExit = useCallback(() => {
@@ -372,27 +405,12 @@ export function SketchLayer() {
       return;
     }
 
-    const syncScroll = () => {
-      const lenis = (window as unknown as { __lenis?: { scroll?: number } }).__lenis;
-      const y = typeof lenis?.scroll === 'number' ? lenis.scroll : window.scrollY;
-      setSpaceScroll(window.scrollX, y);
-      redraw();
-    };
-
-    syncScroll();
+    readLiveScroll();
     resizeCanvas();
     startIdleTimer();
+    ensureLoop();
 
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('scroll', syncScroll, { passive: true });
-    // Lenis mounts asynchronously in Layout.tsx - poll briefly for it and hook its scroll event too
-    let unhookLenis: (() => void) | undefined;
-    const lenisCheck = window.setInterval(() => {
-      const lenis = (window as unknown as { __lenis?: { on: (e: string, cb: () => void) => void; off: (e: string, cb: () => void) => void } }).__lenis;
-      if (!lenis || unhookLenis) return;
-      lenis.on('scroll', syncScroll);
-      unhookLenis = () => lenis.off('scroll', syncScroll);
-    }, 500);
 
     const tick = () => {
       const m = modeRef.current;
@@ -444,6 +462,7 @@ export function SketchLayer() {
         canvasRef.current?.setPointerCapture(e.pointerId);
       } catch {}
       redraw();
+      ensureLoop();
       e.preventDefault();
     };
 
@@ -456,6 +475,7 @@ export function SketchLayer() {
       setModeBoth('sketch');
       startAutoExitTimer();
       redraw();
+      ensureLoop();
     };
 
     const handleDblClick = (e: MouseEvent) => {
@@ -543,9 +563,6 @@ export function SketchLayer() {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('scroll', syncScroll);
-      window.clearInterval(lenisCheck);
-      unhookLenis?.();
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerup', handlePointerUp);
@@ -555,11 +572,17 @@ export function SketchLayer() {
       window.removeEventListener('keydown', handleKeyDown);
       clearIdleTimer();
       clearAutoExitTimer();
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
     };
   }, [
     supported,
     redraw,
     resizeCanvas,
+    readLiveScroll,
+    ensureLoop,
     startIdleTimer,
     startAutoExitTimer,
     clearIdleTimer,
