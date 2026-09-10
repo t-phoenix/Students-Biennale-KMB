@@ -21,8 +21,13 @@ function isSketchSupported() {
   return window.innerWidth >= 1024;
 }
 
+interface Point {
+  x: number;
+  y: number;
+}
+
 interface Stroke {
-  points: Array<{ x: number; y: number }>;
+  points: Point[];
   color: SketchColor;
   width: number;
 }
@@ -37,7 +42,7 @@ export function SketchLayer() {
   const [showHUD, setShowHUD] = useState(false);
   const modeRef = useRef<SketchMode>('navigate');
   const strokesRef = useRef<Stroke[]>([]); // Store all completed strokes
-  const currentStrokeRef = useRef<Array<{ x: number; y: number }> | null>(null);
+  const currentStrokeRef = useRef<Point[] | null>(null);
   const autoExitTimerRef = useRef<NodeJS.Timeout | null>(null);
   const brushColorRef = useRef<SketchColor>('#ef3942');
   const brushWidthRef = useRef(3);
@@ -88,11 +93,18 @@ export function SketchLayer() {
       }
     };
 
-    const drawStroke = (stroke: Array<{ x: number; y: number }>, color: SketchColor, width: number) => {
-      if (!ctxRef.current || stroke.length < 2) return;
+    const drawStroke = (stroke: Point[], color: SketchColor, width: number) => {
+      if (!ctxRef.current || stroke.length === 0) return;
       const ctx = ctxRef.current;
       ctx.strokeStyle = color;
+      ctx.fillStyle = color;
       ctx.lineWidth = width;
+      if (stroke.length === 1) {
+        ctx.beginPath();
+        ctx.arc(stroke[0].x, stroke[0].y, Math.max(1, width / 2), 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
       ctx.beginPath();
       ctx.moveTo(stroke[0].x, stroke[0].y);
       for (let i = 1; i < stroke.length; i++) {
@@ -144,7 +156,7 @@ export function SketchLayer() {
         }
 
         updateMode('drawing');
-        currentStrokeRef.current = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+        currentStrokeRef.current = [{ x: e.clientX, y: e.clientY }];
         try {
           canvas.setPointerCapture(e.pointerId);
         } catch {}
@@ -231,6 +243,11 @@ export function SketchLayer() {
     const handleResize = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      if (ctxRef.current) {
+        ctxRef.current.lineCap = 'round';
+        ctxRef.current.lineJoin = 'round';
+        redrawAll();
+      }
     };
     window.addEventListener('resize', handleResize);
 
