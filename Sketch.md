@@ -7,7 +7,7 @@
 
 ## Overview
 
-The Sketch feature is an interactive drawing overlay that allows users to annotate and draw on any page of the website. It's available on desktop, laptop, and iPad screens (1024px+) only.
+The Sketch feature is an interactive drawing overlay that allows users to annotate and draw on any page of the website. It's available on desktop and laptop screens with a fine pointer (mouse/trackpad, 768px+) and on iPad, matching production's device-detection logic exactly.
 
 ## Features
 
@@ -25,6 +25,35 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 - **Cursor Follower with Difference Blend** — Sleek cursor-following element using `mix-blend-mode: difference` for automatic high contrast against any background.
 - **Procedural Pencil Grain** — Semi-transparent quadratic curve base stroke combined with dynamic hash-noise grain texture for an authentic hand-drawn look.
 - **HUD (Heads-Up Display)** — Bottom-right floating guide showing current keyboard shortcuts, active color, and brush gauge.
+
+## Production Parity Audit
+
+An earlier build of this feature was written from a verbal description and drifted from what's actually live on Netlify. To close the gap, the deployed bundle (`deploy-6a5fea44bc84ce08449dbe60.zip` → `assets/index-duylw9et.js` + `assets/index-bb0tl30n.css`) was decompiled and read line-by-line, and `SketchLayer.tsx`/`SketchLayer.css` were rewritten to match it exactly rather than to a re-guessed spec.
+
+### Discrepancies found and corrected
+
+| Aspect | Earlier build | Production (verified from bundle) |
+|---|---|---|
+| Device gate | width ≥ 1024px | width ≥ 768px **and** (`pointer: fine` **or** iPad) |
+| Idle → hint delay | guessed 3000ms | **2000ms**, and skipped entirely when `prefers-reduced-motion` is set |
+| Mode model | 3 states (navigate/sketch/drawing) | **4 states**: navigate → **nudge** → sketch → drawing — nudge is hint-only; `pointerdown` only starts a stroke when mode is exactly `sketch` |
+| Idle hint UI | separate white glassmorphism box | same cursor-follower element as the brush ring, styled with `mix-blend-mode: difference` for automatic contrast on any background — no box, no shadow |
+| Brush colors | `#ef3942` (red) / `#323031` (near-black) | `#ec3b43` (red, default) / pure `#000000` (black) |
+| Brush width | default 3, range 1–20px, step 1 | default **6**, range **2–28px**, step **2** |
+| Stroke coordinates | viewport-relative (`clientX`/`clientY`) | **page-space** (`clientX + scrollX`, `clientY + scrollY`); canvas is translated by `-scroll` on every redraw, so ink stays pinned to content while scrolling instead of drifting with the viewport |
+| Stroke rendering | flat round-cap line | semi-transparent quadratic base stroke **plus** a speed-sensitive procedural grain texture (hash-noise ellipses stamped along each segment) for a real pencil/crayon look |
+| Exit semantics | one exit behavior (always cleared, later changed to always keep) | **two exit behaviors**: soft exit (`P`, `Esc`, wheel) keeps strokes; hard exit (double-click, header/footer hover, route change, 10s inactivity) clears them |
+| HUD copy | approximate | exact text match (`"1 white · 2 red · 3 black"`, `"Esc · dbl-click · header/footer · 10s"`) |
+
+### Verification performed
+
+Since the automation tooling used to test this couldn't dispatch real `pointermove` events, verification was done by driving the mounted component directly via synthetic `PointerEvent`/`KeyboardEvent` dispatches in the browser console, then reading canvas pixel data back out:
+
+- **Idle timing** — nudge state (`is-nudge` class + "press P" label) appeared at the 2000ms mark, not before.
+- **Pencil grain rendering** — a drawn stroke produced textured, non-uniform alpha coverage (not a flat line) when sampled from the canvas.
+- **Page-space anchoring** — a stroke drawn at a known canvas position, after scrolling the page by 150px, was measured to have shifted by **exactly -150px** on the canvas — confirming it tracks content, not viewport.
+- **Soft exit** — pressing `P` while sketching returned to `navigate` mode with the stroke pixel count unchanged (strokes kept).
+- **Hard exit** — triggering a client-side route change (via `history.pushState` + `popstate`, matching how React Router navigates) dropped the stroke pixel count to zero (strokes cleared).
 
 ## Keyboard Shortcuts
 
@@ -122,6 +151,7 @@ interface Stroke {
 1. **Route-Scoped Persistence** — Drawings persist across scroll and soft exits within the current page, but clear on route navigation or reload.
 2. **No Undo/Redo Keybinding** — Strokes are tracked internally, but UI undo/redo keybindings are scheduled for Phase 2.
 3. **Export to File** — PNG export scheduled for Phase 2.
+4. **`/artworks` pan-canvas not wired to pan-space** — Production has a second coordinate space (`kind: 'archive'`, tracking `panX`/`panY`) for its pannable discovery canvas, so sketches stay pinned during drag-pan there too. This rewrite only implements the scroll-space variant used by every normal page; on `/artworks` the overlay still works, but strokes are anchored to scroll position rather than the pan offset. Wiring this up would mean hooking into whatever exposes the live pan offset in `discoverCanvas.ts`/the Discover page's drag handling.
 
 ## Future Enhancements
 
