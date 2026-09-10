@@ -12,17 +12,20 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 ## Features
 
 ### User Interactions
-- **Toggle Sketch Mode** — Press `P` to activate/deactivate
+- **Idle Detection** — After 3 seconds of no mouse movement, a pencil cursor icon with "Press P" hint appears
+- **Toggle Sketch Mode** — Press `P` to activate/deactivate sketch mode (or when idle hint is showing)
 - **Draw Strokes** — Click and drag to draw freehand strokes
 - **Adjust Brush Size** — Press `[` to decrease or `]` to increase (1-20px)
 - **Change Colors** — Press `1` (white), `2` (red), or `3` (black)
 - **Exit Sketch** — Press `Esc`, double-click, click header/footer, or auto-exit after 10 seconds of inactivity
+- **Persistent Drawings** — Sketches remain on the page until the page is refreshed or navigation occurs
 
 ### Visual Feedback
-- Cursor hidden when active
-- Brush ring indicator shows current brush size
-- HUD (Heads-Up Display) in bottom-right corner shows available commands and current brush info
-- Real-time color and size indicators
+- **Idle Hint** — Pencil cursor icon + "Press P" label appears after 3 seconds of inactivity
+- **Cursor hidden** — When active, native cursor is hidden
+- **Brush ring indicator** — Shows current brush size during drawing
+- **HUD (Heads-Up Display)** — Bottom-right corner shows available commands and current brush info
+- **Real-time indicators** — Color and size swatches update as you change settings
 
 ## Technical Implementation
 
@@ -36,11 +39,13 @@ Dependencies: React hooks only (no external libraries)
 ```
 
 **Responsibilities:**
-- Manages sketch state (mode, brush color, brush width, cursor position)
+- Manages sketch state (mode, brush color, brush width, cursor position, idle hint)
 - Canvas rendering and stroke drawing
 - Event handling (pointer, keyboard, wheel, dblclick)
 - HUD display and brush cursor visualization
-- Auto-exit timeout management
+- Idle detection timer (3-second "Press P" hint)
+- Auto-exit timeout management (10-second inactivity in sketch mode)
+- Persistent stroke storage across mode transitions
 - Device detection (1024px+ only)
 
 **Performance Optimizations:**
@@ -140,9 +145,11 @@ interface Stroke {
 - `brushWidth` & `brushWidthRef` — Active brush size (1-20px)
 - `strokesRef` — Array of all completed strokes within the current session
 - `currentStrokeRef` — Array of points in the currently active stroke
-- `cursorPos` — Mouse/touch coordinate for the brush follower ring
+- `cursorPos` — Mouse/touch coordinate for the brush follower ring and idle hint
 - `showHUD` — Controls visibility of the keyboard shortcut guide
-- `autoExitTimerRef` — 10-second inactivity watchdog timer
+- `showIdleHint` — Controls visibility of the "Press P" hint during idle state
+- `autoExitTimerRef` — 10-second inactivity watchdog timer (exits sketch mode after drawing inactivity)
+- `idleTimerRef` — 3-second idle detector (shows "Press P" hint after no mouse movement)
 
 ## Performance Characteristics
 
@@ -193,18 +200,23 @@ The sketch feature is **100% client-side and offline**:
 ## Testing Checklist
 
 ### Desktop/Laptop Testing
-- [ ] Press <kbd>P</kbd> to activate sketch mode
+- [ ] Wait 3 seconds without moving mouse to see idle hint (pencil cursor + "Press P")
+- [ ] Move mouse to dismiss idle hint
+- [ ] Press <kbd>P</kbd> from idle state to activate sketch mode
+- [ ] Verify idle hint reappears after exiting sketch mode and waiting 3 seconds
 - [ ] Draw freehand strokes with varying brush sizes (<kbd>[</kbd> / <kbd>]</kbd>)
 - [ ] Switch colors with <kbd>1</kbd> (White), <kbd>2</kbd> (Red), <kbd>3</kbd> (Black)
 - [ ] Click once without dragging to verify single-dot drawing
 - [ ] Draw multiple separate strokes to confirm session stroke persistence
-- [ ] Resize the browser window to verify strokes persist and line caps stay round
-- [ ] Verify brush follower ring tracks pointer accurately
+- [ ] Verify strokes remain on page after exiting sketch mode (not cleared)
+- [ ] Resize the browser window to verify strokes persist and scale correctly
+- [ ] Verify brush follower ring tracks pointer accurately during drawing
 - [ ] Verify HUD displays in bottom-right with correct color and size swatch
-- [ ] Test auto-exit after 10 seconds of inactivity
+- [ ] Test auto-exit after 10 seconds of drawing inactivity
 - [ ] Test immediate exit via <kbd>Esc</kbd> key
 - [ ] Test exit via double-click and wheel scroll
-- [ ] Verify default cursor is restored after exiting
+- [ ] Verify default cursor is restored after exiting sketch mode
+- [ ] Verify page refresh clears all sketches
 
 ### iPad Testing
 - [ ] Press <kbd>P</kbd> (or external keyboard) to toggle sketch mode

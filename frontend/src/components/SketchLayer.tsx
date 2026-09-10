@@ -41,11 +41,13 @@ export function SketchLayer() {
   const [brushWidth, setBrushWidth] = useState(3);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [showHUD, setShowHUD] = useState(false);
+  const [showIdleHint, setShowIdleHint] = useState(false);
 
   const modeRef = useRef<SketchMode>('navigate');
   const strokesRef = useRef<Stroke[]>([]);
   const currentStrokeRef = useRef<Point[] | null>(null);
   const autoExitTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
   const brushColorRef = useRef<SketchColor>('#ef3942');
   const brushWidthRef = useRef(3);
 
@@ -111,9 +113,21 @@ export function SketchLayer() {
       }
     };
 
+    const resetIdleTimer = () => {
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+      setShowIdleHint(false);
+
+      if (modeRef.current === 'navigate') {
+        idleTimerRef.current = setTimeout(() => {
+          setShowIdleHint(true);
+        }, 3000);
+      }
+    };
+
     const updateMode = (newMode: SketchMode) => {
       modeRef.current = newMode;
       setMode(newMode);
+      setShowIdleHint(false);
 
       if (newMode === 'sketch' || newMode === 'drawing') {
         setShowHUD(true);
@@ -122,10 +136,9 @@ export function SketchLayer() {
       } else {
         setShowHUD(false);
         document.documentElement.classList.remove('scribble-hide-cursor');
-        if (ctxRef.current && canvas) {
-          ctxRef.current.clearRect(0, 0, canvas.width, canvas.height);
-        }
-        strokesRef.current = [];
+        // Keep strokes persistent - don't clear them
+        redrawAll();
+        resetIdleTimer();
       }
 
       resetInactivityTimer();
@@ -134,7 +147,9 @@ export function SketchLayer() {
     const handlePointerMove = (e: PointerEvent) => {
       setCursorPos({ x: e.clientX, y: e.clientY });
 
-      if (modeRef.current === 'drawing' && currentStrokeRef.current) {
+      if (modeRef.current === 'navigate') {
+        resetIdleTimer();
+      } else if (modeRef.current === 'drawing' && currentStrokeRef.current) {
         currentStrokeRef.current.push({ x: e.clientX, y: e.clientY });
         redrawAll();
       }
@@ -241,6 +256,9 @@ export function SketchLayer() {
     window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('resize', handleResize);
 
+    // Start idle timer on mount
+    resetIdleTimer();
+
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
@@ -250,6 +268,7 @@ export function SketchLayer() {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('resize', handleResize);
       if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
     };
   }, []);
 
@@ -263,7 +282,7 @@ export function SketchLayer() {
         ref={canvasRef}
         className="scribble-layer__canvas"
         style={{
-          display: mode === 'sketch' || mode === 'drawing' ? 'block' : 'none',
+          pointerEvents: mode === 'sketch' || mode === 'drawing' ? 'auto' : 'none',
         }}
       />
 
@@ -299,6 +318,33 @@ export function SketchLayer() {
               borderColor: brushColor,
             }}
           />
+        </div>
+      )}
+
+      {showIdleHint && (
+        <div
+          className="scribble-idle-hint"
+          style={{
+            left: cursorPos.x,
+            top: cursorPos.y,
+          }}
+        >
+          <svg
+            className="scribble-idle-hint__icon"
+            width="32"
+            height="32"
+            viewBox="0 0 32 32"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M22.5 2.5c.8-.8 2.1-.8 2.9 0l4.1 4.1c.8.8.8 2.1 0 2.9L12.2 26.8a2 2 0 0 1-.9.5l-5.6 1.4a1 1 0 0 1-1.2-1.2l1.4-5.6c.1-.3.3-.6.5-.9L22.5 2.5Z"
+              fill="#323031"
+              stroke="#ffffff"
+              strokeWidth="1.5"
+            />
+          </svg>
+          <span className="scribble-idle-hint__text">Press P</span>
         </div>
       )}
 
