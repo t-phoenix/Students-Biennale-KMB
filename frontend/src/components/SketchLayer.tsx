@@ -23,14 +23,26 @@ function clampWidth(w: number) {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, w));
 }
 
-interface Point {
+// A point is stored as a fraction of its anchor element's live bounding box,
+// not an absolute pixel. Position is recomputed from the element's current
+// getBoundingClientRect() on every redraw, so it tracks scroll, resize, and
+// layout reflow automatically - no scroll-offset bookkeeping needed at all.
+interface AnchoredPoint {
+  fx: number;
+  fy: number;
+  t: number;
+}
+
+interface ResolvedPoint {
   x: number;
   y: number;
   t: number;
 }
 
 interface Stroke {
-  points: Point[];
+  anchor: Element;
+  anchorWidth: number; // anchor's rect.width at draw time, for proportional width scaling
+  points: AnchoredPoint[];
   color: string;
   width: number;
 }
@@ -68,6 +80,24 @@ function isOverHeaderOrFooter(x: number, y: number) {
   );
 }
 
+// Finds the real page element under a point, temporarily disabling the
+// canvas's own hit-testing so it doesn't just return itself.
+function elementUnderPoint(canvas: HTMLCanvasElement, x: number, y: number): Element {
+  const prev = canvas.style.pointerEvents;
+  canvas.style.pointerEvents = 'none';
+  const el = document.elementFromPoint(x, y);
+  canvas.style.pointerEvents = prev;
+  return el && el !== document.documentElement ? el : document.body;
+}
+
+function toAnchoredPoint(rect: DOMRect, clientX: number, clientY: number): AnchoredPoint {
+  return {
+    fx: rect.width > 0 ? (clientX - rect.left) / rect.width : 0,
+    fy: rect.height > 0 ? (clientY - rect.top) / rect.height : 0,
+    t: performance.now(),
+  };
+}
+
 // Pseudo-random hash noise for the pencil grain texture
 function hash(seed: number, i: number) {
   const n = Math.sin(seed * 127.1 + i * 311.7) * 43758.5453;
@@ -95,25 +125,25 @@ function stampGrain(ctx: CanvasRenderingContext2D, x: number, y: number, width: 
 }
 
 // Faithful port of production's pencil/crayon renderer: smooth base stroke +
-// speed-sensitive grain texture stamped along every segment.
-function drawStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
-  const pts = stroke.points;
+// speed-sensitive grain texture stamped along every segment. Operates on
+// already-resolved (absolute, viewport-space) points.
+function drawResolvedStroke(ctx: CanvasRenderingContext2D, pts: ResolvedPoint[], color: string, width: number) {
   if (pts.length === 0) return;
 
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.fillStyle = stroke.color;
-  ctx.strokeStyle = stroke.color;
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
 
   if (pts.length === 1) {
-    stampGrain(ctx, pts[0].x, pts[0].y, stroke.width, 0);
+    stampGrain(ctx, pts[0].x, pts[0].y, width, 0);
     ctx.restore();
     return;
   }
 
   ctx.globalAlpha = 0.55;
-  ctx.lineWidth = stroke.width * 0.85;
+  ctx.lineWidth = width * 0.85;
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
   for (let i = 1; i < pts.length - 1; i++) {
@@ -136,7 +166,7 @@ function drawStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
 
     const speed = dist / Math.max(1, p1.t - p0.t);
     const widthFactor = 0.55 + Math.min(0.7, 10 / (speed + 3));
-    const grainRadius = stroke.width * 0.42 * widthFactor;
+    const grainRadius = width * 0.42 * widthFactor;
     const nx = -dy / dist;
     const ny = dx / dist;
     const steps = Math.max(2, Math.floor(dist / 1.6));
@@ -199,20 +229,15 @@ function drawStroke(ctx: CanvasRenderingContext2D, stroke: Stroke) {
   ctx.restore();
 }
 
-// Module-level page-space tracker so strokes stay anchored to page content
-// (not the viewport) as the user scrolls - shared across mount/unmount.
-const space = { scrollX: 0, scrollY: 0 };
-const spaceListeners = new Set<() => void>();
-function notifySpace() {
-  spaceListeners.forEach((fn) => fn());
-}
-function setSpaceScroll(x: number, y: number) {
-  space.scrollX = x;
-  space.scrollY = y;
-  notifySpace();
-}
-function toSpacePoint(clientX: number, clientY: number): Point {
-  return { x: clientX + space.scrollX, y: clientY + space.scrollY, t: performance.now() };
+function resolveStrokePoints(stroke: Stroke): { points: ResolvedPoint[]; width: number } | null {
+  if (!stroke.anchor.isConnected) return null;
+  const rect = stroke.anchor.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return null;
+  const scale = stroke.anchorWidth > 0 ? rect.width / stroke.anchorWidth : 1;
+  return {
+    points: stroke.points.map((p) => ({ x: rect.left + p.fx * rect.width, y: rect.top + p.fy * rect.height, t: p.t })),
+    width: stroke.width * scale,
+  };
 }
 
 export function SketchLayer() {
@@ -236,7 +261,7 @@ export function SketchLayer() {
   const brushWidthRef = useRef(6);
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
-  const rafRef = useRef<number | null>(null);
+  const redrawScheduledRef = useRef(false);
 
   brushColorRef.current = brushColor;
   brushWidthRef.current = brushWidth;
@@ -246,6 +271,9 @@ export function SketchLayer() {
     setMode(m);
   }, []);
 
+  // Every stroke's position is re-derived from its anchor element's live
+  // rect, so this is correct no matter when it runs - it only needs to run
+  // often enough to look smooth, not on any particular schedule.
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -254,11 +282,29 @@ export function SketchLayer() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.translate(-space.scrollX, -space.scrollY);
-    for (const stroke of strokesRef.current) drawStroke(ctx, stroke);
-    if (currentStrokeRef.current) drawStroke(ctx, currentStrokeRef.current);
+
+    for (const stroke of strokesRef.current) {
+      const resolved = resolveStrokePoints(stroke);
+      if (resolved) drawResolvedStroke(ctx, resolved.points, stroke.color, resolved.width);
+    }
+    if (currentStrokeRef.current) {
+      const resolved = resolveStrokePoints(currentStrokeRef.current);
+      if (resolved) drawResolvedStroke(ctx, resolved.points, currentStrokeRef.current.color, resolved.width);
+    }
   }, []);
   redrawRef.current = redraw;
+
+  // rAF-throttled: coalesces bursts of scroll/resize events into at most one
+  // repaint per frame, and costs nothing at all when nothing is happening -
+  // no polling loop running in the background.
+  const scheduleRedraw = useCallback(() => {
+    if (redrawScheduledRef.current) return;
+    redrawScheduledRef.current = true;
+    requestAnimationFrame(() => {
+      redrawScheduledRef.current = false;
+      redraw();
+    });
+  }, [redraw]);
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -273,37 +319,6 @@ export function SketchLayer() {
     canvas.style.height = `${h}px`;
     redraw();
   }, [redraw]);
-
-  const readLiveScroll = useCallback(() => {
-    const lenis = (window as unknown as { __lenis?: { scroll?: number } }).__lenis;
-    const y = typeof lenis?.scroll === 'number' ? lenis.scroll : window.scrollY;
-    setSpaceScroll(window.scrollX, y);
-  }, []);
-
-  // Continuous per-frame sync instead of scroll-event-driven sync: Lenis
-  // interpolates the scroll position every animation frame, but native
-  // 'scroll' events dispatch on a throttled task-queue timer, so redrawing
-  // only on those events lags a frame or more behind the visual scroll -
-  // which reads as parallax/drift. Re-reading scroll and redrawing every
-  // RAF tick keeps the ink locked to content with zero perceptible lag.
-  const loop = useCallback(() => {
-    readLiveScroll();
-    redraw();
-
-    const shouldContinue =
-      modeRef.current === 'sketch' ||
-      modeRef.current === 'drawing' ||
-      strokesRef.current.length > 0 ||
-      currentStrokeRef.current !== null;
-
-    rafRef.current = shouldContinue ? requestAnimationFrame(loop) : null;
-  }, [readLiveScroll, redraw]);
-
-  const ensureLoop = useCallback(() => {
-    if (rafRef.current == null) {
-      rafRef.current = requestAnimationFrame(loop);
-    }
-  }, [loop]);
 
   const clearIdleTimer = useCallback(() => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -355,8 +370,7 @@ export function SketchLayer() {
     if (active instanceof HTMLElement) active.blur();
     setModeBoth('sketch');
     startAutoExitTimer();
-    ensureLoop();
-  }, [clearIdleTimer, clearAutoExitTimer, setModeBoth, startAutoExitTimer, ensureLoop]);
+  }, [clearIdleTimer, clearAutoExitTimer, setModeBoth, startAutoExitTimer]);
 
   // Soft exit: keeps strokes on the page (P toggle, Esc, wheel scroll)
   const softExit = useCallback(() => {
@@ -405,12 +419,19 @@ export function SketchLayer() {
       return;
     }
 
-    readLiveScroll();
     resizeCanvas();
     startIdleTimer();
-    ensureLoop();
 
     window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('scroll', scheduleRedraw, { passive: true });
+    // Lenis mounts asynchronously in Layout.tsx - poll briefly for it and hook its scroll event too
+    let unhookLenis: (() => void) | undefined;
+    const lenisCheck = window.setInterval(() => {
+      const lenis = (window as unknown as { __lenis?: { on: (e: string, cb: () => void) => void; off: (e: string, cb: () => void) => void } }).__lenis;
+      if (!lenis || unhookLenis) return;
+      lenis.on('scroll', scheduleRedraw);
+      unhookLenis = () => lenis.off('scroll', scheduleRedraw);
+    }, 500);
 
     const tick = () => {
       const m = modeRef.current;
@@ -430,7 +451,8 @@ export function SketchLayer() {
       if (m === 'nudge') return;
 
       if (m === 'drawing' && currentStrokeRef.current) {
-        currentStrokeRef.current.points.push(toSpacePoint(e.clientX, e.clientY));
+        const rect = currentStrokeRef.current.anchor.getBoundingClientRect();
+        currentStrokeRef.current.points.push(toAnchoredPoint(rect, e.clientX, e.clientY));
         redraw();
         startAutoExitTimer();
         return;
@@ -451,18 +473,24 @@ export function SketchLayer() {
         return;
       }
 
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
       clearAutoExitTimer();
+      const anchor = elementUnderPoint(canvas, e.clientX, e.clientY);
+      const rect = anchor.getBoundingClientRect();
       currentStrokeRef.current = {
-        points: [toSpacePoint(e.clientX, e.clientY)],
+        anchor,
+        anchorWidth: rect.width,
+        points: [toAnchoredPoint(rect, e.clientX, e.clientY)],
         color: brushColorRef.current,
         width: brushWidthRef.current,
       };
       setModeBoth('drawing');
       try {
-        canvasRef.current?.setPointerCapture(e.pointerId);
+        canvas.setPointerCapture(e.pointerId);
       } catch {}
       redraw();
-      ensureLoop();
       e.preventDefault();
     };
 
@@ -475,7 +503,6 @@ export function SketchLayer() {
       setModeBoth('sketch');
       startAutoExitTimer();
       redraw();
-      ensureLoop();
     };
 
     const handleDblClick = (e: MouseEvent) => {
@@ -563,6 +590,9 @@ export function SketchLayer() {
 
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('scroll', scheduleRedraw);
+      window.clearInterval(lenisCheck);
+      unhookLenis?.();
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerup', handlePointerUp);
@@ -572,17 +602,12 @@ export function SketchLayer() {
       window.removeEventListener('keydown', handleKeyDown);
       clearIdleTimer();
       clearAutoExitTimer();
-      if (rafRef.current != null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
     };
   }, [
     supported,
     redraw,
+    scheduleRedraw,
     resizeCanvas,
-    readLiveScroll,
-    ensureLoop,
     startIdleTimer,
     startAutoExitTimer,
     clearIdleTimer,
