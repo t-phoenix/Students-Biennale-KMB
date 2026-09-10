@@ -17,13 +17,15 @@ function clampWidth(w: number) {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, w));
 }
 
-// A point is stored as a fraction of its anchor element's live bounding box,
-// not an absolute pixel. Position is recomputed from the element's current
-// getBoundingClientRect() on every redraw, so it tracks scroll, resize, and
-// layout reflow automatically - no scroll-offset bookkeeping needed at all.
+// A point is stored as a pixel offset from its anchor element's top-left
+// corner, measured at draw time. On redraw it's re-placed at
+// anchor.getBoundingClientRect().left/top (tracking scroll, resize, and
+// reflow automatically) and scaled by a single uniform factor - so the
+// whole stroke grows/shrinks together with the element like a sticker,
+// never stretched or squeezed independently in x vs y.
 interface AnchoredPoint {
-  fx: number;
-  fy: number;
+  ox: number;
+  oy: number;
 }
 
 interface ResolvedPoint {
@@ -84,8 +86,8 @@ function elementUnderPoint(canvas: HTMLCanvasElement, x: number, y: number): Ele
 
 function toAnchoredPoint(rect: DOMRect, clientX: number, clientY: number): AnchoredPoint {
   return {
-    fx: rect.width > 0 ? (clientX - rect.left) / rect.width : 0,
-    fy: rect.height > 0 ? (clientY - rect.top) / rect.height : 0,
+    ox: clientX - rect.left,
+    oy: clientY - rect.top,
   };
 }
 
@@ -130,9 +132,11 @@ function resolveStrokePoints(stroke: Stroke): { points: ResolvedPoint[]; width: 
   if (!stroke.anchor.isConnected) return null;
   const rect = stroke.anchor.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return null;
+  // One uniform scale for both axes (and for line width) - so the stroke
+  // resizes with its anchor like a sticker, never warped independently.
   const scale = stroke.anchorWidth > 0 ? rect.width / stroke.anchorWidth : 1;
   return {
-    points: stroke.points.map((p) => ({ x: rect.left + p.fx * rect.width, y: rect.top + p.fy * rect.height })),
+    points: stroke.points.map((p) => ({ x: rect.left + p.ox * scale, y: rect.top + p.oy * scale })),
     width: stroke.width * scale,
   };
 }
