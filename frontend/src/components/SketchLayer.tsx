@@ -14,7 +14,7 @@ const COLOR_NAMES: Record<string, string> = {
   [RED]: 'red',
 };
 
-const MIN_WIDTH = 2;
+const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
 const IDLE_MS = 2000;
 const AUTO_EXIT_MS = 10000;
@@ -30,13 +30,11 @@ function clampWidth(w: number) {
 interface AnchoredPoint {
   fx: number;
   fy: number;
-  t: number;
 }
 
 interface ResolvedPoint {
   x: number;
   y: number;
-  t: number;
 }
 
 interface Stroke {
@@ -94,38 +92,11 @@ function toAnchoredPoint(rect: DOMRect, clientX: number, clientY: number): Ancho
   return {
     fx: rect.width > 0 ? (clientX - rect.left) / rect.width : 0,
     fy: rect.height > 0 ? (clientY - rect.top) / rect.height : 0,
-    t: performance.now(),
   };
 }
 
-// Pseudo-random hash noise for the pencil grain texture
-function hash(seed: number, i: number) {
-  const n = Math.sin(seed * 127.1 + i * 311.7) * 43758.5453;
-  return n - Math.floor(n);
-}
-
-function stampGrain(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, seed: number) {
-  const s = width * 0.45;
-  for (let r = 0; r < 5; r++) {
-    const gx = x + (hash(seed, r) - 0.5) * s;
-    const gy = y + (hash(seed, r + 10) - 0.5) * s;
-    ctx.globalAlpha = 0.2 + hash(seed, r + 20) * 0.35;
-    ctx.beginPath();
-    ctx.ellipse(
-      gx,
-      gy,
-      s * (0.5 + hash(seed, r + 30) * 0.5),
-      s * (0.35 + hash(seed, r + 40) * 0.4),
-      hash(seed, r + 50) * Math.PI,
-      0,
-      Math.PI * 2
-    );
-    ctx.fill();
-  }
-}
-
-// Faithful port of production's pencil/crayon renderer: smooth base stroke +
-// speed-sensitive grain texture stamped along every segment. Operates on
+// Clean smoothed line: a solid quadratic-curve stroke through the captured
+// points (rounded caps/joins), with no grain/texture overlay. Operates on
 // already-resolved (absolute, viewport-space) points.
 function drawResolvedStroke(ctx: CanvasRenderingContext2D, pts: ResolvedPoint[], color: string, width: number) {
   if (pts.length === 0) return;
@@ -135,15 +106,17 @@ function drawResolvedStroke(ctx: CanvasRenderingContext2D, pts: ResolvedPoint[],
   ctx.lineJoin = 'round';
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
+  ctx.globalAlpha = 1;
 
   if (pts.length === 1) {
-    stampGrain(ctx, pts[0].x, pts[0].y, width, 0);
+    ctx.beginPath();
+    ctx.arc(pts[0].x, pts[0].y, width / 2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
     return;
   }
 
-  ctx.globalAlpha = 0.55;
-  ctx.lineWidth = width * 0.85;
+  ctx.lineWidth = width;
   ctx.beginPath();
   ctx.moveTo(pts[0].x, pts[0].y);
   for (let i = 1; i < pts.length - 1; i++) {
@@ -156,76 +129,6 @@ function drawResolvedStroke(ctx: CanvasRenderingContext2D, pts: ResolvedPoint[],
   ctx.quadraticCurveTo(secondLast.x, secondLast.y, last.x, last.y);
   ctx.stroke();
 
-  for (let i = 1; i < pts.length; i++) {
-    const p0 = pts[i - 1];
-    const p1 = pts[i];
-    const dx = p1.x - p0.x;
-    const dy = p1.y - p0.y;
-    const dist = Math.hypot(dx, dy);
-    if (dist < 0.5) continue;
-
-    const speed = dist / Math.max(1, p1.t - p0.t);
-    const widthFactor = 0.55 + Math.min(0.7, 10 / (speed + 3));
-    const grainRadius = width * 0.42 * widthFactor;
-    const nx = -dy / dist;
-    const ny = dx / dist;
-    const steps = Math.max(2, Math.floor(dist / 1.6));
-
-    for (let step = 0; step < steps; step++) {
-      const frac = step / steps;
-      const sx = p0.x + dx * frac;
-      const sy = p0.y + dy * frac;
-      const seed = i * 17 + step * 31;
-      const blobCount = 2 + Math.floor(hash(seed, 1) * 3);
-
-      for (let b = 0; b < blobCount; b++) {
-        const along = hash(seed, 2 + b) - 0.5;
-        const across = (hash(seed, 5 + b) - 0.5) * 1.2;
-        const bx = sx + nx * along * grainRadius * 1.4 + (dx / dist) * across;
-        const by = sy + ny * along * grainRadius * 1.4 + (dy / dist) * across;
-        const br = grainRadius * (0.35 + hash(seed, 8 + b) * 0.55);
-
-        ctx.globalAlpha = 0.14 + hash(seed, 11 + b) * 0.22;
-        ctx.beginPath();
-        ctx.ellipse(
-          bx,
-          by,
-          br * (0.7 + hash(seed, 14 + b) * 0.6),
-          br * (0.45 + hash(seed, 17 + b) * 0.4),
-          Math.atan2(dy, dx) + (hash(seed, 20 + b) - 0.5) * 0.8,
-          0,
-          Math.PI * 2
-        );
-        ctx.fill();
-      }
-
-      if (step % 2 === 0) {
-        const jitter = (hash(seed, 40) - 0.5) * 2;
-        ctx.globalAlpha = 0.08 + hash(seed, 41) * 0.1;
-        ctx.beginPath();
-        ctx.ellipse(
-          sx + nx * jitter * grainRadius * 1.8,
-          sy + ny * jitter * grainRadius * 1.8,
-          grainRadius * 1.15,
-          grainRadius * 0.55,
-          Math.atan2(dy, dx),
-          0,
-          Math.PI * 2
-        );
-        ctx.fill();
-      }
-
-      if (hash(seed, 50) > 0.72) {
-        const fx = sx + (hash(seed, 51) - 0.5) * grainRadius * 2.4;
-        const fy = sy + (hash(seed, 52) - 0.5) * grainRadius * 2.4;
-        ctx.globalAlpha = 0.18;
-        ctx.beginPath();
-        ctx.arc(fx, fy, 0.4 + hash(seed, 53) * 1.1, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    }
-  }
-
   ctx.restore();
 }
 
@@ -235,7 +138,7 @@ function resolveStrokePoints(stroke: Stroke): { points: ResolvedPoint[]; width: 
   if (rect.width === 0 || rect.height === 0) return null;
   const scale = stroke.anchorWidth > 0 ? rect.width / stroke.anchorWidth : 1;
   return {
-    points: stroke.points.map((p) => ({ x: rect.left + p.fx * rect.width, y: rect.top + p.fy * rect.height, t: p.t })),
+    points: stroke.points.map((p) => ({ x: rect.left + p.fx * rect.width, y: rect.top + p.fy * rect.height })),
     width: stroke.width * scale,
   };
 }
@@ -246,8 +149,8 @@ export function SketchLayer() {
 
   const [supported, setSupported] = useState(false);
   const [mode, setMode] = useState<SketchMode>('navigate');
-  const [brushColor, setBrushColor] = useState<string>(RED);
-  const [brushWidth, setBrushWidth] = useState(6);
+  const [brushColor, setBrushColor] = useState<string>(BLACK);
+  const [brushWidth, setBrushWidth] = useState(1);
   const [cursor, setCursor] = useState({ x: 0, y: 0, on: false });
 
   const modeRef = useRef<SketchMode>('navigate');
@@ -257,8 +160,8 @@ export function SketchLayer() {
   const autoExitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dprRef = useRef(1);
   const reducedMotionRef = useRef(false);
-  const brushColorRef = useRef(RED);
-  const brushWidthRef = useRef(6);
+  const brushColorRef = useRef(BLACK);
+  const brushWidthRef = useRef(1);
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
   const redrawScheduledRef = useRef(false);
