@@ -19,7 +19,7 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 - **Change Colors** — Press `1` (White `#ffffff`), `2` (Red `#ec3b43`), or `3` (Black `#000000` - default).
 - **Soft Exit** — Press `P`, `Esc`, or scroll wheel to exit back to navigation while **preserving all strokes on the page**.
 - **Hard Exit** — Double-click, hover/click header or footer, route change, or 10s auto-exit timeout to **exit and clear all strokes**.
-- **Element-Anchored Strokes** — Each stroke is pinned to the actual DOM element drawn on (as a fraction of its live bounding box), not a page coordinate — so it tracks scroll, resize, and layout reflow automatically. See [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model) below.
+- **Element-Anchored Strokes** — Each stroke is pinned to the actual DOM element drawn on, as a pixel offset from its top-left corner scaled uniformly by one factor (not per-axis) — so it tracks scroll, resize, and layout reflow like a sticker on that element, without ever stretching or squeezing. See [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model) below.
 
 ### Visual Feedback
 - **Cursor Follower with Difference Blend** — Sleek cursor-following element using `mix-blend-mode: difference` for automatic high contrast against any background.
@@ -65,7 +65,7 @@ After the production-parity rewrite above, real usage surfaced two problems with
 1. **Drift on reflow.** Page-space math only stays correct if the page's layout never shifts after a stroke is drawn. Any reflow — a lazy-loaded image popping in, a responsive breakpoint change, dynamic content pushing things down — silently drifts the ink away from the thing it was drawn on, even though the coordinate math was "correct" relative to a scroll offset frozen at draw time. This read as a parallax-like drift/lag while scrolling.
 2. **Cost of staying in sync.** Chasing that drift meant polling `requestAnimationFrame` indefinitely for as long as any stroke existed on the page — even while completely idle — which is wasted CPU with no way to know it's safe to stop.
 
-**The fix:** each stroke now stores a reference to the actual DOM element under the pointer at draw time (found via `elementFromPoint`, with the canvas's own hit-testing briefly disabled so it doesn't just return itself), plus each point as a **fraction of that element's bounding box** (`fx`, `fy`) rather than an absolute pixel. On every redraw, position is recomputed from the element's live `getBoundingClientRect()` — so scroll, resize, and layout reflow are all handled for free by the browser's own layout engine. No scroll-offset bookkeeping exists anymore. Stroke width also scales proportionally if the anchor element itself resizes (e.g. a responsive image shrinking at a narrower breakpoint) — matching the original ask that sketches work correctly "even in any screen size and responsive too."
+**The fix:** each stroke now stores a reference to the actual DOM element under the pointer at draw time (found via `elementFromPoint`, with the canvas's own hit-testing briefly disabled so it doesn't just return itself), plus each point as a **pixel offset from that element's top-left corner** (`ox`, `oy`) at draw time. On every redraw, position is recomputed from the element's live `getBoundingClientRect()` — so scroll, resize, and layout reflow are all handled for free by the browser's own layout engine. No scroll-offset bookkeeping exists anymore.
 
 Because correctness no longer depends on *when* redraw runs — only smoothness does — the continuous per-frame RAF loop was replaced with an rAF-throttled scheduler: real `scroll` / `resize` / Lenis-`scroll` events call `scheduleRedraw()`, which coalesces any burst into at most one repaint per animation frame and costs nothing at all when nothing is happening.
 
@@ -75,6 +75,16 @@ Because correctness no longer depends on *when* redraw runs — only smoothness 
 - Fired 50 synthetic `scroll` events in a single burst: exactly **1** redraw resulted, confirming the throttle coalesces correctly.
 
 **Side benefit:** this also resolves the `/artworks` pan-canvas limitation noted earlier — element-anchoring doesn't care whether the page moves via scroll or via that page's drag-pan, since it only ever asks "where is this element right now," which is correct either way.
+
+### Follow-up fix: uniform scale instead of per-axis fractions
+
+The first cut of this stored each point as a **fraction** of the anchor's width/height (`fx = (clientX - rect.left) / rect.width`, same for `fy`) and resolved it back with `rect.left + fx*rect.width`. That distorts the ink whenever the anchor's width and height change by different ratios — extremely common for text, whose height changes with line-wrapping independently of its width. A drawing on top of text would visibly stretch or squeeze as the viewport resized.
+
+Fixed to a "sticker" model: each point stores a **pixel offset** (`ox`, `oy`) from the anchor's top-left corner at draw time (`ox = clientX - rect.left`, no division). On redraw, a single scale factor — `rect.width / anchorWidth` — is applied to both `ox` and `oy` together (and to line width), then added to the anchor's *current* top-left. If the element only moves, or scales uniformly, the ink tracks exactly; if it resizes non-uniformly, the ink no longer warps at all (position is driven purely by the width ratio, height changes don't stretch it).
+
+Note this uses **width** as the scale signal, matching how stroke width already scaled. It won't detect a case where an element's rendered content shrinks (e.g. a font-size media query) without its own box width changing — a real but narrower edge case than the one this fixes.
+
+**Verified in-browser** with a controlled fixed-size test element: doubling its height while holding width fixed left the stroke's pixel bounding box byte-for-byte identical (zero distortion, previously would have visibly squeezed vertically); scaling both dimensions uniformly by 1.5× scaled the stroke by ~1.5× in both axes, preserving its shape.
 
 ## Keyboard Shortcuts
 
@@ -105,7 +115,7 @@ Because correctness no longer depends on *when* redraw runs — only smoothness 
 
 ### Canvas Implementation
 - Full viewport canvas dynamically matching `window.innerWidth` & `window.innerHeight`.
-- **Element-Anchored Coordinates:** Each point stores its position as a fraction (`fx`, `fy`) of its stroke's anchor element's bounding box, not an absolute pixel — see [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model).
+- **Element-Anchored Coordinates:** Each point stores its position as a pixel offset (`ox`, `oy`) from its stroke's anchor element's top-left corner at draw time — see [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model).
 - **Live Resolution:** On every redraw, each stroke's points are recomputed from `anchor.getBoundingClientRect()`; no scroll or pan offset is tracked or applied anywhere.
 - **Clean Smoothed Line Renderer:** A single quadratic-curve path through the resolved points at full opacity — no grain, texture, or per-segment noise. A single click draws a filled circle.
 - **rAF-Throttled Redraw:** `scroll`/`resize`/Lenis-`scroll` events call a scheduler that coalesces to at most one repaint per frame; zero redraw calls happen while idle.
@@ -113,14 +123,14 @@ Because correctness no longer depends on *when* redraw runs — only smoothness 
 ### Stroke Data Structure
 ```typescript
 interface AnchoredPoint {
-  fx: number;     // fraction of anchor's rect.width from rect.left, at capture time
-  fy: number;     // fraction of anchor's rect.height from rect.top, at capture time
+  ox: number;     // pixel offset from anchor's rect.left, at capture time
+  oy: number;     // pixel offset from anchor's rect.top, at capture time
 }
 
 interface Stroke {
   anchor: Element;            // the DOM element this stroke is pinned to
-  anchorWidth: number;        // anchor's rect.width at draw time, for proportional width scaling
-  points: AnchoredPoint[];    // fractional offsets, resolved fresh on every redraw
+  anchorWidth: number;        // anchor's rect.width at draw time - source of the uniform scale factor
+  points: AnchoredPoint[];    // pixel offsets, resolved fresh on every redraw
   color: SketchColor;         // #ffffff | #ec3b43 | #000000
   width: number;              // 1-28 pixels (default: 1px), scaled by anchor resize ratio
 }
@@ -160,6 +170,7 @@ interface Stroke {
 - [ ] Switch colors with <kbd>1</kbd> (White), <kbd>2</kbd> (Red), <kbd>3</kbd> (Black)
 - [ ] Verify strokes render as a clean smoothed line — no grain, texture, or jitter
 - [ ] Scroll page to verify strokes remain anchored to content (not floating on screen)
+- [ ] Resize browser window to verify a sketch on text/an image scales uniformly with it rather than stretching or squeezing
 - [ ] Press <kbd>Esc</kbd> or <kbd>P</kbd> to soft exit; verify strokes remain visible
 - [ ] Double-click or navigate to another page to verify hard exit clears strokes
 - [ ] Test auto-exit after 10 seconds of inactivity in sketch mode
