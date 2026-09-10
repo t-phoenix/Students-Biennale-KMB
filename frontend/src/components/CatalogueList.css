@@ -124,6 +124,7 @@
   max-height: calc(100vh - var(--nav-height, 60px) - 48px);
   overflow-y: auto;
   overflow-x: hidden;
+  padding-left: var(--grid-gutter);
   padding-right: 14px;
   padding-bottom: 36px;
   box-sizing: border-box;
@@ -324,6 +325,7 @@
     margin-top: 40px;
     max-height: none;
     overflow-y: visible;
+    padding-left: 0;
     padding-right: 0;
     padding-bottom: 0;
   }
