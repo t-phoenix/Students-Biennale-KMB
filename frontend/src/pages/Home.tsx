@@ -777,8 +777,12 @@ export function Home() {
         <section id="programmes" className="home-section home-programmes">
           <div className="fig-grid home-programmes__top">
             <h2 className="fig-label fig-heading">PROGRAMMES</h2>
-            <div className="home-programmes__banner fig-c4-12">
-              <img src={homeBannerUrl || "/home/programmes-banner.jpg"} alt="" />
+            <div className="home-programmes__banner fig-c4-12" data-no-parallax="true">
+              <img
+                src={homeBannerUrl || "/home/programmes-banner.jpg"}
+                alt=""
+                data-no-parallax="true"
+              />
             </div>
           </div>
           <div className="fig-grid home-programmes__bottom">

@@ -15,12 +15,19 @@ export interface ParallaxOptions {
 function isEligibleImage(img: HTMLImageElement): boolean {
   if (img.dataset.noParallax === "true") return false;
 
-  // Skip tiny UI icons and non-content graphics
+  // Check if image or any ancestor requested no parallax
+  const parentNoParallax = img.closest(
+    "[data-no-parallax='true'], .home-programmes__banner"
+  );
+  if (parentNoParallax) return false;
+
+  // Skip tiny UI icons, non-content graphics, and graphic banners
   const src = img.getAttribute("src") || "";
   if (
     src.includes("/icons/") ||
     src.includes("favicon") ||
     src.includes("logo") ||
+    src.includes("programmes-banner") ||
     src.endsWith(".svg")
   ) {
     return false;
