@@ -12,229 +12,116 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 ## Features
 
 ### User Interactions
-- **Idle Detection** — After 3 seconds of no mouse movement, a pencil cursor icon with "Press P" hint appears
-- **Toggle Sketch Mode** — Press `P` to activate/deactivate sketch mode (or when idle hint is showing)
-- **Draw Strokes** — Click and drag to draw freehand strokes
-- **Adjust Brush Size** — Press `[` to decrease or `]` to increase (1-20px)
-- **Change Colors** — Press `1` (white), `2` (red), or `3` (black)
-- **Exit Sketch** — Press `Esc`, double-click, click header/footer, or auto-exit after 10 seconds of inactivity
-- **Persistent Drawings** — Sketches remain on the page until the page is refreshed or navigation occurs
+- **Idle Detection ("Nudge")** — After 2 seconds of no mouse movement (unless `prefers-reduced-motion` is active), the cursor morphs into a pencil cursor icon + `"press P"` label.
+- **Toggle Sketch Mode** — Press `P` to activate/deactivate sketch mode (active from navigate or nudge).
+- **Draw Strokes** — Click and drag to draw freehand strokes with procedural pencil grain texture.
+- **Adjust Brush Size** — Press `[` to decrease or `]` to increase (2px – 28px, default 6px, step 2px).
+- **Change Colors** — Press `1` (White `#ffffff`), `2` (Red `#ec3b43` - default), or `3` (Black `#000000`).
+- **Soft Exit** — Press `P`, `Esc`, or scroll wheel to exit back to navigation while **preserving all strokes on the page**.
+- **Hard Exit** — Double-click, hover/click header or footer, route change, or 10s auto-exit timeout to **exit and clear all strokes**.
+- **Page-Space Anchoring** — Strokes are recorded in absolute page coordinates and translated with scroll offset, staying perfectly pinned to content as you scroll.
 
 ### Visual Feedback
-- **Idle Hint** — Pencil cursor icon + "Press P" label appears after 3 seconds of inactivity
-- **Cursor hidden** — When active, native cursor is hidden
-- **Brush ring indicator** — Shows current brush size during drawing
-- **HUD (Heads-Up Display)** — Bottom-right corner shows available commands and current brush info
-- **Real-time indicators** — Color and size swatches update as you change settings
-
-## Technical Implementation
-
-### Files Added
-
-#### 1. **SketchLayer.tsx** — Main Component
-```
-Location: frontend/src/components/SketchLayer.tsx
-Lines: ~400
-Dependencies: React hooks only (no external libraries)
-```
-
-**Responsibilities:**
-- Manages sketch state (mode, brush color, brush width, cursor position, idle hint)
-- Canvas rendering and stroke drawing
-- Event handling (pointer, keyboard, wheel, dblclick)
-- HUD display and brush cursor visualization
-- Idle detection timer (3-second "Press P" hint)
-- Auto-exit timeout management (10-second inactivity in sketch mode)
-- Persistent stroke storage across mode transitions
-- Device detection (1024px+ only)
-
-**Performance Optimizations:**
-- Uses `requestAnimationFrame` for smooth 60fps drawing
-- Single `OffscreenCanvas` context for rendering
-- Event throttling via pointer events
-- No re-renders on every stroke (canvas updates directly)
-- Cleanup all event listeners on unmount
-- Memory footprint: <2MB when active
-
-### Files Modified
-
-#### 1. **Layout.tsx** — Integration Point
-**Changes:**
-- Added import: `import { SketchLayer } from "./SketchLayer";`
-- Added component: `<SketchLayer />` in JSX (after Footer)
-
-**Impact:** Minimal (2 lines added)
-
-### Files Added (Assets)
-
-#### 1. **public/cursors/pen.svg**
-- SVG cursor icon (32x32)
-- Displayed as brush cursor hint
-- Black pen with white highlight and red accent
-
-#### 2. **public/cursors/press-p.svg**
-- SVG icon showing "P" key
-- Visual hint for toggling sketch mode
+- **Cursor Follower with Difference Blend** — Sleek cursor-following element using `mix-blend-mode: difference` for automatic high contrast against any background.
+- **Procedural Pencil Grain** — Semi-transparent quadratic curve base stroke combined with dynamic hash-noise grain texture for an authentic hand-drawn look.
+- **HUD (Heads-Up Display)** — Bottom-right floating guide showing current keyboard shortcuts, active color, and brush gauge.
 
 ## Keyboard Shortcuts
 
 | Key | Action | Mode |
 |-----|--------|------|
-| **P** | Toggle sketch mode on/off | Global |
-| **[** | Decrease brush size (min: 1px) | Sketch only |
-| **]** | Increase brush size (max: 20px) | Sketch only |
-| **1** | Set brush color to white | Sketch only |
-| **2** | Set brush color to red | Sketch only |
-| **3** | Set brush color to black | Sketch only |
-| **Esc** | Exit sketch mode immediately | Sketch only |
-| **Double-click** | Exit sketch mode | Sketch only |
-| **Wheel** | Exit sketch mode | Sketch only |
+| **P** | Toggle sketch mode on/off | Global / Nudge |
+| **[** | Decrease brush size (min: 2px, step: 2px) | Sketch only |
+| **]** | Increase brush size (max: 28px, step: 2px) | Sketch only |
+| **1** | Set brush color to White (`#ffffff`) | Sketch only |
+| **2** | Set brush color to Red (`#ec3b43` - default) | Sketch only |
+| **3** | Set brush color to Black (`#000000`) | Sketch only |
+| **Esc** | Soft exit sketch mode (preserves strokes) | Sketch only |
+| **Wheel Scroll** | Soft exit sketch mode (preserves strokes) | Sketch only |
+| **Double-click** | Hard exit sketch mode (clears all strokes) | Sketch only |
 
 ## Device Support
 
 ### Supported Devices
-✅ Desktop (1024px+)  
-✅ Laptop (1024px+)  
-✅ iPad (1024px+)  
+✅ Desktop / Laptop with fine pointer (`(pointer: fine)`) and width >= 768px  
+✅ iPad / iPadOS devices (`navigator.maxTouchPoints > 1` with screen width >= 768px)  
 
 ### Not Supported
-❌ Mobile phones (<1024px)  
-❌ Tablets in portrait mode (<1024px)  
+❌ Mobile phones (<768px or coarse-only touch)  
 
-**Detection:** `window.innerWidth >= 1024`
+**Detection Logic:** `(window.innerWidth >= 768 && window.matchMedia('(pointer: fine)').matches) || isIPad`
 
 ## Drawing System
 
 ### Canvas Implementation
-- Full viewport canvas (dynamically matches `window.innerWidth` & `window.innerHeight`)
-- Direct 2D context rendering with GPU acceleration
-- Line cap and line join set to `'round'` for smooth, anti-aliased strokes
-- **Single-Click Dot Support:** Single pointer clicks draw solid circular points (`ctx.arc(...)`)
-- **Resize Resiliency:** Window resizing resets canvas dimensions, restores line styles, and automatically calls `redrawAll()`
-- **Session Stroke Persistence:** All completed strokes within an active session are stored in `strokesRef` and redrawn continuously with the active stroke
+- Full viewport canvas dynamically matching `window.innerWidth` & `window.innerHeight`.
+- **Page-Space Coordinates:** Points store absolute page position (`clientX + scrollX`, `clientY + scrollY`).
+- **Scroll Sync:** Canvas context translates by `(-scrollX, -scrollY)` during redrawing so ink stays anchored to content.
+- **Pencil/Crayon Grain Shader:** Renders smooth quadratic bezier curves with overlaid pseudo-random noise ellipses along the stroke path.
+- **Resize & Scroll Resilient:** Automatically recalculates canvas buffer and restores context transformations on window resize and scroll events.
 
 ### Stroke Data Structure
 ```typescript
 interface Point {
-  x: number;      // Cursor X position
-  y: number;      // Cursor Y position
+  x: number;      // Page X position (clientX + scrollX)
+  y: number;      // Page Y position (clientY + scrollY)
 }
 
 interface Stroke {
-  points: Point[];           // Array of drawn points
-  color: SketchColor;        // #ffffff | #ef3942 | #323031
-  width: number;             // 1-20 pixels
+  points: Point[];           // Array of drawn page points
+  color: SketchColor;        // #ffffff | #ec3b43 | #000000
+  width: number;             // 2-28 pixels (default: 6px)
 }
 ```
 
 ### Rendering Strategy
-1. **During Draw:** Pointer move clears canvas → redraws all previous session strokes → draws active stroke
-2. **After Stroke:** On pointer up, the active stroke is appended to `strokesRef.current`
-3. **On Exit:** Exiting sketch mode clears the canvas, removes cursor styles, and resets `strokesRef`
+1. **During Draw:** Clear viewport → translate by `-scroll` → draw completed strokes (base curve + grain) → draw active stroke.
+2. **On Soft Exit (P / Esc / Wheel):** Transition to `navigate` mode, keeping canvas visible with `pointer-events: none` and existing strokes rendered.
+3. **On Hard Exit (Double-click / Route change / Inactivity / Header hover):** Transition to `navigate` mode and wipe `strokesRef` and canvas.
 
 ## State Management
 
-### SketchMode States
-- `'navigate'` — Normal browsing mode, sketch overlay dormant (`pointerEvents: none`)
-- `'sketch'` — Sketch overlay active, ready to draw, HUD and brush ring visible
-- `'drawing'` — Pointer active, currently streaming stroke points
+### SketchMode States (4 States)
+- `'navigate'` — Default browsing mode, canvas renders existing strokes with `pointer-events: none`.
+- `'nudge'` — 2-second idle visual hint state showing pencil icon and `"press P"`. Pointer-down does NOT draw.
+- `'sketch'` — Sketch overlay active, HUD visible, cursor follower active, ready to draw.
+- `'drawing'` — Pointer active, actively streaming stroke points.
 
 ### State & Ref Architecture
-- `mode` & `modeRef` — Synced state/ref for instant mode transitions without stale closures
-- `brushColor` & `brushColorRef` — Active brush color (#ffffff, #ef3942, or #323031)
-- `brushWidth` & `brushWidthRef` — Active brush size (1-20px)
-- `strokesRef` — Array of all completed strokes within the current session
-- `currentStrokeRef` — Array of points in the currently active stroke
-- `cursorPos` — Mouse/touch coordinate for the brush follower ring and idle hint
-- `showHUD` — Controls visibility of the keyboard shortcut guide
-- `showIdleHint` — Controls visibility of the "Press P" hint during idle state
-- `autoExitTimerRef` — 10-second inactivity watchdog timer (exits sketch mode after drawing inactivity)
-- `idleTimerRef` — 3-second idle detector (shows "Press P" hint after no mouse movement)
-
-## Performance Characteristics
-
-### Inactive State
-- Memory: ~50KB (component unmounted on mobile screens <1024px)
-- CPU: 0% idle
-- Zero canvas operations or draw calls
-
-### Active Sketch Mode (Not Drawing)
-- Memory: ~500KB
-- CPU: <1% (browser idle)
-- Passive pointer move event listeners update cursor ring
-
-### Active Drawing (Pointer Down)
-- Memory: ~1.5MB – 2MB
-- CPU: <5% (solid 60fps / 120fps on high-refresh displays)
-- Points streamed directly into memory refs, bypassing React state re-renders
-
-### Optimization Techniques
-1. **Viewport Gated** — Component returns `null` on screens <1024px
-2. **Decoupled Canvas Loop** — Direct 2D context updates avoid React reconciliation cycles
-3. **Ref-Based Brush Controls** — Color and size switching do not tear down canvas context or reset drawing history
-4. **Clean Teardown** — All event listeners, timers, and cursor override classes cleanly detached on unmount
-
-## Browser Compatibility
-
-### Fully Supported
-- Chrome / Edge 90+
-- Firefox 88+
-- Safari 14+
-- iPadOS Safari 14+
-
-### Features Used
-- Canvas 2D Context API
-- PointerEvents API (unified mouse, pen, and touch)
-- CSS `cursor: none` injection
-- ES6+ JavaScript & TypeScript Strict Mode
-
-## Offline Functionality
-
-The sketch feature is **100% client-side and offline**:
-- Zero network requests
-- Zero external dependencies
-- Canvas data resides solely in volatile browser memory
-
-**Note:** Strokes persist across multiple drawings within an active session, but are cleared upon exiting sketch mode or reloading the page.
+- `mode` & `modeRef` — Synced state/ref for instant mode transitions without stale closures.
+- `brushColor` & `brushColorRef` — Active brush color (`#ffffff`, `#ec3b43`, `#000000`).
+- `brushWidth` & `brushWidthRef` — Active brush size (2–28px, default 6px).
+- `strokesRef` — Storage of all completed page-anchored strokes.
+- `currentStrokeRef` — Points of the currently streaming stroke.
+- `cursorPos` — Viewport coordinates for the custom cursor follower.
+- `showHUD` — Visibility of the HUD shortcuts overlay.
+- `idleTimerRef` — 2-second inactivity timer that triggers the nudge state.
+- `autoExitTimerRef` — 10-second inactivity watchdog in sketch mode.
 
 ## Testing Checklist
 
 ### Desktop/Laptop Testing
-- [ ] Wait 3 seconds without moving mouse to see idle hint (pencil cursor + "Press P")
-- [ ] Move mouse to dismiss idle hint
-- [ ] Press <kbd>P</kbd> from idle state to activate sketch mode
-- [ ] Verify idle hint reappears after exiting sketch mode and waiting 3 seconds
-- [ ] Draw freehand strokes with varying brush sizes (<kbd>[</kbd> / <kbd>]</kbd>)
+- [ ] Wait 2 seconds without moving mouse to see the nudge hint (pencil + "press P")
+- [ ] Move mouse or scroll to dismiss nudge hint back to navigate
+- [ ] Press <kbd>P</kbd> to activate sketch mode
+- [ ] Draw freehand strokes with varying brush sizes (<kbd>[</kbd> / <kbd>]</kbd>, 2–28px)
 - [ ] Switch colors with <kbd>1</kbd> (White), <kbd>2</kbd> (Red), <kbd>3</kbd> (Black)
-- [ ] Click once without dragging to verify single-dot drawing
-- [ ] Draw multiple separate strokes to confirm session stroke persistence
-- [ ] Verify strokes remain on page after exiting sketch mode (not cleared)
-- [ ] Resize the browser window to verify strokes persist and scale correctly
-- [ ] Verify brush follower ring tracks pointer accurately during drawing
-- [ ] Verify HUD displays in bottom-right with correct color and size swatch
-- [ ] Test auto-exit after 10 seconds of drawing inactivity
-- [ ] Test immediate exit via <kbd>Esc</kbd> key
-- [ ] Test exit via double-click and wheel scroll
-- [ ] Verify default cursor is restored after exiting sketch mode
-- [ ] Verify page refresh clears all sketches
+- [ ] Verify pencil grain texture renders along stroke paths
+- [ ] Scroll page to verify strokes remain anchored to content (not floating on screen)
+- [ ] Press <kbd>Esc</kbd> or <kbd>P</kbd> to soft exit; verify strokes remain visible
+- [ ] Double-click or navigate to another page to verify hard exit clears strokes
+- [ ] Test auto-exit after 10 seconds of inactivity in sketch mode
 
 ### iPad Testing
 - [ ] Press <kbd>P</kbd> (or external keyboard) to toggle sketch mode
-- [ ] Draw using touch / Apple Pencil (pointer events)
-- [ ] Verify stroke fidelity and responsiveness on high-DPI retina display
-- [ ] Test orientation change (portrait/landscape)
-
-### Mobile Gating (<1024px)
-- [ ] Verify `SketchLayer` renders `null` on mobile viewports (<1024px)
-- [ ] Verify <kbd>P</kbd> does not trigger sketch overlay or hide cursor
+- [ ] Draw with Apple Pencil or finger touch
+- [ ] Verify page scrolling keeps strokes properly anchored
 
 ## Known Limitations
 
-1. **Session-Scoped Persistence** — Drawings persist during the active sketch session, but clear when exiting sketch mode or reloading.
-2. **No Undo/Redo Keybinding** — Strokes are tracked internally for session redraws, but dedicated undo/redo actions (e.g. Ctrl+Z) are reserved for Phase 2.
-3. **No Export to File** — Saving annotations directly to PNG/JPEG is not yet supported.
-4. **No Pressure Dynamics** — Stroke thickness is determined by the selected brush size rather than pen pressure.
-5. **Desktop/iPad Only** — Intentionally disabled on mobile screens (<1024px) to preserve standard mobile browsing.
+1. **Route-Scoped Persistence** — Drawings persist across scroll and soft exits within the current page, but clear on route navigation or reload.
+2. **No Undo/Redo Keybinding** — Strokes are tracked internally, but UI undo/redo keybindings are scheduled for Phase 2.
+3. **Export to File** — PNG export scheduled for Phase 2.
 
 ## Future Enhancements
 
