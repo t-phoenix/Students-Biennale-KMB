@@ -234,6 +234,8 @@ export function SketchLayer() {
     const handleWheel = () => {
       if (modeRef.current === 'sketch' || modeRef.current === 'drawing') {
         updateMode('navigate');
+      } else {
+        resetIdleTimer();
       }
     };
 
@@ -248,12 +250,19 @@ export function SketchLayer() {
       }
     };
 
+    const handleScroll = () => {
+      if (modeRef.current === 'navigate') {
+        resetIdleTimer();
+      }
+    };
+
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown, { passive: false });
     window.addEventListener('pointerup', handlePointerUp);
     window.addEventListener('pointercancel', handlePointerUp);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('wheel', handleWheel, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize);
 
     // Start idle timer on mount
@@ -266,6 +275,7 @@ export function SketchLayer() {
       window.removeEventListener('pointercancel', handlePointerUp);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
@@ -321,7 +331,7 @@ export function SketchLayer() {
         </div>
       )}
 
-      {showIdleHint && (
+      {showIdleHint && (cursorPos.x > 0 || cursorPos.y > 0) && (
         <div
           className="scribble-idle-hint"
           style={{
