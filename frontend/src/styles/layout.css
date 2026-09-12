@@ -275,3 +275,23 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.home-text-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin-top: var(--spacing-md);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+  font-style: italic;
+  color: var(--color-text-secondary);
+  width: fit-content;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
+}
+
+.home-text-btn:hover {
+  color: var(--color-text-primary);
+}

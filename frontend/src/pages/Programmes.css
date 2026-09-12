@@ -28,32 +28,33 @@
 
 .programmes__hero {
   position: relative;
+  width: 100%;
   background: var(--color-primary-dark);
   overflow: hidden;
 }
 
 .programmes__hero-slides {
-  position: relative;
+  display: grid;
+  grid-template-areas: "slide";
   width: 100%;
-  height: min(615px, 58vh);
+  position: relative;
 }
 
-/* Full-bleed hero — Figma 1:1649 is 1440 × 615. */
+/* Responsive cover banner — scales fluidly with width so the image is never cropped */
 .programmes__hero-slide {
-  position: absolute;
-  inset: 0;
+  grid-area: slide;
   display: block;
   width: 100%;
-  height: 100%;
-  max-width: none;
-  object-fit: cover;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
 }
 
 .programmes__hero-dots {
   position: absolute;
   left: 50%;
   right: auto;
-  bottom: var(--overlay-bottom-inset, 40px);
+  bottom: clamp(12px, 3vw, var(--overlay-bottom-inset, 40px));
   transform: translateX(-50%);
   z-index: 3;
   display: flex;
@@ -78,18 +79,18 @@
 
 /* Label on cols 1-3, cards and lists on cols 4-12 (Figma 1:1648). */
 .programmes__block {
-  padding-block: 72px;
+  padding-block: 80px;
   align-items: start;
 }
 
 .programmes__cards {
-  row-gap: 24px;
+  row-gap: 60px;
 }
 
 .programmes__cards article {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .programmes__card-media-wrap {
@@ -98,6 +99,7 @@
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
   position: relative;
+  margin-bottom: 4px;
 }
 
 .programmes__card-media {
@@ -108,11 +110,17 @@
   height: 100%;
   max-width: none;
   object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.programmes__cards article:hover .programmes__card-media {
+  transform: scale(1.03);
 }
 
 .programmes__cards h2 {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 2px;
@@ -121,6 +129,7 @@
 .programmes__meta {
   margin: 0;
   font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
 }
 
@@ -134,14 +143,20 @@
   border: 0;
   background: transparent;
   padding: 0;
-  text-align: left;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  width: fit-content;
-  font: inherit;
-  cursor: pointer;
+  margin-top: var(--spacing-md);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
   font-style: italic;
-  text-transform: lowercase;
+  color: var(--color-text-secondary);
+  width: fit-content;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
+}
+
+.programmes__card-button:hover {
+  color: var(--color-text-primary);
 }
 
 .programmes__past-items {
@@ -326,19 +341,42 @@
   border: 0;
   background: transparent;
   padding: 0;
-  text-align: left;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  width: fit-content;
-  font: inherit;
-  cursor: pointer;
+  margin-top: var(--spacing-md);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
   font-style: italic;
-  text-transform: lowercase;
-  color: inherit;
+  color: var(--color-text-secondary);
+  width: fit-content;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
+}
+
+.programmes__past-more-btn:hover {
+  color: var(--color-text-primary);
 }
 
 .programmes__awards {
-  row-gap: 24px;
+  row-gap: 60px;
+}
+
+.programmes__award {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.25s ease;
+}
+
+.programmes__award:hover {
+  opacity: 0.75;
 }
 
 .programmes__award-media {
@@ -346,7 +384,7 @@
   aspect-ratio: 315 / 273;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .programmes__award-media img {
@@ -357,11 +395,17 @@
   max-width: none;
   object-fit: cover;
   display: block;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.programmes__award:hover .programmes__award-media img {
+  transform: scale(1.03);
 }
 
 .programmes__awards h3 {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: var(--type-body-size);
+  line-height: 22px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -370,23 +414,8 @@
 .programmes__awards p {
   margin: 0;
   font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
   color: var(--color-text-secondary);
-}
-
-.programmes__award {
-  display: block;
-  border: none;
-  background: transparent;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-  text-decoration: none;
-  color: inherit;
-  transition: opacity 0.2s ease;
-}
-
-.programmes__award:hover {
-  opacity: 0.7;
 }
 
 /* Raza Section Subsection Heading (Figma 50:1773 & 50:2228) */
@@ -580,7 +609,12 @@
 
 @media (max-width: 899px) {
   .programmes__block {
-    padding-block: 40px;
+    padding-block: 48px;
+  }
+
+  .programmes__cards,
+  .programmes__awards {
+    row-gap: 48px;
   }
 
   .programmes__past-expanded {
@@ -611,5 +645,16 @@
 
   .programmes__raza-rail-trigger {
     text-align: left;
+  }
+}
+
+@media (max-width: 599px) {
+  .programmes__block {
+    padding-block: 40px;
+  }
+
+  .programmes__cards,
+  .programmes__awards {
+    row-gap: 40px;
   }
 }

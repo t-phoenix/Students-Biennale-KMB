@@ -8,7 +8,7 @@ import "./PastWorkshops.css";
 export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
   const { pastWorkshops } = useProgrammes();
-  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("phone-call");
+  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
 
   useGSAP(
     () => {

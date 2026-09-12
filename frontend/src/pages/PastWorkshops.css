@@ -196,15 +196,20 @@
   border: 0;
   background: transparent;
   padding: 0;
-  text-align: left;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  width: fit-content;
-  font: inherit;
-  cursor: pointer;
+  margin-top: var(--spacing-md);
+  font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
   font-style: italic;
-  text-transform: lowercase;
-  color: inherit;
+  color: var(--color-text-secondary);
+  width: fit-content;
+  display: inline-block;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
+}
+
+.past-workshops__more-btn:hover {
+  color: var(--color-text-primary);
 }
 
 @media (max-width: 899px) {

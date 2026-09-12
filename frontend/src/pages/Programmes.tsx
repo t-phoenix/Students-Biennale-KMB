@@ -23,7 +23,7 @@ export function Programmes() {
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
-  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("phone-call");
+  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
   const [expandedIntlAwards, setExpandedIntlAwards] = useState(false);
   const [expandedNationalAwards, setExpandedNationalAwards] = useState(false);
   const { heroCovers } = useProgrammesCovers();
@@ -245,8 +245,8 @@ export function Programmes() {
                   Facilitator : {p.place}
                 </p>
                 <p>{p.blurb}</p>
-                <button type="button" className="programmes__card-button">
-                  KNOW MORE...
+                <button type="button" className="home-text-btn programmes__card-button">
+                  Know more...
                 </button>
               </article>
             ))}
