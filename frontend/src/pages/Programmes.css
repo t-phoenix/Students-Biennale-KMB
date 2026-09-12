@@ -432,10 +432,8 @@
 /* Raza Section Subsection Heading (Figma 50:1773 & 50:2228) */
 .programmes__raza-heading-row {
   grid-column: 1 / -1;
-  margin-top: 56px;
+  margin-top: 40px;
   margin-bottom: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--color-neutral-gray-mid);
 }
 
 .programmes__raza-title-btn {
