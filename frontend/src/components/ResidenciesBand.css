@@ -1,46 +1,14 @@
 /* Residencies — full-bleed band with a right-locked info card and a
-   scroll-parallaxed background (Figma 12:2). Normal document flow, no
-   scroll-hijacking; height matches other full-bleed hero bands site-wide. */
+   scroll-parallaxed background. Normal document flow, no scroll-hijacking. */
 
 .residencies-band {
   position: relative;
   width: 100%;
-  height: min(820px, 90vh);
+  height: min(780px, 86vh);
   overflow: hidden;
   isolation: isolate;
   background: #141414;
   color: var(--color-text-inverse);
-}
-
-/* Scrim band behind the heading so it reads cleanly against the photo
-   underneath instead of just sitting directly on top of it. */
-.residencies-band::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 240px;
-  z-index: 1;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
-  pointer-events: none;
-}
-
-/* Matches Sensing Grounds/Curators/Artworks/Venues exactly (20px, Regular,
-   1.1px tracking) — only the color/shadow/positioning differ, since this one
-   sits over a photo instead of a plain background. */
-.residencies-band__label {
-  position: absolute;
-  top: max(24px, calc(var(--nav-height, 72px) * 0.35));
-  left: max(var(--grid-margin), calc((100% - 1440px) / 2 + 182px));
-  z-index: 4;
-  margin: 0;
-  font-size: var(--type-subtitle-size);
-  line-height: 1.2;
-  font-weight: 400;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-  color: var(--color-text-inverse);
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
 }
 
 /* Extra vertical bleed so the parallax translate (±12%) never reveals bare edges. */
@@ -63,83 +31,82 @@
   will-change: opacity;
 }
 
-/* Card slot — locked to the right of the full band (Figma right inset 152). */
+/* Card slot — locked to the right of the full band with generous width */
 .residencies-band__card-slot {
   position: absolute;
   top: 50%;
-  right: max(var(--grid-margin), calc((100% - 1440px) / 2 + 152px));
+  right: max(var(--grid-margin), calc((100% - 1440px) / 2 + 130px));
   z-index: 3;
   transform: translateY(-50%);
-  width: min(355px, calc(100% - 2 * var(--grid-margin)));
+  width: min(440px, calc(100% - 2 * var(--grid-margin)));
 }
 
 .residencies-band__card {
   position: relative;
   width: 100%;
-  height: min(647px, calc(90vh - 120px));
-  background: #fff;
+  background: #ffffff;
   color: var(--color-text-primary);
-  padding: 36px 20px 28px;
+  padding: 40px 32px 36px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
 }
 
 .residencies-band__card h3 {
-  margin: 0 0 22px;
-  font-size: 20px;
-  line-height: 1.2;
+  margin: 0 0 24px;
+  font-size: 18px;
+  line-height: 1.35;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.residencies-band__card dl {
-  margin: 0 0 18px;
-  display: grid;
-  gap: 0;
+/* 3-column metadata grid strictly aligning all ":" colons */
+.residencies-band__meta-grid {
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.residencies-band__card dl > div {
+.residencies-band__meta-row {
   display: grid;
-  grid-template-columns: 5.75rem 1fr;
-  column-gap: 10px;
-  font-size: 16px;
-  line-height: 30px;
+  grid-template-columns: 80px 14px 1fr;
+  align-items: baseline;
+  font-size: 15px;
+  line-height: 22px;
 }
 
-.residencies-band__card dt {
+.residencies-band__meta-row dt {
   margin: 0;
   font-weight: 400;
+  color: var(--color-text-primary);
 }
 
-.residencies-band__card dt::after {
-  content: " :";
+.residencies-band__colon {
+  text-align: center;
+  color: var(--color-text-primary);
+  user-select: none;
 }
 
-.residencies-band__card dd {
+.residencies-band__meta-row dd {
   margin: 0;
+  color: var(--color-text-primary);
 }
 
 .residencies-band__card > p {
-  margin: 0 0 18px;
-  font-size: 16px;
-  line-height: 1.7;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 12;
+  margin: 0 0 24px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--color-text-primary);
 }
 
 .residencies-band__more {
-  display: block;
+  display: inline-block;
   border: 0;
   background: transparent;
   padding: 0;
   margin: 0;
-  font: inherit;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   font-style: italic;
@@ -159,15 +126,15 @@
   margin-top: 10px;
 }
 
+/* Dots positioned at bottom-right near the card */
 .residencies-band__dots {
   position: absolute;
-  left: 50%;
-  right: auto;
-  transform: translateX(-50%);
-  bottom: 36px;
+  right: max(var(--grid-margin), calc((100% - 1440px) / 2 + 130px));
+  left: auto;
+  bottom: 24px;
   z-index: 4;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
   gap: 8px;
   margin: 0;
@@ -198,7 +165,6 @@
 }
 
 .residencies-band .carousel-nav--next {
-  /* Extreme right of the band, after the white info card. */
   right: var(--grid-margin);
 }
 
@@ -211,12 +177,7 @@
 @media (max-width: 899px) {
   .residencies-band {
     height: auto;
-    min-height: 100vh;
-  }
-
-  .residencies-band__label {
-    left: var(--grid-margin);
-    top: 20px;
+    min-height: unset;
   }
 
   .residencies-band__card-slot {
@@ -226,12 +187,13 @@
     left: var(--grid-margin);
     width: calc(100% - 2 * var(--grid-margin));
     transform: none;
-    padding-block: 80px 32px;
+    padding-block: 40px 32px;
   }
 
   .residencies-band__card {
     height: auto;
     max-height: none;
+    padding: 28px 20px 24px;
   }
 
   .residencies-band .carousel-nav {

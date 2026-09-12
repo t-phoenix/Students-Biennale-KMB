@@ -30,7 +30,7 @@ type Props = {
  * ScrollTrigger tween, synced to the site's Lenis smooth-scroll.
  */
 export function ResidenciesBand({ slides }: Props) {
-  const sectionRef = useRef<HTMLElement>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
   const bgWrapRef = useRef<HTMLDivElement>(null);
   const bgRefs = useRef<(HTMLImageElement | null)[]>([]);
   const prevIndex = useRef(0);
@@ -122,15 +122,12 @@ export function ResidenciesBand({ slides }: Props) {
   if (!slide) return null;
 
   return (
-    <section
+    <div
       ref={sectionRef}
-      id="residencies"
       className="residencies-band"
       aria-label="Residencies"
       tabIndex={hasMany ? 0 : undefined}
     >
-      <h2 className="residencies-band__label">Residencies</h2>
-
       <div ref={bgWrapRef} className="residencies-band__bg-wrap" aria-hidden>
         {slides.map((item, i) => (
           <img
@@ -159,35 +156,39 @@ export function ResidenciesBand({ slides }: Props) {
       <div className="residencies-band__card-slot">
         <div className="residencies-band__card">
           <h3>{slide.title}</h3>
-          <dl>
+          <dl className="residencies-band__meta-grid">
             {slide.host ? (
-              <div>
+              <div className="residencies-band__meta-row">
                 <dt>Host</dt>
+                <span className="residencies-band__colon" aria-hidden>:</span>
                 <dd>{slide.host}</dd>
               </div>
             ) : null}
             {slide.period ? (
-              <div>
+              <div className="residencies-band__meta-row">
                 <dt>Period</dt>
+                <span className="residencies-band__colon" aria-hidden>:</span>
                 <dd>{slide.period}</dd>
               </div>
             ) : null}
             {slide.venue ? (
-              <div>
+              <div className="residencies-band__meta-row">
                 <dt>Venue</dt>
+                <span className="residencies-band__colon" aria-hidden>:</span>
                 <dd>{slide.venue}</dd>
               </div>
             ) : null}
             {slide.awardees ? (
-              <div>
+              <div className="residencies-band__meta-row">
                 <dt>Awardees</dt>
+                <span className="residencies-band__colon" aria-hidden>:</span>
                 <dd>{slide.awardees}</dd>
               </div>
             ) : null}
           </dl>
           {slide.copy ? <p>{slide.copy}</p> : null}
-          <Link to={slide.moreHref} className="residencies-band__more">
-            Read more...
+          <Link to={slide.moreHref} className="home-text-btn residencies-band__more">
+            Know more...
           </Link>
         </div>
       </div>
@@ -207,6 +208,6 @@ export function ResidenciesBand({ slides }: Props) {
           ))}
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }

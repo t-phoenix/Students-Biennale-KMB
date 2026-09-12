@@ -441,13 +441,18 @@ export function Programmes() {
         </section>
       </div>
 
-      {residencies.length === 0 ? (
-        <section id="residencies" className="programmes__block fig-grid prog-reveal">
-          <SectionEmpty>No residencies published yet.</SectionEmpty>
-        </section>
-      ) : null}
-
-      <ResidenciesBand slides={toResidencySlides(residencies)} />
+      <section id="residencies" className="programmes__block programmes__block--residencies prog-reveal">
+        <div className="fig-grid">
+          <h2 className="fig-label fig-subheading">RESIDENCIES</h2>
+        </div>
+        {residencies.length ? (
+          <ResidenciesBand slides={toResidencySlides(residencies)} />
+        ) : (
+          <div className="fig-grid">
+            <SectionEmpty className="fig-c4-12">No residencies published yet.</SectionEmpty>
+          </div>
+        )}
+      </section>
 
       <RazaSpotlightModal
         open={razaModalOpen}

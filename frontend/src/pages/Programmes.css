@@ -86,6 +86,14 @@
   align-items: start;
 }
 
+.programmes__block--residencies {
+  padding-bottom: 0;
+}
+
+.programmes__block--residencies .fig-grid {
+  margin-bottom: 28px;
+}
+
 .programmes__cards {
   row-gap: 60px;
 }
