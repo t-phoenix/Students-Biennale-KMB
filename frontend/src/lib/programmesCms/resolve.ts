@@ -1,6 +1,16 @@
-import type { ProgrammesCover } from "./types";
+import { PROGRAMMES_HERO_FALLBACK, type ProgrammesCover } from "./types";
 
 export function resolveProgrammesHeroCovers(covers: ProgrammesCover[]): ProgrammesCover[] {
+  if (covers.length === 0) {
+    return [
+      {
+        id: "fallback-hero",
+        image_url: PROGRAMMES_HERO_FALLBACK,
+        sort_order: 0,
+        show_on_home: false,
+      },
+    ];
+  }
   return covers;
 }
 

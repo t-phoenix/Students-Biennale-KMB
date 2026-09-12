@@ -29,7 +29,7 @@
 .programmes__hero {
   position: relative;
   width: 100%;
-  background: var(--color-primary-dark);
+  background: transparent;
   overflow: hidden;
 }
 
@@ -38,6 +38,7 @@
   grid-template-areas: "slide";
   width: 100%;
   position: relative;
+  line-height: 0;
 }
 
 /* Responsive cover banner — scales fluidly with width so the image is never cropped */
@@ -48,6 +49,8 @@
   height: auto;
   max-width: 100%;
   object-fit: contain;
+  margin: 0;
+  padding: 0;
 }
 
 .programmes__hero-dots {

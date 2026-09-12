@@ -187,8 +187,8 @@ export function Programmes() {
   return (
     <div ref={root} className="programmes">
       {heroCovers.length > 0 ? (
-      <section className="programmes__hero prog-reveal" aria-label="Programmes hero">
-        <div className="programmes__hero-slides" aria-hidden={heroCovers.length > 1}>
+      <section className="programmes__hero prog-reveal" aria-label="Programmes hero" data-no-parallax="true">
+        <div className="programmes__hero-slides" aria-hidden={heroCovers.length > 1} data-no-parallax="true">
           {heroCovers.map((cover) => (
             <img
               key={cover.id}

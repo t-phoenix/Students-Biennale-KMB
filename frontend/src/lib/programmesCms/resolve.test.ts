@@ -9,8 +9,15 @@ const sample: ProgrammesCover[] = [
 ];
 
 describe("resolveProgrammesHeroCovers", () => {
-  it("returns empty array when no covers", () => {
-    expect(resolveProgrammesHeroCovers([])).toEqual([]);
+  it("returns fallback cover when no covers", () => {
+    expect(resolveProgrammesHeroCovers([])).toEqual([
+      {
+        id: "fallback-hero",
+        image_url: "/programmes/hero.jpg",
+        sort_order: 0,
+        show_on_home: false,
+      },
+    ]);
   });
 
   it("returns covers unchanged when present", () => {

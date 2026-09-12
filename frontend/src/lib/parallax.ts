@@ -17,7 +17,7 @@ function isEligibleImage(img: HTMLImageElement): boolean {
 
   // Check if image or any ancestor requested no parallax
   const parentNoParallax = img.closest(
-    "[data-no-parallax='true'], .home-programmes__banner"
+    "[data-no-parallax='true'], .home-programmes__banner, .programmes__hero, .programmes__hero-slides"
   );
   if (parentNoParallax) return false;
 
@@ -28,6 +28,7 @@ function isEligibleImage(img: HTMLImageElement): boolean {
     src.includes("favicon") ||
     src.includes("logo") ||
     src.includes("programmes-banner") ||
+    src.includes("hero.jpg") ||
     src.endsWith(".svg")
   ) {
     return false;
