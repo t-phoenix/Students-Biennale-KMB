@@ -703,8 +703,8 @@ export function Home() {
         </section>
 
         {/* Sensing Grounds — links cols 1–3, image strip cols 4–12 */}
-        <section className="home-section home-sensing">
-          <div className="fig-grid home-sensing__row">
+        <section className="home-section home-sensing" data-no-parallax="true">
+          <div className="fig-grid home-sensing__row" data-no-parallax="true">
             <nav className="home-sensing__links fig-rail" aria-label="Edition links">
               <button
                 type="button"
@@ -727,11 +727,11 @@ export function Home() {
                 <span className="fig-subheading__underline" aria-hidden />
               </Link>
             </nav>
-            <div className="home-sensing__scroll fig-c4-12">
-              <div ref={sensingTrackRef} className="home-sensing__scroll-track">
+            <div className="home-sensing__scroll fig-c4-12" data-no-parallax="true">
+              <div ref={sensingTrackRef} className="home-sensing__scroll-track" data-no-parallax="true">
                 {[...SENSING_STRIP_IMAGES, ...SENSING_STRIP_IMAGES].map((src, i) => (
-                  <div className="home-sensing__scroll-item" key={`${src}-${i}`}>
-                    <img src={src} alt="" />
+                  <div className="home-sensing__scroll-item" key={`${src}-${i}`} data-no-parallax="true">
+                    <img src={src} alt="" data-no-parallax="true" />
                   </div>
                 ))}
               </div>
