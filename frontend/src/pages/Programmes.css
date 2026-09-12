@@ -429,6 +429,10 @@
   color: var(--color-text-secondary);
 }
 
+.programmes__more {
+  margin-top: 60px;
+}
+
 /* Raza Section Subsection Heading (Figma 50:1773 & 50:2228) */
 .programmes__raza-heading-row {
   grid-column: 1 / -1;
@@ -626,6 +630,10 @@
     row-gap: 48px;
   }
 
+  .programmes__more {
+    margin-top: 40px;
+  }
+
   .programmes__past-expanded {
     grid-template-columns: 1fr;
     row-gap: 20px;
@@ -665,5 +673,9 @@
   .programmes__cards,
   .programmes__awards {
     row-gap: 40px;
+  }
+
+  .programmes__more {
+    margin-top: 32px;
   }
 }
