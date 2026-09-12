@@ -80,30 +80,36 @@ export function Residencies() {
       <div className="fig-grid residencies__head">
         <div className="residencies__rail fig-rail">
           <h1>{featured.title}</h1>
-          {featured.host ? (
-            <p className="residencies__meta">
-              <span>Host :</span>
-              <em>{featured.host}</em>
-            </p>
-          ) : null}
-          {featured.period ? (
-            <p className="residencies__meta">
-              <span>Period :</span>
-              <em>{featured.period}</em>
-            </p>
-          ) : null}
-          {featured.venue ? (
-            <p className="residencies__meta">
-              <span>Venue :</span>
-              <em>{featured.venue}</em>
-            </p>
-          ) : null}
-          {featured.awardees ? (
-            <p className="residencies__meta">
-              <span>Awardees :</span>
-              <em>{featured.awardees}</em>
-            </p>
-          ) : null}
+          <dl className="residencies__meta-grid">
+            {featured.host ? (
+              <div className="residencies__meta-row">
+                <dt>Host</dt>
+                <span className="residencies__colon" aria-hidden>:</span>
+                <dd>{featured.host}</dd>
+              </div>
+            ) : null}
+            {featured.period ? (
+              <div className="residencies__meta-row">
+                <dt>Period</dt>
+                <span className="residencies__colon" aria-hidden>:</span>
+                <dd>{featured.period}</dd>
+              </div>
+            ) : null}
+            {featured.venue ? (
+              <div className="residencies__meta-row">
+                <dt>Venue</dt>
+                <span className="residencies__colon" aria-hidden>:</span>
+                <dd>{featured.venue}</dd>
+              </div>
+            ) : null}
+            {featured.awardees ? (
+              <div className="residencies__meta-row">
+                <dt>Awardees</dt>
+                <span className="residencies__colon" aria-hidden>:</span>
+                <dd>{featured.awardees}</dd>
+              </div>
+            ) : null}
+          </dl>
         </div>
 
         <article ref={featureRef} className="residencies__feature fig-c4-9" id={featured.slug}>

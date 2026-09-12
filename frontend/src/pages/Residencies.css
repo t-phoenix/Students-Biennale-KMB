@@ -24,18 +24,36 @@
   text-transform: uppercase;
 }
 
-.residencies__meta {
-  margin: 0 0 8px;
+.residencies__meta-grid {
+  margin: 0 0 24px;
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.residencies__meta-row {
+  display: grid;
+  grid-template-columns: 80px 14px 1fr;
+  align-items: baseline;
   font-size: var(--type-body-size);
+  line-height: var(--type-body-line);
+}
+
+.residencies__meta-row dt {
+  margin: 0;
+  font-weight: 400;
   color: var(--color-text-secondary);
 }
 
-.residencies__meta span,
-.residencies__meta em {
-  font-style: normal;
+.residencies__colon {
+  text-align: center;
+  color: var(--color-text-secondary);
+  user-select: none;
+}
+
+.residencies__meta-row dd {
+  margin: 0;
+  color: var(--color-text-secondary);
 }
 
 .residencies__feature-media {
