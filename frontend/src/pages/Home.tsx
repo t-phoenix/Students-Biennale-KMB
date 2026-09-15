@@ -68,8 +68,32 @@ export function Home() {
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
   const [hoveredPressId, setHoveredPressId] = useState<string>("");
+  const pressHoverTimeoutRef = useRef<number | null>(null);
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
+
+  const handlePressHover = (id: string) => {
+    if (pressHoverTimeoutRef.current) {
+      window.clearTimeout(pressHoverTimeoutRef.current);
+    }
+    pressHoverTimeoutRef.current = window.setTimeout(() => {
+      setHoveredPressId(id);
+    }, 45);
+  };
+
+  const handlePressLeave = () => {
+    if (pressHoverTimeoutRef.current) {
+      window.clearTimeout(pressHoverTimeoutRef.current);
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (pressHoverTimeoutRef.current) {
+        window.clearTimeout(pressHoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (razaModalOpen || openScholarId !== null || activeCard !== null || lightboxOpen) {
@@ -933,14 +957,18 @@ export function Home() {
                   <article
                     key={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
-                    onMouseEnter={() => setHoveredPressId(item.id)}
+                    onMouseEnter={() => handlePressHover(item.id)}
+                    onMouseLeave={handlePressLeave}
                   >
                     <div className="home-press__collapsed-wrap" aria-hidden={isExpanded}>
                       <Link
                         to={`/press?article=${item.id}`}
                         className="home-press__collapsed"
                         tabIndex={isExpanded ? -1 : 0}
-                        onClick={() => setHoveredPressId(item.id)}
+                        onClick={() => {
+                          handlePressLeave();
+                          setHoveredPressId(item.id);
+                        }}
                       >
                         <span className="home-press__collapsed-title">{item.title}</span>
                         <time className="home-press__collapsed-date">{item.date}</time>
