@@ -509,8 +509,8 @@ export function Home() {
           heroTl
             .fromTo(
               ".home-hero__slide:first-child",
-              { scale: 1.08, autoAlpha: 0 },
-              { scale: 1, autoAlpha: 1, duration: 1.4, ease: "power2.out" },
+              { autoAlpha: 0 },
+              { autoAlpha: 1, duration: 1.2, ease: "power2.out" },
               0
             )
             .fromTo(
@@ -582,7 +582,25 @@ export function Home() {
             };
           }
 
-          // 3. Scroll-linked Parallax: Cards & Credits float up faster with depth before going behind the next section
+          // 3. Scroll-linked Parallax:
+          // Hero slide image slowly zooms out as user scrolls (cinematic reverse-zoom depth)
+          gsap.fromTo(
+            ".home-hero__slides",
+            { scale: 1.12 },
+            {
+              scale: 1,
+              ease: "none",
+              scrollTrigger: {
+                trigger: root,
+                start: "top top",
+                end: "600px top",
+                scrub: 0.3,
+                invalidateOnRefresh: true,
+              },
+            }
+          );
+
+          // Cards & Credits float up faster with depth before going behind the next section
           gsap.to(".home-hero__stack", {
             y: -220,
             ease: "none",
@@ -610,6 +628,7 @@ export function Home() {
         onReduce: () => {
           gsap.set(".home-hero__card", { autoAlpha: 1, y: 0, rotation: 0 });
           gsap.set(".home-hero__stack, .home-hero__meta, .home-hero__mobile-meta", { y: 0 });
+          gsap.set(".home-hero__slides", { scale: 1 });
           gsap.set(".home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow", {
             autoAlpha: 1,
             y: 0,

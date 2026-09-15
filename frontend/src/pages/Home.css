@@ -30,6 +30,8 @@
   inset: 0;
   cursor: zoom-in;
   z-index: 1;
+  transform-origin: center center;
+  will-change: transform;
 }
 
 .home-hero__bg,
