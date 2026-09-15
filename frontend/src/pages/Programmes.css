@@ -323,7 +323,7 @@
   line-height: var(--type-subtitle-line);
   font-weight: 500;
   text-transform: uppercase;
-  max-width: 492px;
+  max-width: none;
 }
 
 .programmes__past-featured-date {

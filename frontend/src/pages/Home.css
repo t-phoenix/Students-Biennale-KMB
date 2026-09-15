@@ -747,12 +747,13 @@
 .home-press__featured-head {
   display: flex;
   justify-content: space-between;
-  gap: 32px;
+  gap: 24px;
   align-items: flex-start;
   margin-bottom: 0;
   text-decoration: none;
   color: inherit;
   cursor: pointer;
+  width: 100%;
 }
 
 .home-press__featured-head h3 {
@@ -763,7 +764,7 @@
   line-height: var(--type-subtitle-line);
   font-weight: 500;
   text-transform: uppercase;
-  max-width: 492px;
+  max-width: none;
   transition: opacity 0.28s ease, color 0.28s ease;
 }
 
