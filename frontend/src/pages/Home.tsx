@@ -1035,7 +1035,7 @@ export function Home() {
                               className="home-text-btn"
                               tabIndex={isExpanded ? 0 : -1}
                             >
-                              Read more...
+                              Read article...
                             </Link>
                           </div>
                         </div>
