@@ -582,27 +582,27 @@ export function Home() {
             };
           }
 
-          // 3. Scroll-linked Parallax: Cards & Credits float up with depth before going behind the next section
+          // 3. Scroll-linked Parallax: Cards & Credits float up faster with depth before going behind the next section
           gsap.to(".home-hero__stack", {
-            y: -85,
+            y: -220,
             ease: "none",
             scrollTrigger: {
               trigger: root,
               start: "top top",
-              end: "700px top",
-              scrub: 0.4,
+              end: "550px top",
+              scrub: 0.25,
               invalidateOnRefresh: true,
             },
           });
 
           gsap.to(".home-hero__meta, .home-hero__mobile-meta", {
-            y: -45,
+            y: -100,
             ease: "none",
             scrollTrigger: {
               trigger: root,
               start: "top top",
-              end: "700px top",
-              scrub: 0.4,
+              end: "550px top",
+              scrub: 0.25,
               invalidateOnRefresh: true,
             },
           });
