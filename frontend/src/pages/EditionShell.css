@@ -273,8 +273,8 @@
   }
 
   .edition__mobile-tab.is-active {
-    background: var(--color-text-primary);
-    color: var(--color-bg);
+    background: var(--color-text-primary, #000000);
+    color: var(--color-text-inverse, #ffffff) !important;
     font-weight: 600;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--color-text-primary) 18%, transparent);
   }
