@@ -229,7 +229,7 @@ export function Home() {
     { dependencies: [editionExpanded], scope: rootRef }
   );
 
-  // Sensing Grounds image strip — continuous right-to-left auto-scroll.
+  // Sensing Grounds image strip — continuous right-to-left auto-scroll with smooth hover slowdown.
   useGSAP(
     () => {
       const track = sensingTrackRef.current;
@@ -242,7 +242,16 @@ export function Home() {
         repeat: -1,
       });
 
+      const container = track.parentElement;
+      const slowDown = () => gsap.to(tween, { timeScale: 0.25, duration: 0.8, ease: "power2.out" });
+      const speedUp = () => gsap.to(tween, { timeScale: 1, duration: 0.8, ease: "power2.out" });
+
+      container?.addEventListener("pointerenter", slowDown);
+      container?.addEventListener("pointerleave", speedUp);
+
       return () => {
+        container?.removeEventListener("pointerenter", slowDown);
+        container?.removeEventListener("pointerleave", speedUp);
         tween.kill();
       };
     },
@@ -289,184 +298,210 @@ export function Home() {
     () => {
       withMotionPreference({
         animate: () => {
-          // 1. Sensing Grounds
+          // 1. Edition Intro (#editions)
+          const edition = document.querySelector<HTMLElement>(".home-edition");
+          if (edition) {
+            const tl = gsap.timeline({
+              scrollTrigger: { trigger: edition, start: "top 85%", once: true },
+            });
+            tl.fromTo(
+              edition.querySelector(".fig-label"),
+              { autoAlpha: 0, y: 24 },
+              { autoAlpha: 1, y: 0, duration: 0.95, ease: "power3.out" },
+              0
+            )
+              .fromTo(
+                edition.querySelectorAll(".home-edition__body > .fig-body"),
+                { autoAlpha: 0, y: 18 },
+                { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.12, ease: "power3.out" },
+                0.08
+              )
+              .fromTo(
+                edition.querySelector(".home-text-btn"),
+                { autoAlpha: 0, y: 10 },
+                { autoAlpha: 1, y: 0, duration: 0.65, ease: "power3.out" },
+                0.25
+              );
+          }
+
+          // 2. Sensing Grounds (.home-sensing)
           const sensing = document.querySelector<HTMLElement>(".home-sensing");
           if (sensing) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: sensing, start: "top 88%", once: true },
+              scrollTrigger: { trigger: sensing, start: "top 85%", once: true },
             });
             tl.fromTo(
               sensing.querySelectorAll(".home-sensing__links .fig-subheading"),
-              { autoAlpha: 0, x: -14 },
-              { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.06, ease: "power3.out" },
+              { autoAlpha: 0, x: -18 },
+              { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.07, ease: "power3.out" },
               0
             )
               .fromTo(
                 sensing.querySelector(".home-sensing__scroll"),
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 1.05, ease: "power2.out" },
+                { autoAlpha: 0, scale: 0.96 },
+                { autoAlpha: 1, scale: 1, duration: 1.15, ease: "power3.out" },
                 0.1
               )
               .fromTo(
                 sensing.querySelector(".home-sensing__cta"),
-                { autoAlpha: 0, y: 8 },
-                { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out" },
-                0.2
-              );
-          }
-
-          // 2. Upcoming Programmes
-          const programmes = document.querySelector<HTMLElement>(".home-programmes");
-          if (programmes) {
-            const tl = gsap.timeline({
-              scrollTrigger: { trigger: programmes, start: "top 88%", once: true },
-            });
-            tl.fromTo(
-              programmes.querySelector(".home-programmes__top .fig-label"),
-              { autoAlpha: 0, x: -14 },
-              { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
-              0
-            )
-              .fromTo(
-                programmes.querySelector(".home-programmes__banner"),
-                { autoAlpha: 0, scale: 1.03 },
-                { autoAlpha: 1, scale: 1, duration: 1.1, ease: "power3.out" },
-                0.08
-              )
-              .fromTo(
-                programmes.querySelectorAll(".home-programmes__rail .fig-subheading"),
-                { autoAlpha: 0, x: -10 },
-                { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.06, ease: "power3.out" },
-                0.12
-              )
-              .fromTo(
-                programmes.querySelectorAll(".home-programmes__thumbs a"),
-                { autoAlpha: 0, y: 12 },
-                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "power3.out" },
-                0.16
-              );
-          }
-
-          // 3. Press
-          const press = document.querySelector<HTMLElement>(".home-press");
-          if (press) {
-            const tl = gsap.timeline({
-              scrollTrigger: { trigger: press, start: "top 88%", once: true },
-            });
-            tl.fromTo(
-              press.querySelector(".fig-label"),
-              { autoAlpha: 0, x: -14 },
-              { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
-              0
-            )
-              .fromTo(
-                press.querySelectorAll(".home-press__item"),
-                { autoAlpha: 0, y: 8 },
-                { autoAlpha: 1, y: 0, duration: 0.75, stagger: 0.06, ease: "power3.out" },
-                0.08
-              )
-              .fromTo(
-                press.querySelector(".home-press__more"),
-                { autoAlpha: 0, y: 6 },
+                { autoAlpha: 0, y: 14 },
                 { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out" },
                 0.22
               );
           }
 
-          // 4. About Us
+          // 3. Upcoming Programmes (.home-programmes)
+          const programmes = document.querySelector<HTMLElement>(".home-programmes");
+          if (programmes) {
+            const tl = gsap.timeline({
+              scrollTrigger: { trigger: programmes, start: "top 85%", once: true },
+            });
+            tl.fromTo(
+              programmes.querySelector(".home-programmes__top .fig-label"),
+              { autoAlpha: 0, y: 20 },
+              { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
+              0
+            )
+              .fromTo(
+                programmes.querySelector(".home-programmes__banner"),
+                { autoAlpha: 0, scale: 1.05 },
+                { autoAlpha: 1, scale: 1, duration: 1.15, ease: "power3.out" },
+                0.08
+              )
+              .fromTo(
+                programmes.querySelectorAll(".home-programmes__rail .fig-subheading"),
+                { autoAlpha: 0, x: -14 },
+                { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.07, ease: "power3.out" },
+                0.14
+              )
+              .fromTo(
+                programmes.querySelectorAll(".home-programmes__thumbs a"),
+                { autoAlpha: 0, y: 24, scale: 0.96 },
+                { autoAlpha: 1, y: 0, scale: 1, duration: 0.95, stagger: 0.1, ease: "power3.out" },
+                0.2
+              );
+          }
+
+          // 4. Press (.home-press)
+          const press = document.querySelector<HTMLElement>(".home-press");
+          if (press) {
+            const tl = gsap.timeline({
+              scrollTrigger: { trigger: press, start: "top 85%", once: true },
+            });
+            tl.fromTo(
+              press.querySelector(".fig-label"),
+              { autoAlpha: 0, y: 20 },
+              { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
+              0
+            )
+              .fromTo(
+                press.querySelectorAll(".home-press__item"),
+                { autoAlpha: 0, y: 16 },
+                { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "power3.out" },
+                0.08
+              )
+              .fromTo(
+                press.querySelector(".home-press__more"),
+                { autoAlpha: 0, y: 12 },
+                { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out" },
+                0.24
+              );
+          }
+
+          // 5. About Us (.home-about)
           const about = document.querySelector<HTMLElement>(".home-about");
           if (about) {
-            // Intro + KBF
+            // Intro + KBF Block
             const tlAbout = gsap.timeline({
-              scrollTrigger: { trigger: about, start: "top 88%", once: true },
+              scrollTrigger: { trigger: about, start: "top 85%", once: true },
             });
             tlAbout.fromTo(
               about.querySelector(".home-about__intro .fig-label"),
-              { autoAlpha: 0, x: -14 },
-              { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+              { autoAlpha: 0, y: 20 },
+              { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
               0
             )
               .fromTo(
                 about.querySelector(".home-about__block:first-of-type .home-about__logo-wrap"),
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, ease: "power2.out" },
+                { autoAlpha: 0, scale: 0.92 },
+                { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" },
                 0.08
               )
               .fromTo(
                 about.querySelector(".home-about__block:first-of-type p"),
-                { autoAlpha: 0, y: 6 },
-                { autoAlpha: 1, y: 0, duration: 0.95, ease: "power2.out" },
+                { autoAlpha: 0, y: 14 },
+                { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
                 0.14
               );
 
-            // SB Block
+            // Students' Biennale Block
             const sbBlock = about.querySelectorAll(".home-about__block")[1];
             if (sbBlock) {
               const tlSb = gsap.timeline({
-                scrollTrigger: { trigger: sbBlock, start: "top 88%", once: true },
+                scrollTrigger: { trigger: sbBlock, start: "top 85%", once: true },
               });
               tlSb.fromTo(
                 sbBlock.querySelector(".home-about__logo-wrap"),
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, ease: "power2.out" },
+                { autoAlpha: 0, scale: 0.92 },
+                { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" },
                 0
               ).fromTo(
                 sbBlock.querySelectorAll(".home-about__sb-copy p"),
-                { autoAlpha: 0, y: 6 },
-                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.07, ease: "power2.out" },
+                { autoAlpha: 0, y: 14 },
+                { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: "power3.out" },
                 0.08
               );
             }
 
-            // Team
+            // Team Grid
             const team = about.querySelector<HTMLElement>(".home-about__team");
             if (team) {
               const tlTeam = gsap.timeline({
-                scrollTrigger: { trigger: team, start: "top 88%", once: true },
+                scrollTrigger: { trigger: team, start: "top 85%", once: true },
               });
               tlTeam.fromTo(
                 team.querySelector(".fig-label"),
-                { autoAlpha: 0, x: -14 },
+                { autoAlpha: 0, x: -16 },
                 { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
                 0
               ).fromTo(
                 team.querySelectorAll(".home-about__team-cols > div"),
-                { autoAlpha: 0, y: 10 },
-                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.09, ease: "power3.out" },
+                { autoAlpha: 0, y: 18 },
+                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "power3.out" },
                 0.08
               );
             }
 
-            // Sponsors
+            // Sponsors Wall
             const sponsors = about.querySelector<HTMLElement>(".home-about__sponsors");
             if (sponsors) {
               const tlSponsors = gsap.timeline({
-                scrollTrigger: { trigger: sponsors, start: "top 90%", once: true },
+                scrollTrigger: { trigger: sponsors, start: "top 88%", once: true },
               });
               tlSponsors.fromTo(
                 sponsors.querySelector(".fig-label"),
-                { autoAlpha: 0, x: -14 },
+                { autoAlpha: 0, x: -16 },
                 { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
                 0
               )
                 .fromTo(
-                  sponsors.querySelector(".home-about__sponsor-unit"),
-                  { autoAlpha: 0, y: 8 },
-                  { autoAlpha: 1, y: 0, duration: 0.95, ease: "power3.out" },
+                  sponsors.querySelectorAll(".home-about__sponsor-group"),
+                  { autoAlpha: 0, y: 16 },
+                  { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.09, ease: "power3.out" },
                   0.08
                 )
                 .fromTo(
-                  sponsors.querySelector(".home-about__sponsor-caption"),
-                  { autoAlpha: 0, y: 6 },
-                  { autoAlpha: 1, y: 0, duration: 0.95, ease: "power2.out" },
-                  0.14
+                  sponsors.querySelector(".home-about__sponsor-caption-wrap"),
+                  { autoAlpha: 0, y: 10 },
+                  { autoAlpha: 1, y: 0, duration: 0.9, ease: "power2.out" },
+                  0.2
                 );
             }
           }
         },
         onReduce: () => {
           gsap.set(
-            ".home-section, .fig-label, .home-sensing__scroll, .home-programmes__banner, .home-about__sponsor-unit",
+            ".home-section, .fig-label, .home-edition__body .fig-body, .home-text-btn, .home-sensing__scroll, .home-programmes__banner, .home-about__sponsor-unit, .home-about__sponsor-group",
             { autoAlpha: 1, x: 0, y: 0, scale: 1 }
           );
         },
@@ -484,27 +519,59 @@ export function Home() {
 
       withMotionPreference({
         animate: () => {
-          gsap.fromTo(
-            ".home-hero__card",
-            { autoAlpha: 0, y: 16 },
-            {
-              autoAlpha: 1,
-              y: 0,
-              stagger: 0.08,
-              duration: 0.65,
-              ease: "power3.out",
-              overwrite: true,
-            }
-          );
+          // 1. Initial Hero Background & Content Entrance Choreography
+          const heroTl = gsap.timeline({
+            defaults: { ease: "power3.out" },
+          });
 
+          heroTl
+            .fromTo(
+              ".home-hero__slide:first-child",
+              { scale: 1.08, autoAlpha: 0 },
+              { scale: 1, autoAlpha: 1, duration: 1.4, ease: "power2.out" },
+              0
+            )
+            .fromTo(
+              ".home-hero__card",
+              { autoAlpha: 0, y: 36, rotation: -1.5 },
+              {
+                autoAlpha: 1,
+                y: 0,
+                rotation: 0,
+                stagger: 0.09,
+                duration: 0.85,
+                ease: "power3.out",
+                clearProps: "rotation",
+              },
+              0.15
+            )
+            .fromTo(
+              ".home-hero__credit p",
+              { autoAlpha: 0, y: 14 },
+              { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08 },
+              0.25
+            )
+            .fromTo(
+              ".home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
+              { autoAlpha: 0 },
+              { autoAlpha: 1, duration: 0.9, ease: "power2.out" },
+              0.4
+            );
+
+          // 2. Setup Slideshow Auto-Slide Timeline
           const slides = gsap.utils.toArray<HTMLElement>(".home-hero__slide");
           slidesRef.current = slides;
           if (slides.length) {
             slideIndexRef.current = 0;
-            const tl = buildAutoSlideTimeline(slides, 0, (index) => {
-              slideIndexRef.current = index;
-              setSlide(index);
-            }, heroTlRef);
+            const tl = buildAutoSlideTimeline(
+              slides,
+              0,
+              (index) => {
+                slideIndexRef.current = index;
+                setSlide(index);
+              },
+              heroTlRef
+            );
             const hero = root.querySelector<HTMLElement>(".home-hero");
             const pause = () => tl.pause();
             const play = () => {
@@ -515,7 +582,7 @@ export function Home() {
                   slideIndexRef.current = index;
                   setSlide(index);
                 },
-                heroTlRef,
+                heroTlRef
               );
             };
             hero?.addEventListener("pointerenter", pause);
@@ -523,6 +590,7 @@ export function Home() {
             hero?.addEventListener("focusin", pause);
             hero?.addEventListener("focusout", play);
             cleanupHero = () => {
+              heroTl.kill();
               heroTlRef.current?.kill();
               heroTlRef.current = null;
               hero?.removeEventListener("pointerenter", pause);
@@ -533,8 +601,12 @@ export function Home() {
           }
         },
         onReduce: () => {
-          gsap.set(".home-hero__card", { autoAlpha: 1 });
-          gsap.set(".home-hero__slide", { opacity: 0, visibility: "visible" });
+          gsap.set(".home-hero__card", { autoAlpha: 1, y: 0, rotation: 0 });
+          gsap.set(".home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow", {
+            autoAlpha: 1,
+            y: 0,
+          });
+          gsap.set(".home-hero__slide", { opacity: 0, visibility: "visible", scale: 1 });
           gsap.set(".home-hero__slide:first-child", { opacity: 1 });
         },
       });
