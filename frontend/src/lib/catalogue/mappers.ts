@@ -91,13 +91,18 @@ function isLeakedForNowNote(zoneNumber: number, raw: string | null | undefined):
   return Boolean(raw?.trim().toLowerCase().startsWith("for now"));
 }
 
+function cleanRegion(raw: string | null | undefined): string {
+  if (!raw) return "";
+  return raw.replace(/\bAndhra\s+Prades\b/gi, "Andhra Pradesh").trim();
+}
+
 function mapCurator(person: SnapshotPerson, zone: SnapshotZone): CuratorCard {
   const parsed = parseCuratorialNote(person.individual_curatorial_note);
   return {
     id: person.id,
     name: person.name,
     region: zone.label,
-    note: zone.region || zone.label,
+    note: cleanRegion(zone.region) || zone.label,
     bio: person.bio ?? undefined,
     image: person.cover_url || undefined,
     noteTitle: parsed.title,
@@ -114,7 +119,7 @@ function mapZone(zone: SnapshotZone): CuratorZone {
   return {
     id: zone.id,
     label: zone.label,
-    states: zone.region || "",
+    states: cleanRegion(zone.region),
     curators: zone.curators.map((person) => mapCurator(person, zone)),
     curatorialAssistant: assistants.length ? assistants.join(", ") : undefined,
     noteTitle: parsed.title,
