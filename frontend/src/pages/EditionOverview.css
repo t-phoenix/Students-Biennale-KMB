@@ -279,6 +279,11 @@
 }
 
 /* Curatorial Note section (2018-19) */
+.edition-overview__curatorial-note .fig-label,
+.edition-overview__curatorial-note .edition-overview__rail-label {
+  font-weight: 400;
+}
+
 .edition-overview__curatorial-body {
   display: flex;
   flex-direction: column;

@@ -200,8 +200,10 @@
   font-weight: 500;
 }
 
-.detail__label {
+.detail__label,
+.detail .fig-label {
   font-size: var(--type-subtitle-size);
+  font-weight: 400;
 }
 
 .detail__title {
