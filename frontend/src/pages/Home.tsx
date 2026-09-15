@@ -443,16 +443,16 @@ export function Home() {
                 0
               )
                 .fromTo(
-                  sponsors.querySelectorAll(".home-about__sponsor-group"),
+                  sponsors.querySelector(".home-about__sponsor-primary"),
                   { autoAlpha: 0, y: 16 },
-                  { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.09, ease: "power3.out" },
+                  { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
                   0.08
                 )
                 .fromTo(
-                  sponsors.querySelector(".home-about__sponsor-caption-wrap"),
-                  { autoAlpha: 0, y: 10 },
-                  { autoAlpha: 1, y: 0, duration: 0.9, ease: "power2.out" },
-                  0.2
+                  sponsors.querySelectorAll(".home-about__sponsor-group"),
+                  { autoAlpha: 0, y: 16 },
+                  { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.09, ease: "power3.out" },
+                  0.18
                 );
             }
           }
@@ -1101,8 +1101,9 @@ export function Home() {
 
           <div id="about-sponsors" className="fig-grid home-about__sponsors">
             <h3 className="fig-label fig-label--sub">SPONSORS</h3>
-            <div className="home-about__sponsors-cols fig-c4-12 fig-sub-3">
-              <div className="home-about__sponsor-group">
+            <div className="fig-c4-12 home-about__sponsors-main">
+              {/* Primary Supporter (Tata Trusts) */}
+              <div className="home-about__sponsor-primary">
                 <h4 className="home-about__sponsor-heading">SUPPORTED BY</h4>
                 <div className="home-about__sponsor-logo-wrap">
                   <img
@@ -1113,34 +1114,34 @@ export function Home() {
                     height={21}
                   />
                 </div>
+                <p className="home-about__sponsor-caption">
+                  The Kochi Biennale Foundation is grateful for their support.
+                </p>
               </div>
 
-              <div className="home-about__sponsor-group">
-                <h4 className="home-about__sponsor-heading">OTHER DONORS</h4>
-                <ul className="home-about__sponsor-list">
-                  <li>Anant Foundation for the Arts</li>
-                  <li>Arthshila</li>
-                  <li>Mrinalini Mukherjee Foundation</li>
-                  <li>Institut Français India</li>
-                  <li>TARQ</li>
-                  <li>Raza Foundation</li>
-                </ul>
-              </div>
+              {/* Other Donors & Venue Support (2-column layout matching Figma 96:77) */}
+              <div className="home-about__sponsors-grid">
+                <div className="home-about__sponsor-group">
+                  <h4 className="home-about__sponsor-heading">OTHER DONORS</h4>
+                  <ul className="home-about__sponsor-list">
+                    <li>Anant Foundation for the Arts</li>
+                    <li>Arthshila</li>
+                    <li>Mrinalini Mukherjee Foundation</li>
+                    <li>Institut Francais India</li>
+                    <li>TARQ</li>
+                    <li>Raza Foundation</li>
+                  </ul>
+                </div>
 
-              <div className="home-about__sponsor-group">
-                <h4 className="home-about__sponsor-heading">VENUE SUPPORT</h4>
-                <ul className="home-about__sponsor-list">
-                  <li>Arthshila Kochi</li>
-                  <li>David Hall</li>
-                  <li>VKL Warehouse</li>
-                </ul>
+                <div className="home-about__sponsor-group">
+                  <h4 className="home-about__sponsor-heading">VENUE SUPPORT</h4>
+                  <ul className="home-about__sponsor-list">
+                    <li>Arthshila Kochi</li>
+                    <li>David Hall</li>
+                    <li>VKL Warehouse</li>
+                  </ul>
+                </div>
               </div>
-            </div>
-
-            <div className="fig-c4-12 home-about__sponsor-caption-wrap">
-              <p className="home-about__sponsor-caption">
-                The Kochi Biennale Foundation is grateful for their support.
-              </p>
             </div>
           </div>
         </section>

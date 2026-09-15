@@ -856,18 +856,20 @@
   padding-inline-end: var(--grid-gutter);
 }
 
-.home-about__sponsors-cols {
-  min-width: 0;
+.home-about__sponsors-main {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
 }
 
-.home-about__sponsor-group {
+.home-about__sponsor-primary {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
 .home-about__sponsor-heading {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   padding: 0;
   font-size: 18px;
   font-weight: 500;
@@ -882,7 +884,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-top: 3px;
+  margin-bottom: 24px;
 }
 
 .home-about__sponsor-logo {
@@ -893,25 +895,6 @@
   display: block;
 }
 
-.home-about__sponsor-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.home-about__sponsor-list li {
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  color: var(--color-text-primary);
-}
-
-.home-about__sponsor-caption-wrap {
-  margin-top: 24px;
-}
-
 .home-about__sponsor-caption {
   margin: 0;
   font-size: 16px;
@@ -920,7 +903,35 @@
   letter-spacing: 0;
   color: var(--color-text-primary);
   text-align: left;
-  max-width: 435px;
+  max-width: 480px;
+}
+
+.home-about__sponsors-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 315px));
+  column-gap: calc(var(--grid-gutter) + 20px);
+  margin-top: 60px;
+}
+
+.home-about__sponsor-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.home-about__sponsor-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-about__sponsor-list li {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 36px;
+  color: var(--color-text-primary);
 }
 
 /* Tier C — Mobile & Tablet Viewports:
@@ -1219,8 +1230,24 @@
     margin-top: 48px;
   }
 
+  .home-about__sponsor-logo-wrap {
+    margin-bottom: 16px;
+  }
+
   .home-about__sponsor-caption {
+    font-size: 15px;
     line-height: 26px;
+  }
+
+  .home-about__sponsors-grid {
+    grid-template-columns: 1fr;
+    row-gap: 32px;
+    margin-top: 36px;
+  }
+
+  .home-about__sponsor-list li {
+    font-size: 16px;
+    line-height: 30px;
   }
 }
 
@@ -1238,5 +1265,16 @@
   .home-about__sponsor-heading {
     font-size: 16px;
     line-height: 24px;
+    margin-bottom: 10px;
+  }
+
+  .home-about__sponsor-list li {
+    font-size: 15px;
+    line-height: 26px;
+  }
+
+  .home-about__sponsor-caption {
+    font-size: 14px;
+    line-height: 22px;
   }
 }
