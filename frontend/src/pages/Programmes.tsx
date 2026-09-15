@@ -299,7 +299,7 @@ export function Programmes() {
                           </div>
                           {item.facilitators ? (
                             <span className="programmes__past-facilitators">
-                              Facilitators: {item.facilitators}
+                              Facilitators : {item.facilitators}
                             </span>
                           ) : null}
                           {item.description ? (

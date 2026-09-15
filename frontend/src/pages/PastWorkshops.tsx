@@ -72,7 +72,7 @@ export function PastWorkshops() {
                           </div>
                           {item.facilitators ? (
                             <span className="past-workshops__facilitators">
-                              Facilitators: {item.facilitators}
+                              Facilitators : {item.facilitators}
                             </span>
                           ) : null}
                           {item.description ? (
