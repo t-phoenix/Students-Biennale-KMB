@@ -10,10 +10,10 @@ export const EDITION_MORE = `The 2025-26 Students' Biennale programme has emerge
 This edition, titled 'Sensing Grounds' invited students to present ideas, works that are still underprogress, collaborations, and finished works along with material developed during the workshops, resulting in a total of 70 projects. The Students' Biennale opened to the public on Dec 13th 2025 and remained on display until 31st March 2026 across 6 venues in Fort Kochi: Vallabhdas Kanji Ltd. (VKL) Warehouse, BMS Warehouse, Arthshila Kochi, St. Andrews Parish Hall, Space Gallery, and David Hall.`;
 
 /** Sensing Grounds curatorial note — Figma "Sensing GRound" (2:2), the framework
- *  statement for the 2025-26 edition as a whole (GABAA, te(a)m-plurality). */
+ *  statement for the 2025-26 edition as a whole. */
 export const SENSING_GROUNDS_NOTE = {
   title: "Sensing Grounds",
-  attribution: "te(a)m-plurality,\ncuratorial note by GABAA",
+  attribution: "",
   paragraphsCol1: [
     "The imagination for the sixth edition of the Students' Biennale was to engage with students and circumstances—to perceive the world not from fixed, inherited positions, but through the fragile, shifting, and often contested sites where bodies, materials, and conditions converge with institutions. Instead of seeking a linear, singular narrative, the exhibition suggests a mode in which the act of sensing is political, and in many cases, collective. The grounds it proposes are never fixed. They are lived, negotiated, and continually remade.",
     "We recognise the Students' Biennale as an uneven landscape shaped through proximities between the domestic and the public, extraction and resistance, reality and speculation. Shrinking public space, institutional hierarchies, peripherality, and environmental precarity challenge our personal and community spaces. We hope to inhabit their tensions intimately. From the Western Himalayas' fragile ecosystems to the extractive urgencies of Northeast India and the pressures within art institutions in Karnataka, Telangana, and beyond, students and collectives attend to the material and emotional realities of their worlds. The works affirm sensing as an active enquiry, supple with defiance, and nourished with care.",
