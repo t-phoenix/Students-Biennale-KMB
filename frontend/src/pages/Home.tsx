@@ -578,6 +578,34 @@ export function Home() {
     }
   );
 
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null || covers.length <= 1) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const diffX = touchStartX.current - touchEndX;
+    const diffY = touchStartY.current - touchEndY;
+
+    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      if (diffX > 0) {
+        goToSlide((slide + 1) % covers.length);
+      } else {
+        goToSlide((slide - 1 + covers.length) % covers.length);
+      }
+    }
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
   return (
     <div ref={rootRef} className="home" data-node-id="6:1016">
       {/* Hero — full viewport width; overlays on 12-col (60 / 20) */}
@@ -586,6 +614,8 @@ export function Home() {
           className="home-hero__slides"
           aria-hidden
           onDoubleClick={() => setLightboxOpen(true)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
         >
           {covers.map((c) => (
             <img
@@ -610,6 +640,25 @@ export function Home() {
 
         {/* Overlay sits on the page grid */}
         <div className="home-hero__grid">
+          {/* Mobile-only unified credit & counter row (hidden on desktop) */}
+          <div className="home-hero__mobile-meta">
+            <div className="home-hero__mobile-credit">
+              {creditArtwork ? (
+                <span className="home-hero__mobile-artwork">{creditArtwork}</span>
+              ) : null}
+              {creditArtist ? (
+                <span className="home-hero__mobile-artist"> · {creditArtist}</span>
+              ) : null}
+            </div>
+            {covers.length > 1 ? (
+              <div className="home-hero__mobile-counter">
+                <span>{String(slide + 1).padStart(2, "0")}</span>
+                <span className="home-hero__mobile-counter-sep">/</span>
+                <span>{String(covers.length).padStart(2, "0")}</span>
+              </div>
+            ) : null}
+          </div>
+
           {(() => {
             const visibleCards = cards.filter((c) => !dismissedCardIds.includes(c.id));
             if (visibleCards.length === 0) return null;
