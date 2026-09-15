@@ -10,6 +10,7 @@ import { ResidenciesBand } from "../components/ResidenciesBand";
 import { RazaSpotlightModal } from "../components/RazaSpotlightModal";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
 import { SectionEmpty } from "../components/SectionEmpty";
+import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
 import { DEFAULT_RAZA, EMPTY_PROGRAMMES } from "../lib/programmes/fallbacks";
 import { LATEST_EDITION } from "../data/site";
@@ -239,11 +240,10 @@ export function Programmes() {
                   <img src={p.image} alt="" className="programmes__card-media" />
                 </div>
                 <h2>{p.title}</h2>
-                <p className="programmes__meta">
-                  Date : {p.date}
-                  <br />
-                  Facilitator : {p.place}
-                </p>
+                <MetaGrid className="programmes__meta meta-grid--compact meta-grid--tight-colon">
+                  <MetaRow label="Date" value={p.date} />
+                  <MetaRow label="Facilitator" value={p.place} />
+                </MetaGrid>
                 <p>{p.blurb}</p>
                 <button type="button" className="home-text-btn programmes__card-button">
                   Know more...
@@ -348,7 +348,11 @@ export function Programmes() {
                 <h3>
                   {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
                 </h3>
-                <p>Artwork : {a.artwork}</p>
+                {a.artwork ? (
+                  <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                    <MetaRow label="Artwork" value={a.artwork} />
+                  </MetaGrid>
+                ) : null}
                 <p>
                   {a.artists?.length
                     ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
@@ -383,7 +387,11 @@ export function Programmes() {
                   <img src={s.image} alt={s.name} />
                 </div>
                 <h3>{s.name}</h3>
-                {s.artwork ? <p>Artwork : {s.artwork}</p> : null}
+                {s.artwork ? (
+                  <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                    <MetaRow label="Artwork" value={s.artwork} />
+                  </MetaGrid>
+                ) : null}
                 {s.institution ? <p>{s.institution}</p> : null}
               </button>
             ))}
@@ -417,7 +425,11 @@ export function Programmes() {
                 <h3>
                   {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
                 </h3>
-                <p>Artwork : {a.artwork}</p>
+                {a.artwork ? (
+                  <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                    <MetaRow label="Artwork" value={a.artwork} />
+                  </MetaGrid>
+                ) : null}
                 <p>
                   {a.artists?.length
                     ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||

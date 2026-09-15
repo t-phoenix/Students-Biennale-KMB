@@ -5,6 +5,7 @@ import { CtaLink } from "../components/CtaLink";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import { useProgrammes } from "../lib/programmes";
 import { SectionEmpty } from "../components/SectionEmpty";
+import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import type { ResidencyProgramme } from "../lib/programmes/types";
 import "./Residencies.css";
 
@@ -13,35 +14,35 @@ function findResidency(
   key: string,
 ): ResidencyProgramme | undefined {
   if (!key) return undefined;
-  return (
-    residencies.find((row) => row.slug === key) ??
-    residencies.find((row) => row.id === key)
-  );
+  const lower = key.toLowerCase();
+  return residencies.find((r) => r.slug.toLowerCase() === lower || r.id === key);
 }
 
 export function Residencies() {
   const root = useRef<HTMLDivElement>(null);
   const featureRef = useRef<HTMLElement>(null);
-  const location = useLocation();
   const [params, setParams] = useSearchParams();
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const location = useLocation();
   const { residencies } = useProgrammes();
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  // Match Press page: query param drives the featured item. Hash links remain supported.
-  const residencyKey = params.get("residency") ?? location.hash.slice(1);
-
+  const selectedSlug = params.get("residency");
   const featured = useMemo(() => {
-    if (!residencies.length) return undefined;
-    if (residencyKey) {
-      return findResidency(residencies, residencyKey) ?? residencies[0];
+    if (selectedSlug) {
+      const match = findResidency(residencies, selectedSlug);
+      if (match) return match;
+    }
+    const hash = location.hash.replace(/^#/, "");
+    if (hash) {
+      const match = findResidency(residencies, hash);
+      if (match) return match;
     }
     return residencies[0];
-  }, [residencyKey, residencies]);
+  }, [selectedSlug, location.hash, residencies]);
 
   const selectResidency = useCallback(
     (slug: string) => {
       setParams({ residency: slug });
-      setLightboxIndex(null);
       window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
     },
     [setParams],
@@ -60,19 +61,19 @@ export function Residencies() {
     { dependencies: [featured?.id], scope: root },
   );
 
-  if (!residencies.length) {
+  if (!featured) {
     return (
       <div ref={root} className="residencies">
-        <SectionEmpty className="residencies__empty">No residencies published yet.</SectionEmpty>
+        <SectionEmpty className="residencies__empty">
+          No residency programmes available yet.
+        </SectionEmpty>
       </div>
     );
   }
 
-  if (!featured) return null;
-
   const descriptionParas = featured.description.split(/\n\s*\n/).filter(Boolean);
-  const gallery = featured.galleryImages;
-  const related = residencies.filter((row) => row.id !== featured.id);
+  const gallery = featured.galleryImages ?? [];
+  const related = residencies.filter((r) => r.id !== featured.id);
   const hasRelated = related.length > 0;
 
   return (
@@ -80,36 +81,12 @@ export function Residencies() {
       <div className="fig-grid residencies__head">
         <div className="residencies__rail fig-rail">
           <h1>{featured.title}</h1>
-          <dl className="residencies__meta-grid">
-            {featured.host ? (
-              <div className="residencies__meta-row">
-                <dt>Host</dt>
-                <span className="residencies__colon" aria-hidden>:</span>
-                <dd>{featured.host}</dd>
-              </div>
-            ) : null}
-            {featured.period ? (
-              <div className="residencies__meta-row">
-                <dt>Period</dt>
-                <span className="residencies__colon" aria-hidden>:</span>
-                <dd>{featured.period}</dd>
-              </div>
-            ) : null}
-            {featured.venue ? (
-              <div className="residencies__meta-row">
-                <dt>Venue</dt>
-                <span className="residencies__colon" aria-hidden>:</span>
-                <dd>{featured.venue}</dd>
-              </div>
-            ) : null}
-            {featured.awardees ? (
-              <div className="residencies__meta-row">
-                <dt>Awardees</dt>
-                <span className="residencies__colon" aria-hidden>:</span>
-                <dd>{featured.awardees}</dd>
-              </div>
-            ) : null}
-          </dl>
+          <MetaGrid className="residencies__meta-grid">
+            <MetaRow label="Host" value={featured.host} />
+            <MetaRow label="Period" value={featured.period} />
+            <MetaRow label="Venue" value={featured.venue} />
+            <MetaRow label="Awardees" value={featured.awardees} />
+          </MetaGrid>
         </div>
 
         <article ref={featureRef} className="residencies__feature fig-c4-9" id={featured.slug}>

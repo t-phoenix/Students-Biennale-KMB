@@ -64,34 +64,14 @@
 /* 3-column metadata grid strictly aligning all ":" colons */
 .residencies-band__meta-grid {
   margin: 0 0 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
-.residencies-band__meta-row {
-  display: grid;
-  grid-template-columns: 80px 14px 1fr;
-  align-items: baseline;
+.residencies-band__meta-grid .meta-grid__label,
+.residencies-band__meta-grid .meta-grid__colon,
+.residencies-band__meta-grid .meta-grid__value {
+  color: var(--color-text-primary);
   font-size: 15px;
   line-height: 22px;
-}
-
-.residencies-band__meta-row dt {
-  margin: 0;
-  font-weight: 400;
-  color: var(--color-text-primary);
-}
-
-.residencies-band__colon {
-  text-align: center;
-  color: var(--color-text-primary);
-  user-select: none;
-}
-
-.residencies-band__meta-row dd {
-  margin: 0;
-  color: var(--color-text-primary);
 }
 
 .residencies-band__card > p {

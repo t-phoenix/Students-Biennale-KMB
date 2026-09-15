@@ -429,6 +429,17 @@
   color: var(--color-text-secondary);
 }
 
+.programmes__award-meta {
+  margin: 0;
+}
+
+.programmes__award-meta .meta-grid__label,
+.programmes__award-meta .meta-grid__colon,
+.programmes__award-meta .meta-grid__value {
+  font-size: var(--type-caption-size);
+  line-height: var(--type-caption-line);
+}
+
 .programmes__more {
   margin-top: 60px;
 }

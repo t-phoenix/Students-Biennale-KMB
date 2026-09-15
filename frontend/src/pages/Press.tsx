@@ -2,6 +2,7 @@ import { useMemo, useRef } from "react";
 import { useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { SectionEmpty } from "../components/SectionEmpty";
+import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { usePressItems } from "../lib/pressCms";
 import "./Press.css";
 
@@ -45,14 +46,10 @@ export function Press() {
       <div className="fig-grid press__head">
         <div className="press__rail fig-rail">
           <h1>{featured.title}</h1>
-          <p className="press__meta">
-            <span>Author :</span>
-            <em>Editorial Team</em>
-          </p>
-          <p className="press__meta">
-            <span>Published on:</span>
-            <em>{featured.date}</em>
-          </p>
+          <MetaGrid className="press__meta">
+            <MetaRow label="Author" value="Editorial Team" />
+            <MetaRow label="Published on" value={featured.date} />
+          </MetaGrid>
         </div>
         <article ref={featureRef} className="press__feature fig-c4-9">
           <div className="press__feature-media">

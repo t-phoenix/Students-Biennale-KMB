@@ -6,6 +6,7 @@ import { BrandArrow } from "../components/BrandArrow";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import { HighlightText } from "../components/HighlightText";
 import { ImageCrossfadeStack } from "../components/ImageCrossfadeStack";
+import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { venueImages, RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../data/site";
 import { prefetchNextArtwork } from "../lib/predictivePrefetch";
 import {
@@ -184,10 +185,9 @@ export function Detail() {
                 <h2>{zone.label}</h2>
                 <p>{zone.states}</p>
                 {zone.curatorialAssistant ? (
-                  <p className="detail__zone-assistant">
-                    <span>Curatorial Assistant :</span>
-                    {zone.curatorialAssistant}
-                  </p>
+                  <MetaGrid className="detail__zone-assistant meta-grid--compact meta-grid--tight-colon">
+                    <MetaRow label="Curatorial Assistant" value={zone.curatorialAssistant} />
+                  </MetaGrid>
                 ) : null}
               </aside>
             ) : null}
@@ -227,7 +227,11 @@ export function Detail() {
                     <span className="detail__cards-media" aria-hidden />
                   )}
                   <strong>{a.title}</strong>
-                  {a.venue?.trim() ? <span>Venue : {a.venue}</span> : null}
+                  {a.venue?.trim() ? (
+                    <MetaGrid className="detail__card-venue meta-grid--compact meta-grid--tight-colon">
+                      <MetaRow label="Venue" value={a.venue} />
+                    </MetaGrid>
+                  ) : null}
                 </Link>
               ))}
             </div>

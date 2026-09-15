@@ -4,6 +4,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { crossfadeSlides, initSlideStack } from "../lib/imageSlider";
 import { preloadUrls } from "../lib/preloadImages";
 import { CarouselNavArrows } from "./CarouselNavArrows";
+import { MetaGrid, MetaRow } from "./MetaGrid";
 import "./ResidenciesBand.css";
 
 export type ResidencySlide = {
@@ -156,36 +157,12 @@ export function ResidenciesBand({ slides }: Props) {
       <div className="residencies-band__card-slot">
         <div className="residencies-band__card">
           <h3>{slide.title}</h3>
-          <dl className="residencies-band__meta-grid">
-            {slide.host ? (
-              <div className="residencies-band__meta-row">
-                <dt>Host</dt>
-                <span className="residencies-band__colon" aria-hidden>:</span>
-                <dd>{slide.host}</dd>
-              </div>
-            ) : null}
-            {slide.period ? (
-              <div className="residencies-band__meta-row">
-                <dt>Period</dt>
-                <span className="residencies-band__colon" aria-hidden>:</span>
-                <dd>{slide.period}</dd>
-              </div>
-            ) : null}
-            {slide.venue ? (
-              <div className="residencies-band__meta-row">
-                <dt>Venue</dt>
-                <span className="residencies-band__colon" aria-hidden>:</span>
-                <dd>{slide.venue}</dd>
-              </div>
-            ) : null}
-            {slide.awardees ? (
-              <div className="residencies-band__meta-row">
-                <dt>Awardees</dt>
-                <span className="residencies-band__colon" aria-hidden>:</span>
-                <dd>{slide.awardees}</dd>
-              </div>
-            ) : null}
-          </dl>
+          <MetaGrid className="residencies-band__meta-grid">
+            <MetaRow label="Host" value={slide.host} />
+            <MetaRow label="Period" value={slide.period} />
+            <MetaRow label="Venue" value={slide.venue} />
+            <MetaRow label="Awardees" value={slide.awardees} />
+          </MetaGrid>
           {slide.copy ? <p>{slide.copy}</p> : null}
           <Link to={slide.moreHref} className="home-text-btn residencies-band__more">
             Know more...

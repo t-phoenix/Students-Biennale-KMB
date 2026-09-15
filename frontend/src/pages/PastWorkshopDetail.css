@@ -39,16 +39,8 @@
   letter-spacing: 0.05em;
 }
 
-.past-workshop-detail__meta p {
-  margin: 0 0 4px;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  color: var(--color-text-secondary);
-}
-
-.past-workshop-detail__meta strong {
-  color: var(--color-text-primary);
-  font-weight: 500;
+.past-workshop-detail__meta {
+  margin: 0 0 24px;
 }
 
 .past-workshop-detail__description p {

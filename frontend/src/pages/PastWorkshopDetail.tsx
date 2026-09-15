@@ -4,6 +4,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { GalleryLightbox } from "../components/GalleryLightbox";
+import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { usePastWorkshop } from "../lib/programmes";
 import "./PastWorkshopDetail.css";
 
@@ -18,34 +19,41 @@ export function PastWorkshopDetail() {
       if (prefersReducedMotion()) return;
       gsap.from(".workshop-reveal", {
         autoAlpha: 0,
-        y: 24,
-        duration: 0.55,
-        stagger: 0.08,
+        y: 20,
+        duration: 0.6,
+        stagger: 0.1,
         ease: "power2.out",
-        clearProps: "opacity,visibility,transform",
       });
     },
-    { scope: root, dependencies: [id, workshop?.id] }
+    { scope: root, dependencies: [id] }
   );
 
-  if (!workshop) {
+  if (status === "loading") {
     return (
       <div className="past-workshop-detail">
         <div className="fig-grid past-workshop-detail__section">
-          <Link className="fig-c1-3" to="/programmes/past-workshops">
-            BACK
-          </Link>
-          <p className="fig-c4-12">{status === "loading" ? "Loading…" : "Workshop not found"}</p>
+          <p className="fig-c4-12">Loading workshop documentation...</p>
         </div>
       </div>
     );
   }
 
+  if (!workshop) {
+    return (
+      <div className="past-workshop-detail">
+        <div className="fig-grid past-workshop-detail__section">
+          <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes#workshops">
+            <BrandArrow direction="left" />
+            <span>BACK</span>
+          </Link>
+          <p className="fig-c4-12">Workshop not found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const descriptionParas = (workshop.description ?? "").split(/\n\s*\n/).filter(Boolean);
   const gallery = workshop.galleryImages ?? [];
-  const descriptionParas = (workshop.description ?? "")
-    .split(/\n\s*\n/)
-    .map((part) => part.trim())
-    .filter(Boolean);
 
   return (
     <div ref={root} className="past-workshop-detail" key={workshop.id}>
@@ -60,13 +68,11 @@ export function PastWorkshopDetail() {
       <div className="fig-grid past-workshop-detail__section workshop-reveal">
         <div className="fig-c4-9">
           <h1 className="past-workshop-detail__title">{workshop.title}</h1>
-          <div className="past-workshop-detail__meta">
-            <p>
-              <strong>Facilitators:</strong> {workshop.facilitators}
-            </p>
-            {workshop.location ? <p>{workshop.location}</p> : null}
-            {workshop.year ? <p>{workshop.year}</p> : null}
-          </div>
+          <MetaGrid className="past-workshop-detail__meta">
+            <MetaRow label="Facilitators" value={workshop.facilitators} />
+            <MetaRow label="Location" value={workshop.location} />
+            <MetaRow label="Year" value={workshop.year} />
+          </MetaGrid>
         </div>
       </div>
 

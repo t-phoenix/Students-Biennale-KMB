@@ -25,18 +25,9 @@
 }
 
 .press__meta {
-  margin: 0 0 8px;
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: var(--type-body-size);
-  color: var(--color-text-secondary);
+  margin: 0 0 28px;
 }
 
-.press__meta span,
-.press__meta em {
-  font-style: normal;
-}
 
 .press__feature-media {
   display: block;
