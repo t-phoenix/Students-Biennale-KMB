@@ -131,6 +131,16 @@
   box-sizing: border-box;
 }
 
+.home-hero__card-thumb {
+  display: none;
+}
+
+.home-hero__card-text {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .home-hero__card-title {
   margin: 0;
   font-size: 20px;
@@ -910,115 +920,48 @@
 }
 
 /* Tier C — Mobile & Tablet Viewports:
-   Hero update cards transform into a Goodman Gallery-inspired horizontal
-   swipeable card reel with frosted glass credits and smooth touch snapping. */
+   Hero update cards transform into a Goodman Gallery-inspired bottom stacked
+   dock with layered depth peeks, thumbnail badge, and frosted glass credits. */
 @media (max-width: 899px) {
   .home-hero {
     height: calc(100dvh - var(--nav-height-mobile, 56px));
     min-height: calc(100dvh - var(--nav-height-mobile, 56px));
     max-height: calc(100dvh - var(--nav-height-mobile, 56px));
-  }
-
-  .home-hero__grid {
-    display: flex;
-    flex-direction: column-reverse;
-    justify-content: flex-start;
-    align-items: stretch;
-    padding-inline: 0;
-    padding-bottom: 24px;
-    row-gap: 10px;
-    pointer-events: none;
-  }
-
-  .home-hero__stack {
     position: relative;
-    width: 100%;
-    height: auto !important;
-    max-height: none;
-    display: flex;
-    flex-direction: row;
-    gap: 12px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x mandatory;
-    padding-inline: var(--grid-margin);
-    padding-block: 4px 10px;
-    margin: 0;
-    z-index: 4;
-    pointer-events: auto;
-    scrollbar-width: none;
-  }
-
-  .home-hero__stack::-webkit-scrollbar {
-    display: none;
-  }
-
-  .home-hero__card {
-    position: relative !important;
-    top: auto !important;
-    left: auto !important;
-    width: clamp(270px, 78vw, 340px) !important;
-    flex: 0 0 clamp(270px, 78vw, 340px) !important;
-    height: auto !important;
-    min-height: 104px;
-    scroll-snap-align: start;
-    pointer-events: auto !important;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-radius: 2px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
-    cursor: pointer;
-  }
-
-  .home-hero__card .home-hero__card-inner {
-    opacity: 1 !important;
-    display: flex;
-    flex-direction: column;
-    padding: 14px 16px;
-    height: 100%;
-    box-sizing: border-box;
-  }
-
-  .home-hero__card .home-hero__card-close {
-    opacity: 0.65 !important;
-    pointer-events: auto !important;
-    top: 8px;
-    right: 8px;
-  }
-
-  .home-hero__card-title {
-    font-size: 15px;
-    line-height: 20px;
-    letter-spacing: 1px;
-    font-weight: 500;
-    padding-right: 18px;
-  }
-
-  .home-hero__card-body {
-    font-size: 13px;
-    line-height: 18px;
-    margin-top: 6px;
-    -webkit-line-clamp: 2;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
+  .home-hero__grid {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding-inline: var(--grid-margin, 20px);
+    padding-bottom: 24px;
+    z-index: 2;
+    pointer-events: none;
+  }
+
   .home-hero__meta {
-    padding-inline: var(--grid-margin);
-    margin-bottom: 0;
+    width: 100%;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
     align-items: flex-start;
+    pointer-events: auto;
+    padding-inline: 0;
   }
 
   .home-hero__credit {
     width: fit-content;
-    max-width: calc(100% - 24px);
+    max-width: 100%;
     text-align: left;
     background: rgba(0, 0, 0, 0.52);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    padding: 8px 14px;
+    padding: 6px 12px;
     border-radius: 3px;
     border: 1px solid rgba(255, 255, 255, 0.15);
     text-shadow: none;
@@ -1026,27 +969,181 @@
 
   .home-hero__artwork,
   .home-hero__artist {
-    font-size: 14px;
-    line-height: 19px;
+    font-size: 13px;
+    line-height: 18px;
     color: #ffffff;
     font-weight: 500;
     white-space: normal;
   }
 
   .home-hero__inst {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 11px;
+    line-height: 15px;
     color: rgba(255, 255, 255, 0.85);
     font-weight: 400;
   }
 
+  /* Goodman Gallery-style bottom stacked deck */
+  .home-hero__stack {
+    position: relative;
+    width: 100%;
+    height: 64px !important;
+    max-height: none;
+    margin: 0;
+    z-index: 4;
+    pointer-events: auto;
+    cursor: pointer;
+    overflow: visible;
+  }
+
+  .home-hero__card {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    height: 64px !important;
+    border-radius: 4px;
+    box-sizing: border-box;
+    overflow: visible;
+    transition: transform 0.28s var(--ease-craft, ease), opacity 0.25s ease;
+  }
+
+  /* Active / Top Card */
+  .home-hero__card[data-offset="0"] {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    z-index: 3;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16);
+    pointer-events: auto !important;
+  }
+
+  /* 2nd Card in Stack (peeking below) */
+  .home-hero__card[data-offset="1"] {
+    top: 4px;
+    left: 6px;
+    right: 6px;
+    width: calc(100% - 12px) !important;
+    height: 64px !important;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    pointer-events: none !important;
+  }
+
+  /* 3rd Card in Stack (peeking below 2nd) */
+  .home-hero__card[data-offset="2"] {
+    top: 8px;
+    left: 12px;
+    right: 12px;
+    width: calc(100% - 24px) !important;
+    height: 64px !important;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.68);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    pointer-events: none !important;
+  }
+
+  .home-hero__card[data-offset="1"] .home-hero__card-inner,
+  .home-hero__card[data-offset="2"] .home-hero__card-inner {
+    opacity: 0 !important;
+  }
+
+  .home-hero__card-inner {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px !important;
+    height: 100% !important;
+    box-sizing: border-box;
+    opacity: 1 !important;
+  }
+
+  .home-hero__card-thumb {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f0f0f0;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .home-hero__card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .home-hero__card-thumb--mark img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+  }
+
+  .home-hero__card-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .home-hero__card-title {
+    font-size: 13px;
+    line-height: 17px;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    margin: 0;
+    padding-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .home-hero__card-body {
+    font-size: 11.5px;
+    line-height: 15px;
+    color: var(--color-text-secondary);
+    margin: 2px 0 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+
+  .home-hero__card-close {
+    opacity: 0.6 !important;
+    pointer-events: auto !important;
+    top: 6px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
   .home-hero__dots button {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
   }
 
   .home-hero__dots--centered {
-    bottom: 8px;
+    bottom: 96px;
+    z-index: 3;
   }
 
   .home-sensing__scroll-track {

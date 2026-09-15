@@ -650,8 +650,19 @@ export function Home() {
                       ✕
                     </button>
                     <div className="home-hero__card-inner">
-                      <h2 className="home-hero__card-title">{item.heading}</h2>
-                      <p className="home-hero__card-body">{item.body}</p>
+                      {item.imageUrl ? (
+                        <div className="home-hero__card-thumb">
+                          <img src={item.imageUrl} alt="" width={44} height={44} />
+                        </div>
+                      ) : (
+                        <div className="home-hero__card-thumb home-hero__card-thumb--mark">
+                          <img src="/logo-sb-mark.svg" alt="" width={24} height={24} />
+                        </div>
+                      )}
+                      <div className="home-hero__card-text">
+                        <h2 className="home-hero__card-title">{item.heading}</h2>
+                        <p className="home-hero__card-body">{item.body}</p>
+                      </div>
                     </div>
                   </article>
                 ))}
