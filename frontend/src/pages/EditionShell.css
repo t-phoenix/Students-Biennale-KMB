@@ -80,6 +80,10 @@
   width: 100%;
 }
 
+.edition-content-wrapper {
+  width: 100%;
+}
+
 @media (max-width: 899px) {
   .edition {
     padding-block: 24px 64px;

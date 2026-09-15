@@ -150,17 +150,31 @@
   align-items: start;
 }
 
-.residencies__teaser img,
-.residencies__teaser > div:first-child {
+.residencies__teaser-media {
   grid-column: 1 / span 3;
   width: 100%;
   aspect-ratio: 315 / 219;
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+  position: relative;
+}
+
+.residencies__teaser-media img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+.residencies__teaser-media > div[aria-hidden] {
+  width: 100%;
+  height: 100%;
   background: var(--color-neutral-gray-mid);
 }
 
 .residencies__teaser-copy {
   grid-column: 4 / span 6;
+  min-width: 0;
 }
 
 .residencies__teaser-head {
@@ -194,9 +208,9 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .residencies__teaser img,
-  .residencies__teaser > div:first-child,
+  .residencies__teaser-media,
   .residencies__teaser-copy {
     grid-column: 1 / -1;
   }
 }
+

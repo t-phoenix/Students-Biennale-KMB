@@ -160,7 +160,13 @@ export function Residencies() {
                   {useTeaser ? (
                     <button type="button" onClick={() => selectResidency(item.slug)}>
                       <div className="residencies__teaser fig-band-9">
-                        <img src={item.heroImage} alt="" />
+                        <div className="residencies__teaser-media">
+                          {item.heroImage ? (
+                            <img src={item.heroImage} alt="" />
+                          ) : (
+                            <div aria-hidden />
+                          )}
+                        </div>
                         <div className="residencies__teaser-copy">
                           <div className="residencies__teaser-head">
                             <span>{item.title}</span>

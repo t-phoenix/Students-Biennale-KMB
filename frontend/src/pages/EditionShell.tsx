@@ -64,12 +64,12 @@ function EditionCatalogueMain() {
       if (prefersReducedMotion() || !contentRef.current) return;
       gsap.fromTo(
         contentRef.current,
-        { autoAlpha: 0, y: 12 },
+        { autoAlpha: 0, y: 8 },
         {
           autoAlpha: 1,
           y: 0,
-          duration: 0.7,
-          ease: "power3.out",
+          duration: 0.45,
+          ease: "power2.out",
           overwrite: "auto",
         }
       );

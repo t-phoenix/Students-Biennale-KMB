@@ -55,11 +55,13 @@ export function Press() {
           </p>
         </div>
         <article ref={featureRef} className="press__feature fig-c4-9">
-          {featured.image ? (
-            <img className="press__feature-media" src={featured.image} alt="" />
-          ) : (
-            <div className="press__feature-media" aria-hidden />
-          )}
+          <div className="press__feature-media">
+            {featured.image ? (
+              <img src={featured.image} alt="" />
+            ) : (
+              <div aria-hidden />
+            )}
+          </div>
           {featured.body ? (
             <div className="press__body">
               {featured.body.split("\n\n").map((para) => (
@@ -84,7 +86,9 @@ export function Press() {
               <li key={item.id}>
                 <button type="button" onClick={() => setParams({ article: item.id })}>
                   <div className="press__teaser fig-band-9">
-                    {item.image ? <img src={item.image} alt="" /> : <div aria-hidden />}
+                    <div className="press__teaser-media">
+                      {item.image ? <img src={item.image} alt="" /> : <div aria-hidden />}
+                    </div>
                     <div className="press__teaser-copy">
                       <div className="press__teaser-head">
                         <span>{item.title}</span>

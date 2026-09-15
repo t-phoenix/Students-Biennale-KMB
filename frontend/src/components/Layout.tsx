@@ -65,10 +65,24 @@ export function Layout() {
   }, [isDiscover]);
 
   const mainRef = useRef<HTMLDivElement>(null);
+  const prevAnimPathRef = useRef(location.pathname);
 
   useGSAP(
     () => {
       if (prefersReducedMotion() || !mainRef.current) return;
+      const getShellGroup = (path: string) => {
+        const match = path.match(/^\/editions\/([^/]+)\/(curators|artworks|artists|venue)\/?$/);
+        return match ? match[1] : null;
+      };
+      const prevGroup = getShellGroup(prevAnimPathRef.current);
+      const currGroup = getShellGroup(location.pathname);
+      prevAnimPathRef.current = location.pathname;
+
+      if (prevGroup !== null && currGroup !== null && prevGroup === currGroup) {
+        // Tab switch within the same Edition shell: keep Left Rail & Search Toolbar static!
+        return;
+      }
+
       gsap.fromTo(
         mainRef.current,
         { autoAlpha: 0, y: 10 },
