@@ -81,26 +81,51 @@ export function Press() {
 
       {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       <div className="fig-grid press__related">
-          <ul className="press__list fig-c4-12">
-            {articles.filter((p) => p.id !== featured.id).map((item) => (
-              <li key={item.id}>
-                <button type="button" onClick={() => setParams({ article: item.id })}>
-                  <div className="press__teaser fig-band-9">
-                    <div className="press__teaser-media">
-                      {item.image ? <img src={item.image} alt="" /> : <div aria-hidden />}
-                    </div>
-                    <div className="press__teaser-copy">
-                      <div className="press__teaser-head">
-                        <span>{item.title}</span>
-                        {item.date ? <time>{item.date}</time> : null}
+        <ul className="press__list fig-c4-12">
+          {articles
+            .filter((p) => p.id !== featured.id)
+            .map((item, index) => {
+              const isFirst = index === 0;
+              const handleSelect = () => {
+                setParams({ article: item.id });
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              };
+
+              return (
+                <li key={item.id} className={isFirst ? "is-teaser" : undefined}>
+                  {isFirst ? (
+                    <button type="button" onClick={handleSelect}>
+                      <div className="press__teaser fig-band-9">
+                        <div className="press__teaser-media">
+                          {item.image ? <img src={item.image} alt="" /> : <div aria-hidden />}
+                        </div>
+                        <div className="press__teaser-copy">
+                          <div className="press__teaser-head">
+                            <span>{item.title}</span>
+                            {item.date ? <time>{item.date}</time> : null}
+                          </div>
+                          {item.body ? (
+                            <div className="press__teaser-body">
+                              {item.body.split("\n\n").map((para, pIdx) => (
+                                <p key={pIdx}>{para}</p>
+                              ))}
+                            </div>
+                          ) : item.excerpt ? (
+                            <p>{item.excerpt}</p>
+                          ) : null}
+                        </div>
                       </div>
-                      {item.excerpt ? <p>{item.excerpt}</p> : null}
-                    </div>
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
+                    </button>
+                  ) : (
+                    <button type="button" onClick={handleSelect}>
+                      <span>{item.title}</span>
+                      {item.date ? <time>{item.date}</time> : null}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+        </ul>
       </div>
     </div>
   );
