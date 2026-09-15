@@ -16,16 +16,22 @@
   align-items: start;
 }
 
+.press__rail {
+  text-align: left;
+}
+
 .press__rail h1 {
   margin: 0 0 28px;
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   text-transform: uppercase;
+  text-align: left;
 }
 
 .press__meta {
   margin: 0 0 28px;
+  text-align: left;
 }
 
 

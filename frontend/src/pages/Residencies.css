@@ -16,16 +16,22 @@
   align-items: start;
 }
 
+.residencies__rail {
+  text-align: left;
+}
+
 .residencies__rail h1 {
   margin: 0 0 28px;
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   text-transform: uppercase;
+  text-align: left;
 }
 
 .residencies__meta-grid {
   margin: 0 0 24px;
+  text-align: left;
 }
 
 .residencies__feature-media {
