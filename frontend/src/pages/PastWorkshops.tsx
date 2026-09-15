@@ -69,7 +69,6 @@ export function PastWorkshops() {
                         <div className="past-workshops__featured-copy">
                           <div className="past-workshops__featured-head">
                             <h3>{item.title}</h3>
-                            <time>{item.year}</time>
                           </div>
                           {item.facilitators ? (
                             <span className="past-workshops__facilitators">
@@ -87,9 +86,10 @@ export function PastWorkshops() {
                             to={`/programmes/past-workshops/${item.id}`}
                             className="home-text-btn past-workshops__more-btn"
                           >
-                            Read more...
+                            Read article...
                           </Link>
                         </div>
+                        <time className="past-workshops__featured-date">{item.year}</time>
                       </div>
                     </div>
                   </div>

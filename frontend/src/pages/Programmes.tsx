@@ -296,7 +296,6 @@ export function Programmes() {
                         <div className="programmes__past-featured-copy">
                           <div className="programmes__past-featured-head">
                             <h3>{item.title}</h3>
-                            <time>{item.year}</time>
                           </div>
                           {item.facilitators ? (
                             <span className="programmes__past-facilitators">
@@ -314,9 +313,10 @@ export function Programmes() {
                             to={`/programmes/past-workshops/${item.id}`}
                             className="home-text-btn programmes__past-more-btn"
                           >
-                            Read more...
+                            Read article...
                           </Link>
                         </div>
+                        <time className="programmes__past-featured-date">{item.year}</time>
                       </div>
                     </div>
                   </div>

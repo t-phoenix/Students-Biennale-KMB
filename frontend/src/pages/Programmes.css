@@ -304,23 +304,20 @@
 }
 
 .programmes__past-featured-copy {
-  grid-column: 4 / span 6;
+  grid-column: 4 / span 5;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  max-width: 524px;
 }
 
 .programmes__past-featured-head {
   display: flex;
-  justify-content: space-between;
-  gap: 32px;
-  align-items: flex-start;
+  flex-direction: column;
   margin-bottom: 0;
 }
 
 .programmes__past-featured-head h3 {
-  flex: 1 1 auto;
-  min-width: 0;
   margin: 0;
   font-size: var(--type-subtitle-size);
   line-height: var(--type-subtitle-line);
@@ -329,11 +326,13 @@
   max-width: 492px;
 }
 
-.programmes__past-featured-head time {
-  flex: 0 0 auto;
+.programmes__past-featured-date {
+  grid-column: 9 / span 1;
   color: var(--color-text-secondary);
   font-size: var(--type-body-size);
   white-space: nowrap;
+  text-align: right;
+  justify-self: end;
 }
 
 .programmes__past-facilitators {
@@ -341,6 +340,7 @@
   font-size: var(--type-caption-size);
   color: var(--color-text-secondary);
   line-height: 1.4;
+  max-width: 524px;
 }
 
 .programmes__past-description {
@@ -660,6 +660,13 @@
 
   .programmes__past-featured-copy {
     grid-column: 1 / -1;
+  }
+
+  .programmes__past-featured-date {
+    grid-column: 1 / -1;
+    text-align: left;
+    justify-self: start;
+    margin-top: 4px;
   }
 
   .programmes__past-collapsed {
