@@ -100,7 +100,7 @@ export function Press() {
               rel="noreferrer"
               className="home-text-btn press__read-btn"
             >
-              Read article
+              Read article...
             </a>
           ) : null}
         </article>
@@ -183,7 +183,7 @@ export function Press() {
                             tabIndex={isExpanded ? 0 : -1}
                             onClick={() => handleSelect(item.id)}
                           >
-                            Read article
+                            Read article...
                           </button>
                         </div>
                       </div>
