@@ -933,22 +933,36 @@ export function Home() {
                       <div className="home-press__expanded-inner">
                         <div className="home-press__expanded">
                           {item.image ? (
-                            <div className="home-press__featured-img-wrap">
+                            <Link
+                              to={`/press?article=${item.id}`}
+                              className="home-press__featured-img-wrap"
+                              tabIndex={isExpanded ? 0 : -1}
+                              aria-label={`Read ${item.title}`}
+                            >
                               <img
                                 className="home-press__featured-img"
                                 src={item.image}
                                 alt=""
                                 loading="lazy"
                               />
-                            </div>
+                            </Link>
                           ) : null}
                           <div className="home-press__featured-copy">
-                            <div className="home-press__featured-head">
+                            <Link
+                              to={`/press?article=${item.id}`}
+                              className="home-press__featured-head"
+                              tabIndex={isExpanded ? 0 : -1}
+                              aria-label={`Read ${item.title}`}
+                            >
                               <h3>{item.title}</h3>
                               <time>{item.date}</time>
-                            </div>
+                            </Link>
                             <p className="fig-body">{item.excerpt}</p>
-                            <Link to={`/press?article=${item.id}`} className="home-text-btn">
+                            <Link
+                              to={`/press?article=${item.id}`}
+                              className="home-text-btn"
+                              tabIndex={isExpanded ? 0 : -1}
+                            >
                               Read more...
                             </Link>
                           </div>
