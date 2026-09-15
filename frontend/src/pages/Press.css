@@ -58,8 +58,7 @@
 }
 
 .press__feature a {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .press__related {

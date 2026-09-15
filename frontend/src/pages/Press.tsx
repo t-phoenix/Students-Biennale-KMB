@@ -94,8 +94,13 @@ export function Press() {
             <p>{featured.excerpt}</p>
           )}
           {featured.url ? (
-            <a href={featured.url} target="_blank" rel="noreferrer">
-              View original
+            <a
+              href={featured.url}
+              target="_blank"
+              rel="noreferrer"
+              className="home-text-btn press__read-btn"
+            >
+              Read article
             </a>
           ) : null}
         </article>
@@ -178,7 +183,7 @@ export function Press() {
                             tabIndex={isExpanded ? 0 : -1}
                             onClick={() => handleSelect(item.id)}
                           >
-                            Read article...
+                            Read article
                           </button>
                         </div>
                       </div>
