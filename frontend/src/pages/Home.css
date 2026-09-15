@@ -914,12 +914,23 @@
 @media (max-width: 899px) {
   .home-hero {
     height: auto;
-    min-height: 70dvh;
+    min-height: calc(100dvh - var(--nav-height-mobile, 56px));
   }
 
   .home-hero__grid {
-    row-gap: 24px;
-    padding-bottom: var(--overlay-bottom-inset, 40px);
+    row-gap: 20px;
+    padding-bottom: 24px;
+  }
+
+  .home-hero__card-title {
+    font-size: 17px;
+    line-height: 22px;
+    letter-spacing: 1.2px;
+  }
+
+  .home-hero__dots button {
+    width: 12px;
+    height: 12px;
   }
 
   .home-hero__meta {
@@ -928,6 +939,11 @@
 
   .home-hero__credit {
     text-align: left;
+  }
+
+  .home-sensing__scroll-track {
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
   }
 
   .home-sensing__peek {
@@ -974,5 +990,22 @@
 
   .home-about__sponsor-caption {
     line-height: 26px;
+  }
+}
+
+@media (max-width: 599px) {
+  .home-press__collapsed {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .home-programmes__thumbs a {
+    flex: 1 1 100%;
+  }
+
+  .home-about__sponsor-heading {
+    font-size: 16px;
+    line-height: 24px;
   }
 }

@@ -196,6 +196,13 @@
   }
 }
 
+.site-header__right-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
 .site-header__kbf {
   display: flex;
   align-items: center;
@@ -214,11 +221,14 @@
   display: none;
 }
 
-/* Mobile — just the two brand marks, nothing else: no wordmark, no nav links,
-   no Discover Artworks. */
+.site-header__menu-btn {
+  display: none;
+}
+
+/* Mobile — brand mark + KBF mark + mobile navigation drawer toggle */
 @media (max-width: 899px) {
   .site-header {
-    height: var(--nav-height-mobile);
+    height: var(--nav-height-mobile, 56px);
     padding-block: 0;
   }
 
@@ -245,5 +255,49 @@
   .site-header__discover,
   .site-header__nav {
     display: none;
+  }
+
+  .site-header__right-wrap {
+    gap: 12px;
+  }
+
+  .site-header__menu-btn {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    gap: 5px;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 8px;
+    z-index: 2100;
+    margin-right: -8px;
+    touch-action: manipulation;
+  }
+
+  .site-header__menu-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background: var(--color-primary-dark);
+    border-radius: 1px;
+    transform-origin: center;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  }
+
+  .site-header__menu-btn.is-open .site-header__menu-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .site-header__menu-btn.is-open .site-header__menu-bar:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+
+  .site-header__menu-btn.is-open .site-header__menu-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
   }
 }

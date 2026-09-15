@@ -76,3 +76,30 @@
   --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
 }
+
+@media (max-width: 899px) {
+  :root {
+    --type-title-size: clamp(20px, 4.5vw, 24px);
+    --type-title-line: clamp(28px, 5.5vw, 32px);
+    --type-subtitle-size: clamp(16px, 3.8vw, 19px);
+    --type-subtitle-line: clamp(22px, 4.8vw, 26px);
+    --type-body-size: 15px;
+    --type-body-line: 22px;
+    --type-caption-size: 14px;
+    --type-caption-line: 20px;
+  }
+}
+
+@media (max-width: 599px) {
+  :root {
+    --type-title-size: clamp(18px, 5vw, 22px);
+    --type-title-line: clamp(24px, 6vw, 28px);
+    --type-subtitle-size: clamp(15px, 4.2vw, 18px);
+    --type-subtitle-line: clamp(20px, 5.2vw, 24px);
+    --type-body-size: 14px;
+    --type-body-line: 21px;
+    --type-caption-size: 13px;
+    --type-caption-line: 18px;
+  }
+}
+

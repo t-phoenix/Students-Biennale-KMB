@@ -12,6 +12,7 @@ import {
   scrollToId,
 } from "../lib/scrollToSection";
 import { getLenisInstance } from "../lib/lenisSingleton";
+import { MobileNavDrawer } from "./MobileNavDrawer";
 import "./Header.css";
 
 type DropdownItem = { label: string; to: string; isCurrent?: boolean };
@@ -69,6 +70,7 @@ export function Header() {
   const onHome = location.pathname === "/";
   const [activeSection, setActiveSection] = useState<HomeSectionId | null>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const discoverRef = useRef<HTMLAnchorElement>(null);
   const headerRef = useRef<HTMLElement>(null);
@@ -364,6 +366,7 @@ export function Header() {
       gsap.set(panelEl, { autoAlpha: 0 });
     }
     setActiveDropdown(null);
+    setMobileMenuOpen(false);
     isOpenRef.current = false;
   }, []);
 
@@ -548,26 +551,45 @@ export function Header() {
         </div>
       </nav>
 
-      <a
-        className="site-header__kbf"
-        href="https://kochimuzirisbiennale.org/"
-        target="_blank"
-        rel="noreferrer"
-        aria-label="Kochi Biennale Foundation"
-        onClick={closeImmediate}
-      >
-        <img
-          className="site-header__kbf-logo site-header__kbf-logo--full"
-          src="/logo-kbf.svg"
-          alt="Kochi Biennale Foundation"
-        />
-        <img
-          className="site-header__kbf-logo site-header__kbf-logo--icon"
-          src="/logo-kbf-icon.svg"
-          alt="Kochi Biennale Foundation"
-        />
-      </a>
+      <div className="site-header__right-wrap">
+        <a
+          className="site-header__kbf"
+          href="https://kochimuzirisbiennale.org/"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Kochi Biennale Foundation"
+          onClick={closeImmediate}
+        >
+          <img
+            className="site-header__kbf-logo site-header__kbf-logo--full"
+            src="/logo-kbf.svg"
+            alt="Kochi Biennale Foundation"
+          />
+          <img
+            className="site-header__kbf-logo site-header__kbf-logo--icon"
+            src="/logo-kbf-icon.svg"
+            alt="Kochi Biennale Foundation"
+          />
+        </a>
+
+        <button
+          type="button"
+          className={`site-header__menu-btn${mobileMenuOpen ? " is-open" : ""}`}
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileMenuOpen}
+        >
+          <span className="site-header__menu-bar" />
+          <span className="site-header__menu-bar" />
+          <span className="site-header__menu-bar" />
+        </button>
+      </div>
     </header>
+
+    <MobileNavDrawer
+      isOpen={mobileMenuOpen}
+      onClose={() => setMobileMenuOpen(false)}
+    />
     </>
   );
 }

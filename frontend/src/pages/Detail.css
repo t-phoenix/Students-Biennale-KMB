@@ -551,8 +551,17 @@
     margin-inline-end: 0;
   }
 
+  .detail__nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 40px;
+    width: 100%;
+  }
+
   .detail__next {
-    grid-column: 1 / -1;
-    justify-self: start;
+    grid-column: auto;
+    justify-self: auto;
   }
 }
+
