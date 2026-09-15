@@ -1192,8 +1192,8 @@ export function Home() {
                 </p>
               </div>
 
-              {/* Other Donors & Venue Support (2-column layout matching Figma 96:77) */}
-              <div className="home-about__sponsors-grid">
+              {/* Other Donors & Venue Support — aligned with 3-column Team grid */}
+              <div className="home-about__sponsors-grid fig-sub-3">
                 <div className="home-about__sponsor-group">
                   <h4 className="home-about__sponsor-heading">OTHER DONORS</h4>
                   <ul className="home-about__sponsor-list">

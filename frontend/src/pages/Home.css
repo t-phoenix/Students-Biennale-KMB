@@ -935,8 +935,8 @@
 
 .home-about__sponsors-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 315px));
-  column-gap: calc(var(--grid-gutter) + 20px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
   margin-top: 60px;
 }
 
