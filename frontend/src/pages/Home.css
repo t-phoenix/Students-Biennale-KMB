@@ -5,23 +5,31 @@
 
 .home__main {
   width: 100%;
+  position: relative;
+  z-index: 10;
+  background: var(--color-neutral-white);
 }
 
-/* Full viewport height under the header (100dvh - var(--nav-height)) */
+/* Full viewport height under the header (100dvh - var(--nav-height))
+   Sticky positioning allows the hero and its update cards to smoothly slide behind
+   the next section (.home__main) as the user scrolls. */
 .home-hero {
-  position: relative;
+  position: sticky;
+  top: var(--nav-height);
   width: 100%;
   min-height: calc(100dvh - var(--nav-height));
   height: calc(100dvh - var(--nav-height));
   overflow: hidden;
   background: var(--color-neutral-gray-light);
   isolation: isolate;
+  z-index: 1;
 }
 
 .home-hero__slides {
   position: absolute;
   inset: 0;
   cursor: zoom-in;
+  z-index: 1;
 }
 
 .home-hero__bg,
@@ -39,7 +47,7 @@
 .home-hero__grid {
   position: absolute;
   inset: 0;
-  z-index: 2;
+  z-index: 4;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   column-gap: var(--grid-gutter);
@@ -50,7 +58,7 @@
 }
 
 .home-hero__stack {
-  --card-h: 137px;
+  --card-h: 176px;
   --card-gap: 8px;
   --peek: 14px;
   --peek-gap: 6px;
@@ -62,7 +70,7 @@
 
   position: relative;
   align-self: end;
-  z-index: 3;
+  z-index: 5;
   height: var(--stack-h-collapsed);
   max-height: calc(100dvh - var(--nav-height) - 120px);
   outline: none;
@@ -127,7 +135,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 16px 18px;
+  padding: 16px 20px;
   box-sizing: border-box;
 }
 
@@ -143,13 +151,13 @@
 
 .home-hero__card-title {
   margin: 0;
-  font-size: 20px;
-  line-height: 26px;
+  font-size: 19px;
+  line-height: 25px;
   font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: 1.5px;
   color: var(--color-text-primary);
-  padding-right: 20px;
+  padding-right: 28px;
 }
 
 .home-hero__card-close {
@@ -390,6 +398,9 @@
 
 /* —— Sections —— */
 .home-section {
+  position: relative;
+  z-index: 10;
+  background: var(--color-neutral-white);
   padding-block: 81px 72px;
 }
 
@@ -939,11 +950,13 @@
    dock with layered depth peeks, thumbnail badge, and frosted glass credits. */
 @media (max-width: 899px) {
   .home-hero {
+    position: sticky;
+    top: var(--nav-height-mobile, 56px);
     height: calc(100dvh - var(--nav-height-mobile, 56px));
     min-height: calc(100dvh - var(--nav-height-mobile, 56px));
     max-height: calc(100dvh - var(--nav-height-mobile, 56px));
-    position: relative;
     overflow: hidden;
+    z-index: 1;
   }
 
   /* Hide side arrows and standalone dots on mobile */
