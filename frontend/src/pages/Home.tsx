@@ -581,9 +581,35 @@ export function Home() {
               hero?.removeEventListener("focusout", play);
             };
           }
+
+          // 3. Scroll-linked Parallax: Cards & Credits float up with depth before going behind the next section
+          gsap.to(".home-hero__stack", {
+            y: -85,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root,
+              start: "top top",
+              end: "700px top",
+              scrub: 0.4,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          gsap.to(".home-hero__meta, .home-hero__mobile-meta", {
+            y: -45,
+            ease: "none",
+            scrollTrigger: {
+              trigger: root,
+              start: "top top",
+              end: "700px top",
+              scrub: 0.4,
+              invalidateOnRefresh: true,
+            },
+          });
         },
         onReduce: () => {
           gsap.set(".home-hero__card", { autoAlpha: 1, y: 0, rotation: 0 });
+          gsap.set(".home-hero__stack, .home-hero__meta, .home-hero__mobile-meta", { y: 0 });
           gsap.set(".home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow", {
             autoAlpha: 1,
             y: 0,
