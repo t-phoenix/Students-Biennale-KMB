@@ -909,23 +909,135 @@
   max-width: 435px;
 }
 
-/* Tier C — the grid drops to 6 columns and every span goes full width, so the
-   hero overlay stacks and the right-margin peek is dropped. */
+/* Tier C — Mobile & Tablet Viewports:
+   Hero update cards transform into a Goodman Gallery-inspired horizontal
+   swipeable card reel with frosted glass credits and smooth touch snapping. */
 @media (max-width: 899px) {
   .home-hero {
-    height: auto;
+    height: calc(100dvh - var(--nav-height-mobile, 56px));
     min-height: calc(100dvh - var(--nav-height-mobile, 56px));
+    max-height: calc(100dvh - var(--nav-height-mobile, 56px));
   }
 
   .home-hero__grid {
-    row-gap: 20px;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-inline: 0;
     padding-bottom: 24px;
+    row-gap: 10px;
+    pointer-events: none;
+  }
+
+  .home-hero__stack {
+    position: relative;
+    width: 100%;
+    height: auto !important;
+    max-height: none;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    padding-inline: var(--grid-margin);
+    padding-block: 4px 10px;
+    margin: 0;
+    z-index: 4;
+    pointer-events: auto;
+    scrollbar-width: none;
+  }
+
+  .home-hero__stack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .home-hero__card {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    width: clamp(270px, 78vw, 340px) !important;
+    flex: 0 0 clamp(270px, 78vw, 340px) !important;
+    height: auto !important;
+    min-height: 104px;
+    scroll-snap-align: start;
+    pointer-events: auto !important;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 2px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.16);
+    cursor: pointer;
+  }
+
+  .home-hero__card .home-hero__card-inner {
+    opacity: 1 !important;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  .home-hero__card .home-hero__card-close {
+    opacity: 0.65 !important;
+    pointer-events: auto !important;
+    top: 8px;
+    right: 8px;
   }
 
   .home-hero__card-title {
-    font-size: 17px;
-    line-height: 22px;
-    letter-spacing: 1.2px;
+    font-size: 15px;
+    line-height: 20px;
+    letter-spacing: 1px;
+    font-weight: 500;
+    padding-right: 18px;
+  }
+
+  .home-hero__card-body {
+    font-size: 13px;
+    line-height: 18px;
+    margin-top: 6px;
+    -webkit-line-clamp: 2;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .home-hero__meta {
+    padding-inline: var(--grid-margin);
+    margin-bottom: 0;
+    align-items: flex-start;
+  }
+
+  .home-hero__credit {
+    width: fit-content;
+    max-width: calc(100% - 24px);
+    text-align: left;
+    background: rgba(0, 0, 0, 0.52);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 8px 14px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    text-shadow: none;
+  }
+
+  .home-hero__artwork,
+  .home-hero__artist {
+    font-size: 14px;
+    line-height: 19px;
+    color: #ffffff;
+    font-weight: 500;
+    white-space: normal;
+  }
+
+  .home-hero__inst {
+    font-size: 12px;
+    line-height: 16px;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 400;
   }
 
   .home-hero__dots button {
@@ -933,12 +1045,8 @@
     height: 12px;
   }
 
-  .home-hero__meta {
-    align-items: flex-start;
-  }
-
-  .home-hero__credit {
-    text-align: left;
+  .home-hero__dots--centered {
+    bottom: 8px;
   }
 
   .home-sensing__scroll-track {
