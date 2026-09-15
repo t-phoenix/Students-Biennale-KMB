@@ -34,6 +34,37 @@
   transform: translate(-4px, -24px);
 }
 
+@keyframes scribbleNudgeFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-4px, -18px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-4px, -24px) scale(1);
+  }
+}
+
+@keyframes scribbleNudgeFadeOut {
+  from {
+    opacity: 1;
+    transform: translate(-4px, -24px) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-4px, -30px) scale(0.9);
+  }
+}
+
+.scribble-brush.is-nudge {
+  animation: scribbleNudgeFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.scribble-brush.is-nudge.is-dismissing {
+  animation: scribbleNudgeFadeOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
 .scribble-brush__icon {
   display: block;
   flex-shrink: 0;

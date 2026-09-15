@@ -10,7 +10,9 @@ const BLACK = '#000000';
 
 const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
-const IDLE_MS = 2000;
+const IDLE_MS = 3000;
+const BURST_MAX = 2; // Up to 2 nudges before quiet period
+const RESET_COOLDOWN_MS = 30000; // 30 seconds quiet window after 2 nudges, then resets count
 const AUTO_EXIT_MS = 10000;
 
 function clampWidth(w: number) {
@@ -150,7 +152,9 @@ export function SketchLayer() {
   const [brushColor, setBrushColor] = useState<string>(BLACK);
   const [brushWidth, setBrushWidth] = useState(1);
   const [cursor, setCursor] = useState({ x: 0, y: 0, on: false });
+  const [nudgeDismissing, setNudgeDismissing] = useState<{ x: number; y: number } | null>(null);
 
+  const cursorRef = useRef({ x: 0, y: 0 });
   const modeRef = useRef<SketchMode>('navigate');
   const strokesRef = useRef<Stroke[]>([]);
   const currentStrokeRef = useRef<Stroke | null>(null);
@@ -163,6 +167,9 @@ export function SketchLayer() {
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
   const redrawScheduledRef = useRef(false);
+  const nudgeCountRef = useRef(0);
+  const lastNudgeDismissedAtRef = useRef(0);
+  const hasEnteredSketchRef = useRef(false);
 
   brushColorRef.current = brushColor;
   brushWidthRef.current = brushWidth;
@@ -230,15 +237,50 @@ export function SketchLayer() {
 
   const startIdleTimer = useCallback(() => {
     clearIdleTimer();
-    if (!reducedMotionRef.current && modeRef.current === 'navigate') {
-      idleTimerRef.current = setTimeout(() => {
-        if (modeRef.current === 'navigate') setModeBoth('nudge');
-      }, IDLE_MS);
+    if (reducedMotionRef.current || modeRef.current !== 'navigate') return;
+    if (hasEnteredSketchRef.current) return;
+
+    const now = Date.now();
+    const elapsedSinceDismiss = now - lastNudgeDismissedAtRef.current;
+
+    // Reset burst count if 30s has passed since last dismiss
+    if (elapsedSinceDismiss >= RESET_COOLDOWN_MS) {
+      nudgeCountRef.current = 0;
     }
+
+    // If burst limit reached, wait for the remaining 30s quiet window
+    let delay = IDLE_MS;
+    if (nudgeCountRef.current >= BURST_MAX) {
+      const remainingCooldown = RESET_COOLDOWN_MS - elapsedSinceDismiss;
+      if (remainingCooldown > 0) {
+        delay = Math.max(IDLE_MS, remainingCooldown);
+      } else {
+        nudgeCountRef.current = 0;
+      }
+    }
+
+    idleTimerRef.current = setTimeout(() => {
+      if (modeRef.current === 'navigate' && !hasEnteredSketchRef.current) {
+        const currentNow = Date.now();
+        if (currentNow - lastNudgeDismissedAtRef.current >= RESET_COOLDOWN_MS) {
+          nudgeCountRef.current = 0;
+        }
+        if (nudgeCountRef.current < BURST_MAX) {
+          nudgeCountRef.current += 1;
+          setModeBoth('nudge');
+        }
+      }
+    }, delay);
   }, [clearIdleTimer, setModeBoth]);
 
   const dismissNudge = useCallback(() => {
     if (modeRef.current === 'nudge') {
+      lastNudgeDismissedAtRef.current = Date.now();
+      const pt = { x: cursorRef.current.x, y: cursorRef.current.y };
+      setNudgeDismissing(pt);
+      setTimeout(() => {
+        setNudgeDismissing((curr) => (curr === pt ? null : curr));
+      }, 260);
       setModeBoth('navigate');
       startIdleTimer();
     }
@@ -265,6 +307,7 @@ export function SketchLayer() {
   }, [clearAutoExitTimer, hardExit]);
 
   const enterSketch = useCallback(() => {
+    hasEnteredSketchRef.current = true;
     clearIdleTimer();
     clearAutoExitTimer();
     const active = document.activeElement;
@@ -341,6 +384,7 @@ export function SketchLayer() {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
+      cursorRef.current = { x: e.clientX, y: e.clientY };
       const overHeaderFooter = isOverHeaderOrFooter(e.clientX, e.clientY);
       setCursor({ x: e.clientX, y: e.clientY, on: !overHeaderFooter });
 
@@ -349,7 +393,10 @@ export function SketchLayer() {
         exitOrDismiss();
         return;
       }
-      if (m === 'nudge') return;
+      if (m === 'nudge') {
+        dismissNudge();
+        return;
+      }
 
       if (m === 'drawing' && currentStrokeRef.current) {
         const rect = currentStrokeRef.current.anchor.getBoundingClientRect();
@@ -531,6 +578,22 @@ export function SketchLayer() {
       aria-hidden="true"
     >
       <canvas ref={canvasRef} className="scribble-layer__canvas" />
+
+      {nudgeDismissing && (
+        <div
+          className="scribble-brush is-nudge is-dismissing"
+          style={{ left: nudgeDismissing.x, top: nudgeDismissing.y }}
+        >
+          <svg className="scribble-brush__icon" width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path
+              d="M22.5 2.5c.8-.8 2.1-.8 2.9 0l4.1 4.1c.8.8.8 2.1 0 2.9L12.2 26.8a2 2 0 0 1-.9.5l-5.6 1.4a1 1 0 0 1-1.2-1.2l1.4-5.6c.1-.3.3-.6.5-.9L22.5 2.5Z"
+              fill="currentColor"
+            />
+            <path d="M6.2 25.8 10.4 21.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
+          </svg>
+          <span className="scribble-brush__hint">press P</span>
+        </div>
+      )}
 
       {showBrush && (
         <div
