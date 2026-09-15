@@ -392,6 +392,14 @@
 
 /* Responsive adjustments */
 @media (max-width: 899px) {
+  .edition-overview__hero {
+    height: 52vh;
+  }
+
+  .edition-overview__section {
+    padding-top: 44px;
+  }
+
   .edition-overview__title-rail {
     align-items: flex-start;
     text-align: left;
@@ -405,7 +413,7 @@
 
   .edition-overview__curator-bios {
     grid-template-columns: 1fr;
-    row-gap: 32px;
+    row-gap: 28px;
   }
 
   .edition-overview__team-grid {
@@ -419,7 +427,30 @@
     width: 100%;
   }
 
+  .edition-overview__downloads-section {
+    padding-top: 44px;
+  }
+
+  .edition-overview__downloads-grid {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .edition-overview__download-card {
+    width: 100%;
+    min-height: auto;
+    padding: 16px;
+    border-radius: 8px;
+  }
+
   .edition-overview__gallery {
+    padding-top: 44px;
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .edition-overview__nav {
+    padding-top: 44px;
   }
 }
