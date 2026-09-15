@@ -831,6 +831,10 @@
   align-items: start;
 }
 
+.home-about__team .fig-label {
+  font-weight: 400;
+}
+
 .home-about__team-cols {
   row-gap: 28px;
 }
@@ -866,7 +870,7 @@
   margin: 0;
   letter-spacing: 0.05em;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 28px;
   text-transform: uppercase;
   text-align: right;
