@@ -31,6 +31,7 @@ import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
+import { DEFAULT_PRESS_ITEMS } from "../data/press";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -47,49 +48,6 @@ const SENSING_STRIP_IMAGES = [
   "/artworks/panopticon.jpg",
   "/artworks/dar-dara-dariya.jpg",
   "/artworks/milk-distributors.jpg",
-];
-
-const HOME_PRESS_ITEMS = [
-  {
-    id: "kbf-curators",
-    title: "KBF Announces Curators For Students' Biennale 2025-26",
-    date: "4 Dec 2025",
-    excerpt:
-      "The Kochi Biennale Foundation (KBF) has announced the curators for Students' Biennale, a key educational initiative of the Kochi Biennale Foundation for budding young artists. The programme works with state-funded art colleges across India, encouraging emerging artists to reflect on their practice and showcase their work on an international stage.",
-    image: "/home/press-featured.jpg",
-  },
-  {
-    id: "guide-map",
-    title: "The Ultimate Guide & Map to the Kochi-Muziris Biennale 2025/26 Venues",
-    date: "15 Feb 2026",
-    excerpt:
-      "A comprehensive walkthrough and visitor guide navigating all major exhibition spaces, student projects, and collateral events across Fort Kochi and Mattancherry.",
-    image: "/press/walkthrough.jpg",
-  },
-  {
-    id: "st-andrews",
-    title: "St. Andrews Parish Hall -Students' Biennale at Kochi",
-    date: "31 Mar 2026",
-    excerpt:
-      "Exploring regional material histories, architectural memory, and pedagogical transformations at the historic St. Andrews Parish Hall venue.",
-    image: "/venues/st-andrews.jpg",
-  },
-  {
-    id: "warm-panic",
-    title: "A warm kind of panic",
-    date: "31 Dec 2025",
-    excerpt:
-      "Critical perspectives and disobedient practices: reflections on sensing grounds, institutional hierarchies, and emerging voices in contemporary Indian art education.",
-    image: "/home/sensing-side.jpg",
-  },
-  {
-    id: "power-of-peta",
-    title: "The Power of the Peta / Honour",
-    date: "31 Dec 2025",
-    excerpt:
-      "Examining traditional crafts, embodied knowledge systems, and collective enquiries into labour, memory, and everyday defiance.",
-    image: "/home/thumb-workshops.jpg",
-  },
 ];
 
 export function Home() {
@@ -126,7 +84,7 @@ export function Home() {
   const { homeBannerUrl } = useProgrammesCovers();
   const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
   const { items: cmsPressItems } = usePressItems();
-  const pressItems = cmsPressItems.length > 0 ? cmsPressItems : HOME_PRESS_ITEMS;
+  const pressItems = cmsPressItems.length > 0 ? cmsPressItems : DEFAULT_PRESS_ITEMS;
   const covers = dynamicCovers;
   const cards: ActiveUpdateCard[] = cmsCards.map((c) => {
     const mode = normalizeCardMode(c.card_type);

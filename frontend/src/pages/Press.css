@@ -140,6 +140,7 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
+  pointer-events: none;
   transition: grid-template-rows 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
               opacity 0.38s ease;
 }
@@ -147,6 +148,7 @@
 .press__item.is-expanded .press__expanded-wrap {
   grid-template-rows: 1fr;
   opacity: 1;
+  pointer-events: auto;
 }
 
 .press__expanded-inner {
