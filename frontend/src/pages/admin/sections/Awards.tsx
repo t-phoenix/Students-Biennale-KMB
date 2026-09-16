@@ -121,9 +121,7 @@ export function Awards({ notify, confirm }: SectionProps) {
         sb
           .from("programmes")
           .select("id, title, subtype, sort_order")
-          .or(
-            "subtype.in.(international-award,national-award),id.eq.programme-raza-students-biennale-scholarship",
-          )
+          .or("subtype.in.(international-award,national-award)")
           .order("sort_order"),
         sb
           .from("award_winners")
@@ -232,11 +230,6 @@ export function Awards({ notify, confirm }: SectionProps) {
         programmes.some((p) => p.id === w.programmeId && p.subtype === "national-award"),
       ),
     [programmes, winners],
-  );
-  const raza = useMemo(
-    () =>
-      winners.filter((w) => w.programmeId === "programme-raza-students-biennale-scholarship"),
-    [winners],
   );
 
   const artworkOptions = useMemo(
@@ -671,12 +664,6 @@ export function Awards({ notify, confirm }: SectionProps) {
       )}
 
       {renderTable("International Awards", international, "international-award")}
-      {renderTable(
-        "Raza - Students' Biennale Scholarship",
-        raza,
-        "residency",
-        "programme-raza-students-biennale-scholarship",
-      )}
       {renderTable("National Awards", national, "national-award")}
     </div>
   );

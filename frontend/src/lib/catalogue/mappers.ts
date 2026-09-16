@@ -66,15 +66,16 @@ function parseCuratorialNote(raw: string | null | undefined): {
 } {
   const text = (raw ?? "").trim();
   if (!text) return {};
+  const stripMd = (s: string) => s.replace(/\*+/g, "").trim();
   const parts = text.split(/\n\s*\n/);
   if (parts.length === 1) return { body: parts[0].trim() };
   const head = parts[0].trim();
   const body = parts.slice(1).join("\n\n").trim();
   const lines = head.split("\n").map((l) => l.trim()).filter(Boolean);
-  let title = lines[0];
+  let title = stripMd(lines[0]);
   let attribution: string | undefined;
   if (lines[1]?.toLowerCase().startsWith("curated by")) {
-    attribution = lines[1];
+    attribution = stripMd(lines[1]);
   } else {
     const mashed = title.match(/^(Conditions of Practice)\s+(Curated by .+)$/i);
     if (mashed) {
@@ -478,6 +479,88 @@ export function curatorsForArtworkIn(
 
 export function artworksForZoneIn(artworks: ArtworkCard[], zoneId: string): ArtworkCard[] {
   return artworks.filter((a) => a.zoneId === zoneId);
+}
+
+export function artworksForVenueIn(
+  artworks: ArtworkCard[],
+  venue: Pick<VenueCard, "id" | "name">,
+): ArtworkCard[] {
+  return artworks.filter((a) => a.venue === venue.name || a.venue === venue.id);
+}
+
+/** Where NEXT/BACK should cycle artworks — from catalogue grid vs curator zone vs venue. */
+export type ArtworkNavScope =
+  | { kind: "catalogue" }
+  | { kind: "curator"; curatorId: string; zoneId: string }
+  | { kind: "venue"; venueId: string };
+
+export function zoneIdForCuratorIn(zones: CuratorZone[], curatorId: string): string | undefined {
+  return zones.find((z) => z.curators.some((c) => c.id === curatorId))?.id;
+}
+
+export function parseArtworkNavScope(
+  params: URLSearchParams,
+  zones: CuratorZone[],
+): ArtworkNavScope {
+  const scope = params.get("scope");
+  if (scope === "curator") {
+    const curatorId = params.get("curatorId")?.trim();
+    if (curatorId) {
+      const zoneId = zoneIdForCuratorIn(zones, curatorId);
+      if (zoneId) return { kind: "curator", curatorId, zoneId };
+    }
+  }
+  if (scope === "venue") {
+    const venueId = params.get("venueId")?.trim();
+    if (venueId) return { kind: "venue", venueId };
+  }
+  return { kind: "catalogue" };
+}
+
+export function artworksForNavScope(
+  artworks: ArtworkCard[],
+  venues: VenueCard[],
+  nav: ArtworkNavScope,
+): ArtworkCard[] {
+  switch (nav.kind) {
+    case "curator":
+      return artworksForZoneIn(artworks, nav.zoneId);
+    case "venue": {
+      const venue = findCard(venues, nav.venueId);
+      return venue ? artworksForVenueIn(artworks, venue) : [];
+    }
+    default:
+      return artworks;
+  }
+}
+
+/** Preserve highlight + scope when linking between artwork detail pages. */
+export function artworkDetailSearchParams(
+  existing: URLSearchParams,
+  nav: ArtworkNavScope,
+): URLSearchParams {
+  const next = new URLSearchParams();
+  const highlight = existing.get("highlight");
+  if (highlight) next.set("highlight", highlight);
+  if (nav.kind === "curator") {
+    next.set("scope", "curator");
+    next.set("curatorId", nav.curatorId);
+  } else if (nav.kind === "venue") {
+    next.set("scope", "venue");
+    next.set("venueId", nav.venueId);
+  }
+  return next;
+}
+
+export function artworkDetailPath(
+  yearId: string,
+  artworkId: string,
+  existing: URLSearchParams,
+  nav: ArtworkNavScope,
+): string {
+  const qs = artworkDetailSearchParams(existing, nav).toString();
+  const base = `/editions/${yearId}/artworks/${artworkId}`;
+  return qs ? `${base}?${qs}` : base;
 }
 
 export type { SnapshotPayload };

@@ -5,13 +5,18 @@ import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import { HighlightText } from "../components/HighlightText";
+import { FormattedParagraphs } from "../components/FormattedText";
 import { ImageCrossfadeStack } from "../components/ImageCrossfadeStack";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { venueImages, RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../data/site";
 import { prefetchNextArtwork } from "../lib/predictivePrefetch";
 import {
+  artworkDetailPath,
+  artworksForNavScope,
+  artworksForVenueIn,
   artworksForZoneIn,
   findCard,
+  parseArtworkNavScope,
   useEditionCatalogue,
 } from "../lib/catalogue";
 import "./Detail.css";
@@ -82,12 +87,30 @@ export function Detail() {
     return () => window.clearTimeout(timer);
   }, [highlight, id, kindSeg]);
 
+  const artworkNav = useMemo(
+    () => parseArtworkNavScope(searchParams, catalogue.zones),
+    [searchParams, catalogue.zones],
+  );
+
+  const artworkNavList = useMemo(
+    () => artworksForNavScope(catalogue.artworks, catalogue.venues, artworkNav),
+    [catalogue.artworks, catalogue.venues, artworkNav],
+  );
+
   useEffect(() => {
     if (kindSeg !== "artworks" || !id) return;
-    prefetchNextArtwork(catalogue.artworks, id);
-  }, [kindSeg, id, catalogue.artworks]);
+    prefetchNextArtwork(artworkNavList, id);
+  }, [kindSeg, id, artworkNavList]);
 
-  const back = `/editions/${yearId}/${kindSeg}`;
+  const back = useMemo(() => {
+    if (kindSeg === "artworks" && artworkNav.kind === "curator") {
+      return `/editions/${yearId}/curators/${artworkNav.curatorId}`;
+    }
+    if (kindSeg === "artworks" && artworkNav.kind === "venue") {
+      return `/editions/${yearId}/venue/${artworkNav.venueId}`;
+    }
+    return `/editions/${yearId}/${kindSeg}`;
+  }, [kindSeg, yearId, artworkNav]);
 
   if (!data.item) {
     return (
@@ -105,11 +128,13 @@ export function Detail() {
 
   if (data.kind === "artwork" && data.item) {
     const a = data.item;
-    const idx = catalogue.artworks.findIndex((x) => x.id === a.id);
+    const list =
+      artworkNavList.length > 0
+        ? artworkNavList
+        : catalogue.artworks.filter((x) => x.id === a.id);
+    const idx = list.findIndex((x) => x.id === a.id);
     const next =
-      idx >= 0 && catalogue.artworks.length
-        ? catalogue.artworks[(idx + 1) % catalogue.artworks.length]
-        : undefined;
+      idx >= 0 && list.length > 1 ? list[(idx + 1) % list.length] : undefined;
 
     return (
       <div ref={root} className="detail">
@@ -120,12 +145,14 @@ export function Detail() {
             <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
-          <CtaLink
-            className="detail__next"
-            variant="next"
-            to={`/editions/${yearId}/artworks/${(next ?? a).id}`}
-            lines={["NEXT"]}
-          />
+          {next ? (
+            <CtaLink
+              className="detail__next"
+              variant="next"
+              to={artworkDetailPath(yearId, next.id, searchParams, artworkNav)}
+              lines={["NEXT"]}
+            />
+          ) : null}
         </div>
       </div>
     );
@@ -204,11 +231,13 @@ export function Detail() {
               {noteAttribution ? (
                 <p className="detail__note-attribution">{noteAttribution}</p>
               ) : null}
-              {noteBody.split(/\n\s*\n/).map((para) => (
-                <p key={para.slice(0, 48)} className="fig-body">
-                  {para}
-                </p>
-              ))}
+              {noteBody ? (
+                <FormattedParagraphs
+                  text={noteBody}
+                  paragraphClassName="fig-body"
+                  className="detail__note-body"
+                />
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -218,7 +247,14 @@ export function Detail() {
             <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
             <div className="fig-c4-12 fig-sub-3 detail__cards detail-reveal">
               {artworksForZoneIn(catalogue.artworks, zone.id).map((a) => (
-                <Link key={a.id} to={`/editions/${yearId}/artworks/${a.id}`}>
+                <Link
+                  key={a.id}
+                  to={artworkDetailPath(yearId, a.id, searchParams, {
+                    kind: "curator",
+                    curatorId: c.id,
+                    zoneId: zone.id,
+                  })}
+                >
                   {a.image ? (
                     <span className="detail__cards-media">
                       <img src={a.image} alt="" />
@@ -267,7 +303,7 @@ export function Detail() {
   if (data.kind === "venue" && data.item) {
     const v = data.item;
     const slides = venueImages(v);
-    const venueWorks = catalogue.artworks.filter((a) => a.venue === v.name || a.venue === v.id);
+    const venueWorks = artworksForVenueIn(catalogue.artworks, v);
 
     return (
       <div ref={root} className="detail" key={v.id}>
@@ -320,7 +356,13 @@ export function Detail() {
             <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
             <div className="fig-c4-12 fig-sub-3 detail__cards detail-reveal">
               {venueWorks.slice(0, 3).map((a) => (
-                <Link key={a.id} to={`/editions/${yearId}/artworks/${a.id}`}>
+                <Link
+                  key={a.id}
+                  to={artworkDetailPath(yearId, a.id, searchParams, {
+                    kind: "venue",
+                    venueId: v.id,
+                  })}
+                >
                   {a.image ? (
                     <span className="detail__cards-media">
                       <img src={a.image} alt="" />

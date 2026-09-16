@@ -379,6 +379,18 @@
   color: var(--color-text-secondary);
 }
 
+/* Paragraph rhythm for curatorial notes — match edition-overview note body. */
+.detail__note-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.detail__note-body .fig-body {
+  margin: 0;
+  line-height: 1.7;
+}
+
 /* Wider gutter above between the Artists grid and Curated By block. */
 .detail__curated-by {
   margin: 56px 0 0;

@@ -12,8 +12,13 @@ export {
   type SearchHitKind,
 } from "./search";
 export {
+  artworkDetailPath,
+  artworksForNavScope,
+  artworksForVenueIn,
   artworksForZoneIn,
   curatorsForArtworkIn,
   findCard,
+  parseArtworkNavScope,
+  type ArtworkNavScope,
 } from "./mappers";
 export type { MappedCatalogue, SearchIndexEntry } from "./types";

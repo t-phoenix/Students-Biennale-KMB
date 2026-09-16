@@ -101,9 +101,10 @@
 .spotlight__attribution {
   margin: 0;
   text-align: right;
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.5;
-  color: #545454;
+  font-weight: 400;
+  color: #9a9598;
 }
 
 .spotlight__body {
