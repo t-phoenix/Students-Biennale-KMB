@@ -5,6 +5,7 @@ import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { HighlightText } from "../components/HighlightText";
+import { FormattedParagraphs } from "../components/FormattedText";
 import {
   getEditionOverview,
   type CuratorBio,
@@ -45,9 +46,11 @@ function CuratorBiosGrid({
             <h4 className="edition-overview__bio-name">
               <HighlightText text={profile.name} query={highlight} />
             </h4>
-            <p className="edition-overview__bio-text fig-body">
-              <HighlightText text={profile.bio} query={highlight} />
-            </p>
+            <FormattedParagraphs
+              text={profile.bio}
+              paragraphClassName="edition-overview__bio-text fig-body"
+              className="edition-overview__bio-body"
+            />
           </div>
         ))}
       </div>

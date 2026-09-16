@@ -168,10 +168,38 @@ export function Detail() {
         : undefined;
     const nextCurator = nextZone?.curators[0];
     const members = zone ? [c, ...zone.curators.filter((x) => x.id !== c.id)] : [c];
-    // Prefer the clicked curator's individual note (Zone 6), else the shared zone note.
-    const noteTitle = c.noteTitle || zone?.noteTitle;
-    const noteAttribution = c.noteAttribution;
-    const noteBody = c.noteBody || zone?.noteBody;
+    // Zone 6 (and any future dual-note zones): show every curator individual note.
+    // Otherwise fall back to the shared zone note.
+    const curatorNotes = (zone?.curators ?? [])
+      .filter((member) => Boolean(member.noteBody?.trim()))
+      .map((member) => ({
+        id: member.id,
+        title: member.noteTitle,
+        attribution: member.noteAttribution,
+        body: member.noteBody as string,
+      }));
+    const notesToShow =
+      curatorNotes.length > 0
+        ? curatorNotes
+        : zone?.noteBody?.trim()
+          ? [
+              {
+                id: zone.id,
+                title: zone.noteTitle,
+                attribution: undefined as string | undefined,
+                body: zone.noteBody,
+              },
+            ]
+          : c.noteBody?.trim()
+            ? [
+                {
+                  id: c.id,
+                  title: c.noteTitle,
+                  attribution: c.noteAttribution,
+                  body: c.noteBody,
+                },
+              ]
+            : [];
 
     return (
       <div ref={root} className="detail">
@@ -204,7 +232,13 @@ export function Detail() {
                   <HighlightText text={member.name} query={highlight} />
                 </h2>
               )}
-              <p className="fig-body">{member.bio ?? member.note}</p>
+              {member.bio?.trim() || member.note?.trim() ? (
+                <FormattedParagraphs
+                  text={member.bio?.trim() || member.note || ""}
+                  paragraphClassName="fig-body"
+                  className="detail__curator-bio"
+                />
+              ) : null}
             </div>
 
             {i === 0 && zone ? (
@@ -221,26 +255,26 @@ export function Detail() {
           </div>
         ))}
 
-        {noteBody ? (
-          <div className="fig-grid detail__section">
-            <p className="fig-label detail__label detail-reveal">Curatorial note</p>
+        {notesToShow.map((note, noteIndex) => (
+          <div key={note.id} className="fig-grid detail__section">
+            <p className="fig-label detail__label detail-reveal">
+              {noteIndex === 0 ? "Curatorial note" : "\u00A0"}
+            </p>
             <div className="fig-c4-9 detail-reveal">
-              {noteTitle ? (
-                <h2 className="detail__note-title">{noteTitle}</h2>
+              {note.title ? (
+                <h2 className="detail__note-title">{note.title}</h2>
               ) : null}
-              {noteAttribution ? (
-                <p className="detail__note-attribution">{noteAttribution}</p>
+              {note.attribution ? (
+                <p className="detail__note-attribution">{note.attribution}</p>
               ) : null}
-              {noteBody ? (
-                <FormattedParagraphs
-                  text={noteBody}
-                  paragraphClassName="fig-body"
-                  className="detail__note-body"
-                />
-              ) : null}
+              <FormattedParagraphs
+                text={note.body}
+                paragraphClassName="fig-body"
+                className="detail__note-body"
+              />
             </div>
           </div>
-        ) : null}
+        ))}
 
         {zone && artworksForZoneIn(catalogue.artworks, zone.id).length ? (
           <div className="fig-grid detail__section">

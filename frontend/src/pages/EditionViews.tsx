@@ -4,6 +4,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { type CuratorCard } from "../data/site";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { CatalogueList } from "../components/CatalogueList";
+import { FormattedParagraphs } from "../components/FormattedText";
 import { useEditionSearch } from "./EditionSearchContext";
 import "./EditionViews.css";
 
@@ -145,7 +146,9 @@ export function CuratorsView() {
                       ) : null}
                     </div>
                     <h3>{c.name}</h3>
-                    {c.bio ? <p>{c.bio}</p> : null}
+                    {c.bio ? (
+                      <FormattedParagraphs text={c.bio} className="curator-panel__bio" />
+                    ) : null}
                   </article>
                 ))}
                 <Link className="curator-panel__more" to={`/editions/${yearId}/artworks`}>

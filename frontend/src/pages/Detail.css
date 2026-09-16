@@ -329,6 +329,17 @@
   font-weight: 500;
 }
 
+.detail__curator-bio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.detail__curator-bio .fig-body {
+  margin: 0;
+  line-height: 1.7;
+}
+
 /* Underline removed and the whole block unified to one colour (secondary
    gray) per client feedback — was black h2 + gray p + black assistant
    label, an unintentional three-tone mix. */

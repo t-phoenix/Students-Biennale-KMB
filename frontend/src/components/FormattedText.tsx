@@ -54,15 +54,15 @@ function renderInline(text: string): ReactNode[] {
     if (part.startsWith("***") && part.endsWith("***") && part.length > 6) {
       return (
         <strong key={i}>
-          <em>{part.slice(3, -3)}</em>
+          <em>{part.slice(3, -3).trim()}</em>
         </strong>
       );
     }
     if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
+      return <strong key={i}>{part.slice(2, -2).trim()}</strong>;
     }
     if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
-      return <em key={i}>{part.slice(1, -1)}</em>;
+      return <em key={i}>{part.slice(1, -1).trim()}</em>;
     }
     return <span key={i}>{part}</span>;
   });
