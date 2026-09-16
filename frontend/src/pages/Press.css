@@ -26,12 +26,20 @@
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   text-transform: uppercase;
-  text-align: left;
+  text-align: right;
 }
 
 .press__meta {
   margin: 0 0 28px;
   text-align: left;
+}
+
+.press__meta .meta-grid__label {
+  text-align: left;
+}
+
+.press__meta .meta-grid__value {
+  text-align: right;
 }
 
 

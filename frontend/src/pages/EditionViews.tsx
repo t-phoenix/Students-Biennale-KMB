@@ -205,10 +205,10 @@ export function ArtworksView() {
               year: a.year,
               image: a.image || a.images?.[0],
               fields: [
-                { label: "Venue :", values: [a.venue] },
-                { label: "Artist :", values: a.artists.map((x) => x.name) },
+                { label: "Venue", values: [a.venue] },
+                { label: "Artist", values: a.artists.map((x) => x.name) },
                 ...(curators.length
-                  ? [{ label: "Curator :", values: curators.map((c) => c.name) }]
+                  ? [{ label: "Curator", values: curators.map((c) => c.name) }]
                   : []),
               ],
               note: a.description,
@@ -275,13 +275,13 @@ export function ArtistsView() {
               year: work?.year,
               image: work?.image || work?.images?.[0],
               fields: [
-                { label: "School :", values: [a.institution] },
+                { label: "School", values: [a.institution] },
                 ...(work
-                  ? [{ label: "Venue :", values: [work.venue] }]
-                  : [{ label: "Zone :", values: [a.zone] }]),
-                { label: "Artist :", values: [a.name] },
+                  ? [{ label: "Venue", values: [work.venue] }]
+                  : [{ label: "Zone", values: [a.zone] }]),
+                { label: "Artist", values: [a.name] },
                 ...(curators.length
-                  ? [{ label: "Curator :", values: curators.map((c) => c.name) }]
+                  ? [{ label: "Curator", values: curators.map((c) => c.name) }]
                   : []),
               ],
               note: work?.description,
@@ -345,7 +345,7 @@ export function VenueView() {
             return {
               title: v.name,
               image: v.image,
-              fields: [{ label: "Address :", values: [v.address] }],
+              fields: [{ label: "Address", values: [v.address] }],
               note: v.description,
               noteHref: `/editions/${yearId}/venue/${v.id}`,
             };

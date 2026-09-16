@@ -34,6 +34,41 @@
   padding: 0;
 }
 
+.canvas-expand__close {
+  position: fixed;
+  top: calc(var(--header-h, var(--nav-height, 72px)) + 24px);
+  right: var(--grid-margin, 24px);
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 50%;
+  color: var(--color-neutral-white);
+  cursor: pointer;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.canvas-expand__close:hover {
+  background: rgba(0, 0, 0, 0.85);
+  border-color: rgba(255, 255, 255, 0.85);
+  transform: scale(1.06);
+}
+
+@media (max-width: 899px) {
+  .canvas-expand__close {
+    top: calc(var(--nav-height-mobile, 56px) + 16px);
+    right: 16px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
 /* Custom non-artwork filler / placeholder / curator expanded state */
 .canvas-expand__custom {
   padding: 64px var(--page-pad);

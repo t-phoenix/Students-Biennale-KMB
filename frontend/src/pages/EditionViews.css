@@ -50,7 +50,8 @@
 }
 
 .edition-search input::placeholder {
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
+  opacity: 1;
 }
 
 .edition-search__clear {
@@ -217,7 +218,7 @@
 .edition-card.edition-card--curator h3 {
   margin: 20px 0 0;
   font-size: var(--type-subtitle-size);
-  font-weight: 400;
+  font-weight: 500;
   line-height: 1.2;
   letter-spacing: 0.055em;
   text-transform: uppercase;

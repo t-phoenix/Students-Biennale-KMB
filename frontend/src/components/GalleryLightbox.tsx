@@ -81,6 +81,28 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
         aria-label="Close image viewer"
         onClick={onClose}
       />
+      <button
+        ref={closeRef}
+        type="button"
+        className="gallery-lightbox__close"
+        aria-label="Close image viewer"
+        onClick={onClose}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+      </button>
       <div
         ref={panelRef}
         className="gallery-lightbox__panel"
@@ -99,9 +121,6 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
             prefetch={images.filter((_, i) => i !== index)}
           />
         </div>
-        <button ref={closeRef} type="button" className="gallery-lightbox__close" aria-label="Close" onClick={onClose}>
-          ✕
-        </button>
         {images.length > 1 ? (
           <>
             <button type="button" className="gallery-lightbox__nav gallery-lightbox__prev" onClick={goPrev} aria-label="Previous image">

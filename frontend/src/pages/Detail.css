@@ -326,6 +326,7 @@
 
 .detail__curator-copy .detail__title {
   margin: 0;
+  font-weight: 500;
 }
 
 /* Underline removed and the whole block unified to one colour (secondary

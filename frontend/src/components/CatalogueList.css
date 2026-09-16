@@ -119,14 +119,16 @@
 .catalogue__preview {
   grid-column: 6 / span 4;
   position: sticky;
-  top: calc(var(--nav-height) + 24px);
+  top: calc(var(--nav-height) + 20px);
   min-width: 0;
-  max-height: calc(100vh - var(--nav-height, 60px) - 48px);
+  height: calc(100dvh - 300px);
+  max-height: calc(100dvh - 300px);
+  min-height: 260px;
   overflow-y: auto;
   overflow-x: hidden;
   padding-left: var(--grid-gutter);
   padding-right: 14px;
-  padding-bottom: 36px;
+  padding-bottom: 96px;
   box-sizing: border-box;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -193,51 +195,42 @@
   white-space: nowrap;
 }
 
-/* Label column is 77px wide in Figma, value starts at 1045 (92px in). */
-.catalogue__preview-meta > div,
-.catalogue__preview-note {
-  display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  column-gap: 0;
-  margin: 0 0 12px;
+.catalogue__preview-meta-wrap {
+  margin: 0 0 24px;
 }
 
-.catalogue__preview-meta dt {
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-  color: var(--color-text-secondary);
+.catalogue__preview-meta {
+  row-gap: 12px;
 }
 
-.catalogue__preview-meta dd {
-  margin: 0;
+.catalogue__preview-values {
   display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+
+.catalogue__preview-value-line {
+  display: block;
+}
+
+.catalogue__preview-note-row .meta-grid__value {
+  padding-left: 8px;
+}
+
+.catalogue__preview-note-content p {
+  margin: 0 0 10px;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
 }
 
-.catalogue__preview-note {
-  margin-top: 20px;
-}
-
-.catalogue__preview-note dd {
-  grid-column: 1 / -1;
-  margin: 12px 0 0;
-}
-
-.catalogue__preview-note p {
-  margin: 0 0 12px;
-  font-size: var(--type-body-size);
-  line-height: var(--type-body-line);
-}
-
-.catalogue__preview-note a {
+.catalogue__preview-note-content a {
   font-size: var(--type-body-size);
   font-style: italic;
   color: var(--color-text-secondary);
+  display: inline-block;
 }
 
-.catalogue__preview-note a:hover {
+.catalogue__preview-note-content a:hover {
   color: var(--color-text-primary);
 }
 
@@ -292,7 +285,7 @@
   margin: 0 0 16px;
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
-  font-weight: var(--type-title-weight);
+  font-weight: 500;
   text-transform: uppercase;
 }
 
@@ -302,8 +295,16 @@
   line-height: var(--type-body-line);
 }
 
+.curator-panel {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 56px;
+}
+
 .curator-panel__more {
   display: inline-block;
+  margin-top: 14px;
+  margin-bottom: 48px;
   font-size: var(--type-body-size);
   font-style: italic;
   color: var(--color-text-secondary);
@@ -323,7 +324,9 @@
   .catalogue__preview {
     position: static;
     margin-top: 40px;
-    max-height: none;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
     overflow-y: visible;
     padding-left: 0;
     padding-right: 0;
