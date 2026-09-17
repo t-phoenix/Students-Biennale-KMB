@@ -55,6 +55,12 @@ export function SplashScreen() {
       introTlRef.current?.kill();
       spinTweenRef.current?.kill();
 
+      // Reveal hero under the splash at the same scale ScrollTrigger will use (1.12),
+      // so the white-flash handoff does not pop the image size.
+      const slidesWrap = document.querySelector<HTMLElement>(".home-hero__slides");
+      if (slidesWrap) {
+        gsap.set(slidesWrap, { scale: 1.12, transformOrigin: "center center" });
+      }
       const firstSlide = document.querySelector<HTMLElement>(".home-hero__slide:first-child");
       if (firstSlide) {
         gsap.set(firstSlide, { opacity: 1, visibility: "visible" });

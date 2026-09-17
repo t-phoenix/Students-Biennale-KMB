@@ -545,7 +545,10 @@ export function Home() {
       // Defer hero entrance until immersive splash finishes (first home visit only).
       // Use opacity (not autoAlpha) so visibility stays visible — browsers may defer
       // decode of visibility:hidden images, which caused post-splash hero lag.
+      // Pre-set the parallax start scale (1.12) under the splash so handoff does not
+      // jump from scale 1 → 1.12 when ScrollTrigger arms.
       if (splashWillShow && !splashCompleted) {
+        gsap.set(".home-hero__slides", { scale: 1.12, transformOrigin: "center center" });
         gsap.set(".home-hero__slide", { opacity: 0, visibility: "visible" });
         gsap.set(
           ".home-hero__card, .home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
@@ -558,6 +561,11 @@ export function Home() {
 
       withMotionPreference({
         animate: () => {
+          // Keep the splash handoff scale continuous — never snap 1 → 1.12 on reveal.
+          if (splashWillShow) {
+            gsap.set(".home-hero__slides", { scale: 1.12, transformOrigin: "center center" });
+          }
+
           // 1. Initial Hero Background & Content Entrance Choreography
           const heroTl = gsap.timeline({
             defaults: { ease: "power3.out" },
@@ -573,8 +581,8 @@ export function Home() {
               {
                 opacity: 1,
                 visibility: "visible",
-                duration: splashWillShow ? 0.2 : 1.2,
-                ease: "power2.out",
+                duration: splashWillShow ? 0.01 : 1.2,
+                ease: "none",
               },
               0
             )
