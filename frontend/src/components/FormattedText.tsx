@@ -9,7 +9,8 @@ type Props = {
 /**
  * Renders markdown-lite used in catalogue notes:
  * - paragraphs separated by blank lines (caller may pre-split)
- * - *italic* / **bold** / ***both***
+ * - *italic* / **bold**
+ * - ***…*** is treated as italic only (Sheets often flags emphasis as bold+italic)
  *
  * Does not change layout — only inline emphasis inside existing type styles.
  */
@@ -60,11 +61,8 @@ function renderInline(text: string): ReactNode[] {
   return parts.map((part, i) => {
     if (!part) return null;
     if (part.startsWith("***") && part.endsWith("***") && part.length > 6) {
-      return (
-        <strong key={i}>
-          <em>{part.slice(3, -3).trim()}</em>
-        </strong>
-      );
+      // Sheets exports title emphasis as bold+italic; render italic only.
+      return <em key={i}>{part.slice(3, -3).trim()}</em>;
     }
     if (part.startsWith("**") && part.endsWith("**") && part.length > 4) {
       return <strong key={i}>{part.slice(2, -2).trim()}</strong>;
