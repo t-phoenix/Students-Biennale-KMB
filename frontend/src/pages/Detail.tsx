@@ -381,7 +381,11 @@ export function Detail() {
                 </a>
               ) : null}
             </p>
-            <p className="fig-body detail__venue-desc">{v.description}</p>
+            <FormattedParagraphs
+              text={v.description}
+              className="detail__venue-desc"
+              paragraphClassName="fig-body"
+            />
           </div>
         </div>
 

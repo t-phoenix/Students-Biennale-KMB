@@ -4,7 +4,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { type CuratorCard } from "../data/site";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { CatalogueList } from "../components/CatalogueList";
-import { FormattedParagraphs } from "../components/FormattedText";
+import { FormattedParagraphs, stripMarkdownLite } from "../components/FormattedText";
 import { useEditionSearch } from "./EditionSearchContext";
 import "./EditionViews.css";
 
@@ -357,10 +357,9 @@ export function VenueView() {
       ) : (
         <div className="edition-venue-rows">
           {catalogue.venues.map((v) => {
+            const plain = stripMarkdownLite(v.description);
             const blurb =
-              v.description.length > 280
-                ? `${v.description.slice(0, 280).trimEnd()}…`
-                : v.description;
+              plain.length > 280 ? `${plain.slice(0, 280).trimEnd()}…` : plain;
             return (
               <article key={v.id} className="edition-venue">
                 <div className="edition-venue__media">

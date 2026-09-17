@@ -459,6 +459,13 @@
 
 .detail__venue-desc {
   margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2em;
+}
+
+.detail__venue-desc p {
+  margin: 0;
 }
 
 .detail__venue-links {

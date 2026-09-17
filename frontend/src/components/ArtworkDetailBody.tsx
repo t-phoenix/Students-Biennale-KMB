@@ -6,6 +6,7 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { CarouselNavArrows } from "./CarouselNavArrows";
+import { FormattedParagraphs } from "./FormattedText";
 import { GalleryLightbox } from "./GalleryLightbox";
 import { HighlightText } from "./HighlightText";
 import { PreloadedImage } from "./PreloadedImage";
@@ -193,11 +194,10 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
       {a.description?.trim() ? (
         <div className="fig-grid detail__section">
           <p className="fig-label fig-subheading detail__label detail-reveal">Description</p>
-          <div className="fig-c4-9 fig-body detail-reveal detail__desc">
-            {a.description.split(/\n\n+/).map((para, i) => (
-              <p key={`${i}-${para.slice(0, 48)}`}>{para}</p>
-            ))}
-          </div>
+          <FormattedParagraphs
+            text={a.description}
+            className="fig-c4-9 fig-body detail-reveal detail__desc"
+          />
         </div>
       ) : null}
 

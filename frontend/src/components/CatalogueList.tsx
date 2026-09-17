@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { FormattedParagraphs } from "./FormattedText";
 import { MetaGrid, MetaRow } from "./MetaGrid";
 import "./CatalogueList.css";
 
@@ -163,7 +164,7 @@ export function CatalogueList({
                       className="catalogue__preview-note-row"
                       value={
                         <div className="catalogue__preview-note-content">
-                          <p>{preview.note}</p>
+                          <FormattedParagraphs text={preview.note} />
                           {preview.noteHref ? (
                             <Link to={preview.noteHref}>Read More...</Link>
                           ) : null}

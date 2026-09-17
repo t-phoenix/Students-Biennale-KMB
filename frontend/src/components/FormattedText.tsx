@@ -42,6 +42,14 @@ export function FormattedParagraphs({
   );
 }
 
+/** Strip markdown-lite markers for truncated plain-text previews. */
+export function stripMarkdownLite(text: string): string {
+  return text
+    .replace(/\*\*\*([^*\n]+?)\*\*\*/g, "$1")
+    .replace(/\*\*([^*\n]+?)\*\*/g, "$1")
+    .replace(/(?<!\*)\*([^*\n]+?)\*(?!\*)/g, "$1");
+}
+
 const TOKEN =
   /(\*\*\*[^*\n]+?\*\*\*|\*\*[^*\n]+?\*\*|\*[^*\n]+?\*)/g;
 
