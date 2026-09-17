@@ -1,5 +1,5 @@
 import { isSupabaseConfigured, supabase } from "../supabase";
-import { preloadUrl } from "../preloadImages";
+import { preloadUrl, preloadUrlsConcurrent, whenIdle } from "../preloadImages";
 import type { HomeCms, HomeCover, HomeUpdateCard } from "./types";
 
 const STORAGE_KEY = "sb-home-cms-v3";
@@ -42,11 +42,18 @@ function writeSession(data: HomeCms) {
   }
 }
 
+/** Preload the LCP hero immediately; defer secondary covers/cards to idle. */
 function preloadCmsImages(data: HomeCms) {
-  for (const cover of data.covers) preloadUrl(cover.image_url);
-  for (const card of data.cards) {
-    if (card.image_url) preloadUrl(card.image_url);
-  }
+  const [primary, ...rest] = data.covers;
+  if (primary?.image_url) void preloadUrl(primary.image_url, "high");
+
+  whenIdle(() => {
+    const secondary = [
+      ...rest.map((cover) => cover.image_url),
+      ...data.cards.map((card) => card.image_url).filter((url): url is string => Boolean(url)),
+    ];
+    void preloadUrlsConcurrent(secondary, "low", 2);
+  }, 3500);
 }
 
 async function fetchHomeCms(): Promise<HomeCms> {
@@ -79,90 +86,11 @@ async function fetchHomeCms(): Promise<HomeCms> {
   };
 }
 
-const LOCAL_FALLBACK_HOME_CMS: HomeCms = {
-  covers: [
-    {
-      id: "cover-1",
-      image_url: "/home/hero.jpg",
-      artwork_name: "Echoes of Silence",
-      artist: "Ananya Sharma",
-      institution: "Faculty of Fine Arts, MSU Baroda",
-      show_artwork_name: true,
-      show_artist: true,
-      show_institution: true,
-    },
-    {
-      id: "cover-2",
-      image_url: "/home/sensing-wide.jpg",
-      artwork_name: "Tide Lines & Salt Horizons",
-      artist: "Rohan Varma",
-      institution: "Government College of Fine Arts, Thrissur",
-      show_artwork_name: true,
-      show_artist: true,
-      show_institution: true,
-    },
-    {
-      id: "cover-3",
-      image_url: "/home/sensing-side.jpg",
-      artwork_name: "Urban Archeologies",
-      artist: "Priyanka Sen",
-      institution: "Kala Bhavana, Visva-Bharati, Santiniketan",
-      show_artwork_name: true,
-      show_artist: true,
-      show_institution: true,
-    },
-  ],
-  cards: [
-    {
-      id: "card-1",
-      slot: 1,
-      heading: "Students' Biennale 2025–26 Open Call",
-      body: "Applications are now invited for the 7th edition of Students' Biennale across 7 historic venues in Fort Kochi and Mattancherry.",
-      detail_body: "The 2025-26 edition invites emerging practitioners from art schools across the country to participate in an expansive curatorial framework.",
-      image_url: "/home/press-featured.jpg",
-      link_url: "/programmes",
-      link_external: false,
-      link_label: "Explore Programmes",
-      link_target_kind: "programmes",
-      link_target_id: "upcoming",
-      card_type: "internal",
-    },
-    {
-      id: "card-2",
-      slot: 2,
-      heading: "Raza-Students' Biennale Scholarship",
-      body: "Two student artists selected for the reciprocal France–India exchange residency at Beaux-Arts de Marseille.",
-      detail_body: "A two-phase exchange model building sustained dialogue between India and France in collaboration with the Raza Foundation.",
-      image_url: "/home/thumb-awards.jpg",
-      link_url: "/programmes/raza-scholarship",
-      link_external: false,
-      link_label: "View Scholars",
-      link_target_kind: "programmes",
-      link_target_id: "raza",
-      card_type: "internal",
-    },
-    {
-      id: "card-3",
-      slot: 3,
-      heading: "Critical Writing & Curation Workshops",
-      body: "Upcoming series of intensive national workshops led by prominent educators and cultural theorists.",
-      detail_body: "Hands-on workshops spanning Delhi, Jaipur, Goa, and Baroda focusing on experimental pedagogy and exhibition-making.",
-      image_url: "/home/thumb-workshops.jpg",
-      link_url: "/programmes/past-workshops",
-      link_external: false,
-      link_label: "View Workshops",
-      link_target_kind: "programmes",
-      link_target_id: "workshops",
-      card_type: "internal",
-    },
-  ],
-};
-
 export function peekHomeCms(): HomeCms | null {
   return memory ?? readSession();
 }
 
-/** Fetch hero rows and start decoding every image immediately. */
+/** Fetch hero rows. Images come only from CMS / Storage — no local image pack. */
 export function loadHomeCms(): Promise<HomeCms> {
   const cached = peekHomeCms();
   if (cached && (cached.covers.length > 0 || cached.cards.length > 0)) {
@@ -170,22 +98,21 @@ export function loadHomeCms(): Promise<HomeCms> {
   }
 
   if (!isSupabaseConfigured || !supabase) {
-    memory = cached && (cached.covers.length > 0 || cached.cards.length > 0) ? cached : LOCAL_FALLBACK_HOME_CMS;
-    preloadCmsImages(memory);
+    memory = cached ?? { covers: [], cards: [] };
+    if (memory.covers.length || memory.cards.length) preloadCmsImages(memory);
     return Promise.resolve(memory);
   }
   if (!inflight) {
     inflight = fetchHomeCms()
       .then((data) => {
-        const finalData = data.covers.length > 0 || data.cards.length > 0 ? data : LOCAL_FALLBACK_HOME_CMS;
-        memory = finalData;
-        writeSession(finalData);
-        preloadCmsImages(finalData);
-        return finalData;
+        memory = data;
+        writeSession(data);
+        if (data.covers.length || data.cards.length) preloadCmsImages(data);
+        return data;
       })
       .catch(() => {
         if (cached) return cached;
-        return LOCAL_FALLBACK_HOME_CMS;
+        return { covers: [], cards: [] };
       })
       .finally(() => {
         inflight = null;
@@ -209,5 +136,3 @@ export async function refreshHomeCms(): Promise<HomeCms> {
   inflight = null;
   return loadHomeCms();
 }
-
-void loadHomeCms();

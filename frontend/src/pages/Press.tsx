@@ -4,15 +4,13 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { usePressItems } from "../lib/pressCms";
-import { DEFAULT_PRESS_ITEMS } from "../data/press";
 import "./Press.css";
 
 export function Press() {
   const root = useRef<HTMLDivElement>(null);
   const featureRef = useRef<HTMLElement>(null);
   const [params, setParams] = useSearchParams();
-  const { items: cmsPressItems } = usePressItems();
-  const articles = cmsPressItems.length > 0 ? cmsPressItems : DEFAULT_PRESS_ITEMS;
+  const { items: articles } = usePressItems();
   const [hoveredArticleId, setHoveredArticleId] = useState<string>("");
 
   const articleId = params.get("article") ?? articles[0]?.id;

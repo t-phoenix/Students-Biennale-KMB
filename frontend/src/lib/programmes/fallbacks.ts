@@ -1,12 +1,11 @@
-import {
-  AWARDS_INTERNATIONAL,
-  AWARDS_NATIONAL,
-  PAST_WORKSHOPS,
-  RAZA_SCHOLAR_ARTWORKS,
-  RAZA_SCHOLARS,
-} from "../../data/site";
-import type { AwardWinnerCard, MappedProgrammes, ResidencyProgramme, UpcomingWorkshop } from "./types";
+import { RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../../data/site";
+import type { MappedProgrammes } from "./types";
 
+/**
+ * Hardcoded Raza scholarship copy used when the CMS has no raza programme body.
+ * Scholar portrait paths under /programmes/raza-* are intentional frontend assets
+ * (no dedicated CMS image fields for this block yet).
+ */
 export const DEFAULT_RAZA = {
   title: "RAZA - STUDENTS' BIENNALE SCHOLARSHIP",
   subtitle: "STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE",
@@ -21,91 +20,25 @@ export const DEFAULT_RAZA = {
   ],
 };
 
-const DEFAULT_INTL_AWARDS: AwardWinnerCard[] = AWARDS_INTERNATIONAL.map((w) => ({
-  id: w.artworkId,
-  name: w.name,
-  artwork: w.artwork,
-  institution: w.institution,
-  artworkId: w.artworkId,
-  image: "/home/thumb-awards.jpg",
-  artists: [{ name: w.name, institution: w.institution }],
-}));
-
-const DEFAULT_NATIONAL_AWARDS: AwardWinnerCard[] = AWARDS_NATIONAL.map((w) => ({
-  id: w.artworkId,
-  name: w.name,
-  artwork: w.artwork,
-  institution: w.institution,
-  artworkId: w.artworkId,
-  image: "/home/thumb-awards.jpg",
-  artists: [{ name: w.name, institution: w.institution }],
-}));
-
-const DUMMY_UPCOMING_WORKSHOPS: UpcomingWorkshop[] = [
-  {
-    id: "ws-1",
-    slug: "sukanya-deb-delhi",
-    title: "How to not answer a phone call?",
-    date: "12 - 14 March 2026",
-    place: "New Delhi",
-    blurb: "Critical writing, voice, and conversational methodologies with Merv Espina and Sukanya Deb.",
-    image: "/home/thumb-workshops.jpg",
-  },
-  {
-    id: "ws-2",
-    slug: "savyasachi-1-jaipur",
-    title: "Subverting Failures: Material Experiments",
-    date: "20 - 22 April 2026",
-    place: "Jaipur",
-    blurb: "Sculptural processes, material breakdowns, and casting with Priyesh Gothwal.",
-    image: "/home/sensing-side.jpg",
-  },
-];
-
-const DUMMY_RESIDENCIES: ResidencyProgramme[] = [
-  {
-    id: "res-1",
-    slug: "marseille-exchange",
-    title: "France–India Student Residency Exchange",
-    host: "Beaux-Arts de Marseille & KBF",
-    period: "January – April 2026",
-    venue: "Marseille, France",
-    awardees: "Rutuja Sonawane & Mohammad Riyaz",
-    copy: "A reciprocal semester-long intensive research and studio residency in southern France.",
-    description: "Supported by the French Institute in India (IFI), the Raza Foundation, and Beaux-Arts de Marseille.",
-    heroImage: "/home/thumb-residencies.jpg",
-    galleryImages: [
-      "/home/thumb-residencies.jpg",
-      "/home/sensing-wide.jpg",
-      "/home/press-featured.jpg",
-    ],
-    moreHref: "/programmes/raza-scholarship",
-  },
-];
-
-/** Local fallback programmes payload when CMS is unconfigured or has no published rows. */
-export const LOCAL_FALLBACK_PROGRAMMES: MappedProgrammes = {
-  upcomingWorkshops: DUMMY_UPCOMING_WORKSHOPS,
-  pastWorkshops: PAST_WORKSHOPS,
-  awardsInternational: DEFAULT_INTL_AWARDS,
-  awardsNational: DEFAULT_NATIONAL_AWARDS,
+/** Empty programmes payload — CMS is the only source for workshops/residencies/awards media. */
+export const EMPTY_PROGRAMMES: MappedProgrammes = {
+  upcomingWorkshops: [],
+  pastWorkshops: [],
+  awardsInternational: [],
+  awardsNational: [],
   raza: DEFAULT_RAZA,
-  residencies: DUMMY_RESIDENCIES,
+  residencies: [],
 };
 
-export const EMPTY_PROGRAMMES: MappedProgrammes = LOCAL_FALLBACK_PROGRAMMES;
+/** @deprecated Prefer EMPTY_PROGRAMMES. */
+export const LOCAL_FALLBACK_PROGRAMMES = EMPTY_PROGRAMMES;
+/** @deprecated Prefer EMPTY_PROGRAMMES. */
+export const FALLBACK_PROGRAMMES = EMPTY_PROGRAMMES;
 
 export { RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS };
 
 /** Old mock workshop ids → live slugs, so existing links still resolve. */
 export const LEGACY_WORKSHOP_IDS: Record<string, string> = {
-  "phone-call": "sukanya-deb-delhi",
-  "subverting-failures": "savyasachi-1-jaipur",
-  "uncertainties-welcomed": "savyasachi-2-goa",
-  "editing-as-meaning-making": "savyasachi-3-baroda",
-  "jorahaal-forest": "anga-art-collective",
+  "ws-1": "sukanya-deb-delhi",
+  "ws-2": "savyasachi-1-jaipur",
 };
-
-/** @deprecated Use LOCAL_FALLBACK_PROGRAMMES for fallback CMS state. */
-export const FALLBACK_PROGRAMMES = LOCAL_FALLBACK_PROGRAMMES;
-

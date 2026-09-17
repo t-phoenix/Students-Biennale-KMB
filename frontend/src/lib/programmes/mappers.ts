@@ -13,7 +13,7 @@ import type {
   UpcomingWorkshop,
 } from "./types";
 
-const AWARD_FALLBACK_IMAGE = "/programmes/award.jpg";
+const AWARD_FALLBACK_IMAGE = "";
 const RAZA_SUBTITLE = "STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE";
 const RAZA_PHOTOS: Record<string, string> = {
   "kaki-weiss": "/programmes/raza-kaki-weiss.jpg",

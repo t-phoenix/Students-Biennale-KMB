@@ -6,6 +6,3 @@ export interface ProgrammesCover {
 }
 
 export type ProgrammesCmsStatus = "loading" | "ready";
-
-export const PROGRAMMES_HERO_FALLBACK = "/programmes/hero.jpg";
-export const HOME_PROGRAMMES_BANNER_FALLBACK = "/home/programmes-banner.jpg";

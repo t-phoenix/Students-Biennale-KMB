@@ -40,6 +40,8 @@ export function Layout() {
       lenis.raf(time * 1000);
     };
     gsap.ticker.add(updateTicker);
+    // Keep lagSmoothing disabled so Lenis stays locked to the GSAP ticker.
+    // Re-enable (e.g. lagSmoothing(500, 33)) only after A/B verifying scroll feel.
     gsap.ticker.lagSmoothing(0);
 
     const onScroll = () => {

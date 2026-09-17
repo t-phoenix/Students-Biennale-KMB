@@ -12,7 +12,7 @@ import { ScholarSpotlight } from "../components/ScholarSpotlight";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
-import { DEFAULT_RAZA, EMPTY_PROGRAMMES } from "../lib/programmes/fallbacks";
+import { DEFAULT_RAZA } from "../lib/programmes/fallbacks";
 import { LATEST_EDITION } from "../data/site";
 import "./Programmes.css";
 
@@ -33,10 +33,8 @@ export function Programmes() {
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
   const awardsPreviewCount = 3;
-  const intlAwardsEffective =
-    awardsInternational.length > 0 ? awardsInternational : EMPTY_PROGRAMMES.awardsInternational;
-  const nationalAwardsEffective =
-    awardsNational.length > 0 ? awardsNational : EMPTY_PROGRAMMES.awardsNational;
+  const intlAwardsEffective = awardsInternational;
+  const nationalAwardsEffective = awardsNational;
 
   const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
   const standardIntlAwards = useMemo(
@@ -51,37 +49,6 @@ export function Programmes() {
     ? nationalAwardsEffective
     : nationalAwardsEffective.slice(0, awardsPreviewCount);
 
-  const razaAwardCards = [
-    {
-      id: "kaki-weiss",
-      name: "Kaki Weiss",
-      artwork: "Tabut",
-      institution: "Beaux Arts de Marseille, France",
-      image: "/programmes/raza-kaki-weiss.jpg",
-    },
-    {
-      id: "nina-durel",
-      name: "Nina Durel",
-      artwork: "Inseamm",
-      institution: "Beaux Arts de Marseille, France",
-      image: "/programmes/raza-nina-durel.jpg",
-    },
-    {
-      id: "rutuja-sonawane",
-      name: "Rutuja Sonawane",
-      artwork: "The People’s Orchestra",
-      institution: "Sir J. J. School of Art, Mumbai, Maharashtra",
-      image: "/programmes/raza-rutuja-sonawane.jpg",
-    },
-    {
-      id: "mohammad-riyaz",
-      name: "Mohammad Riyaz",
-      artwork: "Inheritance of the hand",
-      institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh",
-      image: "/programmes/raza-mohammad-riyaz.jpg",
-    },
-  ];
-
   const razaEffective = {
     title: raza.title || DEFAULT_RAZA.title,
     subtitle: raza.subtitle || DEFAULT_RAZA.subtitle,
@@ -89,6 +56,36 @@ export function Programmes() {
     scholars: raza.scholars?.length ? raza.scholars : DEFAULT_RAZA.scholars,
     closing: raza.closing?.length ? raza.closing : DEFAULT_RAZA.closing,
   };
+
+  const razaAwardCards = [
+    {
+      id: "kaki-weiss",
+      name: "Kaki Weiss",
+      artwork: "Tabut",
+      institution: "Beaux Arts de Marseille, France",
+    },
+    {
+      id: "nina-durel",
+      name: "Nina Durel",
+      artwork: "Inseamm",
+      institution: "Beaux Arts de Marseille, France",
+    },
+    {
+      id: "rutuja-sonawane",
+      name: "Rutuja Sonawane",
+      artwork: "The People’s Orchestra",
+      institution: "Sir J. J. School of Art, Mumbai, Maharashtra",
+    },
+    {
+      id: "mohammad-riyaz",
+      name: "Mohammad Riyaz",
+      artwork: "Inheritance of the hand",
+      institution: "Govt. Institute of Fine Arts, Gwalior, Madhya Pradesh",
+    },
+  ].map((card) => ({
+    ...card,
+    image: razaEffective.scholars.find((s) => s.id === card.id)?.image || "",
+  }));
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -343,7 +340,7 @@ export function Programmes() {
                 to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`}
               >
                 <div className="programmes__award-media">
-                  <img src={a.image || "/programmes/award.jpg"} alt="" />
+                  {a.image ? <img src={a.image} alt="" /> : null}
                 </div>
                 <h3>
                   {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
@@ -420,7 +417,7 @@ export function Programmes() {
                 to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`}
               >
                 <div className="programmes__award-media">
-                  <img src={a.image || "/programmes/award.jpg"} alt="" />
+                  {a.image ? <img src={a.image} alt="" /> : null}
                 </div>
                 <h3>
                   {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}

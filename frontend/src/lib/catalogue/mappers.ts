@@ -7,13 +7,6 @@ import {
   type CuratorZone,
   type VenueCard,
 } from "../../data/site";
-import {
-  ARTISTS as LOCAL_FALLBACK_ARTISTS,
-  ARTWORKS as LOCAL_FALLBACK_ARTWORKS,
-  CURATOR_ZONES as LOCAL_FALLBACK_ZONES,
-  CURATORS as LOCAL_FALLBACK_CURATORS,
-  VENUES as LOCAL_FALLBACK_VENUES,
-} from "../../data/archive/catalogueLocalFallback";
 import { getEditionSearchTags, mergeTagSearchIndex, searchIndexFromTags } from "../../data/editions";
 import { taggedText } from "./search";
 
@@ -350,12 +343,6 @@ export function emptyEditionCatalogue(years: string, number: number): MappedCata
   const tags = getEditionSearchTags(years);
   const searchIndex = searchIndexFromTags(years, tags);
   const isCurrent = years === LATEST_EDITION.id;
-  const staticHero = isCurrent ? "/home/hero.jpg" : years === "2014-15" ? "/editions/2014-15/hero.jpg" : null;
-  const staticHeroUrls = isCurrent
-    ? ["/home/hero.jpg", "/home/sensing-wide.jpg", "/home/sensing-side.jpg"]
-    : staticHero
-      ? [staticHero]
-      : [];
 
   return {
     editionId: `edition-${years}`,
@@ -363,22 +350,18 @@ export function emptyEditionCatalogue(years: string, number: number): MappedCata
     number,
     title: tags.title || (isCurrent ? "Students' Biennale 2025–26" : "Students' Biennale"),
     slug: years,
-    overview: isCurrent
-      ? "Sensing Grounds explores regional ecologies, pedagogical experiments, and site-specific inquiries across 7 distinct curatorial zones in Fort Kochi and Mattancherry."
-      : null,
-    overallCuratorialNote: isCurrent
-      ? "Sensing Grounds proposes that art-making and curatorial practice cannot be separated from the environments, ecologies, and communities in which they are embedded. Across seven distinct curatorial zones, student artists and curators engage with the urgent questions of our time."
-      : null,
+    overview: null,
+    overallCuratorialNote: null,
     isCurrent,
-    heroUrl: staticHero,
-    heroUrls: staticHeroUrls,
-    galleryUrls: isCurrent ? ["/home/hero.jpg", "/home/sensing-wide.jpg", "/home/sensing-side.jpg"] : [],
+    heroUrl: null,
+    heroUrls: [],
+    galleryUrls: [],
     sections: [],
-    zones: isCurrent ? LOCAL_FALLBACK_ZONES : [],
-    curators: isCurrent ? LOCAL_FALLBACK_CURATORS : [],
-    artworks: isCurrent ? LOCAL_FALLBACK_ARTWORKS : [],
-    artists: isCurrent ? LOCAL_FALLBACK_ARTISTS : [],
-    venues: isCurrent ? LOCAL_FALLBACK_VENUES : [],
+    zones: [],
+    curators: [],
+    artworks: [],
+    artists: [],
+    venues: [],
     institutions: tags.institutions,
     searchIndex: mergeTagSearchIndex({
       years,

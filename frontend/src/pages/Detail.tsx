@@ -215,7 +215,7 @@ export function Detail() {
             >
               {member.image ? (
                 <img
-                  src={`${member.image}?v=3`}
+                  src={`${member.image}?v=4`}
                   alt=""
                   style={{ objectPosition: member.focus ?? "center bottom" }}
                 />

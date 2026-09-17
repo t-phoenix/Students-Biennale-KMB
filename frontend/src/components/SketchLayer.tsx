@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import { subscribeLenis } from '../lib/lenisSingleton';
 import './SketchLayer.css';
 
 type SketchMode = 'navigate' | 'nudge' | 'sketch' | 'drawing';
@@ -368,14 +369,15 @@ export function SketchLayer() {
 
     window.addEventListener('resize', resizeCanvas);
     window.addEventListener('scroll', scheduleRedraw, { passive: true });
-    // Lenis mounts asynchronously in Layout.tsx - poll briefly for it and hook its scroll event too
+
     let unhookLenis: (() => void) | undefined;
-    const lenisCheck = window.setInterval(() => {
-      const lenis = (window as unknown as { __lenis?: { on: (e: string, cb: () => void) => void; off: (e: string, cb: () => void) => void } }).__lenis;
-      if (!lenis || unhookLenis) return;
+    const unsubscribeLenis = subscribeLenis((lenis) => {
+      unhookLenis?.();
+      unhookLenis = undefined;
+      if (!lenis) return;
       lenis.on('scroll', scheduleRedraw);
       unhookLenis = () => lenis.off('scroll', scheduleRedraw);
-    }, 500);
+    });
 
     const tick = () => {
       const m = modeRef.current;
@@ -539,7 +541,7 @@ export function SketchLayer() {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('scroll', scheduleRedraw);
-      window.clearInterval(lenisCheck);
+      unsubscribeLenis();
       unhookLenis?.();
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);

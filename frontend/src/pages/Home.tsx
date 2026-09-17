@@ -27,11 +27,11 @@ import {
 } from "../lib/homeCms/updateCardLinks";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { prefetchHomeDestinations } from "../lib/predictivePrefetch";
+import { ensureLcpImagePreload } from "../lib/preloadImages";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
-import { DEFAULT_PRESS_ITEMS } from "../data/press";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -40,15 +40,45 @@ function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
   return "content";
 }
 
-/** Continuous auto-scroll strip, right→left, in the Sensing Grounds row. */
-const SENSING_STRIP_IMAGES = [
-  "/home/sensing-wide.jpg",
-  "/home/sensing-side.jpg",
-  "/artworks/absence.jpg",
-  "/artworks/panopticon.jpg",
-  "/artworks/dar-dara-dariya.jpg",
-  "/artworks/milk-distributors.jpg",
-];
+/** Prefer catalogue covers for the Sensing Grounds strip; no local media pack. */
+function sensingStripFromCatalogue(
+  artworks: { image?: string }[] | undefined,
+  limit = 8,
+): string[] {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+  for (const artwork of artworks ?? []) {
+    const src = artwork.image?.trim();
+    if (!src || seen.has(src)) continue;
+    seen.add(src);
+    urls.push(src);
+    if (urls.length >= limit) break;
+  }
+  return urls;
+}
+
+/** Parse catalogue team markdown (`- Role: Name`) into Home about-team columns. */
+function teamColsFromBody(body: string | null | undefined): typeof TEAM_COLS | null {
+  if (!body?.trim()) return null;
+  const byRole = new Map<string, string[]>();
+  for (const line of body.split("\n")) {
+    const match = line.trim().match(/^-?\s*(.+?):\s*(.+)\s*$/);
+    if (!match) continue;
+    const role = match[1].trim();
+    const name = match[2].trim();
+    if (!role || !name) continue;
+    const list = byRole.get(role) ?? [];
+    list.push(name);
+    byRole.set(role, list);
+  }
+  if (!byRole.size) return null;
+  const entries = [...byRole.entries()].map(([role, people]) => [role, ...people] as const);
+  const cols: (readonly (readonly string[])[])[] = [[], [], []];
+  entries.forEach((entry, i) => {
+    cols[i % 3] = [...cols[i % 3], entry];
+  });
+  return cols.filter((col) => col.length > 0) as unknown as typeof TEAM_COLS;
+}
 
 export function Home() {
   const navigate = useNavigate();
@@ -107,8 +137,7 @@ export function Home() {
     useProgrammes();
   const { homeBannerUrl } = useProgrammesCovers();
   const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
-  const { items: cmsPressItems } = usePressItems();
-  const pressItems = cmsPressItems.length > 0 ? cmsPressItems : DEFAULT_PRESS_ITEMS;
+  const { items: pressItems } = usePressItems();
   const covers = dynamicCovers;
   const cards: ActiveUpdateCard[] = cmsCards.map((c) => {
     const mode = normalizeCardMode(c.card_type);
@@ -137,10 +166,10 @@ export function Home() {
   const creditInst = (currentCover?.institution ?? "").trim();
   const showCredits = showArtwork || showArtist || showInstitution;
   const workshopThumb =
-    upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "/home/thumb-workshops.jpg";
-  const residencyThumb = residencies[0]?.heroImage || "/home/thumb-residencies.jpg";
+    upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "";
+  const residencyThumb = residencies[0]?.heroImage || "";
   const awardsThumb =
-    awardsInternational[0]?.image || awardsNational[0]?.image || "/home/thumb-awards.jpg";
+    awardsInternational[0]?.image || awardsNational[0]?.image || "";
   const yearId = current?.years ?? LATEST_EDITION.id;
   const overviewParas = (current?.overview || `${EDITION_SHORT}\n\n${EDITION_MORE}`)
     .split("\n\n")
@@ -154,10 +183,25 @@ export function Home() {
         paragraphs: current.overallCuratorialNote.split("\n\n").filter(Boolean),
       }
     : SENSING_GROUNDS_NOTE;
+  const sensingStripImages = sensingStripFromCatalogue(current?.artworks);
+  const aboutTeamCols = teamColsFromBody(current?.teamBody) ?? TEAM_COLS;
+  const sensingModalCol1 =
+    sensingNote.paragraphs.length > 0
+      ? sensingNote.paragraphs.slice(0, Math.ceil(sensingNote.paragraphs.length / 2))
+      : (SENSING_GROUNDS_NOTE.paragraphsCol1 ?? []);
+  const sensingModalCol2 =
+    sensingNote.paragraphs.length > 0
+      ? sensingNote.paragraphs.slice(Math.ceil(sensingNote.paragraphs.length / 2))
+      : (SENSING_GROUNDS_NOTE.paragraphsCol2 ?? []);
 
   useEffect(() => {
     prefetchHomeDestinations(current ?? null);
   }, [current]);
+
+  useEffect(() => {
+    const first = covers[0]?.image_url;
+    if (first) ensureLcpImagePreload(first);
+  }, [covers]);
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -215,7 +259,7 @@ export function Home() {
   useGSAP(
     () => {
       const track = sensingTrackRef.current;
-      if (!track || prefersReducedMotion()) return;
+      if (!track || prefersReducedMotion() || sensingStripImages.length === 0) return;
 
       const tween = gsap.to(track, {
         xPercent: -50,
@@ -237,7 +281,7 @@ export function Home() {
         tween.kill();
       };
     },
-    { scope: rootRef }
+    { scope: rootRef, dependencies: [sensingStripImages.join("|")] }
   );
 
   // Upcoming Programmes — hovering a rail label or its thumbnail grows that
@@ -686,15 +730,15 @@ export function Home() {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
-          {covers.map((c) => (
+          {covers.map((c, index) => (
             <img
               key={c.id}
               className="home-hero__slide home-hero__bg"
               src={c.image_url}
               alt={c.artwork_name ?? ""}
-              loading="eager"
+              loading={index === 0 ? "eager" : "lazy"}
               decoding="async"
-              fetchPriority="high"
+              fetchPriority={index === 0 ? "high" : "low"}
             />
           ))}
         </div>
@@ -887,13 +931,15 @@ export function Home() {
               </Link>
             </nav>
             <div className="home-sensing__scroll fig-c4-12" data-no-parallax="true">
-              <div ref={sensingTrackRef} className="home-sensing__scroll-track" data-no-parallax="true">
-                {[...SENSING_STRIP_IMAGES, ...SENSING_STRIP_IMAGES].map((src, i) => (
-                  <div className="home-sensing__scroll-item" key={`${src}-${i}`} data-no-parallax="true">
-                    <img src={src} alt="" data-no-parallax="true" />
-                  </div>
-                ))}
-              </div>
+              {sensingStripImages.length > 0 ? (
+                <div ref={sensingTrackRef} className="home-sensing__scroll-track" data-no-parallax="true">
+                  {[...sensingStripImages, ...sensingStripImages].map((src, i) => (
+                    <div className="home-sensing__scroll-item" key={`${src}-${i}`} data-no-parallax="true">
+                      <img src={src} alt="" data-no-parallax="true" />
+                    </div>
+                  ))}
+                </div>
+              ) : null}
             </div>
           </div>
           <div className="fig-grid home-sensing__cta">
@@ -914,12 +960,12 @@ export function Home() {
         >
           <div className="spotlight__body--split fig-sub-2">
             <div className="spotlight__column">
-              {(SENSING_GROUNDS_NOTE.paragraphsCol1 ?? sensingNote.paragraphs.slice(0, 2)).map((p) => (
+              {sensingModalCol1.map((p) => (
                 <p key={p.slice(0, 48)}>{p}</p>
               ))}
             </div>
             <div className="spotlight__column">
-              {(SENSING_GROUNDS_NOTE.paragraphsCol2 ?? sensingNote.paragraphs.slice(2)).map((p) => (
+              {sensingModalCol2.map((p) => (
                 <p key={p.slice(0, 48)}>{p}</p>
               ))}
             </div>
@@ -937,11 +983,13 @@ export function Home() {
           <div className="fig-grid home-programmes__top">
             <h2 className="fig-label fig-heading">PROGRAMMES</h2>
             <div className="home-programmes__banner fig-c4-12" data-no-parallax="true">
-              <img
-                src={homeBannerUrl || "/home/programmes-banner.jpg"}
-                alt=""
-                data-no-parallax="true"
-              />
+              {homeBannerUrl ? (
+                <img
+                  src={homeBannerUrl}
+                  alt=""
+                  data-no-parallax="true"
+                />
+              ) : null}
             </div>
           </div>
           <div className="fig-grid home-programmes__bottom">
@@ -1157,7 +1205,7 @@ export function Home() {
               2025-26 TEAM
             </h3>
             <div className="home-about__team-cols fig-c4-12 fig-sub-3">
-              {TEAM_COLS.map((col, i) => (
+              {aboutTeamCols.map((col, i) => (
                 <div key={i}>
                   {col.map(([role, ...people]) => (
                     <div key={role} className="home-about__role">

@@ -88,19 +88,9 @@ type CanvasDraft = Omit<CanvasItem, "x" | "y" | "width" | "height" | "col"> & {
   imageH?: number;
 };
 
-/** Measured natural dimensions for assets under /public. */
-const IMAGE_NATURAL: Record<string, { w: number; h: number }> = {
-  "/curators/anga.png": { w: 1600, h: 1067 },
-  "/curators/ashok.png": { w: 1500, h: 1600 },
-  "/curators/chinar.png": { w: 1204, h: 1600 },
-  "/curators/gabaa.png": { w: 1600, h: 1067 },
-  "/curators/salman.png": { w: 960, h: 1280 },
-  "/curators/savyasachi.png": { w: 1600, h: 1064 },
-  "/curators/secular.png": { w: 1600, h: 1280 },
-  "/curators/seethal.png": { w: 1242, h: 1600 },
-  "/curators/sudheesh.png": { w: 1067, h: 1600 },
-  "/curators/sukanya.png": { w: 1501, h: 1600 },
-};
+/** Measured natural dimensions for local static assets under /public (brand/UI only).
+ *  Catalogue / CMS media ships width/height on the card when available. */
+const IMAGE_NATURAL: Record<string, { w: number; h: number }> = {};
 
 function aspectOf(draft: CanvasDraft): number {
   if (draft.imageW && draft.imageH) return draft.imageW / draft.imageH;
@@ -523,70 +513,7 @@ export type PastWorkshop = {
   galleryImages?: string[];
 };
 
-/** Completed workshops — Figma "Programmes page" 1:1648, Group 54/59/60/61.
- *  Order matches the page's 2-item preview (Programmes.tsx slices the first two)
- *  to the exact rows shown in Figma 10:701; "jorahaal-forest" — the one entry with
- *  full detail-page content from Figma 7:183 — is appended at the end rather than
- *  disturbing that preview. */
-export const PAST_WORKSHOPS: PastWorkshop[] = [
-  {
-    id: "phone-call",
-    title: "How to not answer a phone call?",
-    year: "2025",
-    facilitators: "Merv Espina and Sukanya Deb, New Delhi",
-    heroImage: "/home/thumb-workshops.jpg",
-    description:
-      "Critical writing, voice, and conversational methodologies with Merv Espina and Sukanya Deb, engaging listening practices, unmaking institutional norms, and sonic explorations in contemporary artistic research.",
-  },
-  {
-    id: "subverting-failures",
-    title: "Subverting Failures",
-    year: "2025",
-    facilitators: "Ujjwal Utkarsh, Priyesh Gothwal and Savyasachi Anju Prabir, Jaipur",
-    heroImage: "/programmes/workshop-2.jpg",
-    description:
-      "Material experiments, casting, and sculptural breakdowns exploring failure as a generative site of artistic inquiry, studio production, and critical reflection.",
-  },
-  {
-    id: "uncertainties-welcomed",
-    title: "Uncertainties Welcomed",
-    year: "2025",
-    facilitators: "Aditya Joshi & Maksud Ali Mondal, Goa",
-    heroImage: "/programmes/workshop-3.jpg",
-    description:
-      "Investigating organic matter, decay, ecology, and bio-art practices through site-specific fieldwork and open-ended pedagogical inquiries along coastal environments.",
-  },
-  {
-    id: "editing-as-meaning-making",
-    title: "Editing as Meaning Making",
-    year: "2024",
-    facilitators: "Urna Sinha & Varsha Nair, Baroda",
-    heroImage: "/programmes/workshop-1.jpg",
-    description:
-      "Editorial strategies, sequencing, bookmaking, and archival curation exploring narrative constructions, artist publications, and textual interventions.",
-  },
-  {
-    id: "jorahaal-forest",
-    title: "Jorahaal, Forest as Pedagogue: a kNOw School Workshop",
-    year: "2025",
-    facilitators: "Jogen Das, Anga Art Collective",
-    location: "Bhalla, Assam, October 2025",
-    heroImage: "/editions/2014-15/workshop-1.jpg",
-    description:
-      "This workshop took place in Gyandeep Puthibharal, a community hall situated in Bhalla village near Rani Reserve Forest, Assam, with selected candidates from the Northeast Indian region for the Students' Biennale. The layered interactive relations of the forest and the paddy, rural and the intruding urbanity, human and non-human elements, and so on provided the context to generate pedagogical questions, methodologies, and their implications for art practices. Participants visited farmer and artist Jogen Das' home-studio, who also guided a walking session across his paddy field and the adjacent Sal Kathoni, the Sal forest. Das guided our attention to the regenerative agency of the forest, where small shrubs and plants, both local and invasive, come together, contradicting the logic of monoculture. Students were encouraged to take photographs, write field notes, draw sketches, record sounds, and collect objects. The workshop screened The Full Moon, a two-channel experimental animated video created by collective member Dhrubajit Sarma, and read two texts, In Praise of Floods by James C Scott and The Mushroom at the End of the World by Anna Lowenhaupt Tsing. The conceptual and historical framings of Zomia, capitalist ruins, and contamination as collaboration were introduced, advancing the workshops' thematic concerns. Two participants—Tokpam Henthoiba and Laishram Niketan—held a musical recitation session with the Manipuri musical instrument, Pena.",
-    galleryImages: [
-      "/editions/2014-15/workshop-1.jpg",
-      "/editions/2014-15/workshop-2.jpg",
-      "/editions/2014-15/workshop-3.jpg",
-      "/editions/2014-15/workshop-4.jpg",
-      "/editions/2014-15/workshop-5.jpg",
-      "/editions/2014-15/workshop-6.jpg",
-      "/editions/2014-15/workshop-7.jpg",
-      "/editions/2014-15/workshop-8.jpg",
-    ],
-  },
-];
-
+/** Raza scholarship portraits — intentional frontend assets until CMS owns scholar images. */
 export const RAZA_SCHOLARS: { id: string; name: string; image: string }[] = [
   { id: "kaki-weiss", name: "Kaki Weiss", image: "/programmes/raza-kaki-weiss.jpg" },
   { id: "nina-durel", name: "Nina Durel", image: "/programmes/raza-nina-durel.jpg" },
@@ -654,25 +581,6 @@ export const RAZA_SCHOLAR_ARTWORKS: ArtworkCard[] = [
 
 export type AwardWinner = { name: string; artwork: string; institution: string; artworkId: string };
 
-/** International Awards — Figma 1:1691 / Group 269-271. */
-export const AWARDS_INTERNATIONAL: AwardWinner[] = [
-  { name: "Aswathy GS", artwork: "Staged Narratives", institution: "Raja Ravi Varma College of Fine Arts, Mavelikkara, Kerala", artworkId: "staged-narratives-aswathy" },
-  { name: "Kailash Khanjode", artwork: "Ginning Justice, 2025", institution: "Government College of Art, Nagpur, Maharashtra", artworkId: "ginning-justice-kailash" },
-  { name: "Sachin Banne", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "ginning-justice-sachin" },
-  { name: "Sai Gitanjali Poluru", artwork: "Root System Analysis I", institution: "Shiv Nadar University, Delhi/NCR", artworkId: "root-system-analysis-i" },
-];
-
-/** National Awards — Figma 1:1692 / Group 276. */
-export const AWARDS_NATIONAL: AwardWinner[] = [
-  { name: "Abhishek Kolapudi", artwork: "Mirage of the Three, 2025", institution: "Suravaram Pratap Reddy Telugu University, Hyderabad", artworkId: "mirage-of-the-three" },
-  { name: "Pratik Khurkutiya", artwork: "The Quiet Beneath the Rubble", institution: "Maharaja Sayajirao University, Baroda, Gujarat", artworkId: "the-quiet-beneath-the-rubble" },
-  { name: "M Imran Ahamed", artwork: "Staged Narratives", institution: "Government College of Fine Arts, Chennai", artworkId: "staged-narratives" },
-  { name: "Reppandee Lepcha", artwork: "Shifting Landscapes", institution: "Visva Bharati University, Santiniketan", artworkId: "shifting-landscapes" },
-  { name: "Rohit Athavale", artwork: "Ginning Justice, 2025", institution: "Sir J. J. School of Art, Mumbai, Maharashtra", artworkId: "ginning-justice" },
-  { name: "Urgain Zawa", artwork: "Sacred Scapes", institution: "Maharaja Sayajirao University, Baroda", artworkId: "sacred-scapes" },
-  { name: "Durgesh Prajapati", artwork: "Expressions of Fragility", institution: "Banaras Hindu University, Varanasi, Uttar Pradesh", artworkId: "expression-of-fragility" },
-];
-
 export type ProgrammeCard = {
   id: string;
   title: string;
@@ -680,26 +588,3 @@ export type ProgrammeCard = {
   blurb: string;
   place?: string;
 };
-
-export const PROGRAMMES_UPCOMING: ProgrammeCard[] = [
-  {
-    id: "w1",
-    title: "Workshops",
-    kind: "workshop",
-    blurb: "Material practice and peer critique sessions with mid-career mentors.",
-    place: "Fort Kochi",
-  },
-  {
-    id: "w2",
-    title: "Residencies",
-    kind: "residency",
-    blurb: "Short residencies supporting collaborative research and making.",
-    place: "Kochi",
-  },
-  {
-    id: "w3",
-    title: "Awards",
-    kind: "award",
-    blurb: "Recognition for outstanding student projects from the edition.",
-  },
-];

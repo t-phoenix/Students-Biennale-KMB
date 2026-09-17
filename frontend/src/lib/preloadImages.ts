@@ -142,3 +142,21 @@ export function whenIdle(task: () => void, timeoutMs = 1800) {
 export function isImageWarm(url: string): boolean {
   return preloaded.has(url) || readWarmManifest().has(url);
 }
+
+const LCP_PRELOAD_ID = "sb-lcp-hero-preload";
+
+/** Keep a single high-priority image preload hint in <head> for LCP. */
+export function ensureLcpImagePreload(url: string) {
+  if (!url || typeof document === "undefined") return;
+  let link = document.getElementById(LCP_PRELOAD_ID) as HTMLLinkElement | null;
+  if (!link) {
+    link = document.createElement("link");
+    link.id = LCP_PRELOAD_ID;
+    link.rel = "preload";
+    link.as = "image";
+    document.head.appendChild(link);
+  }
+  if (link.href !== new URL(url, document.baseURI).href) {
+    link.href = url;
+  }
+}

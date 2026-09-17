@@ -9,15 +9,8 @@ const sample: ProgrammesCover[] = [
 ];
 
 describe("resolveProgrammesHeroCovers", () => {
-  it("returns fallback cover when no covers", () => {
-    expect(resolveProgrammesHeroCovers([])).toEqual([
-      {
-        id: "fallback-hero",
-        image_url: "/programmes/hero.jpg",
-        sort_order: 0,
-        show_on_home: false,
-      },
-    ]);
+  it("returns empty when no covers (CMS-only, no local fallback)", () => {
+    expect(resolveProgrammesHeroCovers([])).toEqual([]);
   });
 
   it("returns covers unchanged when present", () => {

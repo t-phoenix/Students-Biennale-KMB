@@ -88,7 +88,7 @@ function CuratorPortrait({ curator, yearId }: { curator: CuratorCard; yearId: st
       >
         {curator.image ? (
           <img
-            src={`${curator.image}?v=3`}
+            src={`${curator.image}?v=4`}
             alt=""
             loading="lazy"
             decoding="async"
@@ -139,7 +139,7 @@ export function CuratorsView() {
                     >
                       {c.image ? (
                         <img
-                          src={`${c.image}?v=3`}
+                          src={`${c.image}?v=4`}
                           alt=""
                           style={{ objectPosition: c.focus ?? "center bottom" }}
                         />

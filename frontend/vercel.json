@@ -1,4 +1,21 @@
 {
+  "redirects": [
+    {
+      "source": "/curators/:name.png",
+      "destination": "/curators/:name.jpg",
+      "permanent": true
+    },
+    {
+      "source": "/editions/:year/gallery-:n.png",
+      "destination": "/editions/:year/gallery-:n.jpg",
+      "permanent": true
+    },
+    {
+      "source": "/editions/:year/hero.png",
+      "destination": "/editions/:year/hero.jpg",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!assets/).*)",

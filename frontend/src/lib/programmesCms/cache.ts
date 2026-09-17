@@ -1,4 +1,4 @@
-import { preloadUrl } from "../preloadImages";
+import { preloadUrl, preloadUrlsConcurrent, whenIdle } from "../preloadImages";
 import { isSupabaseConfigured, supabase } from "../supabase";
 import { resolveHomeProgrammesBanner, resolveProgrammesHeroCovers } from "./resolve";
 import type { ProgrammesCover } from "./types";
@@ -36,8 +36,18 @@ function writeSession(data: ProgrammesCover[]) {
   }
 }
 
+/** Preload only the primary programmes cover; defer the rest to idle. */
 function preloadCoverImages(covers: ProgrammesCover[]) {
-  for (const cover of covers) preloadUrl(cover.image_url);
+  const [primary, ...rest] = covers;
+  if (primary?.image_url) void preloadUrl(primary.image_url, "high");
+
+  whenIdle(() => {
+    void preloadUrlsConcurrent(
+      rest.map((cover) => cover.image_url),
+      "low",
+      2,
+    );
+  }, 3500);
 }
 
 async function fetchProgrammesCovers(): Promise<ProgrammesCover[]> {
@@ -88,7 +98,7 @@ export function loadProgrammesCovers(): Promise<ProgrammesCover[]> {
       })
       .catch((err) => {
         if (cached) return cached;
-        console.warn("[programmesCms] fetch failed, using static fallbacks", err);
+        console.warn("[programmesCms] fetch failed; showing empty covers until CMS responds", err);
         memory = [];
         return [];
       })
@@ -112,5 +122,3 @@ export async function refreshProgrammesCovers(): Promise<ProgrammesCover[]> {
   inflight = null;
   return loadProgrammesCovers();
 }
-
-void loadProgrammesCovers();

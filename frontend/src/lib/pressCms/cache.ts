@@ -155,5 +155,3 @@ export async function refreshPressItems(): Promise<PressItem[]> {
   inflight = null;
   return loadPressItems();
 }
-
-void loadPressItems();

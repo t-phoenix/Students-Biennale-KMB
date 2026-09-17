@@ -23,25 +23,24 @@ import {
   peekProgrammesHeroCovers,
 } from "./programmesCms";
 
-const HOME_SENSING_STRIP = [
-  "/home/sensing-wide.jpg",
-  "/home/sensing-side.jpg",
-] as const;
+const IDLE_PREFETCH_MS = 3500;
+const PREFETCH_CONCURRENCY = 2;
 
 /** Likely next destinations from the home page — fetched during idle time. */
 export function prefetchHomeDestinations(catalogue?: MappedCatalogue | null) {
   whenIdle(() => {
     const programmesHeroUrls = peekProgrammesHeroCovers().map((cover) => cover.image_url);
     const programmesBannerUrl = peekHomeProgrammesBannerUrl();
-    void preloadUrls([
+    const warm = [
       ...programmesHeroUrls,
       ...(programmesBannerUrl ? [programmesBannerUrl] : []),
-      "/home/press-featured.jpg",
-    ]);
-    void preloadUrls(HOME_SENSING_STRIP);
+    ];
+    if (warm.length) {
+      void preloadUrlsConcurrent(warm, "low", PREFETCH_CONCURRENCY);
+    }
 
     if (catalogue?.heroUrls.length) {
-      void preloadUrls(catalogue.heroUrls);
+      void preloadUrlsConcurrent(catalogue.heroUrls, "low", PREFETCH_CONCURRENCY);
     } else if (catalogue?.heroUrl) {
       void preloadUrl(catalogue.heroUrl);
     }
@@ -51,9 +50,9 @@ export function prefetchHomeDestinations(catalogue?: MappedCatalogue | null) {
         .slice(0, 18)
         .map((row) => row.image)
         .filter((url): url is string => Boolean(url));
-      void preloadUrls(covers);
+      void preloadUrlsConcurrent(covers, "low", PREFETCH_CONCURRENCY);
     }
-  });
+  }, IDLE_PREFETCH_MS);
 }
 
 /** All unique Discover canvas tile images — intent-based, concurrency-capped. */
@@ -84,7 +83,7 @@ export function prefetchDiscoverViewport(
 
   whenIdle(() => {
     if (rest.length) void preloadUrlsConcurrent(rest, "low", 4);
-  });
+  }, IDLE_PREFETCH_MS);
 }
 
 /** Export viewport URL set for tile eager-loading. */
@@ -127,9 +126,10 @@ export function prefetchRouteHero(
   if (to.startsWith("/programmes")) {
     const heroCovers = peekProgrammesHeroCovers();
     if (heroCovers.length) {
-      void preloadUrls(
+      void preloadUrlsConcurrent(
         heroCovers.map((cover) => cover.image_url),
         "high",
+        PREFETCH_CONCURRENCY,
       );
     }
     const programmesBannerUrl = peekHomeProgrammesBannerUrl();
@@ -137,7 +137,6 @@ export function prefetchRouteHero(
     return;
   }
   if (to.startsWith("/press")) {
-    void preloadUrl("/home/press-featured.jpg", "high");
     return;
   }
   if (to === "/artworks") {
@@ -148,8 +147,11 @@ export function prefetchRouteHero(
   const editionMatch = to.match(/^\/editions\/([^/]+)/);
   if (editionMatch) {
     const edition = catalogues.find((row) => row.years === editionMatch[1]);
-    if (edition?.heroUrls.length) void preloadUrls(edition.heroUrls, "high");
-    else if (edition?.heroUrl) void preloadUrl(edition.heroUrl, "high");
+    if (edition?.heroUrls.length) {
+      void preloadUrlsConcurrent(edition.heroUrls, "high", PREFETCH_CONCURRENCY);
+    } else if (edition?.heroUrl) {
+      void preloadUrl(edition.heroUrl, "high");
+    }
   }
 }
 
@@ -161,14 +163,19 @@ export function prefetchCatalogueImages(catalogues: readonly MappedCatalogue[]) 
       catalogues.find((row) => row.years === LATEST_EDITION.id);
     if (!current) return;
 
-    if (current.heroUrls.length) void preloadUrls(current.heroUrls);
-    else if (current.heroUrl) void preloadUrl(current.heroUrl);
+    if (current.heroUrls.length) {
+      void preloadUrlsConcurrent(current.heroUrls, "low", PREFETCH_CONCURRENCY);
+    } else if (current.heroUrl) {
+      void preloadUrl(current.heroUrl);
+    }
 
-    void preloadUrls(
+    void preloadUrlsConcurrent(
       current.artworks
         .slice(0, 20)
         .map((row) => row.image)
         .filter((url): url is string => Boolean(url)),
+      "low",
+      PREFETCH_CONCURRENCY,
     );
-  });
+  }, IDLE_PREFETCH_MS);
 }

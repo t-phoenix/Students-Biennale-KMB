@@ -194,8 +194,8 @@ function EditionDownloadsList({
 
 
 /**
- * Dynamic Edition overview — Loads all content, titles, notes, and credits with CMS-first priority
- * and comprehensive static fallback data for previous editions.
+ * Edition overview — CMS/snapshot first for live edition media and catalogue fields.
+ * Previous editions keep static archive copy from editions.ts; media stays snapshot-only.
  */
 export function EditionOverview() {
   const { yearId = LATEST_EDITION.id } = useParams();
@@ -284,6 +284,7 @@ function cleanIntroParagraphs(
 
   const intro = cleanIntroParagraphs(rawIntro, isPreviousEdition, title, subtitle);
 
+  // Heroes and gallery: catalogue snapshot only — never local /editions or /public paths.
   const heroImages = (() => {
     const fromCatalogue = (catalogue.heroUrls.length
       ? catalogue.heroUrls
@@ -291,12 +292,7 @@ function cleanIntroParagraphs(
         ? [catalogue.heroUrl]
         : []
     ).filter((src) => Boolean(src?.trim()));
-    if (fromCatalogue.length) return fromCatalogue;
-    // Previous editions: only render heroes that came from the catalogue snapshot.
-    if (isPreviousEdition) return [];
-    if (fallback.heroImages?.length) return fallback.heroImages.filter((src) => Boolean(src?.trim()));
-    if (fallback.heroImage?.trim()) return [fallback.heroImage];
-    return [];
+    return fromCatalogue;
   })();
 
   // Gallery is DB/snapshot only — never fall back to static placeholder paths.
@@ -313,13 +309,13 @@ function cleanIntroParagraphs(
   }, []);
 
 
-  // Curators with bios: from fallback for previous editions, else from CMS
+  // Curators with bios: previous editions use archive copy; current edition uses catalogue.
   const cmsCuratorBios: CuratorBio[] = catalogue.curators
     .filter((c) => Boolean(c.bio))
     .map((c) => ({ name: c.name, bio: c.bio! }));
   const curatorBios = isPreviousEdition
     ? (fallback.curatorBios ?? [])
-    : (cmsCuratorBios.length > 0 ? cmsCuratorBios : (fallback.curatorBios ?? []));
+    : cmsCuratorBios;
 
   // Curatorial note
   const curatorialNoteSection = catalogue.sections?.find(
@@ -337,16 +333,18 @@ function cleanIntroParagraphs(
           title: curatorialNoteSection.title || "Curatorial Note",
           paragraphs: curatorialNoteSection.body.split("\n\n").filter(Boolean),
         }
-      : fallback.curatorialNote;
+      : isPreviousEdition
+        ? fallback.curatorialNote
+        : undefined;
 
   // Participating Institutions
   const institutions = isPreviousEdition
     ? fallback.institutions
-    : catalogue.institutions.length
-      ? catalogue.institutions
-      : fallback.institutions;
+    : catalogue.institutions;
 
-  const institutionsWithArtists = fallback.institutionsWithArtists ?? [];
+  const institutionsWithArtists = isPreviousEdition
+    ? (fallback.institutionsWithArtists ?? [])
+    : [];
 
   // Downloads
   const downloadsSection = catalogue.sections?.find(
@@ -359,10 +357,12 @@ function cleanIntroParagraphs(
       label: "Download",
       href: i.url || "#",
     }));
-  const downloads =
-    cmsDownloads.length > 0 ? cmsDownloads : (fallback.downloads ?? []);
+  const downloads = isPreviousEdition
+    ? (cmsDownloads.length > 0 ? cmsDownloads : (fallback.downloads ?? []))
+    : cmsDownloads;
 
-  const team = fallback.team;
+  // Team grid is archive-only; live edition prefers catalogue.teamBody below.
+  const team = isPreviousEdition ? fallback.team : undefined;
 
   useEffect(() => {
     const q = highlight.trim();
@@ -625,16 +625,28 @@ function cleanIntroParagraphs(
         </div>
       ) : null}
 
-      {/* Curator Bios (2020-21, 2022-23) */}
-      {curatorBios.length > 0 ? (
+      {/* Curator bios (archive editions) or live team from catalogue */}
+      {isPreviousEdition && curatorBios.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
+          <div className="fig-rail edition-overview__rail-label edition-overview__reveal">
+            THE TEAM
+          </div>
+          <div className="fig-c4-12 edition-overview__reveal">
+            <CuratorBiosGrid bios={curatorBios} highlight={highlight} />
+          </div>
+        </div>
+      ) : !isPreviousEdition && catalogue.teamBody ? (
+        <div className="fig-grid edition-overview__section">
+          <div className="fig-label fig-label--sub edition-overview__reveal">
+            THE TEAM
+          </div>
+          <div className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal">
+            <HighlightText text={catalogue.teamBody} query={highlight} />
+          </div>
+        </div>
+      ) : !isPreviousEdition && curatorBios.length > 0 ? (
+        <div className="fig-grid edition-overview__section">
+          <div className="fig-label fig-label--sub edition-overview__reveal">
             THE TEAM
           </div>
           <div className="fig-c4-12 edition-overview__reveal">
@@ -654,15 +666,6 @@ function cleanIntroParagraphs(
           </div>
           <div className="fig-c4-12 edition-overview__reveal">
             <TeamGrid team={team} highlight={highlight} />
-          </div>
-        </div>
-      ) : !isPreviousEdition && catalogue.teamBody ? (
-        <div className="fig-grid edition-overview__section">
-          <div className="fig-label fig-label--sub edition-overview__reveal">
-            THE TEAM
-          </div>
-          <div className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal">
-            <HighlightText text={catalogue.teamBody} query={highlight} />
           </div>
         </div>
       ) : null}

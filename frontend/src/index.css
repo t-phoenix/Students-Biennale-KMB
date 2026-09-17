@@ -38,6 +38,12 @@ body {
   width: 100%;
 }
 
+/* Minimal route-transition placeholder — avoids blank flash without competing with LCP */
+.route-fallback {
+  min-height: 100dvh;
+  background: var(--color-neutral-white);
+}
+
 #root {
   min-height: 100dvh;
   width: 100%;
