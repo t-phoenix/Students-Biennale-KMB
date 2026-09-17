@@ -1,4 +1,4 @@
-/* Splash — artwork globe → star burst → site erupt. Brand: dark / Degular / RGB. */
+/* Splash — white gallery canvas: artwork globe around SB mark → soft white flash into site. */
 
 .splash {
   position: fixed;
@@ -7,8 +7,8 @@
   display: grid;
   place-items: center;
   overflow: hidden;
-  background: var(--color-primary-dark);
-  color: var(--color-neutral-white);
+  background: var(--color-neutral-white);
+  color: var(--color-primary-dark);
   font-family: var(--font-family);
   isolation: isolate;
   outline: none;
@@ -20,9 +20,9 @@
   z-index: 0;
   background:
     radial-gradient(
-      ellipse 55% 50% at 50% 48%,
-      color-mix(in srgb, var(--color-primary-dark) 40%, #2a2428) 0%,
-      var(--color-primary-dark) 70%
+      ellipse 60% 55% at 50% 48%,
+      var(--color-neutral-white) 0%,
+      color-mix(in srgb, var(--color-neutral-white) 92%, var(--color-neutral-gray-light)) 100%
     );
   pointer-events: none;
 }
@@ -30,12 +30,12 @@
 .splash__stage {
   position: relative;
   z-index: 1;
-  width: min(92vw, 560px);
-  height: min(72vh, 520px);
+  width: min(96vw, 720px);
+  height: min(78vh, 640px);
   display: grid;
   place-items: center;
-  perspective: 1100px;
-  perspective-origin: 50% 45%;
+  perspective: 1200px;
+  perspective-origin: 50% 48%;
   pointer-events: none;
 }
 
@@ -51,16 +51,16 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: clamp(40px, 7vw, 58px);
-  height: clamp(40px, 7vw, 58px);
+  width: clamp(34px, 5.5vw, 48px);
+  height: clamp(34px, 5.5vw, 48px);
   margin: 0;
-  border-radius: 3px;
+  border-radius: 2px;
   overflow: hidden;
   opacity: 0;
   transform-origin: center center;
   transform-style: preserve-3d;
   backface-visibility: hidden;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 18px rgba(27, 23, 28, 0.12);
   will-change: transform, opacity;
 }
 
@@ -85,13 +85,13 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 4px;
-  height: 4px;
-  margin: -2px;
+  width: 3px;
+  height: 3px;
+  margin: -1.5px;
   border-radius: 50%;
   opacity: 0;
   background: var(--color-neutral-white);
-  box-shadow: 0 0 10px currentColor;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
   will-change: transform, opacity;
 }
 
@@ -100,38 +100,36 @@
   z-index: 3;
   display: grid;
   place-items: center;
-  gap: 14px;
-  text-align: center;
   pointer-events: none;
 }
 
 .splash__mark {
-  width: clamp(48px, 9vw, 68px);
+  width: clamp(52px, 10vw, 76px);
   height: auto;
   opacity: 0;
-  filter: drop-shadow(0 10px 28px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 8px 20px rgba(27, 23, 28, 0.12));
 }
 
-.splash__title {
-  margin: 0;
-  font-size: clamp(15px, 2vw, 20px);
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: 0.06em;
+.splash__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  background: var(--color-neutral-white);
   opacity: 0;
-  color: color-mix(in srgb, var(--color-neutral-white) 90%, transparent);
+  pointer-events: none;
+  transform-origin: center center;
 }
 
 .splash__skip {
   position: absolute;
-  z-index: 4;
+  z-index: 7;
   right: max(20px, var(--page-pad, 24px));
   bottom: max(20px, env(safe-area-inset-bottom, 0px) + 16px);
   margin: 0;
   padding: 8px 4px;
   border: 0;
   background: transparent;
-  color: color-mix(in srgb, var(--color-neutral-white) 70%, transparent);
+  color: color-mix(in srgb, var(--color-primary-dark) 55%, transparent);
   font-family: var(--font-family);
   font-size: var(--type-caption-size);
   font-weight: 500;
@@ -144,13 +142,13 @@
 }
 
 .splash__skip:hover {
-  color: var(--color-neutral-white);
+  color: var(--color-primary-dark);
 }
 
 .splash__skip:focus-visible {
   outline: 2px solid var(--color-primary-teal);
   outline-offset: 4px;
-  color: var(--color-neutral-white);
+  color: var(--color-primary-dark);
 }
 
 .splash__skip.is-visible {
@@ -159,18 +157,18 @@
 
 @media (max-width: 640px) {
   .splash__stage {
-    height: min(64vh, 420px);
+    width: 100vw;
+    height: min(70vh, 480px);
   }
 
   .splash__tile {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .splash__mark,
-  .splash__title {
+  .splash__mark {
     opacity: 1;
   }
 }

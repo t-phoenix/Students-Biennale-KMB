@@ -14,7 +14,7 @@ export const SPLASH_TILES = [
 ] as const;
 
 /** Repeat tiles so the globe reads as a dense sphere without extra network weight. */
-export function buildSplashTileSet(copies = 3): string[] {
+export function buildSplashTileSet(copies = 5): string[] {
   const out: string[] = [];
   for (let i = 0; i < copies; i += 1) {
     out.push(...SPLASH_TILES);

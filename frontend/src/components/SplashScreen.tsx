@@ -15,17 +15,17 @@ import {
 } from "../lib/splash";
 import "./SplashScreen.css";
 
-/** Globe formation needs ~2.6s; exit waits for site warm beyond that. */
+/** Globe formation needs ~2.8s; exit waits for site warm beyond that. */
 const MIN_MS = 2800;
 const SAFETY_MAX_MS = 45_000;
 const SKIP_VISIBLE_MS = 500;
-const BURST_MS = 0.95;
-const SKIP_BURST_MS = 0.4;
-const STAR_COUNT = 36;
+const BURST_MS = 1.15;
+const SKIP_BURST_MS = 0.45;
+const STAR_COUNT = 42;
 
 /**
- * Artwork globe → star burst → site erupt.
- * Compressed tiles (~72KB) keep motion smooth while home warms underneath.
+ * Dense artwork globe around the SB mark on a white gallery field,
+ * then a soft white flash into the warmed site.
  */
 export function SplashScreen() {
   const { active, markComplete } = useSplash();
@@ -45,7 +45,7 @@ export function SplashScreen() {
   const [skipVisible, setSkipVisible] = useState(false);
   const [tilesReady, setTilesReady] = useState(false);
 
-  const tileSrcs = useMemo(() => buildSplashTileSet(3), []);
+  const tileSrcs = useMemo(() => buildSplashTileSet(5), []);
   const cmsReady = status === "ready";
 
   const runExit = useCallback(
@@ -71,28 +71,27 @@ export function SplashScreen() {
       const stars = root.querySelectorAll<HTMLElement>(".splash__star");
       const brand = root.querySelector<HTMLElement>(".splash__brand");
       const skip = root.querySelector<HTMLElement>(".splash__skip");
+      const flash = root.querySelector<HTMLElement>(".splash__flash");
       const points = spherePointsRef.current;
 
       if (prefersReducedMotion()) {
-        gsap.to(root, {
-          autoAlpha: 0,
-          duration: 0.22,
-          ease: "power2.out",
-          onComplete: markComplete,
-        });
+        gsap
+          .timeline({ onComplete: markComplete })
+          .to(flash, { autoAlpha: 1, duration: 0.18, ease: "power2.out" }, 0)
+          .to(root, { autoAlpha: 0, duration: 0.28, ease: "power2.out" }, 0.12);
         return;
       }
 
-      // Erupt tiles outward along sphere normals — keep rectangular crop.
+      // Rush through the gallery field → soft white bloom → site.
       const tl = gsap.timeline({
         defaults: { ease: "power3.in" },
         onComplete: markComplete,
       });
 
-      tl.to(skip, { autoAlpha: 0, duration: duration * 0.25 }, 0)
+      tl.to(skip, { autoAlpha: 0, duration: duration * 0.2 }, 0)
         .to(
           brand,
-          { autoAlpha: 0, scale: 1.15, duration: duration * 0.45, ease: "power2.in" },
+          { autoAlpha: 0, scale: 1.2, duration: duration * 0.4, ease: "power2.in" },
           0,
         )
         .to(
@@ -101,45 +100,53 @@ export function SplashScreen() {
             x: (_i, el) => {
               const i = Number((el as HTMLElement).dataset.index ?? 0);
               const p = points[i] ?? { x: 0, y: 0, z: 0 };
-              return p.x * 4.2;
+              return p.x * 5.5;
             },
             y: (_i, el) => {
               const i = Number((el as HTMLElement).dataset.index ?? 0);
               const p = points[i] ?? { x: 0, y: 0, z: 0 };
-              return p.y * 4.2;
+              return p.y * 5.5;
             },
             z: (_i, el) => {
               const i = Number((el as HTMLElement).dataset.index ?? 0);
               const p = points[i] ?? { x: 0, y: 0, z: 0 };
-              return p.z * 4.2;
+              return p.z * 5.5 + 220;
             },
-            scale: 0.35,
+            scale: 1.35,
             opacity: 0,
-            duration,
-            stagger: { each: 0.012, from: "center" },
+            duration: duration * 0.75,
+            stagger: { each: 0.008, from: "center" },
+            ease: "power2.in",
           },
-          0.05,
+          0.04,
         )
         .fromTo(
           stars,
-          { opacity: 0, scale: 0.4 },
+          { opacity: 0, scale: 0.3 },
           {
-            opacity: 1,
-            scale: 1,
-            x: () => gsap.utils.random(-window.innerWidth * 0.55, window.innerWidth * 0.55),
-            y: () => gsap.utils.random(-window.innerHeight * 0.55, window.innerHeight * 0.55),
-            duration: duration * 0.9,
-            stagger: 0.008,
+            opacity: 0.85,
+            scale: 1.2,
+            x: () => gsap.utils.random(-window.innerWidth * 0.6, window.innerWidth * 0.6),
+            y: () => gsap.utils.random(-window.innerHeight * 0.6, window.innerHeight * 0.6),
+            duration: duration * 0.7,
+            stagger: 0.006,
             ease: "power2.out",
           },
-          0.08,
+          0.06,
         )
+        // Soft white flash — gallery / outer-space handoff
+        .fromTo(
+          flash,
+          { autoAlpha: 0, scale: 0.92 },
+          { autoAlpha: 1, scale: 1, duration: duration * 0.42, ease: "power2.out" },
+          duration * 0.22,
+        )
+        .to(stars, { opacity: 0, duration: duration * 0.25 }, duration * 0.45)
         .to(
-          stars,
-          { opacity: 0, scale: 0.2, duration: duration * 0.45, ease: "power2.in" },
-          duration * 0.45,
-        )
-        .to(root, { autoAlpha: 0, duration: duration * 0.4, ease: "power2.inOut" }, duration * 0.55);
+          root,
+          { autoAlpha: 0, duration: duration * 0.48, ease: "power2.inOut" },
+          duration * 0.52,
+        );
     },
     [markComplete],
   );
@@ -159,7 +166,6 @@ export function SplashScreen() {
     };
   }, [active]);
 
-  // Preload compressed tiles (tiny) so the globe never pops in empty.
   useEffect(() => {
     if (!active) return;
     let cancelled = false;
@@ -255,13 +261,15 @@ export function SplashScreen() {
 
       const tiles = gsap.utils.toArray<HTMLElement>(".splash__tile");
       const mark = root.querySelector(".splash__mark");
-      const title = root.querySelector(".splash__title");
-      const radius = Math.min(window.innerWidth, window.innerHeight) * 0.22;
-      const points = fibonacciSphere(tiles.length, Math.max(110, radius));
+      const flash = root.querySelector(".splash__flash");
+      const radius = Math.min(window.innerWidth, window.innerHeight) * 0.28;
+      const points = fibonacciSphere(tiles.length, Math.max(140, radius));
       spherePointsRef.current = points;
 
+      gsap.set(flash, { autoAlpha: 0 });
+
       if (prefersReducedMotion()) {
-        gsap.set([mark, title], { autoAlpha: 1 });
+        gsap.set(mark, { autoAlpha: 1 });
         gsap.set(tiles, { autoAlpha: 0 });
         return;
       }
@@ -269,17 +277,17 @@ export function SplashScreen() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      gsap.set([mark, title], { autoAlpha: 0 });
+      gsap.set(mark, { autoAlpha: 0 });
       tiles.forEach((tile, i) => {
         gsap.set(tile, {
           xPercent: -50,
           yPercent: -50,
-          x: gsap.utils.random(-vw * 0.55, vw * 0.55),
-          y: gsap.utils.random(-vh * 0.55, vh * 0.55),
-          z: gsap.utils.random(-180, 180),
-          scale: gsap.utils.random(0.25, 0.55),
+          x: gsap.utils.random(-vw * 0.6, vw * 0.6),
+          y: gsap.utils.random(-vh * 0.6, vh * 0.6),
+          z: gsap.utils.random(-220, 220),
+          scale: gsap.utils.random(0.2, 0.5),
           opacity: 0,
-          rotationY: gsap.utils.random(-40, 40),
+          rotationY: gsap.utils.random(-35, 35),
           force3D: true,
         });
         tile.dataset.index = String(i);
@@ -288,20 +296,14 @@ export function SplashScreen() {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
       introTlRef.current = tl;
 
-      // Brand arrives as the void opens.
       tl.fromTo(
         mark,
-        { autoAlpha: 0, scale: 0.88 },
-        { autoAlpha: 1, scale: 1, duration: 0.7 },
-        0.15,
-      ).fromTo(
-        title,
-        { autoAlpha: 0, y: 10 },
-        { autoAlpha: 1, y: 0, duration: 0.55 },
-        0.45,
+        { autoAlpha: 0, scale: 0.9 },
+        { autoAlpha: 1, scale: 1, duration: 0.75 },
+        0.12,
       );
 
-      // Artworks gather into a globe.
+      // More artworks gather tightly around the mark.
       tl.to(
         tiles,
         {
@@ -311,30 +313,28 @@ export function SplashScreen() {
           y: (i) => points[i]?.y ?? 0,
           z: (i) => points[i]?.z ?? 0,
           rotationY: 0,
-          duration: 1.55,
-          stagger: { each: 0.028, from: "random" },
+          duration: 1.65,
+          stagger: { each: 0.018, from: "random" },
           ease: "power2.out",
         },
-        0.35,
+        0.28,
       );
 
-      // Soft pulse on the mark while the sphere holds.
       gsap.to(mark, {
-        scale: 1.04,
-        duration: 1.5,
+        scale: 1.035,
+        duration: 1.6,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
-        delay: 1.6,
+        delay: 1.7,
       });
 
-      // Slow orbital spin while the site warms underneath.
       spinTweenRef.current = gsap.to(globe, {
         rotationY: 360,
-        duration: 28,
+        duration: 32,
         repeat: -1,
         ease: "none",
-        delay: 1.9,
+        delay: 2,
       });
 
       return () => {
@@ -379,8 +379,8 @@ export function SplashScreen() {
             key={i}
             className="splash__star"
             style={{
-              color: SPLASH_STAR_COLORS[i % SPLASH_STAR_COLORS.length],
-              background: SPLASH_STAR_COLORS[i % SPLASH_STAR_COLORS.length],
+              color: "#ffffff",
+              background: "#ffffff",
             }}
           />
         ))}
@@ -390,12 +390,12 @@ export function SplashScreen() {
           className="splash__mark"
           src="/logo-sb-mark.svg"
           alt=""
-          width={68}
-          height={96}
+          width={76}
+          height={108}
           aria-hidden
         />
-        <p className="splash__title">Students&apos; Biennale</p>
       </div>
+      <div className="splash__flash" aria-hidden />
       <button
         type="button"
         className={`splash__skip${skipVisible ? " is-visible" : ""}`}
