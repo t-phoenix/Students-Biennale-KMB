@@ -42,18 +42,21 @@ function writeSession(data: HomeCms) {
   }
 }
 
-/** Preload the LCP hero immediately; defer secondary covers/cards to idle. */
+/** Preload the LCP hero immediately; secondary covers/cards follow without long idle delay. */
 function preloadCmsImages(data: HomeCms) {
   const [primary, ...rest] = data.covers;
   if (primary?.image_url) void preloadUrl(primary.image_url, "high");
 
-  whenIdle(() => {
-    const secondary = [
-      ...rest.map((cover) => cover.image_url),
-      ...data.cards.map((card) => card.image_url).filter((url): url is string => Boolean(url)),
-    ];
-    void preloadUrlsConcurrent(secondary, "low", 2);
-  }, 3500);
+  const secondary = [
+    ...rest.map((cover) => cover.image_url),
+    ...data.cards.map((card) => card.image_url).filter((url): url is string => Boolean(url)),
+  ];
+  if (secondary.length) {
+    // Start secondary warms promptly — splash (when present) also awaits these.
+    whenIdle(() => {
+      void preloadUrlsConcurrent(secondary, "low", 3);
+    }, 400);
+  }
 }
 
 async function fetchHomeCms(): Promise<HomeCms> {

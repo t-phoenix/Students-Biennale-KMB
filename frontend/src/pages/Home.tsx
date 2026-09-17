@@ -32,6 +32,7 @@ import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
+import { useSplash } from "../lib/splash";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -137,6 +138,7 @@ export function Home() {
     useProgrammes();
   const { homeBannerUrl } = useProgrammesCovers();
   const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
+  const { willShow: splashWillShow, completed: splashCompleted } = useSplash();
   const { items: pressItems } = usePressItems();
   const covers = dynamicCovers;
   const cards: ActiveUpdateCard[] = cmsCards.map((c) => {
@@ -540,6 +542,17 @@ export function Home() {
     () => {
       const root = rootRef.current;
       if (!root) return;
+      // Defer hero entrance until immersive splash finishes (first home visit only).
+      // Use opacity (not autoAlpha) so visibility stays visible — browsers may defer
+      // decode of visibility:hidden images, which caused post-splash hero lag.
+      if (splashWillShow && !splashCompleted) {
+        gsap.set(".home-hero__slide", { opacity: 0, visibility: "visible" });
+        gsap.set(
+          ".home-hero__card, .home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
+          { autoAlpha: 0 },
+        );
+        return;
+      }
 
       let cleanupHero: (() => void) | undefined;
 
@@ -553,8 +566,16 @@ export function Home() {
           heroTl
             .fromTo(
               ".home-hero__slide:first-child",
-              { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 1.2, ease: "power2.out" },
+              {
+                opacity: splashWillShow ? 1 : 0,
+                visibility: "visible",
+              },
+              {
+                opacity: 1,
+                visibility: "visible",
+                duration: splashWillShow ? 0.2 : 1.2,
+                ease: "power2.out",
+              },
               0
             )
             .fromTo(
@@ -686,7 +707,7 @@ export function Home() {
     },
     {
       scope: rootRef,
-      dependencies: [dynamicCovers.length, cmsCards.length],
+      dependencies: [dynamicCovers.length, cmsCards.length, splashWillShow, splashCompleted],
       revertOnUpdate: true,
     }
   );
@@ -736,7 +757,7 @@ export function Home() {
               className="home-hero__slide home-hero__bg"
               src={c.image_url}
               alt={c.artwork_name ?? ""}
-              loading={index === 0 ? "eager" : "lazy"}
+              loading="eager"
               decoding="async"
               fetchPriority={index === 0 ? "high" : "low"}
             />

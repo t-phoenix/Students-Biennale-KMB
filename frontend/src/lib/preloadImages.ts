@@ -35,6 +35,28 @@ function attachPriority(img: HTMLImageElement, priority: PreloadPriority) {
   }
 }
 
+/** Resolve only after the image has loaded and decoded into a paintable bitmap. */
+async function loadAndDecode(img: HTMLImageElement): Promise<void> {
+  if (!img.complete || img.naturalWidth === 0) {
+    await new Promise<void>((resolve) => {
+      const done = () => {
+        img.removeEventListener("load", done);
+        img.removeEventListener("error", done);
+        resolve();
+      };
+      img.addEventListener("load", done);
+      img.addEventListener("error", done);
+    });
+  }
+  try {
+    if (typeof img.decode === "function") {
+      await img.decode();
+    }
+  } catch {
+    // Decode can reject for broken images — treat as settled.
+  }
+}
+
 /** Preload and decode a single URL. Safe to call repeatedly — deduped globally. */
 export function preloadUrl(url: string, priority: PreloadPriority = "low"): Promise<void> {
   if (!url || typeof Image === "undefined") return Promise.resolve();
@@ -43,29 +65,37 @@ export function preloadUrl(url: string, priority: PreloadPriority = "low"): Prom
   if (existing) return existing;
   if (preloaded.has(url)) return Promise.resolve();
 
-  const promise = new Promise<void>((resolve) => {
-    let done = false;
-    const finish = () => {
-      if (done) return;
-      done = true;
-      preloaded.add(url);
-      writeWarmManifest(url);
-      resolve();
-    };
-
+  const promise = (async () => {
     const img = new Image();
     img.decoding = "async";
     attachPriority(img, priority);
-    img.onload = finish;
-    img.onerror = finish;
     img.src = url;
-    void img.decode?.().then(finish).catch(finish);
-  }).finally(() => {
+    await loadAndDecode(img);
+    preloaded.add(url);
+    writeWarmManifest(url);
+  })().finally(() => {
     inflight.delete(url);
   });
 
   inflight.set(url, promise);
   return promise;
+}
+
+/**
+ * Wait until matching DOM <img> elements are fully loaded + decoded.
+ * Prefer this over detached Image() when the painted nodes already exist.
+ */
+export async function waitForDomImages(
+  imgs: ArrayLike<HTMLImageElement> | HTMLImageElement[],
+): Promise<void> {
+  const list = Array.from(imgs);
+  if (!list.length) return;
+  await Promise.all(
+    list.map(async (img) => {
+      if (!img.getAttribute("src") && !img.currentSrc) return;
+      await loadAndDecode(img);
+    }),
+  );
 }
 
 /** Preload many URLs — current index first when provided. */

@@ -8,15 +8,19 @@ import { SketchLayer } from "./SketchLayer";
 import { parseHomeHash, parseProgrammeHash, scrollToId } from "../lib/scrollToSection";
 import { setLenisInstance } from "../lib/lenisSingleton";
 import { useImageParallax } from "../lib/parallax";
+import { useSplash } from "../lib/splash";
 import "./Layout.css";
 
 export function Layout() {
   const location = useLocation();
+  const { active: splashActive, willShow: splashWillShow, completed: splashCompleted } =
+    useSplash();
   const isDiscover = location.pathname === "/artworks";
   const lenisRef = useRef<Lenis | null>(null);
   const prevPathRef = useRef(location.pathname);
   const prevProgrammesPathRef = useRef(location.pathname);
   const prevHomePathRef = useRef(location.pathname);
+  const splashFadeSuppressedRef = useRef(false);
 
   useEffect(() => {
     if (isDiscover) {
@@ -85,13 +89,25 @@ export function Layout() {
         return;
       }
 
+      // Splash → home handoff already reveals the page; skip the competing fade.
+      if (splashWillShow && location.pathname === "/") {
+        if (!splashCompleted || !splashFadeSuppressedRef.current) {
+          gsap.set(mainRef.current, { autoAlpha: 1, y: 0 });
+          if (splashCompleted) splashFadeSuppressedRef.current = true;
+          return;
+        }
+      }
+
       gsap.fromTo(
         mainRef.current,
         { autoAlpha: 0, y: 10 },
         { autoAlpha: 1, y: 0, duration: 0.65, ease: "power3.out", overwrite: "auto" }
       );
     },
-    { dependencies: [location.pathname], scope: mainRef }
+    {
+      dependencies: [location.pathname, splashActive, splashWillShow, splashCompleted],
+      scope: mainRef,
+    }
   );
 
   // Apply parallax to all content images across every page
