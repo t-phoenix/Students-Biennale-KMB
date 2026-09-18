@@ -96,6 +96,7 @@ export function Home() {
   const [razaModalOpen, setRazaModalOpen] = useState(false);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
+  const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
   const [hoveredPressId, setHoveredPressId] = useState<string>("");
   const [hasInteractedPress, setHasInteractedPress] = useState(false);
@@ -1057,7 +1058,7 @@ export function Home() {
         <section id="press" className="home-section home-press">
           <div className="fig-grid">
             <h2 className="fig-label fig-heading">PRESS</h2>
-            <div className="home-press__items fig-c4-12">
+            <div className={`home-press__items fig-c4-12${hasInteractedPress ? " is-interactive" : ""}`}>
               {pressItems.map((item) => {
                 const isExpanded = (hoveredPressId || pressItems[0]?.id) === item.id;
                 return (
@@ -1072,10 +1073,7 @@ export function Home() {
                         to={`/press?article=${item.id}`}
                         className="home-press__collapsed"
                         tabIndex={isExpanded ? -1 : 0}
-                        onClick={() => {
-                          handlePressLeave();
-                          setHoveredPressId(item.id);
-                        }}
+                        onClick={() => handlePressHover(item.id)}
                       >
                         <span className="home-press__collapsed-title">{item.title}</span>
                         <time className="home-press__collapsed-date">{item.date}</time>
