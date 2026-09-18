@@ -17,7 +17,7 @@
 }
 
 .residencies__rail {
-  text-align: right;
+  text-align: left;
 }
 
 .residencies__rail h1 {
@@ -26,24 +26,12 @@
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   text-transform: uppercase;
-  text-align: right;
-}
-
-.residencies__meta-grid {
-  margin: 0 0 28px;
-  width: 100%;
-}
-
-.residencies__meta-grid .meta-grid__label {
   text-align: left;
 }
 
-.residencies__meta-grid .meta-grid__colon {
-  text-align: center;
-}
-
-.residencies__meta-grid .meta-grid__value {
-  text-align: right;
+.residencies__meta-grid {
+  margin: 0 0 24px;
+  text-align: left;
 }
 
 .residencies__feature-media {
@@ -188,18 +176,6 @@
 @media (max-width: 899px) {
   .residencies__head {
     padding-top: 32px;
-  }
-
-  .residencies__rail {
-    text-align: left;
-  }
-
-  .residencies__rail h1 {
-    text-align: left;
-  }
-
-  .residencies__meta-grid .meta-grid__value {
-    text-align: left;
   }
 
   .residencies__related {
