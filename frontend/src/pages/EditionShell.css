@@ -24,8 +24,11 @@
   color: var(--color-text-tertiary);
   width: 100%;
   text-align: right;
+  transition: color 0.2s ease;
 }
 
+.edition__tabs a:hover,
+.edition__tabs a:focus-visible,
 .edition__tabs a.is-selected {
   color: var(--color-text-primary);
 }
@@ -69,8 +72,11 @@
   width: 100%;
   text-align: right;
   display: block;
+  transition: color 0.2s ease;
 }
 
+.edition__prev a:hover,
+.edition__prev a:focus-visible,
 .edition__prev a.is-selected {
   color: var(--color-text-primary);
 }
