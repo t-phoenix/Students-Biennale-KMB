@@ -382,6 +382,7 @@
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
   position: relative;
+  display: block;
 }
 
 .edition-venue__copy {
@@ -404,6 +405,11 @@
   max-width: none;
   object-fit: cover;
   display: block;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.edition-venue:hover .edition-venue__media img {
+  transform: scale(1.03);
 }
 
 .edition-venue__copy h3 {
@@ -419,7 +425,7 @@
   margin: 0;
   font-size: var(--type-body-size);
   line-height: 1.7;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
 }
 
 .edition-venue__more {
@@ -428,6 +434,7 @@
   font-style: italic;
   font-size: var(--type-body-size);
   color: var(--color-text-secondary);
+  transition: color 0.35s var(--ease-craft);
 }
 
 .edition-venue__more:hover {

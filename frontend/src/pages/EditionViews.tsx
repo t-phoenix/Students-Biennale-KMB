@@ -362,9 +362,14 @@ export function VenueView() {
               plain.length > 280 ? `${plain.slice(0, 280).trimEnd()}…` : plain;
             return (
               <article key={v.id} className="edition-venue">
-                <div className="edition-venue__media">
-                  {v.image ? <img src={v.image} alt="" /> : null}
-                </div>
+                <Link
+                  to={`/editions/${yearId}/venue/${v.id}`}
+                  className="edition-venue__media"
+                  tabIndex={-1}
+                  aria-label={v.name}
+                >
+                  {v.image ? <img src={v.image} alt={v.name} /> : null}
+                </Link>
                 <div className="edition-venue__copy">
                   <Link to={`/editions/${yearId}/venue/${v.id}`}>
                     <h3>{v.name}</h3>
