@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { FormattedParagraphs } from "./FormattedText";
 import { MetaGrid, MetaRow } from "./MetaGrid";
+import { subscribeLenis, getLenisInstance } from "../lib/lenisSingleton";
 import "./CatalogueList.css";
 
 export type CatalogueRow = {
@@ -63,6 +64,54 @@ export function CatalogueList({
       previewRef.current.scrollTop = 0;
     }
   }, [shownId]);
+
+  // Dynamically clamp max-height so the bottom of the preview (e.g. "VIEW ARTWORKS")
+  // is always 100% reachable within the viewport without having to scroll the page.
+  useEffect(() => {
+    const el = previewRef.current;
+    if (!el) return;
+
+    let rafId: number;
+
+    const updateHeight = () => {
+      if (window.innerWidth <= 899) {
+        el.style.maxHeight = "none";
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      const viewportH = window.innerHeight;
+      const bottomInset = 24; // buffer above bottom of viewport
+      const available = Math.max(180, viewportH - rect.top - bottomInset);
+      el.style.maxHeight = `${available}px`;
+    };
+
+    const handleScroll = () => {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateHeight);
+    };
+
+    updateHeight();
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+
+    const unsubscribeLenis = subscribeLenis((lenis) => {
+      if (lenis) {
+        lenis.on("scroll", handleScroll);
+      }
+    });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+      unsubscribeLenis();
+      const lenis = getLenisInstance();
+      if (lenis) {
+        lenis.off("scroll", handleScroll);
+      }
+    };
+  }, [shownId, custom, preview]);
 
   return (
     <div className="catalogue fig-band-9">

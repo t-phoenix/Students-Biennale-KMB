@@ -186,27 +186,35 @@
   grid-column: 4 / span 5;
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-md);
+  max-width: 524px;
+  width: 100%;
+  min-width: 0;
 }
 
 .programmes__single-title {
-  margin: 0 0 16px 0;
+  margin: 0;
   font-size: var(--type-subtitle-size);
   line-height: var(--type-subtitle-line);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--color-text-primary);
+  max-width: 524px;
 }
 
 .programmes__single-content .programmes__meta {
-  margin: 0 0 20px 0;
+  margin: 0;
+  max-width: 524px;
+  width: 100%;
 }
 
 .programmes__single-blurb {
-  margin: 0 0 24px 0;
+  margin: 0;
   font-size: var(--type-body-size);
-  line-height: 1.7;
+  line-height: var(--type-body-line);
   color: var(--color-text-primary);
+  max-width: 524px;
 }
 
 .programmes__single-content .programmes__card-button {
@@ -712,6 +720,7 @@
 
   .programmes__single-content {
     grid-column: 1 / -1;
+    max-width: none;
   }
 
   .programmes__single-content .programmes__card-button {
