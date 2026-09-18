@@ -86,7 +86,7 @@ export function PastWorkshops() {
                             to={`/programmes/past-workshops/${item.id}`}
                             className="home-text-btn past-workshops__more-btn"
                           >
-                            Read article...
+                            Read more...
                           </Link>
                         </div>
                         <time className="past-workshops__featured-date">{item.year}</time>

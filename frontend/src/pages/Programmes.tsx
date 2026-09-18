@@ -340,7 +340,7 @@ export function Programmes() {
                             to={`/programmes/past-workshops/${item.id}`}
                             className="home-text-btn programmes__past-more-btn"
                           >
-                            Read article...
+                            Read more...
                           </Link>
                         </div>
                         <time className="programmes__past-featured-date">{item.year}</time>
