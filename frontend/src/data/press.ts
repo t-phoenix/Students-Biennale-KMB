@@ -3,12 +3,12 @@ import type { PressItem } from "../lib/pressCms/types";
 export const DEFAULT_PRESS_ITEMS: PressItem[] = [
   {
     id: "kbf-curators",
-    title: "KBF Announces Curators For Students' Biennale 2025-26",
+    title: "Kochi Biennale Foundation Announces Curators For Students' Biennale 2025–26",
     date: "4 Dec 2025",
     excerpt:
-      "The Kochi Biennale Foundation (KBF) has announced the curators for Students' Biennale, a key educational initiative of the Kochi Biennale Foundation for budding young artists. The programme works with state-funded art colleges across India, encouraging emerging artists to reflect on their practice and showcase their work on an international stage.",
+      "The Kochi Biennale Foundation has announced the curators for Students' Biennale, a key educational initiative of the Kochi Biennale Foundation for budding young artists. The programme works with state-funded art colleges across India, encouraging emerging artists to reflect on their practice and showcase their work on an international stage.",
     body:
-      "The Kochi Biennale Foundation (KBF) has announced the curators for Students' Biennale, a key educational initiative of the Kochi Biennale Foundation for budding young artists. The programme works with state-funded art colleges across India, encouraging emerging artists to reflect on their practice and showcase their work on an international stage.\n\nNow in its eighth edition, Students' Biennale runs concurrently with the Kochi-Muziris Biennale, offering a national platform for creative dialogue, critical pedagogy, and site-responsive artistic inquiry.",
+      "The Kochi Biennale Foundation has announced the curators for Students' Biennale, a key educational initiative of the Kochi Biennale Foundation for budding young artists. The programme works with state-funded art colleges across India, encouraging emerging artists to reflect on their practice and showcase their work on an international stage.\n\nNow in its eighth edition, Students' Biennale runs concurrently with the Kochi-Muziris Biennale, offering a national platform for creative dialogue, critical pedagogy, and site-responsive artistic inquiry.",
     image: "/home/press-featured.jpg",
   },
   {

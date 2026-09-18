@@ -335,6 +335,10 @@ function residencyCardCopy(description: string, maxChars = 480): string {
   return `${clipped}…`;
 }
 
+function expandKbf(text: string | null | undefined): string {
+  return (text ?? "").replace(/\bKBF\b/g, "Kochi Biennale Foundation");
+}
+
 function mapResidency(row: ProgrammeRow, assets: ProgrammeAsset[]): ResidencyProgramme {
   const cover = firstAsset(row.id, assets, ["hero", "cover"]);
   const gallery = assetsFor(row.id, assets, "gallery");
@@ -344,10 +348,10 @@ function mapResidency(row: ProgrammeRow, assets: ProgrammeAsset[]): ResidencyPro
     id: row.id,
     slug: row.slug,
     title: row.title,
-    host: oneLine(row.host) || formatFacilitators(row),
+    host: expandKbf(oneLine(row.host) || formatFacilitators(row)),
     period: oneLine(row.dates),
     venue: oneLine(row.place),
-    awardees: oneLine(row.awardees),
+    awardees: expandKbf(oneLine(row.awardees)),
     copy: residencyCardCopy(description),
     description,
     heroImage: cover || "",

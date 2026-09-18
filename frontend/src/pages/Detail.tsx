@@ -338,6 +338,11 @@ export function Detail() {
     const v = data.item;
     const slides = venueImages(v);
     const venueWorks = artworksForVenueIn(catalogue.artworks, v);
+    const venueIndex = catalogue.venues.findIndex((item) => item.id === v.id);
+    const nextVenue =
+      venueIndex >= 0 && catalogue.venues.length > 1
+        ? catalogue.venues[(venueIndex + 1) % catalogue.venues.length]
+        : undefined;
 
     return (
       <div ref={root} className="detail" key={v.id}>
@@ -393,7 +398,7 @@ export function Detail() {
           <div className="fig-grid detail__section">
             <p className="fig-label fig-subheading detail__label detail-reveal">Artworks</p>
             <div className="fig-c4-12 fig-sub-3 detail__cards detail-reveal">
-              {venueWorks.slice(0, 3).map((a) => (
+              {venueWorks.map((a) => (
                 <Link
                   key={a.id}
                   to={artworkDetailPath(yearId, a.id, searchParams, {
@@ -423,12 +428,14 @@ export function Detail() {
             <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
-          <CtaLink
-            className="detail__next"
-            to={`/editions/${yearId}/artworks`}
-            lines={["View", "MORE"]}
-            spacing={["0.26em", "0.135em"]}
-          />
+          {nextVenue ? (
+            <CtaLink
+              className="detail__next"
+              to={`/editions/${yearId}/venue/${nextVenue.id}`}
+              lines={["NEXT"]}
+              ariaLabel={`Next venue: ${nextVenue.name}`}
+            />
+          ) : null}
         </div>
       </div>
     );

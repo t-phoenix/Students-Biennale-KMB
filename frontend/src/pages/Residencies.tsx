@@ -82,10 +82,16 @@ export function Residencies() {
         <div className="residencies__rail fig-rail">
           <h1>{featured.title}</h1>
           <MetaGrid className="residencies__meta-grid">
-            <MetaRow label="Host" value={featured.host} />
+            <MetaRow
+              label="Host"
+              value={featured.host?.replace(/\bKBF\b/g, "Kochi Biennale Foundation")}
+            />
             <MetaRow label="Period" value={featured.period} />
             <MetaRow label="Venue" value={featured.venue} />
-            <MetaRow label="Awardees" value={featured.awardees} />
+            <MetaRow
+              label="Awardees"
+              value={featured.awardees?.replace(/\bKBF\b/g, "Kochi Biennale Foundation")}
+            />
           </MetaGrid>
         </div>
 

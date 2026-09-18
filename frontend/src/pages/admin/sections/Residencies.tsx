@@ -201,7 +201,7 @@ export function ResidenciesSection({ notify, confirm }: SectionProps) {
             label="Host"
             value={editing.host ?? ""}
             onChange={(v) => setEditing({ ...editing, host: v })}
-            placeholder="e.g. KBF"
+            placeholder="e.g. Kochi Biennale Foundation"
           />
           <div className="adm-form-row">
             <FormField
