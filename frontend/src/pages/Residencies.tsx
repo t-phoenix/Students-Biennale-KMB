@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
+import { BrandArrow } from "../components/BrandArrow";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import { useProgrammes } from "../lib/programmes";
 import { SectionEmpty } from "../components/SectionEmpty";
@@ -76,6 +77,14 @@ export function Residencies() {
   const related = residencies.filter((r) => r.id !== featured.id);
   const hasRelated = related.length > 0;
 
+  const residencyIndex = residencies.findIndex(
+    (r) => r.id === featured.id || r.slug.toLowerCase() === featured.slug.toLowerCase(),
+  );
+  const nextResidency =
+    residencyIndex >= 0 && residencies.length > 1
+      ? residencies[(residencyIndex + 1) % residencies.length]
+      : undefined;
+
   return (
     <div ref={root} className="residencies">
       <div className="fig-grid residencies__head">
@@ -124,8 +133,8 @@ export function Residencies() {
         </div>
       ) : null}
 
-      <div className="fig-grid residencies__related">
-        {hasRelated ? (
+      {hasRelated ? (
+        <div className="fig-grid residencies__related">
           <ul className="residencies__list fig-c4-12">
             {related.map((item) => {
               const excerpt = item.copy || item.description.split(/\n\s*\n/)[0] || "";
@@ -161,13 +170,23 @@ export function Residencies() {
               );
             })}
           </ul>
+        </div>
+      ) : null}
+
+      <div className="fig-grid residencies__nav">
+        <Link className="fig-c1-3 residencies__back" to="/programmes#residencies">
+          <BrandArrow direction="left" />
+          <span>BACK</span>
+        </Link>
+        {nextResidency ? (
+          <CtaLink
+            className="residencies__next"
+            variant="next"
+            to={`/programmes/residencies?residency=${nextResidency.slug}`}
+            lines={["NEXT"]}
+            ariaLabel={`Next residency: ${nextResidency.title}`}
+          />
         ) : null}
-        <CtaLink
-          className={`fig-cta-end residencies__more${hasRelated ? "" : " fig-c4-12"}`}
-          to="/programmes#residencies"
-          lines={["View", "MORE"]}
-          spacing={["0.26em", "0.135em"]}
-        />
       </div>
 
       {lightboxIndex !== null ? (

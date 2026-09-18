@@ -1,10 +1,27 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
+import { BrandArrow } from "../components/BrandArrow";
+import { CtaLink } from "../components/CtaLink";
+import { GalleryLightbox } from "../components/GalleryLightbox";
 import { usePressItems } from "../lib/pressCms";
+import type { PressItem } from "../lib/pressCms/types";
 import "./Press.css";
+
+function findArticle(articles: PressItem[], key: string): PressItem | undefined {
+  if (!key) return undefined;
+  const lower = key.toLowerCase();
+  return articles.find(
+    (p) =>
+      p.id.toLowerCase() === lower ||
+      p.slug?.toLowerCase() === lower ||
+      p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") === lower ||
+      p.id.toLowerCase().includes(lower) ||
+      lower.includes(p.id.toLowerCase()),
+  );
+}
 
 export function Press() {
   const root = useRef<HTMLDivElement>(null);
@@ -12,18 +29,32 @@ export function Press() {
   const [params, setParams] = useSearchParams();
   const { items: articles } = usePressItems();
   const [hoveredArticleId, setHoveredArticleId] = useState<string>("");
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  const articleId = params.get("article") ?? articles[0]?.id;
+  const articleParam = params.get("article");
 
-  const featured = useMemo(
-    () => articles.find((p) => p.id === articleId) ?? articles[0],
-    [articleId, articles],
-  );
+  const featured = useMemo(() => {
+    if (articleParam) {
+      const match = findArticle(articles, articleParam);
+      if (match) return match;
+    }
+    return articles[0];
+  }, [articleParam, articles]);
 
   const relatedArticles = useMemo(
     () => articles.filter((p) => p.id !== featured?.id),
     [articles, featured?.id],
   );
+
+  const articleIndex = useMemo(
+    () => articles.findIndex((p) => p.id === featured?.id),
+    [articles, featured?.id],
+  );
+
+  const nextArticle =
+    articleIndex >= 0 && articles.length > 1
+      ? articles[(articleIndex + 1) % articles.length]
+      : undefined;
 
   const activeArticleId =
     hoveredArticleId && relatedArticles.some((p) => p.id === hoveredArticleId)
@@ -62,6 +93,8 @@ export function Press() {
       </div>
     );
   }
+
+  const gallery = (featured as { galleryImages?: string[] }).galleryImages ?? [];
 
   return (
     <div ref={root} className="press">
@@ -103,6 +136,23 @@ export function Press() {
           ) : null}
         </article>
       </div>
+
+      {/* Edge-to-edge 4-column gallery if images exist */}
+      {gallery.length ? (
+        <div className="fig-grid press__gallery">
+          {gallery.map((img, idx) => (
+            <button
+              key={img}
+              type="button"
+              className="press__gallery-slot"
+              onClick={() => setLightboxIndex(idx)}
+              aria-label={`View image ${idx + 1}`}
+            >
+              <img src={img} alt="" />
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       {relatedArticles.length > 0 ? (
@@ -192,6 +242,32 @@ export function Press() {
             })}
           </ul>
         </div>
+      ) : null}
+
+      {/* Navigation */}
+      <div className="fig-grid press__nav">
+        <Link className="fig-c1-3 press__back" to="/#press">
+          <BrandArrow direction="left" />
+          <span>BACK</span>
+        </Link>
+        {nextArticle ? (
+          <CtaLink
+            className="press__next"
+            variant="next"
+            to={`/press?article=${nextArticle.id}`}
+            lines={["NEXT"]}
+            ariaLabel={`Next article: ${nextArticle.title}`}
+          />
+        ) : null}
+      </div>
+
+      {lightboxIndex !== null ? (
+        <GalleryLightbox
+          images={gallery}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
       ) : null}
     </div>
   );

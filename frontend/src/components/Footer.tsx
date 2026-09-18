@@ -9,7 +9,7 @@ const CROW_THEORY_URL = "https://www.thecrowtheory.com/";
 const SOCIAL = [
   {
     label: "Instagram",
-    href: "https://www.instagram.com/studentsbiennale/",
+    href: "https://www.instagram.com/kochibiennale/",
     icon: "/icons/social-instagram.svg",
   },
   {

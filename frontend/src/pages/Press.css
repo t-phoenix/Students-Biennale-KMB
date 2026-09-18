@@ -17,7 +17,7 @@
 }
 
 .press__rail {
-  text-align: right;
+  text-align: left;
 }
 
 .press__rail h1 {
@@ -26,24 +26,12 @@
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   text-transform: uppercase;
-  text-align: right;
-}
-
-.press__meta {
-  margin: 0 0 28px;
-  width: 100%;
-}
-
-.press__meta .meta-grid__label {
   text-align: left;
 }
 
-.press__meta .meta-grid__colon {
-  text-align: center;
-}
-
-.press__meta .meta-grid__value {
-  text-align: right;
+.press__meta {
+  margin: 0 0 24px;
+  text-align: left;
 }
 
 
@@ -77,6 +65,38 @@
 
 .press__feature a {
   text-decoration: none;
+}
+
+/* Edge-to-edge 4-column gallery grid across all 12 cols (like Previous Editions & Residencies) */
+.press__gallery {
+  padding-top: 80px;
+  row-gap: 20px;
+  column-gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.press__gallery-slot {
+  position: relative;
+  aspect-ratio: 315 / 260;
+  overflow: hidden;
+  background: var(--color-neutral-gray-mid);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+}
+
+.press__gallery-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.press__gallery-slot:hover img {
+  transform: scale(1.04);
 }
 
 .press__related {
@@ -287,8 +307,43 @@
   max-width: 524px;
 }
 
-.press__read-btn {
-  margin-top: 0;
+.press__nav {
+  padding-top: 60px;
+  align-items: center;
+}
+
+.press__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  align-self: center;
+}
+
+.press__back .brand-arrow {
+  width: 44px;
+  height: 44px;
+  transition: transform 0.25s ease;
+}
+
+.press__back:hover .brand-arrow {
+  transform: translateX(-4px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press__back:hover .brand-arrow {
+    transform: none;
+  }
+}
+
+.press__next {
+  grid-column: 4 / -1;
+  justify-self: end;
 }
 
 @media (max-width: 899px) {
@@ -308,8 +363,27 @@
     text-align: left;
   }
 
+  .press__gallery {
+    padding-top: 44px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
   .press__related {
     padding-top: 40px;
+  }
+
+  .press__nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 40px;
+    width: 100%;
+  }
+
+  .press__next {
+    grid-column: auto;
+    justify-self: auto;
   }
 
   .press__teaser {

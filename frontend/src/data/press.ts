@@ -3,6 +3,7 @@ import type { PressItem } from "../lib/pressCms/types";
 export const DEFAULT_PRESS_ITEMS: PressItem[] = [
   {
     id: "kbf-curators",
+    slug: "kbf-announces-curators-for-students-biennale-2025-26",
     title: "KBF Announces Curators For Students' Biennale 2025-26",
     date: "4 Dec 2025",
     excerpt:

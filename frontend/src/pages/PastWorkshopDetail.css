@@ -9,7 +9,7 @@
 }
 
 .past-workshop-detail__rail {
-  text-align: right;
+  text-align: left;
 }
 
 .past-workshop-detail__rail h1 {
@@ -18,12 +18,13 @@
   line-height: var(--type-title-line);
   font-weight: var(--type-title-weight);
   text-transform: uppercase;
-  text-align: right;
+  text-align: left;
 }
 
 .past-workshop-detail__meta {
   margin: 0 0 28px;
   width: 100%;
+  text-align: left;
 }
 
 .past-workshop-detail__meta .meta-grid__label {
@@ -35,7 +36,7 @@
 }
 
 .past-workshop-detail__meta .meta-grid__value {
-  text-align: right;
+  text-align: left;
 }
 
 .past-workshop-detail__feature-media {
