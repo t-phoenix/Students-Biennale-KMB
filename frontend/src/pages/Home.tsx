@@ -96,35 +96,20 @@ export function Home() {
   const [razaModalOpen, setRazaModalOpen] = useState(false);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
-  const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
   const [hoveredPressId, setHoveredPressId] = useState<string>("");
-  const pressHoverTimeoutRef = useRef<number | null>(null);
+  const [hasInteractedPress, setHasInteractedPress] = useState(false);
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   const handlePressHover = (id: string) => {
-    if (pressHoverTimeoutRef.current) {
-      window.clearTimeout(pressHoverTimeoutRef.current);
-    }
-    pressHoverTimeoutRef.current = window.setTimeout(() => {
-      setHoveredPressId(id);
-    }, 45);
+    setHasInteractedPress(true);
+    setHoveredPressId(id);
   };
 
   const handlePressLeave = () => {
-    if (pressHoverTimeoutRef.current) {
-      window.clearTimeout(pressHoverTimeoutRef.current);
-    }
+    // Keep last hovered active or stable
   };
-
-  useEffect(() => {
-    return () => {
-      if (pressHoverTimeoutRef.current) {
-        window.clearTimeout(pressHoverTimeoutRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (razaModalOpen || openScholarId !== null || activeCard !== null || lightboxOpen) {

@@ -105,26 +105,24 @@ export function Residencies() {
           ) : featured.copy ? (
             <p>{featured.copy}</p>
           ) : null}
-
-          {gallery.length ? (
-            <div className="residencies__gallery">
-              <div className="residencies__gallery-grid">
-                {gallery.map((img, idx) => (
-                  <button
-                    key={img}
-                    type="button"
-                    className="residencies__gallery-item"
-                    onClick={() => setLightboxIndex(idx)}
-                    aria-label={`View image ${idx + 1}`}
-                  >
-                    <img src={img} alt="" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
         </article>
       </div>
+
+      {gallery.length ? (
+        <div className="fig-grid residencies__gallery">
+          {gallery.map((img, idx) => (
+            <button
+              key={img}
+              type="button"
+              className="residencies__gallery-slot"
+              onClick={() => setLightboxIndex(idx)}
+              aria-label={`View image ${idx + 1}`}
+            >
+              <img src={img} alt="" />
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="fig-grid residencies__related">
         {hasRelated ? (
