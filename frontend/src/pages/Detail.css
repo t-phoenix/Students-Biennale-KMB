@@ -375,12 +375,12 @@
   line-height: var(--type-caption-line);
 }
 
-/* Regular weight per client feedback (was --type-title-weight, 600). */
+/* Medium weight (500) to match curator titles and page headings. */
 .detail__note-title {
   margin: 0 0 24px;
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
-  font-weight: 400;
+  font-weight: 500;
   text-transform: uppercase;
 }
 
