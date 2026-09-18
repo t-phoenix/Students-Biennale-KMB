@@ -87,26 +87,24 @@ export function PastWorkshopDetail() {
               Documentation for this workshop is being archived.
             </p>
           )}
-
-          {gallery.length ? (
-            <div className="past-workshop-detail__gallery">
-              <div className="past-workshop-detail__gallery-grid">
-                {gallery.map((img, i) => (
-                  <button
-                    key={img}
-                    className="past-workshop-detail__gallery-item"
-                    onClick={() => setLightboxIndex(i)}
-                    aria-label={`View image ${i + 1}`}
-                    type="button"
-                  >
-                    <img src={img} alt="" />
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
         </article>
       </div>
+
+      {gallery.length ? (
+        <div className="fig-grid past-workshop-detail__gallery workshop-reveal">
+          {gallery.map((img, i) => (
+            <button
+              key={img}
+              className="past-workshop-detail__gallery-slot"
+              onClick={() => setLightboxIndex(i)}
+              aria-label={`View image ${i + 1}`}
+              type="button"
+            >
+              <img src={img} alt="" />
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="fig-grid past-workshop-detail__nav">
         <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
