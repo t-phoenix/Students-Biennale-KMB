@@ -161,7 +161,7 @@
 .programmes__single-media-wrap {
   grid-column: 1 / span 3;
   width: 100%;
-  aspect-ratio: 314 / 273;
+  height: 251px;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
   position: relative;
