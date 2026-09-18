@@ -122,12 +122,12 @@
   top: calc(var(--nav-height, 72px) + 20px);
   min-width: 0;
   height: auto;
-  max-height: calc(100dvh - var(--nav-height, 72px) - 32px);
+  max-height: calc(100dvh - var(--nav-height, 72px) - 160px);
   overflow-y: auto;
   overflow-x: hidden;
   padding-left: var(--grid-gutter);
   padding-right: 14px;
-  padding-bottom: 32px;
+  padding-bottom: 24px;
   box-sizing: border-box;
   overscroll-behavior: contain;
   scrollbar-width: thin;
