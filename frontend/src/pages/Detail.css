@@ -354,14 +354,14 @@
 }
 
 .detail__zone p {
-  margin: 22px 0 0;
+  margin: 4px 0 0;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   color: var(--color-text-secondary);
 }
 
 .detail__zone-assistant {
-  margin-top: 32px !important;
+  margin-top: 4px !important;
 }
 
 .detail__card-venue {
