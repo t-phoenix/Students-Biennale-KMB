@@ -57,31 +57,29 @@ export function PastWorkshopDetail() {
 
   return (
     <div ref={root} className="past-workshop-detail" key={workshop.id}>
-      {workshop.heroImage ? (
-        <div className="past-workshop-detail__hero workshop-reveal">
-          <img src={workshop.heroImage} alt="" className="past-workshop-detail__hero-img" />
-        </div>
-      ) : (
-        <div className="past-workshop-detail__hero past-workshop-detail__hero--fallback workshop-reveal" aria-hidden />
-      )}
-
-      <div className="fig-grid past-workshop-detail__section workshop-reveal">
-        <div className="fig-c4-9">
-          <h1 className="past-workshop-detail__title">{workshop.title}</h1>
+      <div className="fig-grid past-workshop-detail__head workshop-reveal">
+        <div className="past-workshop-detail__rail fig-rail">
+          <h1>{workshop.title}</h1>
           <MetaGrid className="past-workshop-detail__meta">
             <MetaRow label="Facilitators" value={workshop.facilitators} />
             <MetaRow label="Location" value={workshop.location} />
             <MetaRow label="Year" value={workshop.year} />
           </MetaGrid>
         </div>
-      </div>
 
-      <div className="fig-grid past-workshop-detail__section workshop-reveal">
-        <div className="fig-c4-9">
+        <article className="past-workshop-detail__feature fig-c4-9">
+          <div className="past-workshop-detail__feature-media">
+            {workshop.heroImage ? (
+              <img src={workshop.heroImage} alt="" />
+            ) : (
+              <div aria-hidden />
+            )}
+          </div>
+
           {descriptionParas.length ? (
-            <div className="past-workshop-detail__description">
-              {descriptionParas.map((paragraph) => (
-                <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+            <div className="past-workshop-detail__body">
+              {descriptionParas.map((paragraph, pIdx) => (
+                <p key={pIdx}>{paragraph}</p>
               ))}
             </div>
           ) : (
@@ -89,28 +87,26 @@ export function PastWorkshopDetail() {
               Documentation for this workshop is being archived.
             </p>
           )}
-        </div>
-      </div>
 
-      {gallery.length ? (
-        <div className="fig-grid past-workshop-detail__section workshop-reveal">
-          <div className="fig-c4-12">
-            <div className="gallery-grid">
-              {gallery.map((img, i) => (
-                <button
-                  key={img}
-                  className="gallery-item"
-                  onClick={() => setLightboxIndex(i)}
-                  aria-label={`View image ${i + 1}`}
-                  type="button"
-                >
-                  <img src={img} alt="" />
-                </button>
-              ))}
+          {gallery.length ? (
+            <div className="past-workshop-detail__gallery">
+              <div className="past-workshop-detail__gallery-grid">
+                {gallery.map((img, i) => (
+                  <button
+                    key={img}
+                    className="past-workshop-detail__gallery-item"
+                    onClick={() => setLightboxIndex(i)}
+                    aria-label={`View image ${i + 1}`}
+                    type="button"
+                  >
+                    <img src={img} alt="" />
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+          ) : null}
+        </article>
+      </div>
 
       <div className="fig-grid past-workshop-detail__nav">
         <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
