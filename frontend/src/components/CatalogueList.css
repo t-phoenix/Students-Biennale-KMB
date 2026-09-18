@@ -119,16 +119,15 @@
 .catalogue__preview {
   grid-column: 6 / span 4;
   position: sticky;
-  top: calc(var(--nav-height) + 20px);
+  top: calc(var(--nav-height, 72px) + 20px);
   min-width: 0;
-  height: calc(100dvh - 300px);
-  max-height: calc(100dvh - 300px);
-  min-height: 260px;
+  height: auto;
+  max-height: calc(100dvh - var(--nav-height, 72px) - 32px);
   overflow-y: auto;
   overflow-x: hidden;
   padding-left: var(--grid-gutter);
   padding-right: 14px;
-  padding-bottom: 96px;
+  padding-bottom: 32px;
   box-sizing: border-box;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -308,13 +307,13 @@
 .curator-panel {
   display: flex;
   flex-direction: column;
-  padding-bottom: 56px;
+  padding-bottom: 16px;
 }
 
 .curator-panel__more {
   display: inline-block;
   margin-top: 14px;
-  margin-bottom: 48px;
+  margin-bottom: 24px;
   font-size: var(--type-body-size);
   font-style: italic;
   color: var(--color-text-secondary);
