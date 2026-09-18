@@ -310,8 +310,9 @@
 }
 
 .edition-overview__pipe {
-  font-weight: 700;
+  font-weight: 400;
   padding: 0 0.25em;
+  color: var(--color-text-secondary, #545454);
 }
 
 .edition-overview__inst-name {
@@ -331,25 +332,26 @@
 .edition-overview__downloads-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 48px;
+  align-items: flex-start;
 }
 
 .edition-overview__download-card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  width: 240px;
-  min-height: 90px;
-  padding: 20px;
-  border: 1px solid var(--color-text-primary);
+  gap: 6px;
   text-decoration: none;
   color: var(--color-text-primary);
-  background: var(--color-neutral-white, #FFFFFF);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  background: transparent;
+  border: none;
+  padding: 0;
+  min-height: auto;
+  width: auto;
+  transition: opacity 0.2s ease;
 }
 
 .edition-overview__download-card:hover {
-  opacity: 0.8;
+  opacity: 0.7;
 }
 
 .edition-overview__download-title {
@@ -361,12 +363,11 @@
 }
 
 .edition-overview__download-action {
-  margin-top: 14px;
   font-size: 12px;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary, #545454);
 }
 
 /* Photographic Gallery — 2 rows of 4 columns across 12 cols (Figma 66:61). */
@@ -441,14 +442,15 @@
   .edition-overview__downloads-grid {
     flex-direction: column;
     width: 100%;
-    gap: 12px;
+    gap: 20px;
   }
 
   .edition-overview__download-card {
     width: 100%;
     min-height: auto;
-    padding: 16px;
-    border-radius: 8px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
   }
 
   .edition-overview__gallery {

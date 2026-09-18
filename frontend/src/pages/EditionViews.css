@@ -428,15 +428,18 @@
   color: var(--color-text-primary);
 }
 
+.edition-venue__copy > a.edition-venue__more,
 .edition-venue__more {
   display: inline-block;
   margin-top: 12px;
   font-style: italic;
   font-size: var(--type-body-size);
-  color: var(--color-text-secondary);
+  color: var(--color-text-secondary, #545454);
+  text-decoration: none;
   transition: color 0.35s var(--ease-craft);
 }
 
+.edition-venue__copy > a.edition-venue__more:hover,
 .edition-venue__more:hover {
   color: var(--color-text-primary);
 }

@@ -325,12 +325,12 @@ const ED_2018_19: EditionOverviewData = {
   },
   downloads: [
     {
-      title: "SB Catalogue 2018 -19",
+      title: "SB Catalogue 2018–19",
       label: "Download",
       href: "#",
     },
     {
-      title: "SB Workshops Report 2018 -19",
+      title: "SB Workshop Report 2018–19",
       label: "Download",
       href: "#",
     },
@@ -649,12 +649,16 @@ const ED_2022_23: EditionOverviewData = {
   },
   {
     "institution": "Ambedkar University Delhi",
-    "artists": "Malik Irtiza   |   University of Kashmir, Jammu and Kashmir — Aurooj Nasir, Nasir Hassan, Sadaf Sawlath"
+    "artists": "Malik Irtiza"
+  },
+  {
+    "institution": "University of Kashmir, Jammu and Kashmir",
+    "artists": "Aurooj Nasir, Nasir Hassan, Sadaf Sawlath"
   }
 ],
   downloads: [
     {
-      title: "SB Catalogue 2022 -23",
+      title: "SB Catalogue 2022–23",
       label: "Download",
       href: "#",
     },
