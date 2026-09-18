@@ -150,17 +150,18 @@
   line-height: var(--type-body-line);
 }
 
-/* Single upcoming workshop layout (Figma node 101:193) */
+/* Single upcoming workshop layout (aligned to 9-column band within cols 4-12) */
 .programmes__single-workshop {
   display: grid;
-  grid-template-columns: minmax(0, 482px) minmax(0, 425px);
-  column-gap: var(--grid-gutter, 20px);
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
   align-items: start;
 }
 
 .programmes__single-media-wrap {
+  grid-column: 1 / span 3;
   width: 100%;
-  aspect-ratio: 482 / 273;
+  aspect-ratio: 314 / 273;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
   position: relative;
@@ -182,10 +183,9 @@
 }
 
 .programmes__single-content {
+  grid-column: 4 / span 5;
   display: flex;
   flex-direction: column;
-  min-height: 273px;
-  box-sizing: border-box;
 }
 
 .programmes__single-title {
@@ -203,15 +203,14 @@
 }
 
 .programmes__single-blurb {
-  margin: 0;
+  margin: 0 0 24px 0;
   font-size: var(--type-body-size);
   line-height: 1.7;
   color: var(--color-text-primary);
 }
 
 .programmes__single-content .programmes__card-button {
-  margin-top: auto;
-  padding-top: 20px;
+  margin-top: 0;
 }
 
 .programmes__card-button {
@@ -705,8 +704,14 @@
     row-gap: 24px;
   }
 
+  .programmes__single-media-wrap {
+    grid-column: 1 / -1;
+    height: auto;
+    aspect-ratio: 324 / 251;
+  }
+
   .programmes__single-content {
-    min-height: auto;
+    grid-column: 1 / -1;
   }
 
   .programmes__single-content .programmes__card-button {
