@@ -71,6 +71,9 @@
 .fig-c4-9 {
   grid-column: 4 / span 6;
 }
+.fig-c4-10 {
+  grid-column: 4 / span 7;
+}
 .fig-c4-11 {
   grid-column: 4 / span 8;
 }

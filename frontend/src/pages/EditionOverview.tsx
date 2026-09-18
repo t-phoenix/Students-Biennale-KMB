@@ -584,7 +584,11 @@ function cleanIntroParagraphs(
             {subtitle}
           </h1>
         )}
-        <div className="fig-c4-9 edition-overview__intro edition-overview__reveal">
+        <div
+          className={`${
+            isPreviousEdition ? "fig-c4-10" : "fig-c4-9"
+          } edition-overview__intro edition-overview__reveal`}
+        >
           {intro.map((para, i) => (
             <p key={i} className="fig-body">
               <HighlightText text={para} query={highlight} />

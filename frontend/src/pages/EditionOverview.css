@@ -125,10 +125,6 @@
   margin: 0;
 }
 
-.edition-overview--previous .edition-overview__intro {
-  max-width: 650px;
-}
-
 .edition-overview--previous .edition-overview__intro .fig-body {
   font-size: 16px;
   line-height: 1.7;
