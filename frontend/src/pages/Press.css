@@ -17,7 +17,7 @@
 }
 
 .press__rail {
-  text-align: left;
+  text-align: right;
 }
 
 .press__rail h1 {
@@ -31,11 +31,15 @@
 
 .press__meta {
   margin: 0 0 28px;
-  text-align: left;
+  width: 100%;
 }
 
 .press__meta .meta-grid__label {
   text-align: left;
+}
+
+.press__meta .meta-grid__colon {
+  text-align: center;
 }
 
 .press__meta .meta-grid__value {
@@ -290,6 +294,18 @@
 @media (max-width: 899px) {
   .press__head {
     padding-top: 32px;
+  }
+
+  .press__rail {
+    text-align: left;
+  }
+
+  .press__rail h1 {
+    text-align: left;
+  }
+
+  .press__meta .meta-grid__value {
+    text-align: left;
   }
 
   .press__related {

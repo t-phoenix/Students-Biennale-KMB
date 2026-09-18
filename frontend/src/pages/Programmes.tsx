@@ -230,24 +230,54 @@ export function Programmes() {
       {upcomingWorkshops.length ? (
         <section id="workshops" className="programmes__block fig-grid prog-reveal">
           <h1 className="fig-label fig-subheading">UPCOMING WORKSHOPS</h1>
-          <div className="programmes__cards fig-c4-12 fig-sub-3">
-            {upcomingWorkshops.map((p) => (
-              <article key={p.id}>
-                <div className="programmes__card-media-wrap">
-                  <img src={p.image} alt="" className="programmes__card-media" />
-                </div>
-                <h2>{p.title}</h2>
-                <MetaGrid className="programmes__meta meta-grid--compact meta-grid--tight-colon">
-                  <MetaRow label="Date" value={p.date} />
-                  <MetaRow label="Facilitator" value={p.place} />
-                </MetaGrid>
-                <p>{p.blurb}</p>
-                <button type="button" className="home-text-btn programmes__card-button">
-                  Know more...
-                </button>
-              </article>
-            ))}
-          </div>
+          {upcomingWorkshops.length === 1 ? (
+            (() => {
+              const single = upcomingWorkshops[0];
+              return (
+                <article className="programmes__single-workshop fig-c4-12">
+                  <div className="programmes__single-media-wrap">
+                    <img
+                      src={single.image}
+                      alt={single.title || "Upcoming workshop"}
+                      className="programmes__single-media"
+                    />
+                  </div>
+                  <div className="programmes__single-content">
+                    <h2 className="programmes__single-title">{single.title}</h2>
+                    <MetaGrid className="programmes__meta meta-grid--compact meta-grid--tight-colon">
+                      <MetaRow label="Date" value={single.date} />
+                      <MetaRow label="Facilitators" value={single.place} />
+                    </MetaGrid>
+                    {single.blurb ? (
+                      <p className="programmes__single-blurb">{single.blurb}</p>
+                    ) : null}
+                    <button type="button" className="home-text-btn programmes__card-button">
+                      Know more...
+                    </button>
+                  </div>
+                </article>
+              );
+            })()
+          ) : (
+            <div className="programmes__cards fig-c4-12 fig-sub-3">
+              {upcomingWorkshops.map((p) => (
+                <article key={p.id}>
+                  <div className="programmes__card-media-wrap">
+                    <img src={p.image} alt="" className="programmes__card-media" />
+                  </div>
+                  <h2>{p.title}</h2>
+                  <MetaGrid className="programmes__meta meta-grid--compact meta-grid--tight-colon">
+                    <MetaRow label="Date" value={p.date} />
+                    <MetaRow label="Facilitator" value={p.place} />
+                  </MetaGrid>
+                  <p>{p.blurb}</p>
+                  <button type="button" className="home-text-btn programmes__card-button">
+                    Know more...
+                  </button>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       ) : null}
 
