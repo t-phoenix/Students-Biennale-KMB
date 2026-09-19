@@ -37,7 +37,7 @@ export const TEAM_COLS: readonly (readonly (readonly string[])[])[] = [
   [
     ["Director of Programmes", "Mario D'Souza"],
     ["Programme Managers", "Mashoor Ali M", "Ananthan Suresh", "Rebecca Martin"],
-    ["Programmes Assistants", "Nikhita Thevannoor", "Maanav Jalan"],
+    ["Programmes Assistants", "Nikhita Thevanoor", "Maanav Jalan"],
   ],
   [
     ["Production Managers", "Harshada Vijay", "DC Charan"],

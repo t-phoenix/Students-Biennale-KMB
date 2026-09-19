@@ -43,5 +43,18 @@ describe("editions data", () => {
     const ed2025 = getEditionOverview("2025-26");
     expect(ed2025.id).toBe("2025-26");
     expect(ed2025.nextId).toBeUndefined();
+    expect(ed2025.team.length).toBe(3);
+    // Column 1: Director of Programmes, Programme Managers, Programmes Assistants
+    expect(ed2025.team[0][0][0]).toBe("Director of Programmes");
+    expect(ed2025.team[0][1][0]).toBe("Programme Managers");
+    expect(ed2025.team[0][2][0]).toBe("Programmes Assistants");
+    // Column 2: Production Managers, Production Assistants, Accounts Manager
+    expect(ed2025.team[1][0][0]).toBe("Production Managers");
+    expect(ed2025.team[1][1][0]).toBe("Production Assistants");
+    expect(ed2025.team[1][2][0]).toBe("Accounts Manager");
+    // Column 3: Social Media and Catalogue, Web Design and Services
+    expect(ed2025.team[2][0][0]).toBe("Social Media and Catalogue");
+    expect(ed2025.team[2][1][0]).toBe("Web Design and Services");
   });
 });
+

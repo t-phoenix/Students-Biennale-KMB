@@ -58,11 +58,29 @@ function sensingStripFromCatalogue(
   return urls;
 }
 
-/** Parse catalogue team markdown (`- Role: Name`) into Home about-team columns. */
-function teamColsFromBody(body: string | null | undefined): typeof TEAM_COLS | null {
-  if (!body?.trim()) return null;
+const ROLE_TO_COLUMN_INDEX: Record<string, number> = {
+  "director of programmes": 0,
+  "programme managers": 0,
+  "programme manager": 0,
+  "programmes assistants": 0,
+  "programme assistants": 0,
+  "programmes assistant": 0,
+  "production managers": 1,
+  "production manager": 1,
+  "production assistants": 1,
+  "production assistant": 1,
+  "accounts manager": 1,
+  "account manager": 1,
+  "social media and catalogue": 2,
+  "social media": 2,
+  "web design and services": 2,
+  "web design & services": 2,
+  "web design": 2,
+};
+
+function parseRoleLines(text: string): readonly (readonly string[])[] {
   const byRole = new Map<string, string[]>();
-  for (const line of body.split("\n")) {
+  for (const line of text.split("\n")) {
     const match = line.trim().match(/^-?\s*(.+?):\s*(.+)\s*$/);
     if (!match) continue;
     const role = match[1].trim();
@@ -72,13 +90,69 @@ function teamColsFromBody(body: string | null | undefined): typeof TEAM_COLS | n
     list.push(name);
     byRole.set(role, list);
   }
-  if (!byRole.size) return null;
-  const entries = [...byRole.entries()].map(([role, people]) => [role, ...people] as const);
-  const cols: (readonly (readonly string[])[])[] = [[], [], []];
+  return [...byRole.entries()].map(([role, people]) => [role, ...people] as const);
+}
+
+/** Parse catalogue team markdown (`- Role: Name`) into Home about-team columns. */
+function teamColsFromBody(body: string | null | undefined): typeof TEAM_COLS | null {
+  if (!body?.trim()) return null;
+
+  // Support explicit multi-column markdown separated by '---'
+  if (body.includes("---")) {
+    const sections = body
+      .split(/\n\s*---\s*\n/)
+      .map((s) => parseRoleLines(s))
+      .filter((c) => c.length > 0);
+    if (sections.length > 0) {
+      return sections as unknown as typeof TEAM_COLS;
+    }
+  }
+
+  const entries = parseRoleLines(body);
+  if (!entries.length) return null;
+
+  // Map known roles to canonical 3-column layout matching Figma
+  const cols: (readonly string[])[][] = [[], [], []];
+  let hasMappedRole = false;
+
+  for (const entry of entries) {
+    const roleLower = entry[0].toLowerCase();
+    const colIdx = ROLE_TO_COLUMN_INDEX[roleLower];
+    if (colIdx !== undefined) {
+      const normalizedEntry: readonly string[] =
+        roleLower === "social media"
+          ? ["Social Media and Catalogue", ...entry.slice(1)]
+          : entry;
+      cols[colIdx].push(normalizedEntry);
+      hasMappedRole = true;
+    }
+  }
+
+  if (hasMappedRole) {
+    // If column 3 is missing "Web Design and Services" (e.g. from an older database snapshot),
+    // ensure the full team from TEAM_COLS is preserved
+    if (cols[2].length === 0 && TEAM_COLS[2]) {
+      cols[2] = [...TEAM_COLS[2]];
+    } else if (
+      cols[2].length === 1 &&
+      !cols[2].some(([r]) => r.toLowerCase().includes("web design")) &&
+      TEAM_COLS[2]
+    ) {
+      const webTeam = TEAM_COLS[2].find(([r]) => r.toLowerCase().includes("web design"));
+      if (webTeam) cols[2].push(webTeam);
+    }
+    return cols as unknown as typeof TEAM_COLS;
+  }
+
+  // Fallback for custom editions: chunk sequentially into up to 3 columns
+  const chunkSize = Math.ceil(entries.length / 3);
+  const sequentialCols: (readonly string[])[][] = [[], [], []];
   entries.forEach((entry, i) => {
-    cols[i % 3] = [...cols[i % 3], entry];
+    const colIdx = Math.min(Math.floor(i / chunkSize), 2);
+    sequentialCols[colIdx].push(entry);
   });
-  return cols.filter((col) => col.length > 0) as unknown as typeof TEAM_COLS;
+
+  return sequentialCols.filter((col) => col.length > 0) as unknown as typeof TEAM_COLS;
 }
 
 export function Home() {
