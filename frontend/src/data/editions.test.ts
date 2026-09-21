@@ -55,6 +55,18 @@ describe("editions data", () => {
     // Column 3: Social Media and Catalogue, Web Design and Services
     expect(ed2025.team[2][0][0]).toBe("Social Media and Catalogue");
     expect(ed2025.team[2][1][0]).toBe("Web Design and Services");
+    // Current org team is frontend-authoritative (not CMS).
+    expect(ed2025.team[0][2]).toEqual([
+      "Programmes Assistants",
+      "Nikhita Thevannoor",
+      "Maanav Jalan",
+    ]);
+    expect(ed2025.team[2][1].slice(1)).toEqual([
+      "Abhinil Agarwal",
+      "Anand Peter",
+      "Prajesh MP",
+      "Vishnulal CR",
+    ]);
   });
 });
 

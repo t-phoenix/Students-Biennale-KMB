@@ -361,8 +361,9 @@ function cleanIntroParagraphs(
     ? (cmsDownloads.length > 0 ? cmsDownloads : (fallback.downloads ?? []))
     : cmsDownloads;
 
-  // Team grid is archive-only; live edition prefers catalogue.teamBody below.
-  const team = isPreviousEdition ? fallback.team : undefined;
+  // Org team grid is frontend-only for every edition (TEAM_COLS / static archive grids).
+  // Past-edition CMS teamBody remains archival curator/credit prose for other views — not this grid.
+  const team = fallback.team;
 
   useEffect(() => {
     const q = highlight.trim();
@@ -378,7 +379,6 @@ function cleanIntroParagraphs(
   }, [
     highlight,
     yearId,
-    catalogue.teamBody,
     catalogue.institutions,
   ]);
 
@@ -625,28 +625,10 @@ function cleanIntroParagraphs(
         </div>
       ) : null}
 
-      {/* Curator bios (archive editions) or live team from catalogue */}
+      {/* Curator bios (archive) or static TeamGrid (current TEAM_COLS / past static grids) */}
       {isPreviousEdition && curatorBios.length > 0 ? (
         <div className="fig-grid edition-overview__section">
           <div className="fig-rail edition-overview__rail-label edition-overview__reveal">
-            THE TEAM
-          </div>
-          <div className="fig-c4-12 edition-overview__reveal">
-            <CuratorBiosGrid bios={curatorBios} highlight={highlight} />
-          </div>
-        </div>
-      ) : !isPreviousEdition && catalogue.teamBody ? (
-        <div className="fig-grid edition-overview__section">
-          <div className="fig-label fig-label--sub edition-overview__reveal">
-            THE TEAM
-          </div>
-          <div className="fig-c4-12 fig-body edition-overview__team-body edition-overview__reveal">
-            <HighlightText text={catalogue.teamBody} query={highlight} />
-          </div>
-        </div>
-      ) : !isPreviousEdition && curatorBios.length > 0 ? (
-        <div className="fig-grid edition-overview__section">
-          <div className="fig-label fig-label--sub edition-overview__reveal">
             THE TEAM
           </div>
           <div className="fig-c4-12 edition-overview__reveal">

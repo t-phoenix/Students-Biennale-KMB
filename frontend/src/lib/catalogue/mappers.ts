@@ -245,7 +245,10 @@ export function mapSnapshot(row: SnapshotRow): MappedCatalogue {
     ...new Set(artists.map((a) => a.institution).filter(Boolean)),
   ].sort((a, b) => a.localeCompare(b));
 
-  const teamSection = (payload.sections ?? []).find((s) => s.section_key === "team");
+  // Current org team is frontend-only; ignore any leftover snapshot team section.
+  const teamSection = payload.edition.is_current
+    ? undefined
+    : (payload.sections ?? []).find((s) => s.section_key === "team");
 
   const curators = zones.flatMap((z) =>
     z.curators.map((c) => ({
@@ -308,7 +311,10 @@ export function mapLiveEdition(
   },
   sections: SnapshotSection[],
 ): MappedCatalogue {
-  const teamSection = sections.find((s) => s.section_key === "team");
+  // Current org team is frontend-only; ignore any leftover live team section.
+  const teamSection = edition.is_current
+    ? undefined
+    : sections.find((s) => s.section_key === "team");
   return {
     editionId: edition.id,
     years: edition.years,

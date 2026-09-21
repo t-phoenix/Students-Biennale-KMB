@@ -58,103 +58,6 @@ function sensingStripFromCatalogue(
   return urls;
 }
 
-const ROLE_TO_COLUMN_INDEX: Record<string, number> = {
-  "director of programmes": 0,
-  "programme managers": 0,
-  "programme manager": 0,
-  "programmes assistants": 0,
-  "programme assistants": 0,
-  "programmes assistant": 0,
-  "production managers": 1,
-  "production manager": 1,
-  "production assistants": 1,
-  "production assistant": 1,
-  "accounts manager": 1,
-  "account manager": 1,
-  "social media and catalogue": 2,
-  "social media": 2,
-  "web design and services": 2,
-  "web design & services": 2,
-  "web design": 2,
-};
-
-function parseRoleLines(text: string): readonly (readonly string[])[] {
-  const byRole = new Map<string, string[]>();
-  for (const line of text.split("\n")) {
-    const match = line.trim().match(/^-?\s*(.+?):\s*(.+)\s*$/);
-    if (!match) continue;
-    const role = match[1].trim();
-    const name = match[2].trim();
-    if (!role || !name) continue;
-    const list = byRole.get(role) ?? [];
-    list.push(name);
-    byRole.set(role, list);
-  }
-  return [...byRole.entries()].map(([role, people]) => [role, ...people] as const);
-}
-
-/** Parse catalogue team markdown (`- Role: Name`) into Home about-team columns. */
-function teamColsFromBody(body: string | null | undefined): typeof TEAM_COLS | null {
-  if (!body?.trim()) return null;
-
-  // Support explicit multi-column markdown separated by '---'
-  if (body.includes("---")) {
-    const sections = body
-      .split(/\n\s*---\s*\n/)
-      .map((s) => parseRoleLines(s))
-      .filter((c) => c.length > 0);
-    if (sections.length > 0) {
-      return sections as unknown as typeof TEAM_COLS;
-    }
-  }
-
-  const entries = parseRoleLines(body);
-  if (!entries.length) return null;
-
-  // Map known roles to canonical 3-column layout matching Figma
-  const cols: (readonly string[])[][] = [[], [], []];
-  let hasMappedRole = false;
-
-  for (const entry of entries) {
-    const roleLower = entry[0].toLowerCase();
-    const colIdx = ROLE_TO_COLUMN_INDEX[roleLower];
-    if (colIdx !== undefined) {
-      const normalizedEntry: readonly string[] =
-        roleLower === "social media"
-          ? ["Social Media and Catalogue", ...entry.slice(1)]
-          : entry;
-      cols[colIdx].push(normalizedEntry);
-      hasMappedRole = true;
-    }
-  }
-
-  if (hasMappedRole) {
-    // If column 3 is missing "Web Design and Services" (e.g. from an older database snapshot),
-    // ensure the full team from TEAM_COLS is preserved
-    if (cols[2].length === 0 && TEAM_COLS[2]) {
-      cols[2] = [...TEAM_COLS[2]];
-    } else if (
-      cols[2].length === 1 &&
-      !cols[2].some(([r]) => r.toLowerCase().includes("web design")) &&
-      TEAM_COLS[2]
-    ) {
-      const webTeam = TEAM_COLS[2].find(([r]) => r.toLowerCase().includes("web design"));
-      if (webTeam) cols[2].push(webTeam);
-    }
-    return cols as unknown as typeof TEAM_COLS;
-  }
-
-  // Fallback for custom editions: chunk sequentially into up to 3 columns
-  const chunkSize = Math.ceil(entries.length / 3);
-  const sequentialCols: (readonly string[])[][] = [[], [], []];
-  entries.forEach((entry, i) => {
-    const colIdx = Math.min(Math.floor(i / chunkSize), 2);
-    sequentialCols[colIdx].push(entry);
-  });
-
-  return sequentialCols.filter((col) => col.length > 0) as unknown as typeof TEAM_COLS;
-}
-
 export function Home() {
   const navigate = useNavigate();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -246,7 +149,8 @@ export function Home() {
       }
     : SENSING_GROUNDS_NOTE;
   const sensingStripImages = sensingStripFromCatalogue(current?.artworks);
-  const aboutTeamCols = teamColsFromBody(current?.teamBody) ?? TEAM_COLS;
+  // Current org team is frontend-only (TEAM_COLS). Do not read catalogue.teamBody.
+  const aboutTeamCols = TEAM_COLS;
   const sensingModalCol1 =
     sensingNote.paragraphs.length > 0
       ? sensingNote.paragraphs.slice(0, Math.ceil(sensingNote.paragraphs.length / 2))
