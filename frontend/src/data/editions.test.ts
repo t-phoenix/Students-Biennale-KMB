@@ -24,7 +24,7 @@ describe("editions data", () => {
     expect(ed2018.title).toBe("Making as Thinking");
     expect(ed2018.curatorialNote).toBeDefined();
     expect(ed2018.curatorialNote?.paragraphs.length).toBe(4);
-    expect(ed2018.downloads?.length).toBe(2);
+    expect(ed2018.downloads?.map((item) => item.title)).toEqual(["SB Workshop 2018–19"]);
 
     const ed2020 = getEditionOverview("2020-21");
     expect(ed2020.id).toBe("2020-21");
@@ -38,7 +38,7 @@ describe("editions data", () => {
     expect(ed2022.title).toBe("In the Making");
     expect(ed2022.curatorBios?.length).toBe(7);
     expect(ed2022.institutionsWithArtists?.length).toBe(54);
-    expect(ed2022.downloads?.length).toBe(1);
+    expect(ed2022.downloads?.map((item) => item.title)).toEqual(["SB Catalogue 2022–23"]);
 
     const ed2025 = getEditionOverview("2025-26");
     expect(ed2025.id).toBe("2025-26");

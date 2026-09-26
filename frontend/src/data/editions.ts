@@ -325,12 +325,7 @@ const ED_2018_19: EditionOverviewData = {
   },
   downloads: [
     {
-      title: "SB Catalogue 2018–19",
-      label: "Download",
-      href: "#",
-    },
-    {
-      title: "SB Workshop Report 2018–19",
+      title: "SB Workshop 2018–19",
       label: "Download",
       href: "#",
     },
