@@ -42,7 +42,7 @@ export function PastWorkshopDetail() {
     return (
       <div className="past-workshop-detail">
         <div className="fig-grid past-workshop-detail__section">
-          <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes#workshops">
+          <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes#past-workshops">
             <BrandArrow direction="left" />
             <span>BACK</span>
           </Link>
@@ -107,7 +107,7 @@ export function PastWorkshopDetail() {
       ) : null}
 
       <div className="fig-grid past-workshop-detail__nav">
-        <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes/past-workshops">
+        <Link className="fig-c1-3 past-workshop-detail__back" to="/programmes#past-workshops">
           <BrandArrow direction="left" />
           <span>BACK</span>
         </Link>

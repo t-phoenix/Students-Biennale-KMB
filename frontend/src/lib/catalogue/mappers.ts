@@ -538,6 +538,7 @@ export function artworkDetailSearchParams(
     next.set("scope", "venue");
     next.set("venueId", nav.venueId);
   }
+  if (existing.get("from") === "awards") next.set("from", "awards");
   return next;
 }
 

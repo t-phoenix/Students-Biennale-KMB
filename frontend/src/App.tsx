@@ -36,9 +36,6 @@ const Detail = lazy(() =>
 const Programmes = lazy(() =>
   import("./pages/Programmes").then((m) => ({ default: m.Programmes })),
 );
-const PastWorkshops = lazy(() =>
-  import("./pages/PastWorkshops").then((m) => ({ default: m.PastWorkshops })),
-);
 const PastWorkshopDetail = lazy(() =>
   import("./pages/PastWorkshopDetail").then((m) => ({ default: m.PastWorkshopDetail })),
 );
@@ -82,7 +79,10 @@ export default function App() {
                   </Route>
                   <Route path="editions/:yearId/:kindSeg/:id" element={<Detail />} />
                   <Route path="programmes" element={<Programmes />} />
-                  <Route path="programmes/past-workshops" element={<PastWorkshops />} />
+                  <Route
+                    path="programmes/past-workshops"
+                    element={<Navigate to={{ pathname: "/programmes", hash: "past-workshops" }} replace />}
+                  />
                   <Route path="programmes/past-workshops/:id" element={<PastWorkshopDetail />} />
                   <Route path="programmes/raza-scholarship" element={<RazaScholarship />} />
                   <Route path="programmes/residencies" element={<Residencies />} />

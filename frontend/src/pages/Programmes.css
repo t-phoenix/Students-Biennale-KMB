@@ -11,6 +11,7 @@
 }
 
 #workshops,
+#past-workshops,
 #awards {
   scroll-margin-top: calc(var(--nav-height, 60px) + 12px);
 }

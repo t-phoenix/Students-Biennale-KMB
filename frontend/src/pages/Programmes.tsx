@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { buildAutoSlideTimeline, jumpToSlide, initSlideStack } from "../lib/imageSlider";
 import { useProgrammesCovers } from "../lib/programmesCms";
@@ -13,10 +13,17 @@ import { SectionEmpty } from "../components/SectionEmpty";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
 import { DEFAULT_RAZA } from "../lib/programmes/fallbacks";
-import { LATEST_EDITION } from "../data/site";
+import { LATEST_EDITION, RAZA_CATALOGUE_ARTWORK_IDS } from "../data/site";
 import "./Programmes.css";
 
+function catalogueArtworkHref(scholarId: string): string | null {
+  const artworkId = RAZA_CATALOGUE_ARTWORK_IDS[scholarId];
+  if (!artworkId) return null;
+  return `/editions/${LATEST_EDITION.id}/artworks/${artworkId}?from=awards`;
+}
+
 export function Programmes() {
+  const navigate = useNavigate();
   const root = useRef<HTMLDivElement>(null);
   const heroTlRef = useRef<gsap.core.Timeline | null>(null);
   const slidesRef = useRef<HTMLElement[]>([]);
@@ -86,6 +93,9 @@ export function Programmes() {
     ...card,
     image: razaEffective.scholars.find((s) => s.id === card.id)?.image || "",
   }));
+  const visibleRazaCards = expandedIntlAwards
+    ? razaAwardCards
+    : razaAwardCards.slice(0, awardsPreviewCount);
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -281,7 +291,7 @@ export function Programmes() {
         </section>
       ) : null}
 
-      <section className="programmes__block fig-grid prog-reveal">
+      <section id="past-workshops" className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
         {pastWorkshops.length ? (
           <div className="programmes__past-items fig-c4-12">
@@ -367,7 +377,7 @@ export function Programmes() {
               <Link
                 key={a.id ?? `international-${a.name}-${a.artwork}`}
                 className="programmes__award"
-                to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`}
+                to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
               >
                 <div className="programmes__award-media">
                   {a.image ? <img src={a.image} alt="" /> : null}
@@ -403,25 +413,40 @@ export function Programmes() {
               </button>
             </div>
 
-            {razaAwardCards.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className="programmes__award"
-                onClick={() => setOpenScholarId(s.id)}
-              >
-                <div className="programmes__award-media">
-                  <img src={s.image} alt={s.name} />
-                </div>
-                <h3>{s.name}</h3>
-                {s.artwork ? (
-                  <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                    <MetaRow label="Artwork" value={s.artwork} />
-                  </MetaGrid>
-                ) : null}
-                {s.institution ? <p>{s.institution}</p> : null}
-              </button>
-            ))}
+            {visibleRazaCards.map((s) => {
+              const href = catalogueArtworkHref(s.id);
+              const card = (
+                <>
+                  <div className="programmes__award-media">
+                    <img src={s.image} alt={s.name} />
+                  </div>
+                  <h3>{s.name}</h3>
+                  {s.artwork ? (
+                    <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                      <MetaRow label="Artwork" value={s.artwork} />
+                    </MetaGrid>
+                  ) : null}
+                  {s.institution ? <p>{s.institution}</p> : null}
+                </>
+              );
+              if (href) {
+                return (
+                  <Link key={s.id} className="programmes__award" to={href}>
+                    {card}
+                  </Link>
+                );
+              }
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  className="programmes__award"
+                  onClick={() => setOpenScholarId(s.id)}
+                >
+                  {card}
+                </button>
+              );
+            })}
           </div>
           ) : (
             <SectionEmpty>No international awards published yet.</SectionEmpty>
@@ -444,7 +469,7 @@ export function Programmes() {
               <Link
                 key={a.id ?? `national-${a.name}-${a.artwork}`}
                 className="programmes__award"
-                to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`}
+                to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
               >
                 <div className="programmes__award-media">
                   {a.image ? <img src={a.image} alt="" /> : null}
@@ -498,6 +523,11 @@ export function Programmes() {
         onClose={() => setRazaModalOpen(false)}
         onSelectScholar={(scholarId) => {
           setRazaModalOpen(false);
+          const href = catalogueArtworkHref(scholarId);
+          if (href) {
+            navigate(href);
+            return;
+          }
           setOpenScholarId(scholarId);
         }}
       />

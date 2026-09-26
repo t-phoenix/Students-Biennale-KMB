@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { gsap, prefersReducedMotion } from "../lib/motion";
 import { useModalPortal } from "../lib/useModalPortal";
 import { ArtworkDetailBody } from "./ArtworkDetailBody";
 import { CtaLink } from "./CtaLink";
 import { BrandArrow } from "./BrandArrow";
-import type { ArtworkCard } from "../data/site";
+import { LATEST_EDITION, RAZA_CATALOGUE_ARTWORK_IDS, type ArtworkCard } from "../data/site";
 import { RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../lib/programmes/fallbacks";
 import type { RazaScholar } from "../lib/programmes/types";
 import "./ScholarSpotlight.css";
@@ -51,6 +52,7 @@ function placeholderArtwork(scholar: RazaScholar): ArtworkCard {
  *  substitute. NEXT swaps which scholar is shown in place, since there's no
  *  route to navigate to. */
 export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose }: Props) {
+  const navigate = useNavigate();
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [activeId, setActiveId] = useState(scholarId);
@@ -60,7 +62,13 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
   }, [scholarId]);
 
   const open = scholarId !== null;
+  const catalogueArtworkId = activeId ? RAZA_CATALOGUE_ARTWORK_IDS[activeId] : undefined;
   useModalPortal({ open, onClose, panelRef, initialFocusRef: closeRef });
+
+  useEffect(() => {
+    if (!open || !catalogueArtworkId) return;
+    navigate(`/editions/${LATEST_EDITION.id}/artworks/${catalogueArtworkId}?from=awards`);
+  }, [open, catalogueArtworkId, navigate]);
 
   useEffect(() => {
     if (!open) return;
@@ -76,7 +84,7 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
     }
   }, [open]);
 
-  if (!open || typeof document === "undefined") return null;
+  if (!open || catalogueArtworkId || typeof document === "undefined") return null;
 
   const idx = scholars.findIndex((s) => s.id === activeId);
   const scholar = idx >= 0 ? scholars[idx] : undefined;

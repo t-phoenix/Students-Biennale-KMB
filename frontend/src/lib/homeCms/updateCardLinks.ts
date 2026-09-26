@@ -35,7 +35,7 @@ const SECTION_LINKS: UpdateCardLinkOption[] = [
     kind: "section",
     group: "Sections",
     label: "Past workshops",
-    href: "/programmes/past-workshops",
+    href: "/programmes#past-workshops",
   },
   {
     id: "residencies",
@@ -112,7 +112,7 @@ export function buildInternalLinkOptions(
       kind: "award",
       group: "Awards — International",
       label: a.artwork,
-      href: `/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`,
+      href: `/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`,
       meta: a.name,
     });
   }
@@ -124,7 +124,7 @@ export function buildInternalLinkOptions(
       kind: "award",
       group: "Awards — National",
       label: a.artwork,
-      href: `/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}`,
+      href: `/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`,
       meta: a.name,
     });
   }

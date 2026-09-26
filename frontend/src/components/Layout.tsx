@@ -169,13 +169,18 @@ export function Layout() {
     prevProgrammesPathRef.current = location.pathname;
 
     let cancelled = false;
-    let attempts = 0;
+    const started = performance.now();
     const run = () => {
       if (cancelled) return;
-      if (scrollToId(id, { crossPage })) return;
-      if (++attempts < 10) requestAnimationFrame(run);
+      if (scrollToId(id, { crossPage })) {
+        window.setTimeout(() => {
+          if (!cancelled) scrollToId(id, { immediate: true });
+        }, 500);
+        return;
+      }
+      // Programmes is lazy-loaded, so the anchor may not exist for the first frames.
+      if (performance.now() - started < 2500) requestAnimationFrame(run);
     };
-    // Two frames give the Programmes page time to mount before we measure.
     requestAnimationFrame(() => requestAnimationFrame(run));
 
     return () => {

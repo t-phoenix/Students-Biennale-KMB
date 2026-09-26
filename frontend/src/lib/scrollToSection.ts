@@ -11,9 +11,14 @@ export type HomeSectionId =
   | "about-team"
   | "about-sponsors";
 
-export type ProgrammeSectionId = "workshops" | "residencies" | "awards";
+export type ProgrammeSectionId = "workshops" | "past-workshops" | "residencies" | "awards";
 
-const PROGRAMME_SECTIONS = new Set<ProgrammeSectionId>(["workshops", "awards", "residencies"]);
+const PROGRAMME_SECTIONS = new Set<ProgrammeSectionId>([
+  "workshops",
+  "past-workshops",
+  "awards",
+  "residencies",
+]);
 
 const HOME_SECTIONS = new Set<string>([
   "editions",
@@ -62,6 +67,8 @@ export type ScrollToOptions = {
   /** When navigating from another route, reset scroll first so the previous
    *  page's scrollY is not applied to the new document before we animate. */
   crossPage?: boolean;
+  /** Jump without the slide. Used to correct position after late layout. */
+  immediate?: boolean;
 };
 
 /** Smooth-scroll to an element id, clearing the sticky nav. Routes through the
@@ -90,6 +97,7 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
 
     lenis.scrollTo(el, {
       offset,
+      immediate: options.immediate,
       onComplete: snap,
     });
     return true;
@@ -99,13 +107,14 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
     window.scrollTo(0, 0);
   }
 
+  const behavior = options.immediate ? "auto" : "smooth";
   if (PROGRAMME_SECTIONS.has(el.id as ProgrammeSectionId)) {
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.scrollIntoView({ behavior, block: "start" });
     return true;
   }
 
   const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - navOffsetPx());
-  window.scrollTo({ top, behavior: "smooth" });
+  window.scrollTo({ top, behavior });
   return true;
 }
 

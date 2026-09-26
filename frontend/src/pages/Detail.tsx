@@ -109,8 +109,11 @@ export function Detail() {
     if (kindSeg === "artworks" && artworkNav.kind === "venue") {
       return `/editions/${yearId}/venue/${artworkNav.venueId}`;
     }
+    if (kindSeg === "artworks" && searchParams.get("from") === "awards") {
+      return "/programmes#awards";
+    }
     return `/editions/${yearId}/${kindSeg}`;
-  }, [kindSeg, yearId, artworkNav]);
+  }, [kindSeg, yearId, artworkNav, searchParams]);
 
   if (!data.item) {
     return (
