@@ -7,7 +7,7 @@ import { Home } from "./pages/Home";
 import { CatalogueProvider } from "./lib/catalogue";
 import { HomeCmsProvider } from "./lib/homeCms";
 import { SplashProvider } from "./lib/splash";
-import { EDITIONS_PATH, LATEST_EDITION } from "./data/site";
+import { LATEST_EDITION, PREVIOUS_EDITIONS } from "./data/site";
 
 const DiscoverArtworks = lazy(() =>
   import("./pages/DiscoverArtworks").then((m) => ({ default: m.DiscoverArtworks })),
@@ -72,7 +72,7 @@ export default function App() {
                   <Route index element={<Home />} />
                   <Route path="artworks" element={<DiscoverArtworks />} />
                   <Route path="archive" element={<Navigate to="/artworks" replace />} />
-                  <Route path="editions" element={<Navigate to={EDITIONS_PATH} replace />} />
+                  <Route path="editions" element={<Navigate to={`/editions/${PREVIOUS_EDITIONS[0]}`} replace />} />
                   <Route path="editions/:yearId" element={<EditionShell />}>
                     <Route index element={<EditionOverview />} />
                     <Route path="curators" element={<CuratorsView />} />

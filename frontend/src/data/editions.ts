@@ -665,7 +665,6 @@ const ED_2022_23: EditionOverviewData = {
   ],
   heroImages: [],
   galleryImages: [],
-  nextId: "2025-26",
 };
 
 export const EDITIONS_BY_YEAR: Record<string, EditionOverviewData> = {

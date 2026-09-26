@@ -17,6 +17,7 @@ import { useCatalogue, useEditionCatalogue } from "../lib/catalogue";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { preloadUrls } from "../lib/preloadImages";
+import { GalleryLightbox } from "../components/GalleryLightbox";
 import "./EditionOverview.css";
 
 /** Split subtitle/title lines for the right-aligned title rail in previous editions. */
@@ -206,6 +207,7 @@ export function EditionOverview() {
   const slidesRef = useRef<HTMLElement[]>([]);
   const slideIndexRef = useRef(0);
   const [slide, setSlide] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const fallback = getEditionOverview(yearId);
   const { catalogue } = useEditionCatalogue(yearId);
   const { catalogues } = useCatalogue();
@@ -302,6 +304,7 @@ function cleanIntroParagraphs(
 
   useEffect(() => {
     setGalleryImages((catalogue.galleryUrls ?? []).filter((src) => Boolean(src?.trim())));
+    setLightboxIndex(null);
   }, [catalogue.galleryUrls, yearId]);
 
   const dismissGalleryImage = useCallback((src: string) => {
@@ -384,8 +387,10 @@ function cleanIntroParagraphs(
 
   const yearIds = catalogues.map((row) => row.years);
   const yearIndex = yearIds.indexOf(yearId);
-  const nextId =
+  const candidate =
     fallback.nextId || (yearIndex > 0 ? yearIds[yearIndex - 1] : undefined);
+  // 2025–26 is the live edition on the home page, not another archive page.
+  const nextId = candidate && candidate !== LATEST_EDITION.id ? candidate : undefined;
   const nextLabel = nextId ? nextId.replace("-", "–") : "";
 
   useEffect(() => {
@@ -710,18 +715,34 @@ function cleanIntroParagraphs(
       {/* Workshop / Photographic Gallery — catalogue snapshot URLs only */}
       {galleryImages.length > 0 ? (
         <div className="fig-grid edition-overview__gallery">
-          {galleryImages.map((src, i) => (
-            <div
-              key={src + i}
-              className="edition-overview__slot edition-overview__reveal"
-            >
-              <img
-                src={src}
-                alt=""
-                onError={() => dismissGalleryImage(src)}
-              />
-            </div>
-          ))}
+          {galleryImages.map((src, i) =>
+            isPreviousEdition ? (
+              <button
+                key={src + i}
+                type="button"
+                className="edition-overview__slot edition-overview__reveal"
+                onClick={() => setLightboxIndex(i)}
+                aria-label={`View image ${i + 1}`}
+              >
+                <img
+                  src={src}
+                  alt=""
+                  onError={() => dismissGalleryImage(src)}
+                />
+              </button>
+            ) : (
+              <div
+                key={src + i}
+                className="edition-overview__slot edition-overview__reveal"
+              >
+                <img
+                  src={src}
+                  alt=""
+                  onError={() => dismissGalleryImage(src)}
+                />
+              </div>
+            ),
+          )}
         </div>
       ) : null}
 
@@ -750,6 +771,15 @@ function cleanIntroParagraphs(
           )
         ) : null}
       </div>
+
+      {isPreviousEdition && lightboxIndex !== null ? (
+        <GalleryLightbox
+          images={galleryImages}
+          index={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
+      ) : null}
     </div>
   );
 }

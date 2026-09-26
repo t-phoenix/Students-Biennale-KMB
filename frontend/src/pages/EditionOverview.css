@@ -384,11 +384,27 @@
   background: var(--color-neutral-gray-mid);
 }
 
+button.edition-overview__slot {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+}
+
 .edition-overview__slot img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+button.edition-overview__slot:hover img {
+  transform: scale(1.04);
 }
 
 /* Navigation footer */
