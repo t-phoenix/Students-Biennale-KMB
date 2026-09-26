@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { useSupabaseCrud } from "../../../lib/admin/hooks";
 import { swapSortOrder } from "../../../lib/admin/reorder";
-import { loadProgrammeImage, upsertProgrammeCover } from "../../../lib/admin/programmeAssets";
+import {
+  loadProgrammeImage,
+  loadProgrammeImages,
+  replaceProgrammeGallery,
+  upsertProgrammeCover,
+} from "../../../lib/admin/programmeAssets";
 import { refreshProgrammes } from "../../../lib/programmes/cache";
 import { FormField } from "../../../components/admin/FormField";
+import { GalleryImages } from "../../../components/admin/GalleryImages";
 import { ImageUpload } from "../../../components/admin/ImageUpload";
 import { MoveButtons } from "../../../components/admin/MoveButtons";
 import {
@@ -28,7 +34,7 @@ interface Programme {
   sort_order: number | null;
 }
 
-const EMPTY: Partial<Programme> & { _image?: string } = {
+const EMPTY: Partial<Programme> & { _image?: string; _gallery?: string[] } = {
   title: "",
   slug: "",
   subtype: "workshop",
@@ -40,6 +46,7 @@ const EMPTY: Partial<Programme> & { _image?: string } = {
   published: true,
   sort_order: 0,
   _image: "",
+  _gallery: [],
 };
 
 export function Workshops({ notify, confirm }: SectionProps) {
@@ -47,7 +54,7 @@ export function Workshops({ notify, confirm }: SectionProps) {
     "programmes",
     { filter: { subtype: "workshop" }, orderBy: "sort_order" },
   );
-  const [editing, setEditing] = useState<(Partial<Programme> & { _image?: string }) | null>(null);
+  const [editing, setEditing] = useState<(Partial<Programme> & { _image?: string; _gallery?: string[] }) | null>(null);
   const [thumbs, setThumbs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
 
@@ -69,20 +76,21 @@ export function Workshops({ notify, confirm }: SectionProps) {
 
   const openEdit = async (row?: Programme, defaultState: "upcoming" | "past" = "upcoming") => {
     if (!row) {
-      setEditing({ ...EMPTY, state: defaultState });
+      setEditing({ ...EMPTY, state: defaultState, _gallery: [] });
       return;
     }
-    const image =
-      (await loadProgrammeImage(row.id, "cover")) ||
-      (await loadProgrammeImage(row.id, "hero"));
-    setEditing({ ...row, _image: image });
+    const [image, gallery] = await Promise.all([
+      loadProgrammeImage(row.id, "cover").then((url) => url || loadProgrammeImage(row.id, "hero")),
+      loadProgrammeImages(row.id, "gallery"),
+    ]);
+    setEditing({ ...row, _image: image, _gallery: gallery });
   };
 
   const save = async () => {
     if (!editing?.title) return;
     setBusy(true);
     try {
-      const { _image, ...data } = editing;
+      const { _image, _gallery, ...data } = editing;
       if (!data.slug) data.slug = data.title!.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
       const savedId = data.id ?? `programme-${data.slug}`;
       if (data.id) {
@@ -93,6 +101,9 @@ export function Workshops({ notify, confirm }: SectionProps) {
         await create(data as never);
       }
       if (_image) await upsertProgrammeCover(savedId, _image, "cover");
+      if (data.state === "past" && _gallery) {
+        await replaceProgrammeGallery(savedId, _gallery.filter(Boolean));
+      }
       await reload();
       await refreshProgrammes();
       notify("success", editing.id ? "Workshop updated" : "Workshop created");
@@ -217,6 +228,8 @@ export function Workshops({ notify, confirm }: SectionProps) {
 
       {editing && (
         <div className="adm-card">
+          <label className="adm-field__label">Cover</label>
+          <ImageUpload value={editing._image ?? ""} onChange={(v) => setEditing({ ...editing, _image: v })} />
           <FormField label="Title" value={editing.title ?? ""} onChange={(v) => setEditing({ ...editing, title: v })} required />
           <FormField label="Slug" value={editing.slug ?? ""} onChange={(v) => setEditing({ ...editing, slug: v })} placeholder="Auto-generated from title" />
           <div className="adm-form-row">
@@ -232,7 +245,12 @@ export function Workshops({ notify, confirm }: SectionProps) {
           <FormField label="Place" value={editing.place ?? ""} onChange={(v) => setEditing({ ...editing, place: v })} />
           <FormField label="Summary" value={editing.summary ?? ""} onChange={(v) => setEditing({ ...editing, summary: v })} multiline />
           <FormField label="Body" value={editing.body ?? ""} onChange={(v) => setEditing({ ...editing, body: v })} multiline />
-          <ImageUpload value={editing._image ?? ""} onChange={(v) => setEditing({ ...editing, _image: v })} />
+          {editing.state === "past" ? (
+            <GalleryImages
+              urls={editing._gallery ?? []}
+              onChange={(gallery) => setEditing({ ...editing, _gallery: gallery })}
+            />
+          ) : null}
           <VisibilityField
             visible={editing.published !== false}
             onChange={(visible) => setEditing({ ...editing, published: visible })}

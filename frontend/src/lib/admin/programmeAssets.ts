@@ -40,16 +40,19 @@ export async function loadProgrammeImages(
     .eq("entity_id", entityId)
     .eq("role", role);
   return (data ?? [])
-    .map((link) => {
+    .flatMap((link) => {
       const raw = link.assets as
         | { public_url: string | null; storage_path: string | null; status: string; sort_order: number }
         | { public_url: string | null; storage_path: string | null; status: string; sort_order: number }[]
         | null;
       const asset = Array.isArray(raw) ? raw[0] : raw;
-      if (!asset || asset.status === "failed") return "";
-      return asset.public_url || asset.storage_path || "";
+      if (!asset || asset.status === "failed") return [];
+      const url = asset.public_url || asset.storage_path || "";
+      if (!url) return [];
+      return [{ url, sortOrder: asset.sort_order ?? 0 }];
     })
-    .filter(Boolean);
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((item) => item.url);
 }
 
 /** Replace the cover/hero image for a programme, keeping a public_url the frontend can render. */

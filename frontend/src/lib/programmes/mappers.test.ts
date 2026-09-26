@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mapProgrammes } from "./mappers";
-import type { ProgrammeRow, ProgrammeAsset } from "./types";
+import type { ProgrammeAsset, ProgrammeRow } from "./types";
 
 describe("programmes upcoming workshops mapping", () => {
   it("correctly separates single upcoming workshop from past workshops", () => {
@@ -97,5 +97,65 @@ describe("programmes upcoming workshops mapping", () => {
     expect(result.upcomingWorkshops.length).toBe(2);
     expect(result.upcomingWorkshops[0].title).toBe("workshop 01");
     expect(result.upcomingWorkshops[1].title).toBe("workshop 02");
+  });
+
+  it("orders past workshop gallery images and leaves upcoming workshops unchanged", () => {
+    const rows: ProgrammeRow[] = [
+      {
+        id: "ws-upcoming",
+        slug: "upcoming-workshop",
+        title: "Upcoming workshop",
+        dates: "12 - 14 March 2026",
+        place: "Delhi",
+        summary: "Upcoming summary",
+        body: "Upcoming body",
+        host: null,
+        awardees: null,
+        published: true,
+        programme_facilitators: null,
+        subtype: "workshop",
+        state: "upcoming",
+        sort_order: 1,
+      },
+      {
+        id: "ws-past",
+        slug: "past-workshop",
+        title: "Past workshop",
+        dates: "2025",
+        place: "Kochi",
+        summary: "Past summary",
+        body: "Past body",
+        host: null,
+        awardees: null,
+        published: true,
+        programme_facilitators: null,
+        subtype: "workshop",
+        state: "past",
+        sort_order: 2,
+      },
+    ];
+    const assets: ProgrammeAsset[] = [
+      { entityId: "ws-upcoming", role: "cover", url: "/programmes/upcoming-cover.jpg", sortOrder: 0 },
+      { entityId: "ws-upcoming", role: "gallery", url: "/programmes/upcoming-gallery.jpg", sortOrder: 1 },
+      { entityId: "ws-past", role: "gallery", url: "/programmes/gallery-second.jpg", sortOrder: 2 },
+      { entityId: "ws-past", role: "cover", url: "/programmes/past-cover.jpg", sortOrder: 0 },
+      { entityId: "ws-past", role: "gallery", url: "/programmes/gallery-first.jpg", sortOrder: 1 },
+    ];
+
+    const result = mapProgrammes(rows, assets);
+
+    expect(result.upcomingWorkshops).toHaveLength(1);
+    expect(result.upcomingWorkshops[0]).toMatchObject({
+      title: "Upcoming workshop",
+      date: "12 - 14 March 2026",
+      place: "Delhi",
+      image: "/programmes/upcoming-cover.jpg",
+    });
+    expect(result.pastWorkshops).toHaveLength(1);
+    expect(result.pastWorkshops[0].heroImage).toBe("/programmes/past-cover.jpg");
+    expect(result.pastWorkshops[0].galleryImages).toEqual([
+      "/programmes/gallery-first.jpg",
+      "/programmes/gallery-second.jpg",
+    ]);
   });
 });

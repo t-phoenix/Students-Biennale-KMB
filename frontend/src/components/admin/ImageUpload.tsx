@@ -46,6 +46,52 @@ async function buildWebDerivative(
   return { blob, ext: "jpg", contentType: "image/jpeg" };
 }
 
+export async function uploadCmsImage(
+  file: File,
+  options: {
+    bucket?: string;
+    originalBucket?: string;
+    folder?: string;
+    maxEdge?: number;
+    quality?: number;
+  } = {},
+): Promise<string> {
+  const {
+    bucket = "sb-assets-public",
+    originalBucket = "sb-assets-original",
+    folder = "cms",
+    maxEdge = 2048,
+    quality = 0.82,
+  } = options;
+  const sb = requireSupabase();
+  const stamp = Date.now();
+  const originalExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const originalPath = `${folder}/${stamp}.${originalExt}`;
+
+  const { error: originalErr } = await sb.storage
+    .from(originalBucket)
+    .upload(originalPath, file, {
+      cacheControl: "31536000",
+      upsert: false,
+      contentType: file.type || "application/octet-stream",
+    });
+  if (originalErr) throw originalErr;
+
+  const derivative = await buildWebDerivative(file, maxEdge, quality);
+  const publicPath = `${folder}/${stamp}.${derivative.ext}`;
+  const { error: publicErr } = await sb.storage.from(bucket).upload(publicPath, derivative.blob, {
+    cacheControl: "31536000",
+    upsert: false,
+    contentType: derivative.contentType,
+  });
+  if (publicErr) throw publicErr;
+
+  const {
+    data: { publicUrl },
+  } = sb.storage.from(bucket).getPublicUrl(publicPath);
+  return publicUrl;
+}
+
 export function ImageUpload({
   value,
   onChange,
@@ -64,35 +110,7 @@ export function ImageUpload({
       setUploading(true);
       setError(null);
       try {
-        const sb = requireSupabase();
-        const stamp = Date.now();
-        const originalExt = file.name.split(".").pop()?.toLowerCase() || "jpg";
-        const originalPath = `${folder}/${stamp}.${originalExt}`;
-
-        // 1) Keep the HD master in the private originals bucket
-        const { error: originalErr } = await sb.storage
-          .from(originalBucket)
-          .upload(originalPath, file, {
-            cacheControl: "31536000",
-            upsert: false,
-            contentType: file.type || "application/octet-stream",
-          });
-        if (originalErr) throw originalErr;
-
-        // 2) Upload a compressed public derivative (same basename, .jpg)
-        const derivative = await buildWebDerivative(file, maxEdge, quality);
-        const publicPath = `${folder}/${stamp}.${derivative.ext}`;
-        const { error: publicErr } = await sb.storage.from(bucket).upload(publicPath, derivative.blob, {
-          cacheControl: "31536000",
-          upsert: false,
-          contentType: derivative.contentType,
-        });
-        if (publicErr) throw publicErr;
-
-        const {
-          data: { publicUrl },
-        } = sb.storage.from(bucket).getPublicUrl(publicPath);
-        onChange(publicUrl);
+        onChange(await uploadCmsImage(file, { bucket, originalBucket, folder, maxEdge, quality }));
       } catch (err) {
         console.error(err);
         setError(err instanceof Error ? err.message : "Upload failed");
