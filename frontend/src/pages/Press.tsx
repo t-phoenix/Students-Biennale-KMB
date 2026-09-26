@@ -4,7 +4,6 @@ import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { BrandArrow } from "../components/BrandArrow";
-import { CtaLink } from "../components/CtaLink";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import { usePressItems } from "../lib/pressCms";
 import type { PressItem } from "../lib/pressCms/types";
@@ -45,16 +44,6 @@ export function Press() {
     () => articles.filter((p) => p.id !== featured?.id),
     [articles, featured?.id],
   );
-
-  const articleIndex = useMemo(
-    () => articles.findIndex((p) => p.id === featured?.id),
-    [articles, featured?.id],
-  );
-
-  const nextArticle =
-    articleIndex >= 0 && articles.length > 1
-      ? articles[(articleIndex + 1) % articles.length]
-      : undefined;
 
   const activeArticleId =
     hoveredArticleId && relatedArticles.some((p) => p.id === hoveredArticleId)
@@ -250,15 +239,6 @@ export function Press() {
           <BrandArrow direction="left" />
           <span>BACK</span>
         </Link>
-        {nextArticle ? (
-          <CtaLink
-            className="press__next"
-            variant="next"
-            to={`/press?article=${nextArticle.id}`}
-            lines={["NEXT"]}
-            ariaLabel={`Next article: ${nextArticle.title}`}
-          />
-        ) : null}
       </div>
 
       {lightboxIndex !== null ? (
