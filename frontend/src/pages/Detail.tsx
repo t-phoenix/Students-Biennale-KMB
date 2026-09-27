@@ -141,7 +141,9 @@ export function Detail() {
     if (kindSeg === "artworks" && searchParams.get("from") === "awards") {
       return "/programmes#awards";
     }
-    return `/editions/${yearId}/${kindSeg}`;
+    const viewParam = searchParams.get("view");
+    const qs = viewParam ? `?view=${viewParam}` : "";
+    return `/editions/${yearId}/${kindSeg}${qs}`;
   }, [kindSeg, yearId, artworkNav, searchParams]);
 
   if (!data.item) {
