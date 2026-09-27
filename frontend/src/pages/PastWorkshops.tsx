@@ -3,12 +3,29 @@ import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { useProgrammes } from "../lib/programmes";
 import { SectionEmpty } from "../components/SectionEmpty";
+import { useGsapAccordion } from "../lib/useGsapAccordion";
 import "./PastWorkshops.css";
 
 export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
   const { pastWorkshops } = useProgrammes();
   const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
+
+  const activeWorkshopId = hoveredWorkshopId || pastWorkshops[0]?.id;
+
+  useGsapAccordion(
+    root,
+    activeWorkshopId,
+    {
+      item: ".past-workshops__item",
+      collapsed: ".past-workshops__collapsed-wrap",
+      expanded: ".past-workshops__expanded-wrap",
+      img: ".past-workshops__featured-img",
+      copy: ".past-workshops__featured-copy",
+      dataAttr: "data-id",
+    },
+    [pastWorkshops.map((item) => item.id).join("|")],
+  );
 
   useGSAP(
     () => {
@@ -32,10 +49,11 @@ export function PastWorkshops() {
         {pastWorkshops.length ? (
           <div className="past-workshops__items fig-c4-12">
             {pastWorkshops.map((item) => {
-              const isExpanded = (hoveredWorkshopId || pastWorkshops[0]?.id) === item.id;
+              const isExpanded = activeWorkshopId === item.id;
               return (
                 <article
                   key={item.id}
+                  data-id={item.id}
                   className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
                   onMouseEnter={() => setHoveredWorkshopId(item.id)}
                 >

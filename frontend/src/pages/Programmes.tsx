@@ -14,6 +14,7 @@ import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
 import { DEFAULT_RAZA } from "../lib/programmes/fallbacks";
 import { LATEST_EDITION, RAZA_CATALOGUE_ARTWORK_IDS } from "../data/site";
+import { useGsapAccordion } from "../lib/useGsapAccordion";
 import "./Programmes.css";
 
 function catalogueArtworkHref(scholarId: string): string | null {
@@ -42,6 +43,22 @@ export function Programmes() {
   const awardsPreviewCount = 3;
   const intlAwardsEffective = awardsInternational;
   const nationalAwardsEffective = awardsNational;
+
+  const activePastWorkshopId = hoveredWorkshopId || pastWorkshops[0]?.id;
+
+  useGsapAccordion(
+    root,
+    activePastWorkshopId,
+    {
+      item: ".programmes__past-item",
+      collapsed: ".programmes__past-collapsed-wrap",
+      expanded: ".programmes__past-expanded-wrap",
+      img: ".programmes__past-featured-img",
+      copy: ".programmes__past-featured-copy",
+      dataAttr: "data-id",
+    },
+    [pastWorkshops.map((item) => item.id).join("|")],
+  );
 
   const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
   const standardIntlAwards = useMemo(
@@ -300,10 +317,11 @@ export function Programmes() {
         {pastWorkshops.length ? (
           <div className="programmes__past-items fig-c4-12">
             {pastWorkshops.map((item) => {
-              const isExpanded = (hoveredWorkshopId || pastWorkshops[0]?.id) === item.id;
+              const isExpanded = activePastWorkshopId === item.id;
               return (
                 <article
                   key={item.id}
+                  data-id={item.id}
                   className={`programmes__past-item${isExpanded ? " is-expanded" : ""}`}
                   onMouseEnter={() => setHoveredWorkshopId(item.id)}
                 >

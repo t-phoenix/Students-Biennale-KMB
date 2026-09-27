@@ -6,6 +6,7 @@ import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { BrandArrow } from "../components/BrandArrow";
 import { GalleryLightbox } from "../components/GalleryLightbox";
 import { usePressItems } from "../lib/pressCms";
+import { useGsapAccordion } from "../lib/useGsapAccordion";
 import type { PressItem } from "../lib/pressCms/types";
 import "./Press.css";
 
@@ -49,6 +50,20 @@ export function Press() {
     hoveredArticleId && relatedArticles.some((p) => p.id === hoveredArticleId)
       ? hoveredArticleId
       : relatedArticles[0]?.id;
+
+  useGsapAccordion(
+    root,
+    activeArticleId,
+    {
+      item: ".press__item",
+      collapsed: ".press__collapsed-wrap",
+      expanded: ".press__expanded-wrap",
+      img: ".press__teaser-media img",
+      copy: ".press__teaser-copy",
+      dataAttr: "data-id",
+    },
+    [relatedArticles.map((p) => p.id).join(",")],
+  );
 
   const handleSelect = useCallback(
     (id: string) => {
@@ -161,6 +176,7 @@ export function Press() {
               return (
                 <li
                   key={item.id}
+                  data-id={item.id}
                   className={`press__item${isExpanded ? " is-expanded" : ""}`}
                   onMouseEnter={() => setHoveredArticleId(item.id)}
                 >

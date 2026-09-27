@@ -33,6 +33,7 @@ import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
 import { useSplash } from "../lib/splash";
+import { useGsapAccordion } from "../lib/useGsapAccordion";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -179,6 +180,22 @@ export function Home() {
     slideIndexRef.current = index;
     setSlide(index);
   }, []);
+
+  const activePressId = hoveredPressId || pressItems[0]?.id;
+
+  useGsapAccordion(
+    rootRef,
+    activePressId,
+    {
+      item: ".home-press__item",
+      collapsed: ".home-press__collapsed-wrap",
+      expanded: ".home-press__expanded-wrap",
+      img: ".home-press__featured-img",
+      copy: ".home-press__featured-copy",
+      dataAttr: "data-id",
+    },
+    [pressItems.map((p) => p.id).join(",")],
+  );
 
   const openCard = useCallback((card: ActiveUpdateCard) => {
     setActiveCard(card);
@@ -1038,10 +1055,11 @@ export function Home() {
             <h2 className="fig-label fig-heading">PRESS</h2>
             <div className={`home-press__items fig-c4-12${hasInteractedPress ? " is-interactive" : ""}`}>
               {pressItems.map((item) => {
-                const isExpanded = (hoveredPressId || pressItems[0]?.id) === item.id;
+                const isExpanded = activePressId === item.id;
                 return (
                   <article
                     key={item.id}
+                    data-id={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
                     onMouseEnter={() => handlePressHover(item.id)}
                     onMouseLeave={handlePressLeave}

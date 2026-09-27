@@ -259,22 +259,15 @@
 
 /* Collapsed Header / Trigger */
 .programmes__past-collapsed-wrap {
-  display: grid;
-  grid-template-rows: 1fr;
-  opacity: 1;
-  transition: grid-template-rows 0.78s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.48s ease;
+  overflow: hidden;
+  width: 100%;
 }
 
 .programmes__past-item.is-expanded .programmes__past-collapsed-wrap {
-  grid-template-rows: 0fr;
-  opacity: 0;
   pointer-events: none;
 }
 
 .programmes__past-collapsed {
-  min-height: 0;
-  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -283,7 +276,7 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.3s ease;
 }
 
 .programmes__past-collapsed:hover {
@@ -306,26 +299,16 @@
 
 /* Expanded Card Drawer */
 .programmes__past-expanded-wrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition: grid-template-rows 0.82s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.55s ease;
+  overflow: hidden;
+  width: 100%;
 }
 
-.programmes__past-item.is-expanded .programmes__past-expanded-wrap {
-  grid-template-rows: 1fr;
-  opacity: 1;
+.programmes__past-item:not(.is-expanded) .programmes__past-expanded-wrap {
+  pointer-events: none;
 }
 
 .programmes__past-expanded-inner {
-  min-height: 0;
   overflow: hidden;
-  padding-block: 0;
-  transition: padding 0.82s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.programmes__past-item.is-expanded .programmes__past-expanded-inner {
   padding-block: 28px;
 }
 
@@ -334,15 +317,6 @@
   grid-template-columns: repeat(9, minmax(0, 1fr));
   column-gap: var(--grid-gutter);
   align-items: start;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
-              transform 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
-}
-
-.programmes__past-item.is-expanded .programmes__past-expanded {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .programmes__past-featured-img-wrap {
@@ -359,8 +333,7 @@
   object-fit: cover;
   display: block;
   margin-bottom: 0;
-  transform: scale(1.04);
-  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: center center;
 }
 
 .programmes__past-item.is-expanded .programmes__past-featured-img {
