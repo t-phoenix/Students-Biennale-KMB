@@ -622,10 +622,9 @@
 .home-press__collapsed-wrap {
   display: grid;
   grid-template-rows: 1fr;
-  transition: grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.25s ease;
-  overflow: hidden;
-  width: 100%;
+  opacity: 1;
+  transition: grid-template-rows 0.78s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.48s ease;
 }
 
 .home-press__item.is-expanded .home-press__collapsed-wrap {
@@ -645,7 +644,7 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.35s ease;
 }
 
 .home-press__collapsed:hover {
@@ -672,32 +671,25 @@
 .home-press__expanded-wrap {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
-  width: 100%;
+  opacity: 0;
+  transition: grid-template-rows 0.82s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.55s ease;
 }
 
 .home-press__item.is-expanded .home-press__expanded-wrap {
   grid-template-rows: 1fr;
-}
-
-.home-press__item:not(.is-expanded) .home-press__expanded-wrap {
-  pointer-events: none;
+  opacity: 1;
 }
 
 .home-press__expanded-inner {
   min-height: 0;
   overflow: hidden;
-  padding-block: 28px 24px;
-  opacity: 0;
-  transform: translateY(6px);
-  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1) 0.05s,
-              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.05s;
+  padding-block: 0;
+  transition: padding 0.82s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .home-press__item.is-expanded .home-press__expanded-inner {
-  opacity: 1;
-  transform: translateY(0);
+  padding-block: 28px 24px;
 }
 
 .home-press__expanded {
@@ -705,6 +697,15 @@
   grid-template-columns: repeat(9, minmax(0, 1fr));
   column-gap: var(--grid-gutter);
   align-items: start;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
+              transform 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+}
+
+.home-press__item.is-expanded .home-press__expanded {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .home-press__featured-img-wrap {
@@ -724,7 +725,12 @@
   object-fit: cover;
   display: block;
   margin-bottom: 0;
-  transform-origin: center center;
+  transform: scale(1.04);
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.home-press__item.is-expanded .home-press__featured-img {
+  transform: scale(1);
 }
 
 .home-press__featured-img-wrap:hover .home-press__featured-img {
