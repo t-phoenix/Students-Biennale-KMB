@@ -39,10 +39,10 @@
   top: calc(var(--header-h, var(--nav-height, 72px)) + 24px);
   right: var(--grid-margin, 24px);
   z-index: 100;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.35);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 50%;
   color: var(--color-neutral-white);
   cursor: pointer;
@@ -55,7 +55,7 @@
 }
 
 .canvas-expand__close:hover {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.75);
   border-color: rgba(255, 255, 255, 0.85);
   transform: scale(1.06);
 }

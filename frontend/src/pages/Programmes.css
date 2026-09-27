@@ -262,8 +262,8 @@
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
-  transition: grid-template-rows 0.48s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
-              opacity 0.32s ease;
+  transition: grid-template-rows 0.78s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.48s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-collapsed-wrap {
@@ -283,7 +283,7 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.35s ease;
 }
 
 .programmes__past-collapsed:hover {
@@ -309,8 +309,8 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
-              opacity 0.38s ease;
+  transition: grid-template-rows 0.82s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.55s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-expanded-wrap {
@@ -322,7 +322,7 @@
   min-height: 0;
   overflow: hidden;
   padding-block: 0;
-  transition: padding 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
+  transition: padding 0.82s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .programmes__past-item.is-expanded .programmes__past-expanded-inner {
@@ -335,9 +335,9 @@
   column-gap: var(--grid-gutter);
   align-items: start;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.42s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s,
-              transform 0.45s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s;
+  transform: translateY(10px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
+              transform 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
 }
 
 .programmes__past-item.is-expanded .programmes__past-expanded {
@@ -360,7 +360,7 @@
   display: block;
   margin-bottom: 0;
   transform: scale(1.04);
-  transition: transform 0.65s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .programmes__past-item.is-expanded .programmes__past-featured-img {

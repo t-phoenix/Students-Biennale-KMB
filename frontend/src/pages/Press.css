@@ -126,8 +126,8 @@
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
-  transition: grid-template-rows 0.48s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
-              opacity 0.32s ease;
+  transition: grid-template-rows 0.78s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.48s ease;
 }
 
 .press__item.is-expanded .press__collapsed-wrap {
@@ -151,7 +151,7 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.35s ease;
 }
 
 .press__collapsed:hover {
@@ -178,8 +178,8 @@
   grid-template-rows: 0fr;
   opacity: 0;
   pointer-events: none;
-  transition: grid-template-rows 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
-              opacity 0.38s ease;
+  transition: grid-template-rows 0.82s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.55s ease;
 }
 
 .press__item.is-expanded .press__expanded-wrap {
@@ -192,7 +192,7 @@
   min-height: 0;
   overflow: hidden;
   padding-block: 0;
-  transition: padding 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
+  transition: padding 0.82s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .press__item.is-expanded .press__expanded-inner {
@@ -205,9 +205,9 @@
   column-gap: var(--grid-gutter);
   align-items: start;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.42s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s,
-              transform 0.45s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s;
+  transform: translateY(10px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
+              transform 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
 }
 
 .press__item.is-expanded .press__teaser {
@@ -234,7 +234,7 @@
   object-fit: cover;
   display: block;
   transform: scale(1.04);
-  transition: transform 0.65s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
+  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .press__item.is-expanded .press__teaser-media img {
@@ -344,6 +344,11 @@
 @media (max-width: 899px) {
   .press__head {
     padding-top: 32px;
+  }
+
+  .press__feature-media {
+    aspect-ratio: 4 / 5;
+    margin-bottom: 24px;
   }
 
   .press__rail {

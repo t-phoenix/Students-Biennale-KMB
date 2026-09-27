@@ -63,7 +63,7 @@ export function PastWorkshopDetail() {
           <MetaGrid className="past-workshop-detail__meta">
             <MetaRow label="Facilitators" value={workshop.facilitators} />
             <MetaRow label="Location" value={workshop.location} />
-            <MetaRow label="Year" value={workshop.year} />
+            <MetaRow label="Date" value={workshop.year} />
           </MetaGrid>
         </div>
 

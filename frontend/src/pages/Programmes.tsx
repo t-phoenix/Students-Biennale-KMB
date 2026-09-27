@@ -97,6 +97,10 @@ export function Programmes() {
     ? razaAwardCards
     : razaAwardCards.slice(0, awardsPreviewCount);
 
+  const hasMoreIntlAwards =
+    standardIntlAwards.length > awardsPreviewCount ||
+    (standardIntlAwards.length === 0 && razaAwardCards.length > awardsPreviewCount);
+
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
     if (!slides.length || index < 0 || index >= slides.length) return;
@@ -451,7 +455,7 @@ export function Programmes() {
           ) : (
             <SectionEmpty>No international awards published yet.</SectionEmpty>
           )}
-          {standardIntlAwards.length + razaAwardCards.length > awardsPreviewCount ? (
+          {hasMoreIntlAwards ? (
             <CtaLink
               className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
               lines={expandedIntlAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}

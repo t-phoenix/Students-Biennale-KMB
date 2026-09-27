@@ -156,6 +156,11 @@ export function ResidenciesBand({ slides }: Props) {
 
       <div className="residencies-band__card-slot">
         <div className="residencies-band__card">
+          {slide.image ? (
+            <div className="residencies-band__mobile-thumb" aria-hidden>
+              <img src={slide.image} alt="" />
+            </div>
+          ) : null}
           <h3>{slide.title}</h3>
           <MetaGrid className="residencies-band__meta-grid">
             <MetaRow label="Host" value={slide.host} />

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { FormattedParagraphs } from "./FormattedText";
 import { MetaGrid, MetaRow } from "./MetaGrid";
 import { subscribeLenis, getLenisInstance } from "../lib/lenisSingleton";
 import "./CatalogueList.css";
@@ -28,6 +27,14 @@ export type CataloguePreview = {
   note?: string;
   noteHref?: string;
 };
+
+function getTruncatedNote(note: string, maxWords = 50): string {
+  if (!note) return "";
+  const firstPara = note.split(/\n\s*\n/)[0]?.trim() || note;
+  const words = firstPara.split(/\s+/);
+  if (words.length <= maxWords) return firstPara;
+  return words.slice(0, maxWords).join(" ") + "…";
+}
 
 type CatalogueListProps = {
   rows: CatalogueRow[];
@@ -213,9 +220,12 @@ export function CatalogueList({
                       className="catalogue__preview-note-row"
                       value={
                         <div className="catalogue__preview-note-content">
-                          <FormattedParagraphs text={preview.note} />
+                          <p>{getTruncatedNote(preview.note, 50)}</p>
                           {preview.noteHref ? (
-                            <Link to={preview.noteHref}>Read More...</Link>
+                            <Link to={preview.noteHref} className="catalogue__preview-cta">
+                              <span>VIEW FULL ARTWORK</span>
+                              <span aria-hidden>→</span>
+                            </Link>
                           ) : null}
                         </div>
                       }
