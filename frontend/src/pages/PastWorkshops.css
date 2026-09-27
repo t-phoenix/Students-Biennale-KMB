@@ -34,8 +34,8 @@
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
-  transition: grid-template-rows 0.78s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.48s ease;
+  transition: grid-template-rows 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease;
 }
 
 .past-workshops__item.is-expanded .past-workshops__collapsed-wrap {
@@ -55,7 +55,7 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.25s ease;
 }
 
 .past-workshops__collapsed:hover {
@@ -81,8 +81,8 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.82s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.55s ease;
+  transition: grid-template-rows 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.4s ease;
 }
 
 .past-workshops__item.is-expanded .past-workshops__expanded-wrap {
@@ -93,11 +93,6 @@
 .past-workshops__expanded-inner {
   min-height: 0;
   overflow: hidden;
-  padding-block: 0;
-  transition: padding 0.82s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.past-workshops__item.is-expanded .past-workshops__expanded-inner {
   padding-block: 28px;
 }
 
@@ -107,14 +102,16 @@
   column-gap: var(--grid-gutter);
   align-items: start;
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
-              transform 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease,
+              transform 0.3s ease;
 }
 
 .past-workshops__item.is-expanded .past-workshops__expanded {
   opacity: 1;
   transform: translateY(0);
+  transition: opacity 0.55s ease 0.12s,
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
 }
 
 .past-workshops__featured-img-wrap {
@@ -131,12 +128,11 @@
   object-fit: cover;
   display: block;
   margin-bottom: 0;
-  transform: scale(1.04);
-  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.4s ease;
 }
 
-.past-workshops__item.is-expanded .past-workshops__featured-img {
-  transform: scale(1);
+.past-workshops__featured-img-wrap:hover .past-workshops__featured-img {
+  transform: scale(1.04);
 }
 
 .past-workshops__featured-placeholder {

@@ -126,8 +126,8 @@
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
-  transition: grid-template-rows 0.78s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.48s ease;
+  transition: grid-template-rows 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease;
 }
 
 .press__item.is-expanded .press__collapsed-wrap {
@@ -151,7 +151,7 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.25s ease;
 }
 
 .press__collapsed:hover {
@@ -178,8 +178,8 @@
   grid-template-rows: 0fr;
   opacity: 0;
   pointer-events: none;
-  transition: grid-template-rows 0.82s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.55s ease;
+  transition: grid-template-rows 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.4s ease;
 }
 
 .press__item.is-expanded .press__expanded-wrap {
@@ -191,11 +191,6 @@
 .press__expanded-inner {
   min-height: 0;
   overflow: hidden;
-  padding-block: 0;
-  transition: padding 0.82s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.press__item.is-expanded .press__expanded-inner {
   padding-block: 28px;
 }
 
@@ -205,14 +200,16 @@
   column-gap: var(--grid-gutter);
   align-items: start;
   opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.1s,
-              transform 0.72s cubic-bezier(0.16, 1, 0.3, 1) 0.1s;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease,
+              transform 0.3s ease;
 }
 
 .press__item.is-expanded .press__teaser {
   opacity: 1;
   transform: translateY(0);
+  transition: opacity 0.55s ease 0.12s,
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
 }
 
 .press__teaser-media {
@@ -233,16 +230,11 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transform: scale(1.04);
-  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.press__item.is-expanded .press__teaser-media img {
-  transform: scale(1);
+  transition: transform 0.4s ease;
 }
 
 .press__teaser-media:hover img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .press__teaser-media > div[aria-hidden] {
