@@ -33,7 +33,6 @@ import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
 import { useSplash } from "../lib/splash";
-import { useGsapAccordion } from "../lib/useGsapAccordion";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -182,20 +181,6 @@ export function Home() {
   }, []);
 
   const activePressId = hoveredPressId || pressItems[0]?.id;
-
-  useGsapAccordion(
-    rootRef,
-    activePressId,
-    {
-      item: ".home-press__item",
-      collapsed: ".home-press__collapsed-wrap",
-      expanded: ".home-press__expanded-wrap",
-      img: ".home-press__featured-img",
-      copy: ".home-press__featured-copy",
-      dataAttr: "data-id",
-    },
-    [pressItems.map((p) => p.id).join(",")],
-  );
 
   const openCard = useCallback((card: ActiveUpdateCard) => {
     setActiveCard(card);

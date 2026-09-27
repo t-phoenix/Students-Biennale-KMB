@@ -259,15 +259,23 @@
 
 /* Collapsed Header / Trigger */
 .programmes__past-collapsed-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease;
   overflow: hidden;
   width: 100%;
 }
 
 .programmes__past-item.is-expanded .programmes__past-collapsed-wrap {
+  grid-template-rows: 0fr;
+  opacity: 0;
   pointer-events: none;
 }
 
 .programmes__past-collapsed {
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -276,7 +284,7 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .programmes__past-collapsed:hover {
@@ -299,8 +307,15 @@
 
 /* Expanded Card Drawer */
 .programmes__past-expanded-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
   width: 100%;
+}
+
+.programmes__past-item.is-expanded .programmes__past-expanded-wrap {
+  grid-template-rows: 1fr;
 }
 
 .programmes__past-item:not(.is-expanded) .programmes__past-expanded-wrap {
@@ -308,8 +323,18 @@
 }
 
 .programmes__past-expanded-inner {
+  min-height: 0;
   overflow: hidden;
   padding-block: 28px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1) 0.05s,
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.05s;
+}
+
+.programmes__past-item.is-expanded .programmes__past-expanded-inner {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .programmes__past-expanded {

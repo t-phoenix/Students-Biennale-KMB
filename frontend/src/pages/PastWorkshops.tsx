@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { useProgrammes } from "../lib/programmes";
 import { SectionEmpty } from "../components/SectionEmpty";
-import { useGsapAccordion } from "../lib/useGsapAccordion";
 import "./PastWorkshops.css";
 
 export function PastWorkshops() {
@@ -12,20 +11,6 @@ export function PastWorkshops() {
   const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
 
   const activeWorkshopId = hoveredWorkshopId || pastWorkshops[0]?.id;
-
-  useGsapAccordion(
-    root,
-    activeWorkshopId,
-    {
-      item: ".past-workshops__item",
-      collapsed: ".past-workshops__collapsed-wrap",
-      expanded: ".past-workshops__expanded-wrap",
-      img: ".past-workshops__featured-img",
-      copy: ".past-workshops__featured-copy",
-      dataAttr: "data-id",
-    },
-    [pastWorkshops.map((item) => item.id).join("|")],
-  );
 
   useGSAP(
     () => {

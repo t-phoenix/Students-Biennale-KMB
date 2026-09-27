@@ -14,7 +14,6 @@ import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { toResidencySlides, useProgrammes } from "../lib/programmes";
 import { DEFAULT_RAZA } from "../lib/programmes/fallbacks";
 import { LATEST_EDITION, RAZA_CATALOGUE_ARTWORK_IDS } from "../data/site";
-import { useGsapAccordion } from "../lib/useGsapAccordion";
 import "./Programmes.css";
 
 function catalogueArtworkHref(scholarId: string): string | null {
@@ -45,20 +44,6 @@ export function Programmes() {
   const nationalAwardsEffective = awardsNational;
 
   const activePastWorkshopId = hoveredWorkshopId || pastWorkshops[0]?.id;
-
-  useGsapAccordion(
-    root,
-    activePastWorkshopId,
-    {
-      item: ".programmes__past-item",
-      collapsed: ".programmes__past-collapsed-wrap",
-      expanded: ".programmes__past-expanded-wrap",
-      img: ".programmes__past-featured-img",
-      copy: ".programmes__past-featured-copy",
-      dataAttr: "data-id",
-    },
-    [pastWorkshops.map((item) => item.id).join("|")],
-  );
 
   const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
   const standardIntlAwards = useMemo(

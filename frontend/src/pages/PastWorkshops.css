@@ -31,15 +31,23 @@
 
 /* Collapsed Header / Trigger */
 .past-workshops__collapsed-wrap {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease;
   overflow: hidden;
   width: 100%;
 }
 
 .past-workshops__item.is-expanded .past-workshops__collapsed-wrap {
+  grid-template-rows: 0fr;
+  opacity: 0;
   pointer-events: none;
 }
 
 .past-workshops__collapsed {
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -48,7 +56,7 @@
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.2s ease;
 }
 
 .past-workshops__collapsed:hover {
@@ -71,8 +79,15 @@
 
 /* Expanded Card Drawer */
 .past-workshops__expanded-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
   width: 100%;
+}
+
+.past-workshops__item.is-expanded .past-workshops__expanded-wrap {
+  grid-template-rows: 1fr;
 }
 
 .past-workshops__item:not(.is-expanded) .past-workshops__expanded-wrap {
@@ -80,8 +95,18 @@
 }
 
 .past-workshops__expanded-inner {
+  min-height: 0;
   overflow: hidden;
   padding-block: 28px;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1) 0.05s,
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.05s;
+}
+
+.past-workshops__item.is-expanded .past-workshops__expanded-inner {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .past-workshops__expanded {
