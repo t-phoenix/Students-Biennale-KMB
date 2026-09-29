@@ -180,6 +180,8 @@ export function Home() {
     setSlide(index);
   }, []);
 
+  const activePressId = hoveredPressId || pressItems[0]?.id;
+
   const openCard = useCallback((card: ActiveUpdateCard) => {
     setActiveCard(card);
   }, []);
@@ -1038,10 +1040,11 @@ export function Home() {
             <h2 className="fig-label fig-heading">PRESS</h2>
             <div className={`home-press__items fig-c4-12${hasInteractedPress ? " is-interactive" : ""}`}>
               {pressItems.map((item) => {
-                const isExpanded = (hoveredPressId || pressItems[0]?.id) === item.id;
+                const isExpanded = activePressId === item.id;
                 return (
                   <article
                     key={item.id}
+                    data-id={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
                     onMouseEnter={() => handlePressHover(item.id)}
                     onMouseLeave={handlePressLeave}

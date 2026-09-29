@@ -143,6 +143,14 @@ export function Press() {
         </div>
       ) : null}
 
+      {/* Article Navigation placed directly at the bottom of the article area */}
+      <div className="fig-grid press__nav">
+        <Link className="fig-c1-3 press__back" to="/#press">
+          <BrandArrow direction="left" />
+          <span>BACK</span>
+        </Link>
+      </div>
+
       {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       {relatedArticles.length > 0 ? (
         <div className="fig-grid press__related">
@@ -153,6 +161,7 @@ export function Press() {
               return (
                 <li
                   key={item.id}
+                  data-id={item.id}
                   className={`press__item${isExpanded ? " is-expanded" : ""}`}
                   onMouseEnter={() => setHoveredArticleId(item.id)}
                 >
@@ -232,14 +241,6 @@ export function Press() {
           </ul>
         </div>
       ) : null}
-
-      {/* Navigation */}
-      <div className="fig-grid press__nav">
-        <Link className="fig-c1-3 press__back" to="/#press">
-          <BrandArrow direction="left" />
-          <span>BACK</span>
-        </Link>
-      </div>
 
       {lightboxIndex !== null ? (
         <GalleryLightbox

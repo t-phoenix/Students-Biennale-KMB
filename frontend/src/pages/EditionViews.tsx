@@ -151,8 +151,11 @@ export function CuratorsView() {
                     ) : null}
                   </article>
                 ))}
-                <Link className="curator-panel__more" to={`/editions/${yearId}/artworks`}>
-                  VIEW ARTWORKS
+                <Link
+                  className="curator-panel__more"
+                  to={`/editions/${yearId}/curators/${zone.curators[0]?.id ?? ""}`}
+                >
+                  Know more…
                 </Link>
               </div>
             );

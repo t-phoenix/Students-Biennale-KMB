@@ -262,8 +262,8 @@
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
-  transition: grid-template-rows 0.48s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
-              opacity 0.32s ease;
+  transition: grid-template-rows 0.62s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-collapsed-wrap {
@@ -309,8 +309,8 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)),
-              opacity 0.38s ease;
+  transition: grid-template-rows 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.4s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-expanded-wrap {
@@ -321,11 +321,6 @@
 .programmes__past-expanded-inner {
   min-height: 0;
   overflow: hidden;
-  padding-block: 0;
-  transition: padding 0.52s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
-}
-
-.programmes__past-item.is-expanded .programmes__past-expanded-inner {
   padding-block: 28px;
 }
 
@@ -335,14 +330,16 @@
   column-gap: var(--grid-gutter);
   align-items: start;
   opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.42s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s,
-              transform 0.45s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1)) 0.07s;
+  transform: translateY(14px);
+  transition: opacity 0.3s ease,
+              transform 0.3s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-expanded {
   opacity: 1;
   transform: translateY(0);
+  transition: opacity 0.55s ease 0.12s,
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
 }
 
 .programmes__past-featured-img-wrap {
@@ -359,12 +356,11 @@
   object-fit: cover;
   display: block;
   margin-bottom: 0;
-  transform: scale(1.04);
-  transition: transform 0.65s var(--ease-craft, cubic-bezier(0.25, 1, 0.35, 1));
+  transition: transform 0.4s ease;
 }
 
-.programmes__past-item.is-expanded .programmes__past-featured-img {
-  transform: scale(1);
+.programmes__past-featured-img-wrap:hover .programmes__past-featured-img {
+  transform: scale(1.04);
 }
 
 .programmes__past-featured-placeholder {

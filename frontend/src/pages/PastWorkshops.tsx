@@ -10,6 +10,8 @@ export function PastWorkshops() {
   const { pastWorkshops } = useProgrammes();
   const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
 
+  const activeWorkshopId = hoveredWorkshopId || pastWorkshops[0]?.id;
+
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
@@ -32,10 +34,11 @@ export function PastWorkshops() {
         {pastWorkshops.length ? (
           <div className="past-workshops__items fig-c4-12">
             {pastWorkshops.map((item) => {
-              const isExpanded = (hoveredWorkshopId || pastWorkshops[0]?.id) === item.id;
+              const isExpanded = activeWorkshopId === item.id;
               return (
                 <article
                   key={item.id}
+                  data-id={item.id}
                   className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
                   onMouseEnter={() => setHoveredWorkshopId(item.id)}
                 >

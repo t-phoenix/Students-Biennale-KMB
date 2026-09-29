@@ -148,6 +148,10 @@
   right: var(--grid-margin);
 }
 
+.residencies-band__mobile-thumb {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .residencies-band__bg {
     transition: none;
@@ -158,6 +162,22 @@
   .residencies-band {
     height: auto;
     min-height: unset;
+  }
+
+  .residencies-band__mobile-thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background: #141414;
+  }
+
+  .residencies-band__mobile-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 
   .residencies-band__card-slot {

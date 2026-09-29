@@ -55,12 +55,13 @@
   top: 24px;
   right: var(--grid-margin);
   z-index: 3;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   color: var(--color-neutral-white);
   display: grid;
   place-items: center;
@@ -70,7 +71,7 @@
 }
 
 .detail__hero-expand:hover {
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0.75);
   border-color: rgba(255, 255, 255, 0.85);
   transform: scale(1.06);
 }
@@ -564,10 +565,15 @@
   justify-self: end;
 }
 
+.detail__zone--mobile {
+  display: none;
+}
+
 @media (max-width: 899px) {
   .detail__hero--cover {
-    height: calc(100dvh - var(--nav-height-mobile));
-    min-height: calc(100dvh - var(--nav-height-mobile));
+    height: calc(75dvh - var(--nav-height-mobile, 56px));
+    min-height: calc(75dvh - var(--nav-height-mobile, 56px));
+    max-height: calc(75dvh - var(--nav-height-mobile, 56px));
   }
 
   .detail__section {
@@ -579,9 +585,29 @@
   }
 
   .detail__portrait {
-    justify-self: start;
-    max-width: 320px;
-    margin-inline-end: 0;
+    justify-self: center;
+    align-self: center;
+    margin: 0 auto 24px auto;
+    max-width: 260px;
+    width: 100%;
+    aspect-ratio: 295 / 380;
+    border: 8px solid #ffffff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .detail__curator-copy {
+    align-self: auto;
+  }
+
+  .detail__zone--desktop {
+    display: none !important;
+  }
+
+  .detail__zone--mobile {
+    display: block !important;
+    padding-top: 32px;
+    border-top: 1px solid var(--color-neutral-gray-light);
+    margin-top: 40px;
   }
 
   .detail__nav {

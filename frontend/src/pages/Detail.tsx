@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
+import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
 import { HighlightText } from "../components/HighlightText";
 import { FormattedParagraphs } from "../components/FormattedText";
@@ -77,6 +78,34 @@ export function Detail() {
     { scope: root, dependencies: [id, kindSeg] }
   );
 
+  useGSAP(
+    () => {
+      if (data.kind !== "venue" || !data.item) return;
+      const v = data.item;
+      const slides = venueImages(v);
+      const venueHero = root.current?.querySelector<HTMLElement>(".detail__venue-hero");
+      if (!venueHero || slides.length <= 1 || prefersReducedMotion()) return;
+      const tl = gsap.timeline({ repeat: -1 });
+      tl.to({}, { duration: 4 }).call(() => {
+        setHeroIndex((cur) => (cur + 1) % slides.length);
+      });
+      const pause = () => tl.pause();
+      const play = () => tl.play();
+      venueHero.addEventListener("pointerenter", pause);
+      venueHero.addEventListener("pointerleave", play);
+      venueHero.addEventListener("focusin", pause);
+      venueHero.addEventListener("focusout", play);
+      return () => {
+        venueHero.removeEventListener("pointerenter", pause);
+        venueHero.removeEventListener("pointerleave", play);
+        venueHero.removeEventListener("focusin", pause);
+        venueHero.removeEventListener("focusout", play);
+        tl.kill();
+      };
+    },
+    { dependencies: [id, kindSeg, data], scope: root }
+  );
+
   useEffect(() => {
     const q = highlight.trim();
     if (!q || kindSeg === "artworks") return;
@@ -112,7 +141,9 @@ export function Detail() {
     if (kindSeg === "artworks" && searchParams.get("from") === "awards") {
       return "/programmes#awards";
     }
-    return `/editions/${yearId}/${kindSeg}`;
+    const viewParam = searchParams.get("view");
+    const qs = viewParam ? `?view=${viewParam}` : "";
+    return `/editions/${yearId}/${kindSeg}${qs}`;
   }, [kindSeg, yearId, artworkNav, searchParams]);
 
   if (!data.item) {
@@ -245,7 +276,7 @@ export function Detail() {
             </div>
 
             {i === 0 && zone ? (
-              <aside className="fig-c10-12 detail__zone detail-reveal">
+              <aside className="fig-c10-12 detail__zone detail__zone--desktop detail-reveal">
                 <h2>{zone.label}</h2>
                 <p>{zone.states}</p>
                 {zone.curatorialAssistant ? (
@@ -311,6 +342,20 @@ export function Detail() {
           </div>
         ) : null}
 
+        {zone ? (
+          <div className="fig-grid detail__zone--mobile detail-reveal">
+            <aside className="detail__zone">
+              <h2>{zone.label}</h2>
+              <p>{zone.states}</p>
+              {zone.curatorialAssistant ? (
+                <MetaGrid className="detail__zone-assistant meta-grid--compact meta-grid--tight-colon">
+                  <MetaRow label="Curatorial Assistant" value={zone.curatorialAssistant} />
+                </MetaGrid>
+              ) : null}
+            </aside>
+          </div>
+        ) : null}
+
         <div className="fig-grid detail__nav">
           <Link className="fig-c1-3 detail__back" to={back}>
             <BrandArrow direction="left" />
@@ -328,8 +373,8 @@ export function Detail() {
             <CtaLink
               className="detail__next"
               to={`/editions/${yearId}/artworks`}
-              lines={["View", "MORE"]}
-              spacing={["0.26em", "0.135em"]}
+              lines={["DISCOVER", "ARTWORKS"]}
+              direction="right"
             />
           )}
         </div>
@@ -352,11 +397,20 @@ export function Detail() {
         <div className="fig-grid detail__section">
           <div className="detail__venue-hero fig-c1-7 detail-reveal">
             {slides.length ? (
-              <ImageCrossfadeStack
-                images={slides}
-                index={heroIndex}
-                imageClassName="detail__venue-hero-img"
-              />
+              <>
+                <ImageCrossfadeStack
+                  images={slides}
+                  index={heroIndex}
+                  imageClassName="detail__venue-hero-img"
+                />
+                {slides.length > 1 ? (
+                  <CarouselNavArrows
+                    slideSrc={slides[heroIndex] ?? ""}
+                    onPrev={() => setHeroIndex((i) => (i - 1 + slides.length) % slides.length)}
+                    onNext={() => setHeroIndex((i) => (i + 1) % slides.length)}
+                  />
+                ) : null}
+              </>
             ) : null}
             {slides.length > 1 ? (
               <div className="detail__hero-dots detail__hero-dots--venue" role="tablist" aria-label="Venue images">
