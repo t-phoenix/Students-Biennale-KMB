@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import { FormattedText } from "./FormattedText";
 import { MetaGrid, MetaRow } from "./MetaGrid";
 import { subscribeLenis, getLenisInstance } from "../lib/lenisSingleton";
 import "./CatalogueList.css";
@@ -220,7 +221,7 @@ export function CatalogueList({
                       className="catalogue__preview-note-row"
                       value={
                         <div className="catalogue__preview-note-content">
-                          <p>{getTruncatedNote(preview.note, 50)}</p>
+                          <FormattedText as="p" text={getTruncatedNote(preview.note, 50)} />
                           {preview.noteHref ? (
                             <Link to={preview.noteHref} className="catalogue__preview-cta">
                               <span>VIEW FULL ARTWORK</span>
