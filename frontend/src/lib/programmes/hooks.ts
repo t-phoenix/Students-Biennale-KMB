@@ -45,9 +45,10 @@ export function usePastWorkshop(id: string) {
   const slug = LEGACY_WORKSHOP_IDS[id] ?? id;
   const idx = programmes.pastWorkshops.findIndex((item) => item.id === slug || item.id === id);
   const workshop = idx >= 0 ? programmes.pastWorkshops[idx] : undefined;
-  const next = workshop
-    ? programmes.pastWorkshops[(idx + 1) % programmes.pastWorkshops.length]
-    : undefined;
+  const next =
+    workshop && idx < programmes.pastWorkshops.length - 1
+      ? programmes.pastWorkshops[idx + 1]
+      : undefined;
   return { ...programmes, workshop, next };
 }
 
