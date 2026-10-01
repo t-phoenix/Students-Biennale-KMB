@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 import { gsap, syncScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
@@ -9,12 +9,55 @@ import { parseHomeHash, parseProgrammeHash, scrollToId } from "../lib/scrollToSe
 import { setLenisInstance } from "../lib/lenisSingleton";
 import { useImageParallax } from "../lib/parallax";
 import { useSplash } from "../lib/splash";
+import { useHomeCms } from "../lib/homeCms";
+import { preloadUrl } from "../lib/preloadImages";
 import "./Layout.css";
+
+function useHoldUntilHomeHeroReady(pathname: string) {
+  const isHome = pathname === "/" || pathname === "";
+  const { covers, status } = useHomeCms();
+  const first = covers[0]?.image_url?.trim() ?? "";
+  const shown = useRef(false);
+  const [hold, setHold] = useState(isHome && !shown.current);
+
+  useEffect(() => {
+    if (!isHome || shown.current) {
+      setHold(false);
+      return;
+    }
+    if (!first) {
+      if (status === "ready") {
+        shown.current = true;
+        setHold(false);
+      }
+      return;
+    }
+    let cancelled = false;
+    const release = window.setTimeout(() => {
+      if (cancelled) return;
+      shown.current = true;
+      setHold(false);
+    }, 8000);
+    void preloadUrl(first, "high").finally(() => {
+      window.clearTimeout(release);
+      if (cancelled) return;
+      shown.current = true;
+      setHold(false);
+    });
+    return () => {
+      cancelled = true;
+      window.clearTimeout(release);
+    };
+  }, [first, isHome, status]);
+
+  return hold;
+}
 
 export function Layout() {
   const location = useLocation();
   const { active: splashActive, willShow: splashWillShow, completed: splashCompleted } =
     useSplash();
+  const holdForHero = useHoldUntilHomeHeroReady(location.pathname) && !splashActive;
   const isDiscover = location.pathname === "/artworks";
   const lenisRef = useRef<Lenis | null>(null);
   const prevPathRef = useRef(location.pathname);
@@ -196,6 +239,7 @@ export function Layout() {
       </div>
       {isDiscover ? null : <Footer />}
       <SketchLayer />
+      {holdForHero ? <div className="site-hero-hold" aria-hidden /> : null}
     </div>
   );
 }

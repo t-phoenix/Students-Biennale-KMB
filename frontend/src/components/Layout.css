@@ -6,6 +6,14 @@
   background: var(--color-neutral-white);
 }
 
+/* Cover the whole site on home until the first hero photo has decoded. */
+.site-hero-hold {
+  position: fixed;
+  inset: 0;
+  z-index: 4500;
+  background: var(--color-neutral-white);
+}
+
 .site-layout__main {
   flex: 1 1 auto;
   width: 100%;

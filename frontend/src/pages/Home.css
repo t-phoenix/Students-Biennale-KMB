@@ -20,7 +20,7 @@
   min-height: calc(100dvh - var(--nav-height));
   height: calc(100dvh - var(--nav-height));
   overflow: hidden;
-  background: var(--color-neutral-gray-light);
+  background: var(--color-neutral-white);
   isolation: isolate;
   z-index: 1;
 }

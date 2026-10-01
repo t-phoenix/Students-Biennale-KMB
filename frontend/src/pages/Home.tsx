@@ -541,13 +541,13 @@ export function Home() {
             .fromTo(
               ".home-hero__slide:first-child",
               {
-                opacity: splashWillShow ? 1 : 0,
+                opacity: 1,
                 visibility: "visible",
               },
               {
                 opacity: 1,
                 visibility: "visible",
-                duration: splashWillShow ? 0.01 : 1.2,
+                duration: 0.01,
                 ease: "none",
               },
               0
