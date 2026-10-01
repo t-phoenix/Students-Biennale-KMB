@@ -341,6 +341,7 @@ export type Database = {
         Row: {
           active: boolean
           artwork_id: string
+          cover_asset_id: string | null
           created_at: string
           id: string
           programme_id: string
@@ -350,6 +351,7 @@ export type Database = {
         Insert: {
           active?: boolean
           artwork_id: string
+          cover_asset_id?: string | null
           created_at?: string
           id?: string
           programme_id: string
@@ -359,6 +361,7 @@ export type Database = {
         Update: {
           active?: boolean
           artwork_id?: string
+          cover_asset_id?: string | null
           created_at?: string
           id?: string
           programme_id?: string
@@ -371,6 +374,13 @@ export type Database = {
             columns: ["artwork_id"]
             isOneToOne: false
             referencedRelation: "artworks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "award_winners_cover_asset_id_fkey"
+            columns: ["cover_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
             referencedColumns: ["id"]
           },
           {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { mapProgrammes } from "./mappers";
+import { enrichAwardWinners, mapProgrammes } from "./mappers";
 import type { ProgrammeAsset, ProgrammeRow } from "./types";
+import type { ArtworkCard } from "../../data/site";
 
 describe("programmes upcoming workshops mapping", () => {
   it("correctly separates single upcoming workshop from past workshops", () => {
@@ -157,5 +158,51 @@ describe("programmes upcoming workshops mapping", () => {
       "/programmes/gallery-first.jpg",
       "/programmes/gallery-second.jpg",
     ]);
+  });
+});
+
+describe("award card images", () => {
+  const artwork = {
+    id: "artwork-ginning-justice",
+    title: "Ginning Justice",
+    venue: "BMS Warehouse",
+    year: "2025 – 26",
+    description: "",
+    artists: [{ name: "Kailash Khanjode", institution: "Nagpur" }],
+    materials: [],
+    dimensions: "",
+    image: "/covers/ginning-cover.jpg",
+  } satisfies ArtworkCard;
+
+  it("uses a chosen artwork image ahead of the catalogue cover", () => {
+    const [card] = enrichAwardWinners(
+      [
+        {
+          name: "Kailash Khanjode",
+          artwork: "Ginning Justice",
+          institution: "Nagpur",
+          artworkId: artwork.id,
+          image: "/covers/ginning-detail.jpg",
+        },
+      ],
+      [artwork],
+    );
+    expect(card.image).toBe("/covers/ginning-detail.jpg");
+  });
+
+  it("keeps the catalogue cover when no award image is chosen", () => {
+    const [card] = enrichAwardWinners(
+      [
+        {
+          name: "Kailash Khanjode",
+          artwork: "Ginning Justice",
+          institution: "Nagpur",
+          artworkId: artwork.id,
+          image: "",
+        },
+      ],
+      [artwork],
+    );
+    expect(card.image).toBe("/covers/ginning-cover.jpg");
   });
 });

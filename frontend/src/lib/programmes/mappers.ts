@@ -249,7 +249,7 @@ export function enrichAwardWinners(
       artwork: artwork?.title ?? winner.artwork,
       institution: primary.institution,
       artworkId: winner.artworkId || artwork?.id || slugify(winner.artwork),
-      image: artwork?.image || winner.image || AWARD_FALLBACK_IMAGE,
+      image: winner.image || artwork?.image || AWARD_FALLBACK_IMAGE,
       artists,
       venue: artwork?.venue || winner.venue,
       year: artwork?.year || winner.year,
@@ -274,7 +274,7 @@ function mapAwardWinnerRows(rows: AwardWinnerRow[]): AwardWinnerCard[] {
       artwork: row.artwork_title || "",
       institution: primary.institution,
       artworkId: row.artwork_id,
-      image: "",
+      image: row.cover_image_url || "",
       artists,
     };
   });

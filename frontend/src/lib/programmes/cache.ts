@@ -3,7 +3,7 @@ import { EMPTY_PROGRAMMES } from "./fallbacks";
 import { mapProgrammes } from "./mappers";
 import type { AwardWinnerRow, MappedProgrammes, ProgrammeAsset, ProgrammeRow } from "./types";
 
-const STORAGE_KEY = "sb-programmes-v14";
+const STORAGE_KEY = "sb-programmes-v15";
 const PROGRAMME_SELECT =
   "id, subtype, state, title, slug, summary, body, dates, place, host, awardees, sort_order, published, programme_facilitators(display_name, sort_order)";
 
@@ -86,7 +86,7 @@ async function fetchAwardWinners(): Promise<AwardWinnerRow[]> {
   const { data, error } = await supabase
     .from("award_winners")
     .select(
-      "id, programme_id, artwork_id, sort_order, active, artworks(title), award_winner_artists(person_id, sort_order, people(name))",
+      "id, programme_id, artwork_id, cover_asset_id, sort_order, active, artworks(title), assets!award_winners_cover_asset_id_fkey(public_url), award_winner_artists(person_id, sort_order, people(name))",
     )
     .eq("active", true)
     .order("sort_order");
@@ -138,11 +138,17 @@ async function fetchAwardWinners(): Promise<AwardWinnerRow[]> {
         };
       });
 
+    const assetsRel = (row as { assets?: { public_url: string | null } | { public_url: string | null }[] | null }).assets;
+    const coverImage = Array.isArray(assetsRel)
+      ? assetsRel[0]?.public_url ?? null
+      : assetsRel?.public_url ?? null;
+
     return {
       id: row.id,
       programme_id: row.programme_id,
       artwork_id: row.artwork_id,
       artwork_title: artworkTitle,
+      cover_image_url: coverImage,
       sort_order: row.sort_order,
       active: row.active,
       artists,

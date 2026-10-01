@@ -36,6 +36,7 @@ type WinnerDraft = {
   programmeId: string;
   artworkId: string;
   personIds: string[];
+  coverAssetId: string | null;
 };
 
 type WinnerView = {
@@ -45,6 +46,7 @@ type WinnerView = {
   artworkId: string;
   artworkTitle: string;
   image: string;
+  coverAssetId: string | null;
   artists: { personId?: string; name: string; institution: string }[];
   venue?: string;
   year?: string;
@@ -52,11 +54,18 @@ type WinnerView = {
   active: boolean;
 };
 
+type ArtworkImageOption = {
+  assetId: string;
+  url: string;
+  role: string;
+  sortOrder: number;
+};
+
 const DEV_HELP =
   "Can’t find an artwork or artist? Ask a developer to add it to the catalogue (artworks / people), then refresh this page.";
 
 function emptyDraft(programmeId: string): WinnerDraft {
-  return { programmeId, artworkId: "", personIds: [] };
+  return { programmeId, artworkId: "", personIds: [], coverAssetId: null };
 }
 
 export function Awards({ notify, confirm }: SectionProps) {
@@ -69,6 +78,7 @@ export function Awards({ notify, confirm }: SectionProps) {
   const [editing, setEditing] = useState<WinnerDraft | null>(null);
   const [busy, setBusy] = useState(false);
   const [artistQuery, setArtistQuery] = useState("");
+  const [artworkImages, setArtworkImages] = useState<ArtworkImageOption[]>([]);
 
   const loadCatalogueOptions = useCallback(async () => {
     const { data, error } = await sb
@@ -126,7 +136,7 @@ export function Awards({ notify, confirm }: SectionProps) {
         sb
           .from("award_winners")
           .select(
-            "id, programme_id, artwork_id, sort_order, active, artworks(title), award_winner_artists(person_id, sort_order, people(name))",
+            "id, programme_id, artwork_id, cover_asset_id, sort_order, active, artworks(title), assets!award_winners_cover_asset_id_fkey(public_url), award_winner_artists(person_id, sort_order, people(name))",
           )
           .order("sort_order"),
       ]);
@@ -162,6 +172,13 @@ export function Awards({ notify, confirm }: SectionProps) {
             return { personId: artist.person_id, name, institution: "" };
           });
 
+        const assetsRel = (
+          row as { assets?: { public_url: string | null } | { public_url: string | null }[] | null }
+        ).assets;
+        const selectedImage = Array.isArray(assetsRel)
+          ? assetsRel[0]?.public_url ?? ""
+          : assetsRel?.public_url ?? "";
+
         const programme = progs.find((p) => p.id === row.programme_id);
         return {
           id: row.id,
@@ -169,7 +186,8 @@ export function Awards({ notify, confirm }: SectionProps) {
           programmeTitle: programme?.title ?? row.programme_id,
           artworkId: row.artwork_id,
           artworkTitle,
-          image: "",
+          image: selectedImage,
+          coverAssetId: row.cover_asset_id,
           artists,
           sortOrder: row.sort_order,
           active: row.active,
@@ -183,7 +201,7 @@ export function Awards({ notify, confirm }: SectionProps) {
           artwork: card.artworkTitle,
           institution: card.artists[0]?.institution ?? "",
           artworkId: card.artworkId,
-          image: "",
+          image: card.image,
           artists: card.artists.map((a) => ({
             name: a.name,
             institution: a.institution,
@@ -273,6 +291,7 @@ export function Awards({ notify, confirm }: SectionProps) {
       id: winner.id,
       programmeId: winner.programmeId,
       artworkId: winner.artworkId,
+      coverAssetId: winner.coverAssetId,
       personIds: winner.artists
         .map((artist) => artist.personId)
         .filter((id): id is string => Boolean(id)),
@@ -301,6 +320,79 @@ export function Awards({ notify, confirm }: SectionProps) {
     };
   }, [editing?.id, editing?.personIds.length, sb]);
 
+  useEffect(() => {
+    const artworkId = editing?.artworkId;
+    if (!artworkId) {
+      setArtworkImages([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await sb
+        .from("asset_links")
+        .select("role, assets!inner(id, public_url, variant, status, sort_order)")
+        .eq("entity_type", "artwork")
+        .eq("entity_id", artworkId);
+      if (cancelled) return;
+      if (error || !data) {
+        setArtworkImages([]);
+        return;
+      }
+      const seen = new Set<string>();
+      const options: ArtworkImageOption[] = [];
+      for (const row of data) {
+        const assetRel = (
+          row as {
+            role: string;
+            assets:
+              | {
+                  id: string;
+                  public_url: string | null;
+                  variant: string;
+                  status: string;
+                  sort_order: number | null;
+                }
+              | {
+                  id: string;
+                  public_url: string | null;
+                  variant: string;
+                  status: string;
+                  sort_order: number | null;
+                }[]
+              | null;
+          }
+        ).assets;
+        const asset = Array.isArray(assetRel) ? assetRel[0] : assetRel;
+        if (!asset?.public_url || asset.variant === "original" || asset.status !== "ready") continue;
+        if (seen.has(asset.id)) continue;
+        seen.add(asset.id);
+        options.push({
+          assetId: asset.id,
+          url: asset.public_url,
+          role: row.role,
+          sortOrder: asset.sort_order ?? 0,
+        });
+      }
+      options.sort(
+        (a, b) =>
+          (a.role === "cover" ? 0 : 1) - (b.role === "cover" ? 0 : 1) || a.sortOrder - b.sortOrder,
+      );
+      setArtworkImages(options);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [editing?.artworkId, sb]);
+
+  const selectedCoverId =
+    editing?.coverAssetId ??
+    artworkImages.find((image) => image.role === "cover")?.assetId ??
+    artworkImages[0]?.assetId ??
+    null;
+  const selectedCoverUrl =
+    artworkImages.find((image) => image.assetId === selectedCoverId)?.url ||
+    selectedArtworkPreview?.image;
+
   const save = async () => {
     if (!editing?.artworkId) {
       notify("error", "Select an artwork from the catalogue");
@@ -321,7 +413,7 @@ export function Awards({ notify, confirm }: SectionProps) {
       if (winnerId) {
         const { error } = await sb
           .from("award_winners")
-          .update({ artwork_id: editing.artworkId })
+          .update({ artwork_id: editing.artworkId, cover_asset_id: editing.coverAssetId })
           .eq("id", winnerId);
         if (error) throw error;
         await sb.from("award_winner_artists").delete().eq("award_winner_id", winnerId);
@@ -331,6 +423,7 @@ export function Awards({ notify, confirm }: SectionProps) {
           .insert({
             programme_id: editing.programmeId,
             artwork_id: editing.artworkId,
+            cover_asset_id: editing.coverAssetId,
             sort_order: sortOrder,
             active: true,
           })
@@ -563,14 +656,15 @@ export function Awards({ notify, confirm }: SectionProps) {
                 ...editing,
                 artworkId: id ?? "",
                 personIds: [],
+                coverAssetId: null,
               })
             }
           />
 
           {selectedArtworkPreview || selectedArtwork ? (
             <div className="adm-preview">
-              {selectedArtworkPreview?.image ? (
-                <img src={selectedArtworkPreview.image} alt="" />
+              {selectedCoverUrl ? (
+                <img src={selectedCoverUrl} alt="" />
               ) : (
                 <div />
               )}
@@ -588,6 +682,32 @@ export function Awards({ notify, confirm }: SectionProps) {
                 ) : null}
               </div>
             </div>
+          ) : null}
+
+          {editing.artworkId && artworkImages.length ? (
+            <>
+              <label className="adm-field__label">Card image</label>
+              <p className="adm-help" style={{ marginTop: 0 }}>
+                Choose which photo of this artwork appears on the award card.
+              </p>
+              <div className="adm-image-picker" role="radiogroup" aria-label="Award card image">
+                {artworkImages.map((image) => {
+                  const selected = image.assetId === selectedCoverId;
+                  return (
+                    <button
+                      key={image.assetId}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      className={`adm-image-picker__option${selected ? " is-selected" : ""}`}
+                      onClick={() => setEditing({ ...editing, coverAssetId: image.assetId })}
+                    >
+                      <img src={image.url} alt="" />
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           ) : null}
 
           <label className="adm-field__label">

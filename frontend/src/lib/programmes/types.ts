@@ -36,6 +36,7 @@ export type AwardWinnerRow = {
   programme_id: string;
   artwork_id: string;
   artwork_title: string | null;
+  cover_image_url: string | null;
   sort_order: number;
   active: boolean;
   artists: {

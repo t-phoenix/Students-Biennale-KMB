@@ -961,6 +961,32 @@
   color: var(--color-text-secondary);
 }
 
+.adm-image-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.adm-image-picker__option {
+  padding: 0;
+  border: 1px solid var(--color-neutral-gray-light);
+  background: var(--color-neutral-white);
+  cursor: pointer;
+}
+
+.adm-image-picker__option.is-selected {
+  border-color: var(--color-neutral-black);
+  outline: 1px solid var(--color-neutral-black);
+}
+
+.adm-image-picker__option img {
+  display: block;
+  width: 96px;
+  height: 72px;
+  object-fit: cover;
+}
+
 @media (max-width: 720px) {
   .adm-section {
     padding: var(--spacing-xl);
