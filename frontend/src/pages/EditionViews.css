@@ -90,6 +90,7 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   font-size: 14px;
+  font-weight: 700;
   line-height: var(--type-subtitle-line);
   padding: 0 4px;
   display: grid;
