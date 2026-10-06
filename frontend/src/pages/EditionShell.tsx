@@ -17,31 +17,24 @@ const TABS = [
 
 function EditionSearchToolbar() {
   const { query, setQuery, view, setView, isSearching } = useEditionSearch();
+  const [isFocused, setIsFocused] = useState(false);
+  const isActive = isFocused || Boolean(query);
 
   return (
     <div className="edition-toolbar fig-band-9">
-      <label className="edition-search">
-        <svg
-          className="edition-search__icon"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-        </svg>
-        <span className="sr-only">Search</span>
+      <div className={`edition-search${isActive ? " is-active" : ""}`}>
+        <label htmlFor="edition-search-input" className="edition-search__label">
+          Search
+        </label>
         <input
+          id="edition-search-input"
+          type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search Curators, Artworks, Artists..."
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           aria-label="Search this edition"
+          autoComplete="off"
         />
         {query ? (
           <button
@@ -53,7 +46,7 @@ function EditionSearchToolbar() {
             ✕
           </button>
         ) : null}
-      </label>
+      </div>
       {!isSearching ? (
         <div className="edition-view-toggle" role="group" aria-label="View mode">
           <button
