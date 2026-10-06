@@ -16,7 +16,7 @@ const TABS = [
 ] as const;
 
 function EditionSearchToolbar() {
-  const { query, setQuery, view, setView, isSearching } = useEditionSearch();
+  const { query, setQuery, view, setView } = useEditionSearch();
   const [isFocused, setIsFocused] = useState(false);
   const isActive = isFocused || Boolean(query);
 
@@ -46,28 +46,26 @@ function EditionSearchToolbar() {
           Clear
         </button>
       </div>
-      {!isSearching ? (
-        <div className="edition-view-toggle" role="group" aria-label="View mode">
-          <button
-            type="button"
-            className={view === "grid" ? "is-active" : undefined}
-            onClick={() => setView("grid")}
-            aria-pressed={view === "grid"}
-            aria-label="Grid view"
-          >
-            <img src="/icons/grid-view.svg" alt="" width={36} height={36} />
-          </button>
-          <button
-            type="button"
-            className={view === "list" ? "is-active" : undefined}
-            onClick={() => setView("list")}
-            aria-pressed={view === "list"}
-            aria-label="List view"
-          >
-            <img src="/icons/list-view.svg" alt="" width={36} height={36} />
-          </button>
-        </div>
-      ) : null}
+      <div className="edition-view-toggle" role="group" aria-label="View mode">
+        <button
+          type="button"
+          className={view === "grid" ? "is-active" : undefined}
+          onClick={() => setView("grid")}
+          aria-pressed={view === "grid"}
+          aria-label="Grid view"
+        >
+          <img src="/icons/grid-view.svg" alt="" width={36} height={36} />
+        </button>
+        <button
+          type="button"
+          className={view === "list" ? "is-active" : undefined}
+          onClick={() => setView("list")}
+          aria-pressed={view === "list"}
+          aria-label="List view"
+        >
+          <img src="/icons/list-view.svg" alt="" width={36} height={36} />
+        </button>
+      </div>
     </div>
   );
 }
