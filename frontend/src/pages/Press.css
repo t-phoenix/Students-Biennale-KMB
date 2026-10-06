@@ -333,6 +333,11 @@
   }
 }
 
+.press__next {
+  grid-column: 4 / -1;
+  justify-self: end;
+}
+
 @media (max-width: 899px) {
   .press__head {
     padding-top: 32px;
@@ -367,10 +372,15 @@
 
   .press__nav {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
     padding-top: 40px;
     width: 100%;
+  }
+
+  .press__next {
+    grid-column: auto;
+    justify-self: auto;
   }
 
   .press__teaser {
