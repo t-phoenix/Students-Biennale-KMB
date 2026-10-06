@@ -15,6 +15,7 @@ type ExpandState = {
 
 export function DiscoverArtworks() {
   const [query, setQuery] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [expand, setExpand] = useState<ExpandState | null>(null);
   const [isTucked, setIsTucked] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -23,6 +24,8 @@ export function DiscoverArtworks() {
   const searchBarRef = useRef<HTMLDivElement>(null);
   const isSearchFocusedRef = useRef(false);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isActive = isFocused || Boolean(query);
   const { artworks, catalogues } = useAllArtworks();
   const sourceKey =
     catalogues.map((row) => `${row.years}:${row.generatedAt}`).join("|") || "static";
@@ -136,36 +139,38 @@ export function DiscoverArtworks() {
         onPointerEnter={untuckHeader}
         aria-hidden={Boolean(expand)}
       >
-        <label className="discover__search-field">
+        <div className={`discover__search-field${isActive ? " is-active" : ""}`}>
+          <label htmlFor="discover-search-input" className="discover__search-label">
+            Search
+          </label>
           <input
             ref={searchInputRef}
+            id="discover-search-input"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => {
               isSearchFocusedRef.current = true;
+              setIsFocused(true);
               untuckHeader();
             }}
             onBlur={() => {
               isSearchFocusedRef.current = false;
+              setIsFocused(false);
             }}
-            placeholder="Search Artworks"
             aria-label="Search Artworks"
             autoComplete="off"
           />
-          {query ? (
-            <button
-              type="button"
-              className="discover__clear"
-              onClick={() => setQuery("")}
-              aria-label="Clear search"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1.5 1.5L12.5 12.5M1.5 12.5L12.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          ) : null}
-        </label>
+          <button
+            type="button"
+            className={`discover__clear${query ? " is-visible" : ""}`}
+            onClick={() => setQuery("")}
+            aria-label="Clear search"
+            tabIndex={query ? 0 : -1}
+          >
+            ✕
+          </button>
+        </div>
       </div>
       <div ref={stageRef} className="discover__stage">
         <InfiniteCanvas
