@@ -185,13 +185,10 @@
   line-height: 1.2;
   letter-spacing: 0.055em;
   position: relative;
-  display: inline-block;
-  cursor: pointer;
-  color: inherit;
-  text-decoration: none;
 }
 
 .fig-subheading.is-selected,
+.fig-subheading:hover,
 .fig-subheading:focus-visible {
   font-weight: 500;
 }
@@ -210,20 +207,10 @@
 }
 
 .fig-subheading.is-selected .fig-subheading__underline,
+.fig-subheading:hover .fig-subheading__underline,
 .fig-subheading:focus-visible .fig-subheading__underline {
   opacity: 1;
   transform: scaleX(1);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .fig-subheading:hover {
-    font-weight: 500;
-  }
-
-  .fig-subheading:hover .fig-subheading__underline {
-    opacity: 1;
-    transform: scaleX(1);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

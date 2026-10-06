@@ -148,12 +148,6 @@ function EditionShellLayout() {
               className={({ isActive }) =>
                 `fig-subheading${isActive ? " is-selected" : ""}`
               }
-              onMouseEnter={() => {
-                void import("./EditionViews");
-              }}
-              onPointerDown={() => {
-                void import("./EditionViews");
-              }}
             >
               {tab.label}
               <span className="fig-subheading__underline" aria-hidden />

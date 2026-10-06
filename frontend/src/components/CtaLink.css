@@ -35,22 +35,20 @@
 }
 
 /* Direction-aware hover micro-interactions */
-@media (hover: hover) and (pointer: fine) {
-  .cta-link--right:hover .brand-arrow {
-    transform: translateX(4px);
-  }
+.cta-link--right:hover .brand-arrow {
+  transform: translateX(4px);
+}
 
-  .cta-link--left:hover .brand-arrow {
-    transform: translateX(-4px);
-  }
+.cta-link--left:hover .brand-arrow {
+  transform: translateX(-4px);
+}
 
-  .cta-link--down:hover .brand-arrow {
-    transform: translateY(4px);
-  }
+.cta-link--down:hover .brand-arrow {
+  transform: translateY(4px);
+}
 
-  .cta-link--up:hover .brand-arrow {
-    transform: translateY(-4px);
-  }
+.cta-link--up:hover .brand-arrow {
+  transform: translateY(-4px);
 }
 
 @media (prefers-reduced-motion: reduce) {

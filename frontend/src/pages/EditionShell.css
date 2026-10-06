@@ -27,15 +27,10 @@
   transition: color 0.2s ease;
 }
 
+.edition__tabs a:hover,
 .edition__tabs a:focus-visible,
 .edition__tabs a.is-selected {
   color: var(--color-text-primary);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .edition__tabs a:hover {
-    color: var(--color-text-primary);
-  }
 }
 
 .edition__prev {
@@ -80,15 +75,10 @@
   transition: color 0.2s ease;
 }
 
+.edition__prev a:hover,
 .edition__prev a:focus-visible,
 .edition__prev a.is-selected {
   color: var(--color-text-primary);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .edition__prev a:hover {
-    color: var(--color-text-primary);
-  }
 }
 
 .edition__main {
@@ -236,16 +226,10 @@
     transition: background 0.2s ease, border-color 0.2s ease;
   }
 
+  .edition__archive-chip:hover,
   .edition__archive-chip:focus-visible {
     border-color: var(--color-text-primary);
     background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .edition__archive-chip:hover {
-      border-color: var(--color-text-primary);
-      background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
-    }
   }
 
   /* Sticky Segmented Rectangular Navigation */
@@ -287,15 +271,12 @@
     border: 1px solid color-mix(in srgb, var(--color-text-primary) 14%, transparent);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     flex-shrink: 0;
-    cursor: pointer;
   }
 
-  @media (hover: hover) and (pointer: fine) {
-    .edition__mobile-tab:hover {
-      color: var(--color-text-primary);
-      border-color: var(--color-text-primary);
-      background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
-    }
+  .edition__mobile-tab:hover {
+    color: var(--color-text-primary);
+    border-color: var(--color-text-primary);
+    background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
   }
 
   .edition__mobile-tab.is-active {

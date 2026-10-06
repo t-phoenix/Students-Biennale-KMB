@@ -912,48 +912,15 @@ export function Home() {
                 {sensingNote.title}
                 <span className="fig-subheading__underline" aria-hidden />
               </button>
-              <Link
-                to={`/editions/${yearId}/curators`}
-                className="fig-subheading"
-                onMouseEnter={() => {
-                  void import("./EditionShell");
-                  void import("./EditionViews");
-                }}
-                onPointerDown={() => {
-                  void import("./EditionShell");
-                  void import("./EditionViews");
-                }}
-              >
+              <Link to={`/editions/${yearId}/curators`} className="fig-subheading">
                 Curators
                 <span className="fig-subheading__underline" aria-hidden />
               </Link>
-              <Link
-                to={`/editions/${yearId}/artworks`}
-                className="fig-subheading"
-                onMouseEnter={() => {
-                  void import("./EditionShell");
-                  void import("./EditionViews");
-                }}
-                onPointerDown={() => {
-                  void import("./EditionShell");
-                  void import("./EditionViews");
-                }}
-              >
+              <Link to={`/editions/${yearId}/artworks`} className="fig-subheading">
                 Artworks
                 <span className="fig-subheading__underline" aria-hidden />
               </Link>
-              <Link
-                to={`/editions/${yearId}/venue`}
-                className="fig-subheading"
-                onMouseEnter={() => {
-                  void import("./EditionShell");
-                  void import("./EditionViews");
-                }}
-                onPointerDown={() => {
-                  void import("./EditionShell");
-                  void import("./EditionViews");
-                }}
-              >
+              <Link to={`/editions/${yearId}/venue`} className="fig-subheading">
                 Venues
                 <span className="fig-subheading__underline" aria-hidden />
               </Link>
