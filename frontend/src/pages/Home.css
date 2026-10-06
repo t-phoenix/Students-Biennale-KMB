@@ -795,9 +795,9 @@
   max-width: 524px;
 }
 
-/* Main Nav About Anchor — 30px breathing gap below sticky nav */
+/* Main Nav About Anchor — lands flush below sticky nav so previous section is fully hidden */
 #about {
-  scroll-margin-top: calc(var(--nav-height, 72px) + 30px);
+  scroll-margin-top: var(--nav-height, 72px);
 }
 
 /* Sub-sections within About (KBF, SB, Team, Sponsors) — 60px breathing gap below sticky nav */
@@ -809,9 +809,6 @@
 }
 
 /* About */
-.home-about {
-  padding-top: 0;
-}
 
 .home-about__intro {
   margin-bottom: 80px;
@@ -1312,7 +1309,7 @@
   }
 
   #about {
-    scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 20px);
+    scroll-margin-top: var(--nav-height-mobile, 56px);
   }
 
   #about-kbf,
