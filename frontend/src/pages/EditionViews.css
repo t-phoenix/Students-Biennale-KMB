@@ -94,7 +94,7 @@
   letter-spacing: 0.035em;
   padding: 0;
   line-height: var(--type-subtitle-line);
-  text-transform: uppercase;
+  text-transform: none;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, color 0.2s ease;
