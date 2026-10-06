@@ -46,7 +46,7 @@ export function parseProgrammeHash(hash: string): ProgrammeSectionId | null {
 
 function navOffsetPx(targetId = "") {
   if (typeof window === "undefined") {
-    if (targetId === "about") return 102;
+    if (targetId === "about") return 112;
     if (targetId.startsWith("about")) return 132;
     return 72;
   }
@@ -59,7 +59,7 @@ function navOffsetPx(targetId = "") {
   const defaultNav = isMobile ? 56 : 72;
   const navHeight = Number.isFinite(n) ? n : defaultNav;
   if (targetId === "about") {
-    const breathingGap = isMobile ? 20 : 30;
+    const breathingGap = isMobile ? 24 : 40;
     return navHeight + breathingGap;
   }
   if (targetId.startsWith("about")) {
