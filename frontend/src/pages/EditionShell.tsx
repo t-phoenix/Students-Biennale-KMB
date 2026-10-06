@@ -43,8 +43,8 @@ function EditionSearchToolbar() {
           aria-label="Clear search"
           tabIndex={query ? 0 : -1}
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="4.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M2 2l8 8M10 2L2 10" />
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M18 6L6 18M6 6l12 12" />
           </svg>
         </button>
       </div>
