@@ -777,10 +777,7 @@
   max-width: 524px;
 }
 
-/* Section Scroll Anchors — 60px breathing gap below sticky nav */
-#editions,
-#programmes,
-#press,
+/* Section Scroll Anchors — 60px breathing gap below sticky nav for About sections */
 #about,
 #about-kbf,
 #about-sb,
@@ -1284,9 +1281,6 @@
     margin-bottom: 16px;
   }
 
-  #editions,
-  #programmes,
-  #press,
   #about,
   #about-kbf,
   #about-sb,

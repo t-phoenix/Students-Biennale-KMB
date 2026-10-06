@@ -44,8 +44,8 @@ export function parseProgrammeHash(hash: string): ProgrammeSectionId | null {
   return null;
 }
 
-function navOffsetPx() {
-  if (typeof window === "undefined") return 132;
+function navOffsetPx(isAbout = false) {
+  if (typeof window === "undefined") return isAbout ? 132 : 72;
   const isMobile = window.matchMedia("(max-width: 899px)").matches;
   const prop = isMobile ? "--nav-height-mobile" : "--nav-height";
   const raw = typeof document !== "undefined"
@@ -54,8 +54,11 @@ function navOffsetPx() {
   const n = Number.parseFloat(raw);
   const defaultNav = isMobile ? 56 : 72;
   const navHeight = Number.isFinite(n) ? n : defaultNav;
-  const breathingGap = isMobile ? 40 : 60;
-  return navHeight + breathingGap;
+  if (isAbout) {
+    const breathingGap = isMobile ? 40 : 60;
+    return navHeight + breathingGap;
+  }
+  return navHeight;
 }
 
 function lenisOffsetFor(el: HTMLElement) {
@@ -66,7 +69,8 @@ function lenisOffsetFor(el: HTMLElement) {
   if (Number.isFinite(smt) && smt > 0) {
     return 0;
   }
-  return -navOffsetPx();
+  const isAbout = el.id.startsWith("about");
+  return -navOffsetPx(isAbout);
 }
 
 export type ScrollToOptions = {
@@ -119,7 +123,8 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
     return true;
   }
 
-  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - navOffsetPx());
+  const isAbout = el.id.startsWith("about");
+  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - navOffsetPx(isAbout));
   window.scrollTo({ top, behavior });
   return true;
 }
