@@ -6,7 +6,6 @@ import { CtaLink } from "../components/CtaLink";
 import { SpotlightModal } from "../components/SpotlightModal";
 import { RazaSpotlightModal } from "../components/RazaSpotlightModal";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
-import { GalleryLightbox } from "../components/GalleryLightbox";
 import {
   UpdateCardSpotlight,
   type ActiveUpdateCard,
@@ -67,7 +66,6 @@ export function Home() {
   const slidesRef = useRef<HTMLElement[]>([]);
   const slideIndexRef = useRef(0);
   const [slide, setSlide] = useState(0);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
@@ -90,12 +88,12 @@ export function Home() {
   };
 
   useEffect(() => {
-    if (razaModalOpen || openScholarId !== null || activeCard !== null || lightboxOpen) {
+    if (razaModalOpen || openScholarId !== null || activeCard !== null) {
       heroTlRef.current?.pause();
     } else {
       heroTlRef.current?.play();
     }
-  }, [razaModalOpen, openScholarId, activeCard, lightboxOpen]);
+  }, [razaModalOpen, openScholarId, activeCard]);
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();
@@ -721,7 +719,6 @@ export function Home() {
         <div
           className="home-hero__slides"
           aria-hidden
-          onDoubleClick={() => setLightboxOpen(true)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
@@ -856,15 +853,6 @@ export function Home() {
           ))}
         </div>
       </section>
-
-      {lightboxOpen ? (
-        <GalleryLightbox
-          images={covers.map((c) => c.image_url)}
-          index={slide}
-          onClose={() => setLightboxOpen(false)}
-          onIndexChange={goToSlide}
-        />
-      ) : null}
 
       <div className="home__main">
         {/* Edition intro & Sensing Grounds */}
