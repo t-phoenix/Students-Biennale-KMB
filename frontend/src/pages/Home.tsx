@@ -867,83 +867,85 @@ export function Home() {
       ) : null}
 
       <div className="home__main">
-        {/* Edition intro — label cols 1–3, body cols 4–9 (Figma 1:955 / 1:956) */}
-        <section id="editions" className="home-section home-edition">
-          <div className="fig-grid">
-            <h2 className="fig-label fig-heading">
-              Students&apos; Biennale
-              <br />
-              {yearId.replace("-", "–")}
-            </h2>
-            <div className="home-edition__body fig-c4-9">
-              {editionShort.split("\n\n").map((p) => (
-                <p key={p.slice(0, 40)} className="fig-body">
-                  {p}
-                </p>
-              ))}
-              <div ref={editionMoreRef} className="home-edition__more" aria-hidden={!editionExpanded}>
-                {editionMore.split("\n\n").map((p) => (
+        {/* Edition intro & Sensing Grounds */}
+        <section id="editions" className="home-edition-wrap">
+          <div className="home-section home-edition">
+            <div className="fig-grid">
+              <h2 className="fig-label fig-heading">
+                Students&apos; Biennale
+                <br />
+                {yearId.replace("-", "–")}
+              </h2>
+              <div className="home-edition__body fig-c4-9">
+                {editionShort.split("\n\n").map((p) => (
                   <p key={p.slice(0, 40)} className="fig-body">
                     {p}
                   </p>
                 ))}
-              </div>
-              <button
-                type="button"
-                className="home-text-btn"
-                aria-expanded={editionExpanded}
-                onClick={() => setEditionExpanded((v) => !v)}
-              >
-                {editionExpanded ? "Read less..." : "Read more..."}
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Sensing Grounds — links cols 1–3, image strip cols 4–12 */}
-        <section className="home-section home-sensing" data-no-parallax="true">
-          <div className="fig-grid home-sensing__row" data-no-parallax="true">
-            <nav className="home-sensing__links fig-rail" aria-label="Edition links">
-              <button
-                type="button"
-                className="fig-subheading"
-                onClick={() => setSensingOpen(true)}
-              >
-                {sensingNote.title}
-                <span className="fig-subheading__underline" aria-hidden />
-              </button>
-              <Link to={`/editions/${yearId}/curators`} className="fig-subheading">
-                Curators
-                <span className="fig-subheading__underline" aria-hidden />
-              </Link>
-              <Link to={`/editions/${yearId}/artworks`} className="fig-subheading">
-                Artworks
-                <span className="fig-subheading__underline" aria-hidden />
-              </Link>
-              <Link to={`/editions/${yearId}/venue`} className="fig-subheading">
-                Venues
-                <span className="fig-subheading__underline" aria-hidden />
-              </Link>
-            </nav>
-            <div className="home-sensing__scroll fig-c4-12" data-no-parallax="true">
-              {sensingStripImages.length > 0 ? (
-                <div ref={sensingTrackRef} className="home-sensing__scroll-track" data-no-parallax="true">
-                  {[...sensingStripImages, ...sensingStripImages].map((src, i) => (
-                    <div className="home-sensing__scroll-item" key={`${src}-${i}`} data-no-parallax="true">
-                      <img src={src} alt="" data-no-parallax="true" />
-                    </div>
+                <div ref={editionMoreRef} className="home-edition__more" aria-hidden={!editionExpanded}>
+                  {editionMore.split("\n\n").map((p) => (
+                    <p key={p.slice(0, 40)} className="fig-body">
+                      {p}
+                    </p>
                   ))}
                 </div>
-              ) : null}
+                <button
+                  type="button"
+                  className="home-text-btn"
+                  aria-expanded={editionExpanded}
+                  onClick={() => setEditionExpanded((v) => !v)}
+                >
+                  {editionExpanded ? "Read less..." : "Read more..."}
+                </button>
+              </div>
             </div>
           </div>
-          <div className="fig-grid home-sensing__cta">
-            <CtaLink
-              className="fig-cta-end"
-              to={`/editions/${yearId}/curators`}
-              lines={["EXPLORE", "EDITION"]}
-              spacing={["0.135em", "0.2em"]}
-            />
+
+          {/* Sensing Grounds — links cols 1–3, image strip cols 4–12 */}
+          <div className="home-section home-sensing" data-no-parallax="true">
+            <div className="fig-grid home-sensing__row" data-no-parallax="true">
+              <nav className="home-sensing__links fig-rail" aria-label="Edition links">
+                <button
+                  type="button"
+                  className="fig-subheading"
+                  onClick={() => setSensingOpen(true)}
+                >
+                  {sensingNote.title}
+                  <span className="fig-subheading__underline" aria-hidden />
+                </button>
+                <Link to={`/editions/${yearId}/curators`} className="fig-subheading">
+                  Curators
+                  <span className="fig-subheading__underline" aria-hidden />
+                </Link>
+                <Link to={`/editions/${yearId}/artworks`} className="fig-subheading">
+                  Artworks
+                  <span className="fig-subheading__underline" aria-hidden />
+                </Link>
+                <Link to={`/editions/${yearId}/venue`} className="fig-subheading">
+                  Venues
+                  <span className="fig-subheading__underline" aria-hidden />
+                </Link>
+              </nav>
+              <div className="home-sensing__scroll fig-c4-12" data-no-parallax="true">
+                {sensingStripImages.length > 0 ? (
+                  <div ref={sensingTrackRef} className="home-sensing__scroll-track" data-no-parallax="true">
+                    {[...sensingStripImages, ...sensingStripImages].map((src, i) => (
+                      <div className="home-sensing__scroll-item" key={`${src}-${i}`} data-no-parallax="true">
+                        <img src={src} alt="" data-no-parallax="true" />
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+            <div className="fig-grid home-sensing__cta">
+              <CtaLink
+                className="fig-cta-end"
+                to={`/editions/${yearId}/curators`}
+                lines={["EXPLORE", "EDITION"]}
+                spacing={["0.135em", "0.2em"]}
+              />
+            </div>
           </div>
         </section>
 
