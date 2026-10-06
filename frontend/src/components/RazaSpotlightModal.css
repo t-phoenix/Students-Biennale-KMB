@@ -29,7 +29,8 @@
   background: var(--color-bg-elevated, #ffffff);
   color: var(--color-text-primary, #000000);
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
-  padding: 60px 48px;
+  padding-block: 44px;
+  padding-inline: 0;
   margin: auto;
   max-height: 90vh;
   overflow-y: auto;
@@ -82,9 +83,9 @@
 }
 
 .raza-modal__rail-divider {
-  width: calc(100% + 48px);
+  width: calc(100% + var(--grid-margin));
   max-width: none;
-  margin-left: -48px;
+  margin-left: calc(-1 * var(--grid-margin));
   height: 1px;
   background: var(--color-border, #000000);
   margin-top: 16px;

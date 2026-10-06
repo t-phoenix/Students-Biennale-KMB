@@ -29,18 +29,17 @@ export function Discover() {
             placeholder="Search…"
             autoComplete="off"
           />
-          {query ? (
-            <button
-              type="button"
-              className="discover__clear"
-              onClick={() => setQuery("")}
-              aria-label="Clear search"
-            >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1.5 1.5L12.5 12.5M1.5 12.5L12.5 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-              </svg>
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className={`discover__clear${query ? " is-visible" : ""}`}
+            onClick={() => setQuery("")}
+            aria-label="Clear search"
+            tabIndex={query ? 0 : -1}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
         </label>
       </div>
       <div className="discover__stage">
