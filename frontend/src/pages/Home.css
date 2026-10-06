@@ -795,13 +795,13 @@
   max-width: 524px;
 }
 
-/* Section Scroll Anchors — 60px breathing gap below sticky nav for About sections */
+/* Section Scroll Anchors — 30px breathing gap below sticky nav for About sections */
 #about,
 #about-kbf,
 #about-sb,
 #about-team,
 #about-sponsors {
-  scroll-margin-top: calc(var(--nav-height, 72px) + 60px);
+  scroll-margin-top: calc(var(--nav-height, 72px) + 30px);
 }
 
 /* About */
@@ -1308,7 +1308,7 @@
   #about-sb,
   #about-team,
   #about-sponsors {
-    scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 40px);
+    scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 20px);
   }
 
   .home-about__intro,

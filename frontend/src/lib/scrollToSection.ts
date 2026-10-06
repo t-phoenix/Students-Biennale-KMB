@@ -45,7 +45,7 @@ export function parseProgrammeHash(hash: string): ProgrammeSectionId | null {
 }
 
 function navOffsetPx(isAbout = false) {
-  if (typeof window === "undefined") return isAbout ? 132 : 72;
+  if (typeof window === "undefined") return isAbout ? 102 : 72;
   const isMobile = window.matchMedia("(max-width: 899px)").matches;
   const prop = isMobile ? "--nav-height-mobile" : "--nav-height";
   const raw = typeof document !== "undefined"
@@ -55,7 +55,7 @@ function navOffsetPx(isAbout = false) {
   const defaultNav = isMobile ? 56 : 72;
   const navHeight = Number.isFinite(n) ? n : defaultNav;
   if (isAbout) {
-    const breathingGap = isMobile ? 40 : 60;
+    const breathingGap = isMobile ? 20 : 30;
     return navHeight + breathingGap;
   }
   return navHeight;
