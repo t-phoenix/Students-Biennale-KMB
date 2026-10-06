@@ -1,115 +1,4 @@
-.raza-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 2500;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding: 40px var(--grid-margin);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.raza-modal__scrim {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  border: none;
-  cursor: pointer;
-  z-index: 1;
-}
-
-.raza-modal__sheet {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1440px;
-  background: var(--color-bg-elevated, #ffffff);
-  color: var(--color-text-primary, #000000);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
-  padding-block: 44px;
-  padding-inline: 0;
-  margin: auto;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-.raza-modal__close {
-  position: absolute;
-  top: 24px;
-  right: 28px;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  color: var(--color-text-primary, #000000);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-  z-index: 10;
-}
-
-.raza-modal__close:hover {
-  opacity: 0.6;
-  transform: scale(1.08);
-}
-
-.raza-modal__grid {
-  align-items: start;
-}
-
-/* Left Rail */
-.raza-modal__rail {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  text-align: right;
-  padding-right: 24px;
-}
-
-.raza-modal__rail-title {
-  font-family: inherit;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-primary, #000000);
-  margin: 0 0 16px auto;
-  max-width: 295px;
-}
-
-.raza-modal__rail-divider {
-  width: calc(100% + var(--grid-margin));
-  max-width: none;
-  margin-left: calc(-1 * var(--grid-margin));
-  height: 1px;
-  background: var(--color-border, #000000);
-  margin-top: 16px;
-  margin-bottom: 12px;
-}
-
-.raza-modal__rail-subtitle {
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 1.7;
-  color: var(--color-text-muted, #545454);
-  margin: 0 0 0 auto;
-  max-width: 295px;
-}
-
-/* Right Main Area */
-.raza-modal__main {
-  display: flex;
-  flex-direction: column;
-  gap: 48px;
-}
-
-/* 2-Column Curatorial Text */
+/* Editorial & Scholars grid inside SpotlightModal */
 .raza-modal__editorial {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -128,12 +17,11 @@
   margin-bottom: 0;
 }
 
-/* 2x2 Scholars Grid */
 .raza-modal__scholars {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 48px var(--grid-gutter, 20px);
-  margin-top: 16px;
+  margin-top: 48px;
 }
 
 .raza-modal__scholar-card {
@@ -197,27 +85,6 @@
 }
 
 @media (max-width: 899px) {
-  .raza-modal {
-    padding: 20px 12px;
-  }
-
-  .raza-modal__sheet {
-    padding: 44px 20px 28px;
-  }
-
-  .raza-modal__rail {
-    align-items: flex-start;
-    text-align: left;
-    padding-right: 0;
-    margin-bottom: 28px;
-  }
-
-  .raza-modal__rail-title,
-  .raza-modal__rail-divider,
-  .raza-modal__rail-subtitle {
-    max-width: 100%;
-  }
-
   .raza-modal__editorial,
   .raza-modal__scholars {
     grid-template-columns: 1fr;
