@@ -115,6 +115,8 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
   const offset = -navOffsetPx(id);
 
   if (lenis) {
+    lenis.resize();
+    syncScrollTrigger();
     document.documentElement.classList.add("is-scrolling-to");
     const cleanup = () => {
       document.documentElement.classList.remove("is-scrolling-to");
