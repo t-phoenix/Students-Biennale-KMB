@@ -607,6 +607,12 @@ function cleanIntroParagraphs(
             <Link
               to={`/editions/${yearId}/curators`}
               className="fig-subheading"
+              onMouseEnter={() => {
+                void import("./EditionViews");
+              }}
+              onPointerDown={() => {
+                void import("./EditionViews");
+              }}
             >
               CURATORS
               <span className="fig-subheading__underline" aria-hidden />
@@ -614,15 +620,39 @@ function cleanIntroParagraphs(
             <Link
               to={`/editions/${yearId}/artworks`}
               className="fig-subheading"
+              onMouseEnter={() => {
+                void import("./EditionViews");
+              }}
+              onPointerDown={() => {
+                void import("./EditionViews");
+              }}
             >
               ARTWORKS
               <span className="fig-subheading__underline" aria-hidden />
             </Link>
-            <Link to={`/editions/${yearId}/artists`} className="fig-subheading">
+            <Link
+              to={`/editions/${yearId}/artists`}
+              className="fig-subheading"
+              onMouseEnter={() => {
+                void import("./EditionViews");
+              }}
+              onPointerDown={() => {
+                void import("./EditionViews");
+              }}
+            >
               ARTISTS
               <span className="fig-subheading__underline" aria-hidden />
             </Link>
-            <Link to={`/editions/${yearId}/venue`} className="fig-subheading">
+            <Link
+              to={`/editions/${yearId}/venue`}
+              className="fig-subheading"
+              onMouseEnter={() => {
+                void import("./EditionViews");
+              }}
+              onPointerDown={() => {
+                void import("./EditionViews");
+              }}
+            >
               VENUES
               <span className="fig-subheading__underline" aria-hidden />
             </Link>

@@ -29,6 +29,13 @@ const PREFETCH_CONCURRENCY = 2;
 /** Likely next destinations from the home page — fetched during idle time. */
 export function prefetchHomeDestinations(catalogue?: MappedCatalogue | null) {
   whenIdle(() => {
+    // Warm key route component chunks in background
+    void import("../pages/EditionShell");
+    void import("../pages/EditionViews");
+    void import("../pages/EditionOverview");
+    void import("../pages/Programmes");
+    void import("../pages/DiscoverArtworks");
+
     const programmesHeroUrls = peekProgrammesHeroCovers().map((cover) => cover.image_url);
     const programmesBannerUrl = peekHomeProgrammesBannerUrl();
     const warm = [

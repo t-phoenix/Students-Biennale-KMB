@@ -468,7 +468,8 @@
   font-size: var(--type-subtitle-size);
 }
 
-.home-sensing__links button {
+.home-sensing__links button,
+.home-sensing__links a {
   border: 0;
   background: transparent;
   padding: 0;
@@ -476,6 +477,9 @@
   color: var(--color-text-primary);
   cursor: pointer;
   text-align: inherit;
+  text-decoration: none;
+  display: inline-block;
+  width: fit-content;
 }
 
 /* Contained (no bleed) auto-scrolling image strip — cols 4-12. The track is
