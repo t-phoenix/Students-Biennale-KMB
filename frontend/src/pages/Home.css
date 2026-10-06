@@ -809,6 +809,9 @@
 }
 
 /* About */
+.home-about {
+  padding-top: 30px;
+}
 
 .home-about__intro {
   margin-bottom: 80px;
@@ -1317,6 +1320,10 @@
   #about-team,
   #about-sponsors {
     scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 40px);
+  }
+
+  .home-about {
+    padding-top: 20px;
   }
 
   .home-about__intro,
