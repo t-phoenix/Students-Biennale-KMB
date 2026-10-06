@@ -43,7 +43,9 @@ function EditionSearchToolbar() {
           aria-label="Clear search"
           tabIndex={query ? 0 : -1}
         >
-          ✕
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M1 1l10 10M11 1L1 11" />
+          </svg>
         </button>
       </div>
       <div className="edition-view-toggle" role="group" aria-label="View mode">

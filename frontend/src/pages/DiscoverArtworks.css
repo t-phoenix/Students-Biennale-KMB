@@ -111,16 +111,19 @@
   border: 0;
   color: var(--color-text-secondary);
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: var(--type-subtitle-line);
-  padding: 0 4px;
+  padding: 4px;
   display: grid;
   place-items: center;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, color 0.2s ease;
   z-index: 2;
+}
+
+.discover__clear svg {
+  width: 12px;
+  height: 12px;
+  display: block;
 }
 
 .discover__clear.is-visible {
