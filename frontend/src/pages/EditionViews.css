@@ -93,9 +93,10 @@
   font-weight: 500;
   letter-spacing: 0.035em;
   padding: 0;
-  line-height: 1;
+  line-height: var(--type-subtitle-line);
   text-transform: uppercase;
   transition: color 0.2s ease;
+  z-index: 2;
 }
 
 .edition-search__clear:hover {
