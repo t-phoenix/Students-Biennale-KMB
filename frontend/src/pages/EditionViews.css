@@ -95,8 +95,15 @@
   padding: 0;
   line-height: var(--type-subtitle-line);
   text-transform: uppercase;
-  transition: color 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, color 0.2s ease;
   z-index: 2;
+}
+
+.edition-search__clear.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .edition-search__clear:hover {

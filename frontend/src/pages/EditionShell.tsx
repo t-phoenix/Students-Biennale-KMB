@@ -36,16 +36,15 @@ function EditionSearchToolbar() {
           aria-label="Search this edition"
           autoComplete="off"
         />
-        {query ? (
-          <button
-            type="button"
-            className="edition-search__clear"
-            onClick={() => setQuery("")}
-            aria-label="Clear search"
-          >
-            Clear
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className={`edition-search__clear${query ? " is-visible" : ""}`}
+          onClick={() => setQuery("")}
+          aria-label="Clear search"
+          tabIndex={query ? 0 : -1}
+        >
+          Clear
+        </button>
       </div>
       {!isSearching ? (
         <div className="edition-view-toggle" role="group" aria-label="View mode">
