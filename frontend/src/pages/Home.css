@@ -809,6 +809,10 @@
 }
 
 /* About */
+.home-about {
+  padding-top: 0;
+}
+
 .home-about__intro {
   margin-bottom: 80px;
 }
