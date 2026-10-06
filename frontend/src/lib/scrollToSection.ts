@@ -65,7 +65,7 @@ function navOffsetPx(targetId = "") {
   if (typeof window === "undefined") {
     if (targetId === "about") return 112;
     if (targetId.startsWith("about")) return 132;
-    if (targetId === "awards") return 172;
+    if (targetId === "awards") return 182;
     if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) return 92;
     return 72;
   }
@@ -86,7 +86,7 @@ function navOffsetPx(targetId = "") {
     return navHeight + breathingGap;
   }
   if (targetId === "awards") {
-    const breathingGap = isMobile ? 70 : 100;
+    const breathingGap = isMobile ? 75 : 110;
     return navHeight + breathingGap;
   }
   if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) {
@@ -115,13 +115,11 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
   const offset = -navOffsetPx(id);
 
   if (lenis) {
-    lenis.resize();
-    syncScrollTrigger();
-
     lenis.scrollTo(el, {
       offset,
       immediate: options.immediate,
-      duration: options.immediate ? 0 : 1.1,
+      duration: options.immediate ? 0 : 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       lock: false,
       onComplete: () => {
         syncScrollTrigger();

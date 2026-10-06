@@ -129,13 +129,12 @@ export function Programmes() {
       if (!reduced) {
         gsap.fromTo(
           ".prog-reveal",
-          { autoAlpha: 0, y: 12 },
+          { autoAlpha: 0 },
           {
             autoAlpha: 1,
-            y: 0,
-            duration: 0.85,
-            stagger: { amount: 0.35, ease: "power2.out" },
-            ease: "power3.out",
+            duration: 0.65,
+            stagger: { amount: 0.25, ease: "power2.out" },
+            ease: "power2.out",
             clearProps: "opacity,visibility,transform",
           }
         );
