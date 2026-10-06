@@ -408,7 +408,7 @@ export function Header() {
         event.preventDefault();
         const lenis = getLenisInstance();
         if (lenis) {
-          lenis.scrollTo(0, { immediate: false });
+          lenis.scrollTo(0);
         } else {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }

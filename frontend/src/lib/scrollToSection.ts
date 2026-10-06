@@ -11,9 +11,14 @@ export type HomeSectionId =
   | "about-team"
   | "about-sponsors";
 
-export type ProgrammeSectionId = "past-workshops" | "residencies" | "awards";
+export type ProgrammeSectionId =
+  | "workshops"
+  | "past-workshops"
+  | "residencies"
+  | "awards";
 
 const PROGRAMME_SECTIONS = new Set<ProgrammeSectionId>([
+  "workshops",
   "past-workshops",
   "awards",
   "residencies",
@@ -48,6 +53,7 @@ function navOffsetPx(targetId = "") {
   if (typeof window === "undefined") {
     if (targetId === "about") return 112;
     if (targetId.startsWith("about")) return 132;
+    if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) return 92;
     return 72;
   }
   const isMobile = window.matchMedia("(max-width: 899px)").matches;
@@ -66,17 +72,14 @@ function navOffsetPx(targetId = "") {
     const breathingGap = isMobile ? 40 : 60;
     return navHeight + breathingGap;
   }
+  if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) {
+    const breathingGap = isMobile ? 16 : 20;
+    return navHeight + breathingGap;
+  }
   return navHeight;
 }
 
 function lenisOffsetFor(el: HTMLElement) {
-  // If the target element has CSS scroll-margin-top declared, Lenis internally
-  // reads that style and offsets automatically. In that case, we pass 0 so we don't double-offset.
-  const style = window.getComputedStyle(el);
-  const smt = Number.parseFloat(style.scrollMarginTop);
-  if (Number.isFinite(smt) && smt > 0) {
-    return 0;
-  }
   return -navOffsetPx(el.id);
 }
 
@@ -90,7 +93,7 @@ export type ScrollToOptions = {
 
 /** Smooth-scroll to an element id, clearing the sticky nav. Routes through the
  *  page's Lenis instance when one is mounted — pass the element itself so
- *  Lenis can honour CSS scroll-margin and use its internal animatedScroll. */
+ *  Lenis uses its internal animatedScroll with the right nav offset. */
 export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
   const el = document.getElementById(id);
   if (!el) return false;
@@ -107,15 +110,14 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
     lenis.resize();
     syncScrollTrigger();
 
-    const snap = () => {
-      lenis.resize();
-      lenis.scrollTo(el, { offset, immediate: true });
-    };
-
     lenis.scrollTo(el, {
       offset,
       immediate: options.immediate,
-      onComplete: snap,
+      duration: options.immediate ? 0 : 1.1,
+      lock: false,
+      onComplete: () => {
+        syncScrollTrigger();
+      },
     });
     return true;
   }
@@ -125,12 +127,8 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
   }
 
   const behavior = options.immediate ? "auto" : "smooth";
-  if (PROGRAMME_SECTIONS.has(el.id as ProgrammeSectionId)) {
-    el.scrollIntoView({ behavior, block: "start" });
-    return true;
-  }
-
-  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - navOffsetPx(el.id));
+  const targetOffset = navOffsetPx(el.id);
+  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - targetOffset);
   window.scrollTo({ top, behavior });
   return true;
 }

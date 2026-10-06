@@ -1,7 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
-import { parseHomeHash, scrollToSection } from "../lib/scrollToSection";
+import {
+  type ProgrammeSectionId,
+  parseHomeHash,
+  scrollToSection,
+  scrollToId,
+} from "../lib/scrollToSection";
+import { getLenisInstance } from "../lib/lenisSingleton";
 import "./MobileNavDrawer.css";
 
 type Props = {
@@ -68,6 +74,33 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
           if (parsed) {
             scrollToSection(parsed);
           }
+          if (location.hash !== `#${hash}`) {
+            navigate(to, { replace: true });
+          }
+        } else {
+          navigate(to);
+        }
+      } else if (to.startsWith("/programmes#")) {
+        const hash = to.replace("/programmes#", "") as ProgrammeSectionId;
+        if (location.pathname === "/programmes") {
+          scrollToId(hash);
+          if (location.hash !== `#${hash}`) {
+            navigate(to, { replace: true });
+          }
+        } else {
+          navigate(to);
+        }
+      } else if (to === "/programmes") {
+        if (location.pathname === "/programmes") {
+          const lenis = getLenisInstance();
+          if (lenis) {
+            lenis.scrollTo(0);
+          } else {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+          if (location.hash) {
+            navigate("/programmes", { replace: true });
+          }
         } else {
           navigate(to);
         }
@@ -75,7 +108,7 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
         navigate(to);
       }
     },
-    [location.pathname, navigate, onClose]
+    [location.pathname, location.hash, navigate, onClose]
   );
 
   if (!isOpen) return null;
