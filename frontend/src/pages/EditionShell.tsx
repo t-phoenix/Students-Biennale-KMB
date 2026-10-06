@@ -43,7 +43,7 @@ function EditionSearchToolbar() {
           aria-label="Clear search"
           tabIndex={query ? 0 : -1}
         >
-          Clear
+          ✕
         </button>
       </div>
       <div className="edition-view-toggle" role="group" aria-label="View mode">
