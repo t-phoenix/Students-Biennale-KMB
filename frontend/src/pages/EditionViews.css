@@ -22,7 +22,9 @@
    a plain single gutter plus the toggle's justify-self:end slack landed close
    by coincidence at one viewport width but drifted at others. */
 .edition-toolbar {
-  align-items: end;
+  display: grid;
+  align-items: flex-end;
+  height: 62.4px;
   margin-bottom: 48px;
   grid-template-columns: 1fr auto;
   column-gap: calc(var(--grid-gutter) * 2);
@@ -34,7 +36,7 @@
   display: flex;
   align-items: flex-end;
   position: relative;
-  min-height: 48px;
+  height: 100%;
   padding-bottom: 8px;
 }
 
@@ -54,7 +56,7 @@
 }
 
 .edition-search.is-active .edition-search__label {
-  transform: translateY(-22px) scale(0.68);
+  transform: translateY(-34px) scale(0.68);
   color: #767676;
 }
 
@@ -101,6 +103,7 @@
 .edition-view-toggle {
   grid-column: 2;
   justify-self: end;
+  align-self: flex-end;
   display: flex;
   gap: 0;
   flex-shrink: 0;
