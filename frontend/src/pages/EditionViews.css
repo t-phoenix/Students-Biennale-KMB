@@ -56,7 +56,7 @@
 }
 
 .edition-search.is-active .edition-search__label {
-  transform: translateY(-34px) scale(0.68);
+  transform: translateY(-32px) scale(0.68);
   color: #767676;
 }
 
