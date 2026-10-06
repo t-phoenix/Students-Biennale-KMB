@@ -991,14 +991,14 @@ export function Home() {
             <div className="home-programmes__rail fig-rail">
               {(
                 [
-                  { label: "WORKSHOPS", hash: "workshops" },
-                  { label: "AWARDS", hash: "awards" },
-                  { label: "RESIDENCIES", hash: "residencies" },
+                  { label: "WORKSHOPS", hash: "workshops", to: "/programmes" },
+                  { label: "AWARDS", hash: "awards", to: "/programmes#awards" },
+                  { label: "RESIDENCIES", hash: "residencies", to: "/programmes#residencies" },
                 ] as const
               ).map((tab) => (
                 <Link
                   key={tab.hash}
-                  to={`/programmes#${tab.hash}`}
+                  to={tab.to}
                   className={`fig-subheading${programmesHover === tab.hash ? " is-selected" : ""}`}
                   onMouseEnter={() => setProgrammesHover(tab.hash)}
                   onMouseLeave={() => setProgrammesHover(null)}
@@ -1010,7 +1010,7 @@ export function Home() {
             </div>
             <div ref={programmesThumbsRef} className="home-programmes__thumbs fig-c4-12">
               {[
-                { hash: "workshops", to: "/programmes#workshops", img: workshopThumb },
+                { hash: "workshops", to: "/programmes", img: workshopThumb },
                 { hash: "awards", to: "/programmes#awards", img: awardsThumb },
                 { hash: "residencies", to: "/programmes#residencies", img: residencyThumb },
               ].map((tab) => (

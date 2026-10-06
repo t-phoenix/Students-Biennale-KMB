@@ -146,7 +146,7 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
               <button
                 type="button"
                 className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/programmes#workshops")}
+                onClick={() => handleNavClick("/programmes")}
               >
                 Workshops
               </button>

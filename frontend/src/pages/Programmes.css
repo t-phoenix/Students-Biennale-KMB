@@ -12,18 +12,19 @@
 
 #workshops,
 #past-workshops,
-#awards {
-  scroll-margin-top: calc(var(--nav-height, 60px) + 12px);
-}
-
-/* Land flush below the sticky nav so the section title isn't covered. */
+#awards,
+#raza,
 #residencies {
-  scroll-margin-top: var(--nav-height, 60px);
+  scroll-margin-top: calc(var(--nav-height, 72px) + 60px);
 }
 
 @media (max-width: 899px) {
+  #workshops,
+  #past-workshops,
+  #awards,
+  #raza,
   #residencies {
-    scroll-margin-top: var(--nav-height-mobile, 56px);
+    scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 40px);
   }
 }
 

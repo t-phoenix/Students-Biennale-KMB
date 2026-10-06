@@ -28,7 +28,7 @@ const SECTION_LINKS: UpdateCardLinkOption[] = [
     kind: "section",
     group: "Sections",
     label: "Workshops (upcoming)",
-    href: "/programmes#workshops",
+    href: "/programmes",
   },
   {
     id: "past-workshops",
@@ -78,7 +78,7 @@ export function buildInternalLinkOptions(
       kind: "workshop",
       group: "Workshops — Upcoming",
       label: w.title,
-      href: "/programmes#workshops",
+      href: "/programmes",
       meta: w.date || undefined,
     });
   }

@@ -11,10 +11,9 @@ export type HomeSectionId =
   | "about-team"
   | "about-sponsors";
 
-export type ProgrammeSectionId = "workshops" | "past-workshops" | "residencies" | "awards";
+export type ProgrammeSectionId = "past-workshops" | "residencies" | "awards";
 
 const PROGRAMME_SECTIONS = new Set<ProgrammeSectionId>([
-  "workshops",
   "past-workshops",
   "awards",
   "residencies",
@@ -46,20 +45,27 @@ export function parseProgrammeHash(hash: string): ProgrammeSectionId | null {
 }
 
 function navOffsetPx() {
-  const raw = getComputedStyle(document.documentElement)
-    .getPropertyValue("--nav-height")
-    .trim();
+  if (typeof window === "undefined") return 132;
+  const isMobile = window.matchMedia("(max-width: 899px)").matches;
+  const prop = isMobile ? "--nav-height-mobile" : "--nav-height";
+  const raw = typeof document !== "undefined"
+    ? getComputedStyle(document.documentElement).getPropertyValue(prop).trim()
+    : "";
   const n = Number.parseFloat(raw);
-  // No extra breathing-room here (was +12): sections on Home sit directly
-  // beneath a full-bleed hero band, so any gap at all reveals a sliver of it
-  // under the sticky header — landing flush eliminates that entirely.
-  return Number.isFinite(n) ? n : 60;
+  const defaultNav = isMobile ? 56 : 72;
+  const navHeight = Number.isFinite(n) ? n : defaultNav;
+  const breathingGap = isMobile ? 40 : 60;
+  return navHeight + breathingGap;
 }
 
 function lenisOffsetFor(el: HTMLElement) {
-  // Programme anchors declare scroll-margin-top in Programmes.css. Lenis reads
-  // those automatically when the element is passed as the target.
-  if (PROGRAMME_SECTIONS.has(el.id as ProgrammeSectionId)) return 0;
+  // If the target element has CSS scroll-margin-top declared, Lenis internally
+  // reads that style and offsets automatically. In that case, we pass 0 so we don't double-offset.
+  const style = window.getComputedStyle(el);
+  const smt = Number.parseFloat(style.scrollMarginTop);
+  if (Number.isFinite(smt) && smt > 0) {
+    return 0;
+  }
   return -navOffsetPx();
 }
 
