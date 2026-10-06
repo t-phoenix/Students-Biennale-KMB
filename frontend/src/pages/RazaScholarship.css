@@ -30,10 +30,12 @@
 }
 
 .raza-page__rail-divider {
-  width: 100%;
-  max-width: 295px;
+  width: calc(100% + var(--grid-margin));
+  max-width: none;
+  margin-left: calc(-1 * var(--grid-margin));
   height: 1px;
   background: var(--color-border, #000000);
+  margin-top: 16px;
   margin-bottom: 12px;
 }
 

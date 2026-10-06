@@ -82,10 +82,12 @@
 }
 
 .raza-modal__rail-divider {
-  width: 100%;
-  max-width: 295px;
+  width: calc(100% + 48px);
+  max-width: none;
+  margin-left: -48px;
   height: 1px;
   background: var(--color-border, #000000);
+  margin-top: 16px;
   margin-bottom: 12px;
 }
 
