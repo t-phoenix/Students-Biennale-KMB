@@ -70,7 +70,7 @@
 }
 
 .discover__search-field.is-active .discover__search-label {
-  transform: translateY(-32px) scale(0.68);
+  transform: translateY(-30px) scale(0.68);
   color: #767676;
 }
 
