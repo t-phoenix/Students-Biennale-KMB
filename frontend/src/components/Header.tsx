@@ -378,7 +378,9 @@ export function Header() {
     closeImmediate();
     if (onHome) {
       scrollToSection(hash);
-      navigate({ pathname: "/", hash: `#${hash}` }, { replace: true });
+      if (location.hash !== `#${hash}`) {
+        window.history.replaceState(null, "", `/#${hash}`);
+      }
       return;
     }
     navigate({ pathname: "/", hash: `#${hash}` });
@@ -394,14 +396,18 @@ export function Header() {
       if (onHome) {
         event.preventDefault();
         scrollToSection(hash);
-        navigate({ pathname: "/", hash: `#${hash}` }, { replace: true });
+        if (location.hash !== `#${hash}`) {
+          window.history.replaceState(null, "", to);
+        }
       }
     } else if (to.startsWith("/programmes#")) {
       const hash = to.replace("/programmes#", "") as ProgrammeSectionId;
       if (location.pathname === "/programmes") {
         event.preventDefault();
         scrollToId(hash);
-        navigate({ pathname: "/programmes", hash: `#${hash}` }, { replace: true });
+        if (location.hash !== `#${hash}`) {
+          window.history.replaceState(null, "", to);
+        }
       }
     } else if (to === "/programmes") {
       if (location.pathname === "/programmes") {
@@ -413,7 +419,7 @@ export function Header() {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
         if (location.hash) {
-          navigate({ pathname: "/programmes", hash: "" }, { replace: true });
+          window.history.replaceState(null, "", "/programmes");
         }
       }
     }

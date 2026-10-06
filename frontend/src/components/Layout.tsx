@@ -211,6 +211,8 @@ export function Layout() {
     const crossPage = prevProgrammesPathRef.current !== "/programmes";
     prevProgrammesPathRef.current = location.pathname;
 
+    if (!crossPage) return;
+
     let cancelled = false;
     const started = performance.now();
     const run = () => {

@@ -49,11 +49,23 @@ export function parseProgrammeHash(hash: string): ProgrammeSectionId | null {
   return null;
 }
 
+function getTargetElement(id: string): HTMLElement | null {
+  const el = document.getElementById(id);
+  if (!el) return null;
+  // If it's a section container on programmes, target its heading so
+  // padding-top from previous blocks doesn't expose previous sections.
+  if (PROGRAMME_SECTIONS.has(id as ProgrammeSectionId)) {
+    const heading = el.querySelector<HTMLElement>(".fig-subheading, .fig-label, h1, h2");
+    if (heading) return heading;
+  }
+  return el;
+}
+
 function navOffsetPx(targetId = "") {
   if (typeof window === "undefined") {
     if (targetId === "about") return 112;
     if (targetId.startsWith("about")) return 132;
-    if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) return 92;
+    if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) return 102;
     return 72;
   }
   const isMobile = window.matchMedia("(max-width: 899px)").matches;
@@ -73,14 +85,10 @@ function navOffsetPx(targetId = "") {
     return navHeight + breathingGap;
   }
   if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) {
-    const breathingGap = isMobile ? 16 : 20;
+    const breathingGap = isMobile ? 20 : 30;
     return navHeight + breathingGap;
   }
   return navHeight;
-}
-
-function lenisOffsetFor(el: HTMLElement) {
-  return -navOffsetPx(el.id);
 }
 
 export type ScrollToOptions = {
@@ -95,18 +103,13 @@ export type ScrollToOptions = {
  *  page's Lenis instance when one is mounted — pass the element itself so
  *  Lenis uses its internal animatedScroll with the right nav offset. */
 export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
-  const el = document.getElementById(id);
+  const el = getTargetElement(id);
   if (!el) return false;
 
   const lenis = getLenisInstance();
-  const offset = lenisOffsetFor(el);
+  const offset = -navOffsetPx(id);
 
   if (lenis) {
-    if (options.crossPage) {
-      window.scrollTo(0, 0);
-      lenis.scrollTo(0, { immediate: true });
-    }
-
     lenis.resize();
     syncScrollTrigger();
 
@@ -122,12 +125,8 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
     return true;
   }
 
-  if (options.crossPage) {
-    window.scrollTo(0, 0);
-  }
-
   const behavior = options.immediate ? "auto" : "smooth";
-  const targetOffset = navOffsetPx(el.id);
+  const targetOffset = navOffsetPx(id);
   const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - targetOffset);
   window.scrollTo({ top, behavior });
   return true;
