@@ -111,7 +111,9 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
   if (!el) return false;
 
   const lenis = getLenisInstance();
-  const offset = -navOffsetPx(id);
+  const targetOffset = navOffsetPx(id);
+  const currentScroll = lenis ? lenis.scroll : (window.scrollY || window.pageYOffset || 0);
+  const targetTop = Math.max(0, el.getBoundingClientRect().top + currentScroll - targetOffset);
 
   if (lenis) {
     lenis.resize();
@@ -122,8 +124,7 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
       syncScrollTrigger();
     };
 
-    lenis.scrollTo(el, {
-      offset,
+    lenis.scrollTo(targetTop, {
       immediate: options.immediate,
       duration: options.immediate ? 0 : 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -140,9 +141,7 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
   }
 
   const behavior = options.immediate ? "auto" : "smooth";
-  const targetOffset = navOffsetPx(id);
-  const top = Math.max(0, el.getBoundingClientRect().top + window.scrollY - targetOffset);
-  window.scrollTo({ top, behavior });
+  window.scrollTo({ top: targetTop, behavior });
   return true;
 }
 
