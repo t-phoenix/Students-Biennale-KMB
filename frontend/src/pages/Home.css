@@ -413,19 +413,15 @@
   background: var(--color-neutral-white);
   min-height: calc(100vh - var(--nav-height, 72px));
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
 }
 
 .home-edition-wrap .home-edition {
-  padding-top: clamp(36px, 4.5vh, 60px);
-  padding-bottom: clamp(16px, 2vh, 24px);
+  padding-block: 81px 72px;
 }
 
 .home-edition-wrap .home-sensing {
   padding-top: 0;
-  padding-bottom: clamp(36px, 5vh, 64px);
-  flex: 1 0 auto;
+  padding-bottom: clamp(72px, 12vh, 140px);
 }
 
 .home-edition__body {
