@@ -65,6 +65,7 @@ function navOffsetPx(targetId = "") {
   if (typeof window === "undefined") {
     if (targetId === "about") return 112;
     if (targetId.startsWith("about")) return 132;
+    if (targetId === "awards") return 152;
     if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) return 92;
     return 72;
   }
@@ -82,6 +83,10 @@ function navOffsetPx(targetId = "") {
   }
   if (targetId.startsWith("about")) {
     const breathingGap = isMobile ? 40 : 60;
+    return navHeight + breathingGap;
+  }
+  if (targetId === "awards") {
+    const breathingGap = isMobile ? 60 : 80;
     return navHeight + breathingGap;
   }
   if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) {
