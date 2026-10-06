@@ -11,11 +11,12 @@
   padding: 0 0.05em;
 }
 
-/* Full-bleed hero (1440 × 820 in Figma). */
+/* Full-bleed hero — full-screen under the fixed header (like Artworks & Home). */
 .edition-overview__hero {
   position: relative;
   width: 100%;
-  height: min(820px, 70vh);
+  height: calc(100dvh - var(--nav-height));
+  min-height: calc(100dvh - var(--nav-height));
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
 }
@@ -412,7 +413,8 @@ button.edition-overview__slot:hover img {
 /* Responsive adjustments */
 @media (max-width: 899px) {
   .edition-overview__hero {
-    height: 52vh;
+    height: calc(100dvh - var(--nav-height-mobile, 56px));
+    min-height: calc(100dvh - var(--nav-height-mobile, 56px));
   }
 
   .edition-overview__section {
