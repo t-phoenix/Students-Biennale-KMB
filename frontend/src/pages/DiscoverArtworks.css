@@ -106,10 +106,10 @@
 .discover__clear {
   position: absolute;
   right: 0;
-  bottom: 6px;
+  bottom: 8px;
   background: transparent;
   border: 0;
-  color: var(--color-text-secondary);
+  color: var(--color-text-primary);
   cursor: pointer;
   padding: 4px;
   display: grid;
@@ -121,8 +121,8 @@
 }
 
 .discover__clear svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   display: block;
 }
 
@@ -132,7 +132,7 @@
 }
 
 .discover__clear:hover {
-  color: var(--color-text-primary);
+  opacity: 0.7;
 }
 
 .discover__stage {
