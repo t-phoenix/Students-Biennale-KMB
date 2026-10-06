@@ -63,8 +63,8 @@ function getTargetElement(id: string): HTMLElement | null {
 
 function navOffsetPx(targetId = "") {
   if (typeof window === "undefined") {
-    if (targetId === "about") return 112;
-    if (targetId.startsWith("about")) return 132;
+    if (targetId === "about") return 102; // 72 + 30
+    if (targetId.startsWith("about")) return 132; // 72 + 60
     if (targetId === "awards") return 182;
     if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) return 92;
     return 72;
@@ -78,7 +78,7 @@ function navOffsetPx(targetId = "") {
   const defaultNav = isMobile ? 56 : 72;
   const navHeight = Number.isFinite(n) ? n : defaultNav;
   if (targetId === "about") {
-    const breathingGap = isMobile ? 24 : 40;
+    const breathingGap = isMobile ? 20 : 30;
     return navHeight + breathingGap;
   }
   if (targetId.startsWith("about")) {

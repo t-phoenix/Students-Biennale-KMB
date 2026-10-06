@@ -795,9 +795,9 @@
   max-width: 524px;
 }
 
-/* Main Nav About Anchor — 40px breathing gap below sticky nav */
+/* Main Nav About Anchor — 30px breathing gap below sticky nav */
 #about {
-  scroll-margin-top: calc(var(--nav-height, 72px) + 40px);
+  scroll-margin-top: calc(var(--nav-height, 72px) + 30px);
 }
 
 /* Sub-sections within About (KBF, SB, Team, Sponsors) — 60px breathing gap below sticky nav */
@@ -1312,7 +1312,7 @@
   }
 
   #about {
-    scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 24px);
+    scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 20px);
   }
 
   #about-kbf,
