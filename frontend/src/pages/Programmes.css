@@ -10,17 +10,23 @@
   font-size: var(--type-subtitle-size);
 }
 
+#awards {
+  scroll-margin-top: calc(var(--nav-height, 72px) + 60px);
+}
+
 #workshops,
 #past-workshops,
-#awards,
 #residencies {
   scroll-margin-top: calc(var(--nav-height, 72px) + 20px);
 }
 
 @media (max-width: 899px) {
+  #awards {
+    scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 40px);
+  }
+
   #workshops,
   #past-workshops,
-  #awards,
   #residencies {
     scroll-margin-top: calc(var(--nav-height-mobile, 56px) + 16px);
   }
