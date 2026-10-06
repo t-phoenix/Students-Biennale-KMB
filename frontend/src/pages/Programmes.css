@@ -595,9 +595,10 @@
 }
 
 .programmes__raza-divider {
-  width: 100%;
+  width: calc(100% + var(--grid-margin));
+  margin-left: calc(-1 * var(--grid-margin));
   height: 1px;
-  background: var(--color-neutral-gray-light);
+  background: var(--color-border, #000000);
   margin: 20px 0 16px;
 }
 
