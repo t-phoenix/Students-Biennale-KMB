@@ -64,7 +64,7 @@
 .raza-modal__rail {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   text-align: right;
   padding-right: 24px;
 }
@@ -77,7 +77,7 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--color-text-primary, #000000);
-  margin: 0 0 16px;
+  margin: 0 0 16px auto;
   max-width: 295px;
 }
 
@@ -97,7 +97,7 @@
   font-weight: 400;
   line-height: 1.7;
   color: var(--color-text-muted, #545454);
-  margin: 0;
+  margin: 0 0 0 auto;
   max-width: 295px;
 }
 
