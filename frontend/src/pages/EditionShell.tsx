@@ -43,7 +43,7 @@ function EditionSearchToolbar() {
             onClick={() => setQuery("")}
             aria-label="Clear search"
           >
-            ✕
+            Clear
           </button>
         ) : null}
       </div>

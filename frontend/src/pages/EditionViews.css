@@ -24,7 +24,7 @@
 .edition-toolbar {
   display: grid;
   align-items: flex-end;
-  height: 62.4px;
+  height: 52px;
   margin-bottom: 48px;
   grid-template-columns: 1fr auto;
   column-gap: calc(var(--grid-gutter) * 2);
@@ -37,13 +37,13 @@
   align-items: flex-end;
   position: relative;
   height: 100%;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
 }
 
 .edition-search__label {
   position: absolute;
   left: 0;
-  bottom: 8px;
+  bottom: 6px;
   pointer-events: none;
   font-size: var(--type-subtitle-size);
   line-height: var(--type-subtitle-line);
@@ -56,7 +56,7 @@
 }
 
 .edition-search.is-active .edition-search__label {
-  transform: translateY(-34px) scale(0.68);
+  transform: translateY(-28px) scale(0.68);
   color: #767676;
 }
 
@@ -70,7 +70,7 @@
   width: 100%;
   border: 0;
   background: transparent;
-  padding: 0 28px 0 0;
+  padding: 0 56px 0 0;
   margin: 0;
   font: inherit;
   font-size: var(--type-subtitle-size);
@@ -84,16 +84,18 @@
 .edition-search__clear {
   position: absolute;
   right: 0;
-  bottom: 8px;
+  bottom: 6px;
   background: transparent;
   border: 0;
   color: var(--color-text-secondary);
   cursor: pointer;
-  font-size: 14px;
-  padding: 2px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  padding: 0;
   line-height: 1;
-  display: grid;
-  place-items: center;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
 }
 
 .edition-search__clear:hover {
