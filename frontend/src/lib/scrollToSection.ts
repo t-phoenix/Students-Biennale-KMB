@@ -115,16 +115,26 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
   const offset = -navOffsetPx(id);
 
   if (lenis) {
+    document.documentElement.classList.add("is-scrolling-to");
+    const cleanup = () => {
+      document.documentElement.classList.remove("is-scrolling-to");
+      syncScrollTrigger();
+    };
+
     lenis.scrollTo(el, {
       offset,
       immediate: options.immediate,
       duration: options.immediate ? 0 : 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       lock: false,
-      onComplete: () => {
-        syncScrollTrigger();
-      },
+      onComplete: cleanup,
     });
+
+    if (options.immediate) {
+      cleanup();
+    } else {
+      window.setTimeout(cleanup, 1400);
+    }
     return true;
   }
 

@@ -21,6 +21,13 @@
   padding-top: var(--nav-height);
 }
 
+html.lenis-scrolling,
+html.lenis-scrolling *,
+html.is-scrolling-to,
+html.is-scrolling-to * {
+  pointer-events: none !important;
+}
+
 @media (max-width: 899px) {
   .site-layout__main {
     padding-top: var(--nav-height-mobile);
