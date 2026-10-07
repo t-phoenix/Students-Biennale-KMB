@@ -25,6 +25,24 @@
   text-align: left;
 }
 
+.cta-link__line-desktop {
+  display: inline;
+}
+
+.cta-link__line-mobile {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  .cta-link__line-desktop {
+    display: none;
+  }
+
+  .cta-link__line-mobile {
+    display: inline;
+  }
+}
+
 /* Unified arrow size inside CTA link */
 .cta-link .brand-arrow {
   display: block;

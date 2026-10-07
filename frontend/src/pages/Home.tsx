@@ -32,6 +32,7 @@ import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
 import { useSplash } from "../lib/splash";
+import { subscribeLenis } from "../lib/lenisSingleton";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -72,6 +73,7 @@ export function Home() {
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
+  const [mobileCardsExpanded, setMobileCardsExpanded] = useState(false);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
   const [hoveredPressId, setHoveredPressId] = useState<string>("");
   const [hasInteractedPress, setHasInteractedPress] = useState(false);
@@ -94,6 +96,39 @@ export function Home() {
       heroTlRef.current?.play();
     }
   }, [razaModalOpen, openScholarId, activeCard]);
+
+  // Smooth auto-collapse on mobile when scrolling, touch-dragging, or tapping outside the stack
+  useEffect(() => {
+    if (!mobileCardsExpanded) return;
+
+    const handleScrollOrMove = () => {
+      setMobileCardsExpanded(false);
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      const stackEl = document.querySelector(".home-hero__stack");
+      if (stackEl && !stackEl.contains(e.target as Node)) {
+        setMobileCardsExpanded(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScrollOrMove, { passive: true });
+    window.addEventListener("touchmove", handleScrollOrMove, { passive: true });
+    document.addEventListener("pointerdown", handlePointerDown);
+
+    const unsubscribeLenis = subscribeLenis((lenis) => {
+      if (lenis) {
+        lenis.on("scroll", handleScrollOrMove);
+      }
+    });
+
+    return () => {
+      window.removeEventListener("scroll", handleScrollOrMove);
+      window.removeEventListener("touchmove", handleScrollOrMove);
+      document.removeEventListener("pointerdown", handlePointerDown);
+      unsubscribeLenis();
+    };
+  }, [mobileCardsExpanded]);
   const { current } = useCatalogue();
   const { upcomingWorkshops, pastWorkshops, residencies, awardsInternational, awardsNational } =
     useProgrammes();
@@ -172,6 +207,7 @@ export function Home() {
     if (!slides.length || index < 0 || index >= slides.length) return;
     if (index === slideIndexRef.current) return;
 
+    setMobileCardsExpanded(false);
     heroTlRef.current?.pause();
     jumpToSlide(slides, slideIndexRef.current, index);
     slideIndexRef.current = index;
@@ -745,23 +781,16 @@ export function Home() {
 
         {/* Overlay sits on the page grid */}
         <div className="home-hero__grid">
-          {/* Mobile-only unified credit & counter row (hidden on desktop) */}
+          {/* Mobile-only unified credit row (stacked above cards) */}
           <div className="home-hero__mobile-meta">
             <div className="home-hero__mobile-credit">
               {creditArtwork ? (
                 <span className="home-hero__mobile-artwork">{creditArtwork}</span>
               ) : null}
               {creditArtist ? (
-                <span className="home-hero__mobile-artist"> · {creditArtist}</span>
+                <span className="home-hero__mobile-artist">{creditArtist}</span>
               ) : null}
             </div>
-            {covers.length > 1 ? (
-              <div className="home-hero__mobile-counter">
-                <span>{String(slide + 1).padStart(2, "0")}</span>
-                <span className="home-hero__mobile-counter-sep">/</span>
-                <span>{String(covers.length).padStart(2, "0")}</span>
-              </div>
-            ) : null}
           </div>
 
           {(() => {
@@ -769,11 +798,17 @@ export function Home() {
             if (visibleCards.length === 0) return null;
             return (
               <div
-                className="home-hero__stack fig-span3-plus-gutter"
+                className={`home-hero__stack fig-span3-plus-gutter${mobileCardsExpanded ? " is-mobile-expanded" : ""}`}
                 data-node-id="17:309"
                 data-count={visibleCards.length}
+                data-expanded={mobileCardsExpanded}
                 tabIndex={0}
-                aria-label="Edition updates. Hover or focus to expand."
+                aria-label="Edition updates. Tap to expand or collapse."
+                onClick={() => {
+                  if (window.innerWidth <= 899 && !mobileCardsExpanded) {
+                    setMobileCardsExpanded(true);
+                  }
+                }}
               >
                 {visibleCards.map((item, i, arr) => (
                   <article
@@ -784,11 +819,30 @@ export function Home() {
                     role="button"
                     tabIndex={0}
                     aria-label={`${item.heading}. Open update.`}
-                    onClick={() => openCard(item)}
+                    onClick={(e) => {
+                      if (window.innerWidth <= 899) {
+                        e.stopPropagation();
+                        if (!mobileCardsExpanded) {
+                          setMobileCardsExpanded(true);
+                        } else {
+                          if (i === 0) {
+                            setMobileCardsExpanded(false);
+                          } else {
+                            openCard(item);
+                          }
+                        }
+                      } else {
+                        openCard(item);
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        openCard(item);
+                        if (window.innerWidth <= 899) {
+                          setMobileCardsExpanded((prev) => !prev);
+                        } else {
+                          openCard(item);
+                        }
                       }
                     }}
                   >

@@ -230,11 +230,25 @@
   .site-header {
     height: var(--nav-height-mobile, 56px);
     padding-block: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .site-header__brand,
+  .site-header__brand {
+    height: 32px;
+    order: 1;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+  }
+
   .site-header__kbf {
     height: 32px;
+    order: 3;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
   }
 
   .site-header__brand-logo,
@@ -258,7 +272,7 @@
   }
 
   .site-header__right-wrap {
-    gap: 12px;
+    display: contents;
   }
 
   .site-header__menu-btn {
@@ -268,13 +282,14 @@
     align-items: center;
     width: 44px;
     height: 44px;
-    gap: 5px;
+    gap: 6px;
     background: transparent;
     border: 0;
     cursor: pointer;
     padding: 8px;
     z-index: 2100;
-    margin-right: -8px;
+    order: 2;
+    margin: 0 auto;
     touch-action: manipulation;
   }
 
@@ -288,16 +303,15 @@
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
   }
 
+  .site-header__menu-bar:nth-child(3) {
+    display: none;
+  }
+
   .site-header__menu-btn.is-open .site-header__menu-bar:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
+    transform: translateY(4px) rotate(45deg);
   }
 
   .site-header__menu-btn.is-open .site-header__menu-bar:nth-child(2) {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-
-  .site-header__menu-btn.is-open .site-header__menu-bar:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
+    transform: translateY(-4px) rotate(-45deg);
   }
 }

@@ -2,11 +2,13 @@ import { Link } from "react-router-dom";
 import { BrandArrow, type BrandArrowDirection } from "./BrandArrow";
 import "./CtaLink.css";
 
+export type CtaLineItem = string | { desktop: string; mobile: string };
+
 export type CtaLinkProps = {
   /** Omit to render a button instead of a link. */
   to?: string;
   /** Rendered one per line, uppercase — e.g. ["VIEW", "MORE"] or ["EXPLORE", "EDITION"]. */
-  lines: readonly string[];
+  lines: readonly CtaLineItem[];
   /** Per-line letter-spacing (CSS length, e.g. "0.135em"), matched by index to `lines`. */
   spacing?: readonly string[];
   /**
@@ -27,9 +29,13 @@ export type CtaLinkProps = {
 
 const DEFAULT_SPACING = ["0.135em", "0.2em"] as const;
 
-function resolveDirection(lines: readonly string[], explicit?: BrandArrowDirection): BrandArrowDirection {
+function getLineText(item: CtaLineItem): string {
+  return typeof item === "object" ? item.desktop : item;
+}
+
+function resolveDirection(lines: readonly CtaLineItem[], explicit?: BrandArrowDirection): BrandArrowDirection {
   if (explicit) return explicit;
-  const joined = lines.join(" ").toUpperCase();
+  const joined = lines.map(getLineText).join(" ").toUpperCase();
   if (joined.includes("VIEW MORE") || joined.includes("EXPLORE MORE")) {
     return "down";
   }
@@ -52,7 +58,7 @@ export function CtaLink({
   ariaLabel,
 }: CtaLinkProps) {
   const dir = resolveDirection(lines, direction);
-  const label = ariaLabel ?? lines.join(" ");
+  const label = ariaLabel ?? lines.map(getLineText).join(" ");
   const isLeft = dir === "left";
   const classes = ["cta-link", `cta-link--${dir}`, className].filter(Boolean).join(" ");
 
@@ -60,11 +66,21 @@ export function CtaLink({
     <>
       {isLeft ? <BrandArrow direction="left" /> : null}
       <span className="cta-link__label" aria-hidden>
-        {lines.map((line, i) => (
-          <span key={line} style={{ letterSpacing: spacing[i] ?? spacing[spacing.length - 1] }}>
-            {line}
-          </span>
-        ))}
+        {lines.map((line, i) => {
+          const key = typeof line === "object" ? `${line.desktop}-${line.mobile}-${i}` : `${line}-${i}`;
+          return (
+            <span key={key} style={{ letterSpacing: spacing[i] ?? spacing[spacing.length - 1] }}>
+              {typeof line === "object" ? (
+                <>
+                  <span className="cta-link__line-desktop">{line.desktop}</span>
+                  <span className="cta-link__line-mobile">{line.mobile}</span>
+                </>
+              ) : (
+                line
+              )}
+            </span>
+          );
+        })}
       </span>
       {!isLeft ? <BrandArrow direction={dir} /> : null}
     </>

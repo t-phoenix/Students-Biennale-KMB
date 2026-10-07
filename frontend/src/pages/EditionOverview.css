@@ -410,6 +410,12 @@ button.edition-overview__slot:hover img {
   align-items: center;
 }
 
+.edition-overview__next {
+  grid-column: 4 / -1;
+  justify-self: end;
+  align-self: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 899px) {
   .edition-overview__hero {
@@ -473,6 +479,15 @@ button.edition-overview__slot:hover img {
   }
 
   .edition-overview__nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding-top: 44px;
+    width: 100%;
+  }
+
+  .edition-overview__next {
+    grid-column: auto;
+    justify-self: auto;
   }
 }

@@ -755,15 +755,15 @@ function cleanIntroParagraphs(
         {nextId ? (
           isPreviousEdition ? (
             <CtaLink
-              className="fig-cta-end"
+              className="fig-cta-end edition-overview__next"
               to={`/editions/${nextId}`}
-              lines={["Students' Biennale", nextLabel]}
+              lines={[{ desktop: "Students' Biennale", mobile: "SB" }, nextLabel]}
               spacing={["0.1em", "0.1em"]}
               direction="right"
             />
           ) : (
             <CtaLink
-              className="fig-cta-end"
+              className="fig-cta-end edition-overview__next"
               to={`/editions/${nextId}`}
               lines={["Next", "Edition"]}
               direction="right"
