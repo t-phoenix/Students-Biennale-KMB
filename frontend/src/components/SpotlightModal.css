@@ -136,40 +136,75 @@
 }
 
 @media (max-width: 899px) {
+  .spotlight {
+    padding: 0;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
   .spotlight__panel {
-    width: 100%;
-    max-width: 100%;
-    margin-inline: 0;
-    height: auto;
-    max-height: 88vh;
+    position: fixed;
+    top: calc(var(--nav-height-mobile, 56px) + 10px);
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    height: calc(100dvh - var(--nav-height-mobile, 56px) - 20px);
+    max-height: calc(100dvh - var(--nav-height-mobile, 56px) - 20px);
+    margin: 0;
+    border-radius: 0;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  .spotlight__close {
+    top: 12px;
+    right: 12px;
+    padding: 6px;
   }
 
   .spotlight__layout {
-    padding: 32px var(--grid-margin);
-    max-height: 88vh;
+    padding: 24px 18px;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: block;
   }
 
   .spotlight__label {
     position: static;
     text-align: left;
     padding-inline-end: 0;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   .spotlight__title {
     text-align: left;
+    font-size: 20px;
+    line-height: 1.2;
+    padding-right: 32px;
   }
 
   .spotlight__title-divider {
     margin-left: 0;
     width: 100%;
+    margin-top: 12px;
+    margin-bottom: 14px;
   }
 
   .spotlight__attribution {
     text-align: left;
   }
 
+  .spotlight__body {
+    width: 100%;
+  }
+
   .spotlight__body--split {
     grid-template-columns: 1fr;
+    row-gap: 20px;
   }
 }
