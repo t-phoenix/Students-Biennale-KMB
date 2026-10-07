@@ -1005,13 +1005,49 @@
     z-index: 1;
   }
 
-  /* Hide side arrows and standalone dots on mobile */
+  /* Mobile hero carousel navigation arrows */
   .carousel-nav {
-    display: none !important;
+    display: flex !important;
+    position: absolute;
+    top: 48%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 36px;
+    padding: 4px;
+    z-index: 3;
+    pointer-events: auto;
   }
 
+  .carousel-nav--prev {
+    left: 8px;
+  }
+
+  .carousel-nav--next {
+    right: 8px;
+  }
+
+  .carousel-nav .brand-arrow {
+    width: 26px;
+    height: 26px;
+  }
+
+  /* Centered carousel dots at bottom */
   .home-hero__dots--centered {
-    display: none !important;
+    display: flex !important;
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 6;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    pointer-events: auto;
+  }
+
+  .home-hero__dots--centered button {
+    width: 8px;
+    height: 8px;
   }
 
   .home-hero__meta {
@@ -1026,215 +1062,235 @@
     justify-content: flex-end;
     align-items: stretch;
     padding-inline: var(--grid-margin, 20px);
-    padding-bottom: 20px;
+    padding-bottom: 34px;
     z-index: 2;
     pointer-events: none;
   }
 
-  /* Unified mobile-only Credit & Counter Row */
+  /* Unified mobile-only Credit (stacked above cards) */
   .home-hero__mobile-meta {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     z-index: 4;
     pointer-events: auto;
   }
 
   .home-hero__mobile-credit {
     display: flex;
-    align-items: baseline;
-    gap: 4px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
     color: #ffffff;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.75);
-    font-size: 11.5px;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: calc(100% - 64px);
+    width: 100%;
   }
 
   .home-hero__mobile-artwork {
-    font-weight: 600;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 22px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: #ffffff;
+    margin: 0;
   }
 
   .home-hero__mobile-artist {
+    font-size: 12.5px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.85);
+    line-height: 16px;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0;
   }
 
-  .home-hero__mobile-counter {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    padding: 3px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 0;
-    flex-shrink: 0;
-  }
-
-  .home-hero__mobile-counter-sep {
-    opacity: 0.5;
-  }
-
-  /* Multi-card horizontal swipe deck on mobile — all cards visible, accessible, border-radius: 0 */
+  /* Vertical update cards stack on mobile with smooth tap expand/collapse */
   .home-hero__stack {
+    --card-h: 118px;
+    --card-gap: 8px;
+    --peek: 8px;
+    --peek-gap: 5px;
+    --stack-dur: 380ms;
+    --stack-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --stack-count: 3;
+    --stack-h-collapsed: calc(var(--card-h) + (var(--peek) + var(--peek-gap)) * (var(--stack-count) - 1));
+    --stack-h-expanded: calc(var(--card-h) * var(--stack-count) + var(--card-gap) * (var(--stack-count) - 1));
+
     position: relative;
     width: 100%;
-    height: auto !important;
-    max-height: none;
+    height: var(--stack-h-collapsed);
+    max-height: calc(100dvh - var(--nav-height-mobile, 56px) - 120px);
     margin: 0;
-    z-index: 4;
+    z-index: 5;
     pointer-events: auto;
-    overflow-x: auto;
-    overflow-y: hidden;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 2px;
+    outline: none;
+    cursor: pointer;
+    display: block;
+    overflow: visible;
+    transition: height var(--stack-dur) var(--stack-ease);
   }
 
-  .home-hero__stack::-webkit-scrollbar {
-    display: none;
+  .home-hero__stack[data-count="1"] {
+    --stack-count: 1;
+  }
+
+  .home-hero__stack[data-count="2"] {
+    --stack-count: 2;
+  }
+
+  .home-hero__stack[data-count="3"] {
+    --stack-count: 3;
+  }
+
+  .home-hero__stack.is-mobile-expanded {
+    height: var(--stack-h-expanded);
+    max-height: calc(100dvh - var(--nav-height-mobile, 56px) - 90px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .home-hero__card {
-    position: relative !important;
-    top: 0 !important;
+    position: absolute !important;
     left: 0 !important;
-    right: auto !important;
-    flex: 0 0 min(88%, 320px);
-    width: auto !important;
-    height: auto !important;
-    min-height: 64px;
+    width: 100% !important;
+    height: var(--card-h) !important;
+    min-height: auto !important;
+    flex: none !important;
+    background: #ffffff !important;
+    border: 0;
     border-radius: 0 !important;
-    box-sizing: border-box;
-    overflow: visible;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 6px 18px rgba(0, 0, 0, 0.12) !important;
+    overflow: hidden;
     pointer-events: auto !important;
     opacity: 1 !important;
-    scroll-snap-align: start;
-    transition: transform 0.28s var(--ease-craft, ease), opacity 0.25s ease;
+    transition:
+      top var(--stack-dur) var(--stack-ease),
+      height var(--stack-dur) var(--stack-ease),
+      box-shadow var(--stack-dur) var(--stack-ease);
   }
 
-  .home-hero__stack[data-count="1"] .home-hero__card {
-    flex: 1 1 100%;
-    max-width: 100%;
-  }
-
-  .home-hero__card[data-offset="0"],
-  .home-hero__card[data-offset="1"],
-  .home-hero__card[data-offset="2"] {
+  /* Collapsed peeks on mobile */
+  .home-hero__card[data-offset="0"] {
     top: 0 !important;
-    left: 0 !important;
-    right: auto !important;
-    width: auto !important;
-    height: auto !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-    background: rgba(255, 255, 255, 0.96);
+    height: var(--card-h) !important;
+    z-index: 3;
+  }
+
+  .home-hero__card[data-offset="1"] {
+    top: calc(var(--card-h) + var(--peek-gap)) !important;
+    height: var(--peek) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12) !important;
+    z-index: 2;
+  }
+
+  .home-hero__card[data-offset="2"] {
+    top: calc(var(--card-h) + (var(--peek) + var(--peek-gap)) * 1 + var(--peek-gap)) !important;
+    height: var(--peek) !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12) !important;
+    z-index: 1;
   }
 
   .home-hero__card[data-offset="1"] .home-hero__card-inner,
   .home-hero__card[data-offset="2"] .home-hero__card-inner {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Expanded stack on mobile */
+  .home-hero__stack.is-mobile-expanded .home-hero__card {
+    height: var(--card-h) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.14) !important;
+    pointer-events: auto !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="0"] {
+    top: 0 !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="1"] {
+    top: calc(var(--card-h) + var(--card-gap)) !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="2"] {
+    top: calc((var(--card-h) + var(--card-gap)) * 2) !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded .home-hero__card .home-hero__card-inner {
     opacity: 1 !important;
+    pointer-events: auto !important;
   }
 
   .home-hero__card-inner {
     display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px !important;
+    flex-direction: column !important;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 14px 16px !important;
     height: 100% !important;
     box-sizing: border-box;
-    opacity: 1 !important;
+    transition: opacity 0.25s ease;
   }
 
   .home-hero__card-thumb {
-    display: flex;
-    width: 44px;
-    height: 44px;
-    border-radius: 0;
-    overflow: hidden;
-    background: #f0f0f0;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .home-hero__card-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .home-hero__card-thumb--mark img {
-    width: 22px;
-    height: 22px;
-    object-fit: contain;
+    display: none !important;
   }
 
   .home-hero__card-text {
-    flex: 1 1 auto;
-    min-width: 0;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
   }
 
   .home-hero__card-title {
     font-size: 14px;
-    line-height: 18px;
-    letter-spacing: 0.6px;
+    line-height: 19px;
+    letter-spacing: 0.05em;
     font-weight: 600;
     text-transform: uppercase;
     color: var(--color-text-primary);
     margin: 0;
-    padding-right: 22px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    padding-right: 24px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .home-hero__card-body {
-    font-size: 13px;
-    line-height: 17px;
+    font-size: 12px;
+    line-height: 16px;
     color: var(--color-text-secondary);
-    margin: 2px 0 0;
-    white-space: nowrap;
+    margin: 6px 0 0;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
     overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
   }
 
   .home-hero__card-close {
-    opacity: 0.6 !important;
-    pointer-events: auto !important;
-    top: 6px;
-    right: 8px;
+    position: absolute;
+    top: 10px;
+    right: 12px;
     width: 22px;
     height: 22px;
-    font-size: 11px;
+    font-size: 13px;
     border-radius: 0;
+    opacity: 0.6 !important;
+    pointer-events: auto !important;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .home-hero__card-close:hover {
+    color: var(--color-text-primary);
+    opacity: 1 !important;
   }
 
   .home-sensing__links {
