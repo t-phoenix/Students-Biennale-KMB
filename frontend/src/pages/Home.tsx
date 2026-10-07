@@ -101,12 +101,34 @@ export function Home() {
   useEffect(() => {
     if (!mobileCardsExpanded) return;
 
+    let touchStartY = 0;
+    let touchStartX = 0;
+
     const collapse = () => {
       setMobileCardsExpanded(false);
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        // Only collapse on intentional swipe / scroll gesture (> 10px movement)
+        if (Math.hypot(dx, dy) > 10) {
+          collapse();
+        }
+      }
+    };
+
     window.addEventListener("scroll", collapse, { passive: true });
-    window.addEventListener("touchmove", collapse, { passive: true });
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchmove", handleTouchMove, { passive: true });
     window.addEventListener("wheel", collapse, { passive: true });
     document.addEventListener("scroll", collapse, { passive: true });
 
@@ -123,7 +145,8 @@ export function Home() {
 
     return () => {
       window.removeEventListener("scroll", collapse);
-      window.removeEventListener("touchmove", collapse);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("wheel", collapse);
       document.removeEventListener("scroll", collapse);
       if (unLenis) unLenis();
@@ -605,7 +628,7 @@ export function Home() {
               0.15
             )
             .fromTo(
-              ".home-hero__credit p",
+              ".home-hero__credit p, .home-hero__mobile-meta",
               { autoAlpha: 0, y: 14 },
               { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08 },
               0.25
@@ -677,8 +700,8 @@ export function Home() {
             }
           );
 
-          // Cards & Credits float up faster with depth before going behind the next section
-          gsap.to(".home-hero__stack", {
+          // Cards & Mobile Credits float up together in locked unison with depth before going behind the next section
+          gsap.to(".home-hero__stack, .home-hero__mobile-group, .home-hero__mobile-meta", {
             y: -220,
             ease: "none",
             scrollTrigger: {
@@ -690,7 +713,7 @@ export function Home() {
             },
           });
 
-          gsap.to(".home-hero__meta, .home-hero__mobile-meta", {
+          gsap.to(".home-hero__meta", {
             y: -100,
             ease: "none",
             scrollTrigger: {
@@ -704,7 +727,7 @@ export function Home() {
         },
         onReduce: () => {
           gsap.set(".home-hero__card", { autoAlpha: 1, y: 0, rotation: 0 });
-          gsap.set(".home-hero__stack, .home-hero__meta, .home-hero__mobile-meta", { y: 0 });
+          gsap.set(".home-hero__stack, .home-hero__meta, .home-hero__mobile-group, .home-hero__mobile-meta", { y: 0 });
           gsap.set(".home-hero__slides", { scale: 1 });
           gsap.set(".home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow", {
             autoAlpha: 1,
@@ -785,68 +808,63 @@ export function Home() {
 
         {/* Overlay sits on the page grid */}
         <div className="home-hero__grid">
-          {/* Mobile-only unified credit row (stacked above cards) */}
-          <div className="home-hero__mobile-meta">
-            <div className="home-hero__mobile-credit">
-              {creditArtwork ? (
-                <span className="home-hero__mobile-artwork">{creditArtwork}</span>
-              ) : null}
-              {creditArtist ? (
-                <span className="home-hero__mobile-artist">{creditArtist}</span>
-              ) : null}
-            </div>
-          </div>
-
-          {(() => {
-            const visibleCards = cards.filter((c) => !dismissedCardIds.includes(c.id));
-            if (visibleCards.length === 0) return null;
-            return (
-              <>
-                {mobileCardsExpanded ? (
-                  <div
-                    className="home-hero__stack-backdrop"
-                    aria-hidden="true"
-                    onClick={() => setMobileCardsExpanded(false)}
-                  />
+          {/* Mobile group contains unified credit text + cards stack */}
+          <div className="home-hero__mobile-group">
+            <div
+              className="home-hero__mobile-meta"
+              onClick={() => {
+                if (mobileCardsExpanded) {
+                  setMobileCardsExpanded(false);
+                }
+              }}
+            >
+              <div className="home-hero__mobile-credit">
+                {creditArtwork ? (
+                  <span className="home-hero__mobile-artwork">{creditArtwork}</span>
                 ) : null}
-                <div
-                  className={`home-hero__stack fig-span3-plus-gutter${mobileCardsExpanded ? " is-mobile-expanded" : ""}`}
-                  data-node-id="17:309"
-                  data-count={visibleCards.length}
-                  data-expanded={mobileCardsExpanded}
-                  tabIndex={0}
-                  aria-label="Edition updates. Tap to expand or collapse."
-                  onClick={() => {
-                    if (window.innerWidth <= 899 && !mobileCardsExpanded) {
-                      setMobileCardsExpanded(true);
-                    }
-                  }}
-                >
-                {visibleCards.map((item, i, arr) => (
-                  <article
-                    key={item.id}
-                    className="home-hero__card home-hero__card--interactive"
-                    style={{ zIndex: arr.length - i }}
-                    data-offset={i}
-                    role="button"
+                {creditArtist ? (
+                  <span className="home-hero__mobile-artist">{creditArtist}</span>
+                ) : null}
+              </div>
+            </div>
+
+            {(() => {
+              const visibleCards = cards.filter((c) => !dismissedCardIds.includes(c.id));
+              if (visibleCards.length === 0) return null;
+              return (
+                <>
+                  {mobileCardsExpanded ? (
+                    <div
+                      className="home-hero__stack-backdrop"
+                      aria-hidden="true"
+                      onClick={() => setMobileCardsExpanded(false)}
+                    />
+                  ) : null}
+                  <div
+                    className={`home-hero__stack fig-span3-plus-gutter${mobileCardsExpanded ? " is-mobile-expanded" : ""}`}
+                    data-node-id="17:309"
+                    data-count={visibleCards.length}
+                    data-expanded={mobileCardsExpanded}
                     tabIndex={0}
-                    aria-label={`${item.heading}. Open update.`}
-                    onClick={(e) => {
-                      if (window.innerWidth <= 899) {
-                        e.stopPropagation();
-                        if (!mobileCardsExpanded) {
-                          setMobileCardsExpanded(true);
-                        } else {
-                          openCard(item);
-                        }
-                      } else {
-                        openCard(item);
+                    aria-label="Edition updates. Tap to expand or collapse."
+                    onClick={() => {
+                      if (window.innerWidth <= 899 && !mobileCardsExpanded) {
+                        setMobileCardsExpanded(true);
                       }
                     }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
+                  >
+                  {visibleCards.map((item, i, arr) => (
+                    <article
+                      key={item.id}
+                      className="home-hero__card home-hero__card--interactive"
+                      style={{ zIndex: arr.length - i }}
+                      data-offset={i}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`${item.heading}. Open update.`}
+                      onClick={(e) => {
                         if (window.innerWidth <= 899) {
+                          e.stopPropagation();
                           if (!mobileCardsExpanded) {
                             setMobileCardsExpanded(true);
                           } else {
@@ -855,41 +873,57 @@ export function Home() {
                         } else {
                           openCard(item);
                         }
-                      }
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="home-hero__card-close"
-                      aria-label={`Dismiss ${item.heading}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDismissedCardIds((prev) => [...prev, item.id]);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          if (window.innerWidth <= 899) {
+                            if (!mobileCardsExpanded) {
+                              setMobileCardsExpanded(true);
+                            } else {
+                              openCard(item);
+                            }
+                          } else {
+                            openCard(item);
+                          }
+                        } else {
+                          openCard(item);
+                        }
                       }}
                     >
-                      ✕
-                    </button>
-                    <div className="home-hero__card-inner">
-                      {item.imageUrl ? (
-                        <div className="home-hero__card-thumb">
-                          <img src={item.imageUrl} alt="" width={44} height={44} />
+                      <button
+                        type="button"
+                        className="home-hero__card-close"
+                        aria-label={`Dismiss ${item.heading}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDismissedCardIds((prev) => [...prev, item.id]);
+                        }}
+                      >
+                        ✕
+                      </button>
+                      <div className="home-hero__card-inner">
+                        {item.imageUrl ? (
+                          <div className="home-hero__card-thumb">
+                            <img src={item.imageUrl} alt="" width={44} height={44} />
+                          </div>
+                        ) : (
+                          <div className="home-hero__card-thumb home-hero__card-thumb--mark">
+                            <img src="/logo-sb-mark.svg" alt="" width={24} height={24} />
+                          </div>
+                        )}
+                        <div className="home-hero__card-text">
+                          <h2 className="home-hero__card-title">{item.heading}</h2>
+                          <p className="home-hero__card-body">{item.body}</p>
                         </div>
-                      ) : (
-                        <div className="home-hero__card-thumb home-hero__card-thumb--mark">
-                          <img src="/logo-sb-mark.svg" alt="" width={24} height={24} />
-                        </div>
-                      )}
-                      <div className="home-hero__card-text">
-                        <h2 className="home-hero__card-title">{item.heading}</h2>
-                        <p className="home-hero__card-body">{item.body}</p>
                       </div>
-                    </div>
-                  </article>
-                ))}
-                </div>
-              </>
-            );
-          })()}
+                    </article>
+                  ))}
+                  </div>
+                </>
+              );
+            })()}
+          </div>
 
           <div className="home-hero__meta">
             {showCredits ? (
