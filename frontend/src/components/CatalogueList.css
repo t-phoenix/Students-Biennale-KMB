@@ -442,7 +442,7 @@
 
   .catalogue__row-accordion .curator-panel__portrait {
     width: 100%;
-    max-width: 260px;
+    max-width: 100%;
     aspect-ratio: 315 / 360;
     margin-bottom: 14px;
   }

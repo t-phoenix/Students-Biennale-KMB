@@ -585,14 +585,14 @@
   }
 
   .detail__portrait {
-    justify-self: center;
-    align-self: center;
-    margin: 0 auto 24px auto;
-    max-width: 260px;
+    justify-self: stretch;
+    align-self: auto;
+    margin: 0 0 24px 0;
+    max-width: 100%;
     width: 100%;
     aspect-ratio: 295 / 380;
-    border: 8px solid #ffffff;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: none;
+    box-shadow: none;
   }
 
   .detail__curator-copy {
