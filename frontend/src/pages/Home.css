@@ -1333,6 +1333,16 @@
     align-self: start;
   }
 
+  .home-programmes__rail {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .home-programmes__rail button,
+  .home-programmes__rail a {
+    text-align: left;
+  }
+
   .home-programmes__thumbs {
     flex-wrap: wrap;
   }
