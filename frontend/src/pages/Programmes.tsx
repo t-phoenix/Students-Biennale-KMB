@@ -22,6 +22,26 @@ function catalogueArtworkHref(scholarId: string): string | null {
   return `/editions/${LATEST_EDITION.id}/artworks/${artworkId}?from=awards`;
 }
 
+const INTL_EXPAND_KEY = "programmes_awards_intl_expanded";
+const NATIONAL_EXPAND_KEY = "programmes_awards_national_expanded";
+
+function readSessionFlag(key: string): boolean {
+  try {
+    return sessionStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeSessionFlag(key: string, value: boolean) {
+  try {
+    if (value) sessionStorage.setItem(key, "1");
+    else sessionStorage.removeItem(key);
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
 export function Programmes() {
   const navigate = useNavigate();
   const root = useRef<HTMLDivElement>(null);
@@ -32,8 +52,13 @@ export function Programmes() {
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
   const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
-  const [expandedIntlAwards, setExpandedIntlAwards] = useState(false);
-  const [expandedNationalAwards, setExpandedNationalAwards] = useState(false);
+  // Collapsed by default; remember expand/collapse for this browser tab only.
+  const [expandedIntlAwards, setExpandedIntlAwards] = useState(() =>
+    readSessionFlag(INTL_EXPAND_KEY),
+  );
+  const [expandedNationalAwards, setExpandedNationalAwards] = useState(() =>
+    readSessionFlag(NATIONAL_EXPAND_KEY),
+  );
   const { heroCovers } = useProgrammesCovers();
   const currentHeroSrc = heroCovers[heroSlide]?.image_url ?? heroCovers[0]?.image_url ?? "";
   const dotsTone = useCarouselDotsTone(currentHeroSrc, "center");
@@ -108,11 +133,19 @@ export function Programmes() {
     setHeroSlide(index);
   }, []);
 
+  // Deep-link #raza opens the spotlight (and needs the intl block expanded).
+  // Do NOT auto-expand on #awards — that hash is used for scroll targets and
+  // was forcing VIEW LESS on every Programmes visit.
   useEffect(() => {
-    if (window.location.hash === "#raza") {
+    const applyHash = () => {
+      if (window.location.hash !== "#raza") return;
       setExpandedIntlAwards(true);
+      writeSessionFlag(INTL_EXPAND_KEY, true);
       setRazaModalOpen(true);
-    }
+    };
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
   }, []);
 
   useEffect(() => {
@@ -462,7 +495,13 @@ export function Programmes() {
               className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
               lines={expandedIntlAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
               spacing={["0.26em", "0.135em"]}
-              onClick={() => setExpandedIntlAwards((open) => !open)}
+              onClick={() =>
+                setExpandedIntlAwards((open) => {
+                  const next = !open;
+                  writeSessionFlag(INTL_EXPAND_KEY, next);
+                  return next;
+                })
+              }
             />
           ) : null}
         </section>
@@ -505,7 +544,13 @@ export function Programmes() {
               className={`fig-cta-end programmes__more${expandedNationalAwards ? " programmes__more--collapse" : ""}`}
               lines={expandedNationalAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
               spacing={["0.26em", "0.135em"]}
-              onClick={() => setExpandedNationalAwards((open) => !open)}
+              onClick={() =>
+                setExpandedNationalAwards((open) => {
+                  const next = !open;
+                  writeSessionFlag(NATIONAL_EXPAND_KEY, next);
+                  return next;
+                })
+              }
             />
           ) : null}
         </section>
@@ -529,8 +574,14 @@ export function Programmes() {
         onClose={() => setRazaModalOpen(false)}
         onSelectScholar={(scholarId) => {
           setRazaModalOpen(false);
+          writeSessionFlag(INTL_EXPAND_KEY, true);
+          setExpandedIntlAwards(true);
           const href = catalogueArtworkHref(scholarId);
           if (href) {
+            // Replace #raza so browser back returns to the awards grid, not the modal.
+            if (window.location.hash === "#raza") {
+              navigate("/programmes#awards", { replace: true });
+            }
             navigate(href);
             return;
           }

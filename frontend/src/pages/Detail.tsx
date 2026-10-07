@@ -131,20 +131,23 @@ export function Detail() {
     prefetchNextArtwork(artworkNavList, id);
   }, [kindSeg, id, artworkNavList]);
 
+  const fromAwards = kindSeg === "artworks" && searchParams.get("from") === "awards";
+
   const back = useMemo(() => {
+    // Awards entry wins over curator/venue scope so BACK always returns to Programmes.
+    if (fromAwards) {
+      return "/programmes#awards";
+    }
     if (kindSeg === "artworks" && artworkNav.kind === "curator") {
       return `/editions/${yearId}/curators/${artworkNav.curatorId}`;
     }
     if (kindSeg === "artworks" && artworkNav.kind === "venue") {
       return `/editions/${yearId}/venue/${artworkNav.venueId}`;
     }
-    if (kindSeg === "artworks" && searchParams.get("from") === "awards") {
-      return "/programmes#awards";
-    }
     const viewParam = searchParams.get("view");
     const qs = viewParam ? `?view=${viewParam}` : "";
     return `/editions/${yearId}/${kindSeg}${qs}`;
-  }, [kindSeg, yearId, artworkNav, searchParams]);
+  }, [kindSeg, yearId, artworkNav, searchParams, fromAwards]);
 
   if (!data.item) {
     return (

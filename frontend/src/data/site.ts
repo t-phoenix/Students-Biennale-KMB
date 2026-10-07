@@ -514,8 +514,11 @@ export type PastWorkshop = {
 };
 
 /** Raza scholarship portraits — intentional frontend assets until CMS owns scholar images. */
-/** Scholars whose exhibited work is a catalogue artwork, not the local placeholder. */
+/** Artwork detail route ids for Raza scholars (catalogue ids or local RAZA_SCHOLAR_ARTWORKS). */
 export const RAZA_CATALOGUE_ARTWORK_IDS: Record<string, string> = {
+  // Local placeholder artworks — still routed so awards → detail → back keeps history.
+  "kaki-weiss": "kaki-weiss",
+  "nina-durel": "nina-durel",
   "rutuja-sonawane": "artwork-the-peoples-orchestra",
   "mohammad-riyaz": "artwork-inheritance-of-the-hand",
 };

@@ -67,8 +67,11 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
 
   useEffect(() => {
     if (!open || !catalogueArtworkId) return;
+    // Routed catalogue/placeholder artworks: close the overlay and go to Detail
+    // with from=awards so both browser and in-page BACK return to Programmes.
+    onClose();
     navigate(`/editions/${LATEST_EDITION.id}/artworks/${catalogueArtworkId}?from=awards`);
-  }, [open, catalogueArtworkId, navigate]);
+  }, [open, catalogueArtworkId, navigate, onClose]);
 
   useEffect(() => {
     if (!open) return;
