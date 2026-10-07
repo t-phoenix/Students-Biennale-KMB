@@ -1146,9 +1146,7 @@
 
   .home-hero__stack.is-mobile-expanded {
     height: var(--stack-h-expanded);
-    max-height: calc(100dvh - var(--nav-height-mobile, 56px) - 90px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
   }
 
   .home-hero__card {

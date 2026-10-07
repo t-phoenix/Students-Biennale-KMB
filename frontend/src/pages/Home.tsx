@@ -114,6 +114,7 @@ export function Home() {
 
     window.addEventListener("scroll", handleScrollOrMove, { passive: true });
     window.addEventListener("touchmove", handleScrollOrMove, { passive: true });
+    window.addEventListener("wheel", handleScrollOrMove, { passive: true });
     document.addEventListener("pointerdown", handlePointerDown);
 
     const unsubscribeLenis = subscribeLenis((lenis) => {
@@ -125,6 +126,7 @@ export function Home() {
     return () => {
       window.removeEventListener("scroll", handleScrollOrMove);
       window.removeEventListener("touchmove", handleScrollOrMove);
+      window.removeEventListener("wheel", handleScrollOrMove);
       document.removeEventListener("pointerdown", handlePointerDown);
       unsubscribeLenis();
     };
@@ -825,11 +827,7 @@ export function Home() {
                         if (!mobileCardsExpanded) {
                           setMobileCardsExpanded(true);
                         } else {
-                          if (i === 0) {
-                            setMobileCardsExpanded(false);
-                          } else {
-                            openCard(item);
-                          }
+                          openCard(item);
                         }
                       } else {
                         openCard(item);
@@ -839,7 +837,11 @@ export function Home() {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
                         if (window.innerWidth <= 899) {
-                          setMobileCardsExpanded((prev) => !prev);
+                          if (!mobileCardsExpanded) {
+                            setMobileCardsExpanded(true);
+                          } else {
+                            openCard(item);
+                          }
                         } else {
                           openCard(item);
                         }
