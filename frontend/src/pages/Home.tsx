@@ -32,7 +32,7 @@ import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
 import { useSplash } from "../lib/splash";
-import { subscribeLenis } from "../lib/lenisSingleton";
+import { subscribeLenis, getLenisInstance } from "../lib/lenisSingleton";
 import "./Home.css";
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
@@ -97,38 +97,40 @@ export function Home() {
     }
   }, [razaModalOpen, openScholarId, activeCard]);
 
-  // Smooth auto-collapse on mobile when scrolling, touch-dragging, or tapping outside the stack
+  // Smooth auto-collapse on mobile when scrolling, touching, or tapping outside the stack
   useEffect(() => {
     if (!mobileCardsExpanded) return;
 
-    const handleScrollOrMove = () => {
+    const collapse = () => {
       setMobileCardsExpanded(false);
     };
 
-    const handlePointerDown = (e: PointerEvent) => {
-      const stackEl = document.querySelector(".home-hero__stack");
-      if (stackEl && !stackEl.contains(e.target as Node)) {
-        setMobileCardsExpanded(false);
-      }
-    };
+    window.addEventListener("scroll", collapse, { passive: true });
+    window.addEventListener("touchmove", collapse, { passive: true });
+    window.addEventListener("wheel", collapse, { passive: true });
+    document.addEventListener("scroll", collapse, { passive: true });
 
-    window.addEventListener("scroll", handleScrollOrMove, { passive: true });
-    window.addEventListener("touchmove", handleScrollOrMove, { passive: true });
-    window.addEventListener("wheel", handleScrollOrMove, { passive: true });
-    document.addEventListener("pointerdown", handlePointerDown);
-
-    const unsubscribeLenis = subscribeLenis((lenis) => {
-      if (lenis) {
-        lenis.on("scroll", handleScrollOrMove);
-      }
-    });
+    let unLenis: (() => void) | undefined;
+    const lenis = getLenisInstance();
+    if (lenis) {
+      lenis.on("scroll", collapse);
+      unLenis = () => lenis.off("scroll", collapse);
+    } else {
+      unLenis = subscribeLenis((l) => {
+        if (l) l.on("scroll", collapse);
+      });
+    }
 
     return () => {
-      window.removeEventListener("scroll", handleScrollOrMove);
-      window.removeEventListener("touchmove", handleScrollOrMove);
-      window.removeEventListener("wheel", handleScrollOrMove);
-      document.removeEventListener("pointerdown", handlePointerDown);
-      unsubscribeLenis();
+      window.removeEventListener("scroll", collapse);
+      window.removeEventListener("touchmove", collapse);
+      window.removeEventListener("wheel", collapse);
+      document.removeEventListener("scroll", collapse);
+      if (unLenis) unLenis();
+      const currentLenis = getLenisInstance();
+      if (currentLenis) {
+        currentLenis.off("scroll", collapse);
+      }
     };
   }, [mobileCardsExpanded]);
   const { current } = useCatalogue();
@@ -799,19 +801,27 @@ export function Home() {
             const visibleCards = cards.filter((c) => !dismissedCardIds.includes(c.id));
             if (visibleCards.length === 0) return null;
             return (
-              <div
-                className={`home-hero__stack fig-span3-plus-gutter${mobileCardsExpanded ? " is-mobile-expanded" : ""}`}
-                data-node-id="17:309"
-                data-count={visibleCards.length}
-                data-expanded={mobileCardsExpanded}
-                tabIndex={0}
-                aria-label="Edition updates. Tap to expand or collapse."
-                onClick={() => {
-                  if (window.innerWidth <= 899 && !mobileCardsExpanded) {
-                    setMobileCardsExpanded(true);
-                  }
-                }}
-              >
+              <>
+                {mobileCardsExpanded ? (
+                  <div
+                    className="home-hero__stack-backdrop"
+                    aria-hidden="true"
+                    onClick={() => setMobileCardsExpanded(false)}
+                  />
+                ) : null}
+                <div
+                  className={`home-hero__stack fig-span3-plus-gutter${mobileCardsExpanded ? " is-mobile-expanded" : ""}`}
+                  data-node-id="17:309"
+                  data-count={visibleCards.length}
+                  data-expanded={mobileCardsExpanded}
+                  tabIndex={0}
+                  aria-label="Edition updates. Tap to expand or collapse."
+                  onClick={() => {
+                    if (window.innerWidth <= 899 && !mobileCardsExpanded) {
+                      setMobileCardsExpanded(true);
+                    }
+                  }}
+                >
                 {visibleCards.map((item, i, arr) => (
                   <article
                     key={item.id}
@@ -876,7 +886,8 @@ export function Home() {
                     </div>
                   </article>
                 ))}
-              </div>
+                </div>
+              </>
             );
           })()}
 
@@ -1015,8 +1026,14 @@ export function Home() {
 
         <UpdateCardSpotlight
           card={activeCard}
-          onClose={() => setActiveCard(null)}
-          onConfirmNavigate={confirmCardNavigate}
+          onClose={() => {
+            setActiveCard(null);
+            setMobileCardsExpanded(false);
+          }}
+          onConfirmNavigate={(card) => {
+            setMobileCardsExpanded(false);
+            confirmCardNavigate(card);
+          }}
         />
 
         {/* Upcoming programmes */}
