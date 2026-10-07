@@ -543,7 +543,7 @@
 
 /* Programmes */
 .home-programmes {
-  background: var(--color-neutral-gray-light);
+  background: #EBEBEB;
 }
 
 .home-programmes__banner {
@@ -617,7 +617,7 @@
   display: block;
   width: 100%;
   height: 273px;
-  background: var(--color-neutral-gray-light);
+  background: #EBEBEB;
 }
 
 /* Press */
