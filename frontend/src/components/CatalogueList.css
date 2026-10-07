@@ -335,22 +335,131 @@
   color: var(--color-text-primary);
 }
 
-/* Tier C — preview drops below the list. */
+/* Accordion container for in-place mobile expansion (hidden on desktop) */
+.catalogue__row-accordion {
+  display: none;
+}
+
+/* Tier C — mobile in-place accordion (preview on desktop is hidden). */
 @media (max-width: 899px) {
-  .catalogue__rows,
-  .catalogue__preview {
+  .catalogue__rows {
     grid-column: 1 / -1;
   }
 
   .catalogue__preview {
-    position: static;
-    margin-top: 40px;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 0 !important;
-    overflow-y: visible;
-    padding-left: 0;
-    padding-right: 0;
-    padding-bottom: 0;
+    display: none !important;
+  }
+
+  /* On mobile, reset desktop hover minus mark and only show minus when row is expanded */
+  .catalogue__row.is-active .catalogue__row-mark::after {
+    transform: translate(-50%, -50%) scaleY(1);
+  }
+
+  .catalogue__row.is-expanded .catalogue__row-mark::after {
+    transform: translate(-50%, -50%) scaleY(0);
+  }
+
+  .catalogue__row-link {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .catalogue__row-link--button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    padding: 18px 0;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .catalogue__row-accordion {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    opacity: 0;
+    overflow: hidden;
+  }
+
+  .catalogue__row-accordion.is-open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  .catalogue__row-accordion-inner {
+    min-height: 0;
+    padding: 6px 0 24px;
+    border-top: 1px dashed color-mix(in srgb, var(--color-neutral-gray-light) 70%, transparent);
+    margin-top: 2px;
+  }
+
+  .catalogue__row-accordion .catalogue__preview-inner {
+    padding-top: 4px;
+  }
+
+  .catalogue__row-accordion .catalogue__preview-media {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    max-height: 260px;
+    margin-bottom: 16px;
+  }
+
+  .catalogue__row-accordion .catalogue__preview-head {
+    margin-bottom: 14px;
+  }
+
+  .catalogue__row-accordion .catalogue__preview-head h3 {
+    font-size: 16px;
+    line-height: 1.3;
+    letter-spacing: 0.04em;
+  }
+
+  .catalogue__row-accordion .catalogue__preview-meta-wrap {
+    margin-bottom: 16px;
+  }
+
+  .catalogue__row-accordion .curator-panel {
+    padding-top: 4px;
+    padding-bottom: 8px;
+  }
+
+  .catalogue__row-accordion .curator-panel__zone {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+  }
+
+  .catalogue__row-accordion .curator-panel__states {
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .catalogue__row-accordion .curator-panel__person {
+    margin-bottom: 24px;
+  }
+
+  .catalogue__row-accordion .curator-panel__portrait {
+    width: 100%;
+    max-width: 260px;
+    aspect-ratio: 315 / 360;
+    margin-bottom: 14px;
+  }
+
+  .catalogue__row-accordion .curator-panel__person h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  .catalogue__row-accordion .curator-panel__bio p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .catalogue__row-accordion .curator-panel__more {
+    margin-top: 8px;
+    margin-bottom: 8px;
   }
 }
+

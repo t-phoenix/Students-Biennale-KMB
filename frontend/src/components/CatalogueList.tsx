@@ -47,9 +47,95 @@ type CatalogueListProps = {
   pageSize?: number;
 };
 
+function renderPreviewBody(
+  id: string,
+  previewFor?: (id: string) => CataloguePreview | null,
+  renderPreview?: (id: string) => ReactNode
+) {
+  if (renderPreview) {
+    return renderPreview(id);
+  }
+  if (!previewFor) return null;
+  const preview = previewFor(id);
+  if (!preview) return null;
+
+  return (
+    <div className="catalogue__preview-inner">
+      {preview.image ? (
+        <div className="catalogue__preview-media">
+          <img src={preview.image} alt={preview.title} loading="lazy" />
+        </div>
+      ) : null}
+
+      <div className="catalogue__preview-head">
+        <h3>{preview.title}</h3>
+        {preview.year ? <span>{preview.year}</span> : null}
+      </div>
+
+      <div className="catalogue__preview-meta-wrap">
+        <MetaGrid className="catalogue__preview-meta">
+          {preview.fields.map((field) => {
+            const cleanLabel = field.label.replace(/\s*:$/, "").trim();
+            return (
+              <MetaRow
+                key={field.label}
+                label={cleanLabel}
+                value={
+                  field.values.length === 1 ? (
+                    field.values[0]
+                  ) : (
+                    <span className="catalogue__preview-values">
+                      {field.values.map((v) => (
+                        <span key={v} className="catalogue__preview-value-line">
+                          {v}
+                        </span>
+                      ))}
+                    </span>
+                  )
+                }
+              />
+            );
+          })}
+          {preview.note ? (
+            <MetaRow
+              label="Note"
+              className="catalogue__preview-note-row"
+              value={
+                <div className="catalogue__preview-note-content">
+                  <FormattedText as="p" text={getTruncatedNote(preview.note, 50)} />
+                  {preview.noteHref ? (
+                    <Link to={preview.noteHref} className="catalogue__preview-cta">
+                      <span>VIEW FULL ARTWORK</span>
+                      <span aria-hidden>→</span>
+                    </Link>
+                  ) : null}
+                </div>
+              }
+            />
+          ) : preview.noteHref ? (
+            <MetaRow
+              label=""
+              className="catalogue__preview-note-row"
+              value={
+                <div className="catalogue__preview-note-content">
+                  <Link to={preview.noteHref} className="catalogue__preview-cta">
+                    <span>VIEW FULL ARTWORK</span>
+                    <span aria-hidden>→</span>
+                  </Link>
+                </div>
+              }
+            />
+          ) : null}
+        </MetaGrid>
+      </div>
+    </div>
+  );
+}
+
 /**
  * Figma list view (708:518 / 713:970): rows on cols 4-8 with a rule above and below
- * each, a "Load more..." control, and a live preview panel on cols 9-12.
+ * each, a "Load more..." control, and a live preview panel on cols 9-12 (desktop)
+ * or in-place accordion rows on mobile.
  */
 export function CatalogueList({
   rows,
@@ -58,15 +144,14 @@ export function CatalogueList({
   pageSize = 12,
 }: CatalogueListProps) {
   const [activeId, setActiveId] = useState(rows[0]?.id ?? "");
+  const [mobileExpandedId, setMobileExpandedId] = useState<string | null>(null);
   const [shown, setShown] = useState(pageSize);
   const previewRef = useRef<HTMLElement>(null);
 
   const visible = rows.slice(0, shown);
   const shownId = rows.some((r) => r.id === activeId) ? activeId : rows[0]?.id;
-  const preview = previewFor && shownId ? previewFor(shownId) : null;
-  const custom = renderPreview && shownId ? renderPreview(shownId) : null;
 
-  // Auto-reset scroll position when selecting a new catalogue item
+  // Auto-reset scroll position when selecting a new catalogue item on desktop
   useEffect(() => {
     if (previewRef.current) {
       previewRef.current.scrollTop = 0;
@@ -119,46 +204,82 @@ export function CatalogueList({
         lenis.off("scroll", handleScroll);
       }
     };
-  }, [shownId, custom, preview]);
+  }, [shownId, renderPreview, previewFor]);
+
+  const handleRowClick = (e: React.MouseEvent, rowId: string) => {
+    if (window.innerWidth <= 899) {
+      e.preventDefault();
+      setMobileExpandedId((prev) => (prev === rowId ? null : rowId));
+      setActiveId(rowId);
+    }
+  };
 
   return (
     <div className="catalogue fig-band-9">
       <div className="catalogue__rows">
-        {visible.map((row) => (
-          <div
-            key={row.id}
-            className={`catalogue__row${row.id === activeId ? " is-active" : ""}`}
-            onMouseEnter={() => setActiveId(row.id)}
-            onFocus={() => setActiveId(row.id)}
-          >
-            {(() => {
-              const rowContent = (
-                <>
-                  {row.eyebrow ? (
-                    <span className="catalogue__row-eyebrow">{row.eyebrow}</span>
-                  ) : null}
-                  <span className="catalogue__row-title">{row.title}</span>
-                  {(row.titles ?? []).map((t, i) => (
-                    <span key={i} className="catalogue__row-title">
-                      {t}
-                    </span>
-                  ))}
-                  {row.sub ? <span className="catalogue__row-sub">{row.sub}</span> : null}
-                  <span className="catalogue__row-mark" aria-hidden />
-                </>
-              );
-              return row.href ? (
-                <Link className="catalogue__row-link" to={row.href}>
+        {visible.map((row) => {
+          const isMobileExpanded = row.id === mobileExpandedId;
+          const isDesktopActive = row.id === activeId;
+
+          const rowContent = (
+            <>
+              {row.eyebrow ? (
+                <span className="catalogue__row-eyebrow">{row.eyebrow}</span>
+              ) : null}
+              <span className="catalogue__row-title">{row.title}</span>
+              {(row.titles ?? []).map((t, i) => (
+                <span key={i} className="catalogue__row-title">
+                  {t}
+                </span>
+              ))}
+              {row.sub ? <span className="catalogue__row-sub">{row.sub}</span> : null}
+              <span className="catalogue__row-mark" aria-hidden />
+            </>
+          );
+
+          return (
+            <div
+              key={row.id}
+              className={`catalogue__row${isDesktopActive ? " is-active" : ""}${
+                isMobileExpanded ? " is-expanded" : ""
+              }`}
+              onMouseEnter={() => setActiveId(row.id)}
+              onFocus={() => setActiveId(row.id)}
+            >
+              {row.href ? (
+                <Link
+                  className="catalogue__row-link"
+                  to={row.href}
+                  onClick={(e) => handleRowClick(e, row.id)}
+                  aria-expanded={isMobileExpanded}
+                >
                   {rowContent}
                 </Link>
               ) : (
-                <div className="catalogue__row-link catalogue__row-link--static">
+                <button
+                  type="button"
+                  className="catalogue__row-link catalogue__row-link--button"
+                  onClick={(e) => handleRowClick(e, row.id)}
+                  aria-expanded={isMobileExpanded}
+                >
                   {rowContent}
+                </button>
+              )}
+
+              {/* Mobile in-place expandable accordion */}
+              <div
+                className={`catalogue__row-accordion${isMobileExpanded ? " is-open" : ""}`}
+                aria-hidden={!isMobileExpanded}
+              >
+                <div className="catalogue__row-accordion-inner">
+                  {isMobileExpanded
+                    ? renderPreviewBody(row.id, previewFor, renderPreview)
+                    : null}
                 </div>
-              );
-            })()}
-          </div>
-        ))}
+              </div>
+            </div>
+          );
+        })}
 
         {shown < rows.length ? (
           <button
@@ -171,7 +292,7 @@ export function CatalogueList({
         ) : null}
       </div>
 
-      {custom || preview ? (
+      {shownId && (previewFor || renderPreview) ? (
         <aside
           ref={previewRef}
           className="catalogue__preview"
@@ -180,62 +301,7 @@ export function CatalogueList({
           data-lenis-prevent-touch
           aria-live="polite"
         >
-          {custom ? (
-            custom
-          ) : preview ? (
-            <>
-              <div className="catalogue__preview-media">
-                {preview.image ? <img src={preview.image} alt="" /> : null}
-              </div>
-
-              <div className="catalogue__preview-head">
-                <h3>{preview.title}</h3>
-                {preview.year ? <span>{preview.year}</span> : null}
-              </div>
-
-              <div className="catalogue__preview-meta-wrap">
-                <MetaGrid className="catalogue__preview-meta">
-                  {preview.fields.map((field) => {
-                    const cleanLabel = field.label.replace(/\s*:$/, "").trim();
-                    return (
-                      <MetaRow
-                        key={field.label}
-                        label={cleanLabel}
-                        value={
-                          field.values.length === 1 ? (
-                            field.values[0]
-                          ) : (
-                            <span className="catalogue__preview-values">
-                              {field.values.map((v) => (
-                                <span key={v} className="catalogue__preview-value-line">{v}</span>
-                              ))}
-                            </span>
-                          )
-                        }
-                      />
-                    );
-                  })}
-                  {preview.note ? (
-                    <MetaRow
-                      label="Note"
-                      className="catalogue__preview-note-row"
-                      value={
-                        <div className="catalogue__preview-note-content">
-                          <FormattedText as="p" text={getTruncatedNote(preview.note, 50)} />
-                          {preview.noteHref ? (
-                            <Link to={preview.noteHref} className="catalogue__preview-cta">
-                              <span>VIEW FULL ARTWORK</span>
-                              <span aria-hidden>→</span>
-                            </Link>
-                          ) : null}
-                        </div>
-                      }
-                    />
-                  ) : null}
-                </MetaGrid>
-              </div>
-            </>
-          ) : null}
+          {renderPreviewBody(shownId, previewFor, renderPreview)}
         </aside>
       ) : null}
     </div>
