@@ -18,34 +18,34 @@
 }
 
 .raza-page__rail-title {
-  font-family: inherit;
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-primary, #000000);
   margin: 0 0 16px auto;
+  text-align: right;
+  font-size: var(--type-title-size);
+  line-height: 1.15;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.055em;
+  color: var(--color-text-primary);
   max-width: 295px;
 }
 
 .raza-page__rail-divider {
-  width: calc(100% + var(--grid-margin));
+  width: calc(100% + var(--grid-margin) + var(--grid-gutter, 20px));
   max-width: none;
   margin-left: calc(-1 * var(--grid-margin));
   height: 1px;
-  background: var(--color-border, #000000);
+  background: #000;
   margin-top: 16px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .raza-page__rail-subtitle {
-  font-family: inherit;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 1.7;
-  color: var(--color-text-muted, #545454);
   margin: 0 0 0 auto;
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #9a9598;
   max-width: 295px;
 }
 
