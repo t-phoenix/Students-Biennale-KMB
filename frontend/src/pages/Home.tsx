@@ -623,7 +623,7 @@ export function Home() {
                 stagger: 0.09,
                 duration: 0.85,
                 ease: "power3.out",
-                clearProps: "rotation",
+                clearProps: "transform,rotation",
               },
               0.15
             )
@@ -700,34 +700,53 @@ export function Home() {
             }
           );
 
-          // Cards & Mobile Credits float up together in locked unison with depth before going behind the next section
-          gsap.to(".home-hero__stack, .home-hero__mobile-group, .home-hero__mobile-meta", {
-            y: -220,
-            ease: "none",
-            scrollTrigger: {
-              trigger: root,
-              start: "top top",
-              end: "550px top",
-              scrub: 0.25,
-              invalidateOnRefresh: true,
-            },
+          const mm = gsap.matchMedia(root);
+
+          // Desktop (> 899px): Parallax cards and left-side credits separately
+          mm.add("(min-width: 900px)", () => {
+            gsap.to(".home-hero__stack", {
+              y: -220,
+              ease: "none",
+              scrollTrigger: {
+                trigger: root,
+                start: "top top",
+                end: "550px top",
+                scrub: 0.25,
+                invalidateOnRefresh: true,
+              },
+            });
+
+            gsap.to(".home-hero__meta", {
+              y: -100,
+              ease: "none",
+              scrollTrigger: {
+                trigger: root,
+                start: "top top",
+                end: "550px top",
+                scrub: 0.25,
+                invalidateOnRefresh: true,
+              },
+            });
           });
 
-          gsap.to(".home-hero__meta", {
-            y: -100,
-            ease: "none",
-            scrollTrigger: {
-              trigger: root,
-              start: "top top",
-              end: "550px top",
-              scrub: 0.25,
-              invalidateOnRefresh: true,
-            },
+          // Mobile (<= 899px): Locked parallax on the entire unified group (text + cards)
+          mm.add("(max-width: 899px)", () => {
+            gsap.to(".home-hero__mobile-group", {
+              y: -220,
+              ease: "none",
+              scrollTrigger: {
+                trigger: root,
+                start: "top top",
+                end: "550px top",
+                scrub: 0.25,
+                invalidateOnRefresh: true,
+              },
+            });
           });
         },
         onReduce: () => {
-          gsap.set(".home-hero__card", { autoAlpha: 1, y: 0, rotation: 0 });
-          gsap.set(".home-hero__stack, .home-hero__meta, .home-hero__mobile-group, .home-hero__mobile-meta", { y: 0 });
+          gsap.set(".home-hero__card", { autoAlpha: 1, clearProps: "transform,rotation" });
+          gsap.set(".home-hero__stack, .home-hero__meta, .home-hero__mobile-group", { y: 0 });
           gsap.set(".home-hero__slides", { scale: 1 });
           gsap.set(".home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow", {
             autoAlpha: 1,
