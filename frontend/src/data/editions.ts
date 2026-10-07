@@ -711,57 +711,107 @@ export function getEditionSearchTags(years: string): EditionSearchTags {
   );
 }
 
+/** Build a compact search_index from short edition tags.
+ *  Previous-edition credits always route to the overview page
+ *  (`/editions/:yearId?highlight=…`) where HighlightText + scroll-to-mark live.
+ */
 export function searchIndexFromTags(
   yearId: string,
   tags: EditionSearchTags,
 ): SearchIndexEntry[] {
-  const out: SearchIndexEntry[] = [];
-  for (const c of tags.curators) {
-    out.push({
-      entity_type: "curator",
-      entity_id: `curator-${yearId}-${c}`,
-      title: c,
-      route: `/editions/${yearId}/curators`,
-      subtitle: "Curator",
+  const route = `/editions/${yearId}`;
+  const curatorKeys = new Set(tags.curators.map((n) => n.toLowerCase()));
+  const team = tags.team.filter((n) => !curatorKeys.has(n.toLowerCase()));
+
+  const entries: SearchIndexEntry[] = [
+    {
+      entity_type: "edition",
+      entity_id: `edition-${yearId}`,
+      title: tags.title,
+      subtitle: `Students' Biennale ${yearId}`,
+      route,
+      field_title: tags.title,
+      field_curator: [...tags.curators, ...team].join(", ") || undefined,
+      field_artist: tags.artists.join(", ") || undefined,
+      field_venue: tags.venues.join(", ") || undefined,
+      field_institution: tags.institutions.join(", ") || undefined,
+      field_edition: yearId,
+    },
+  ];
+
+  for (const name of tags.curators) {
+    entries.push({
+      entity_type: "person",
+      entity_id: `credit-curator-${yearId}-${name}`,
+      title: name,
+      subtitle: `Curator · ${yearId}`,
+      route,
+      field_title: name,
+      field_curator: name,
+      field_edition: yearId,
     });
   }
-  for (const t of tags.team) {
-    out.push({
-      entity_type: "team",
-      entity_id: `team-${yearId}-${t}`,
-      title: t,
-      route: `/editions/${yearId}`,
-      subtitle: "Team",
+  for (const name of team) {
+    entries.push({
+      entity_type: "person",
+      entity_id: `credit-team-${yearId}-${name}`,
+      title: name,
+      subtitle: `Team · ${yearId}`,
+      route,
+      field_title: name,
+      field_edition: yearId,
     });
   }
-  for (const a of tags.artists) {
-    out.push({
-      entity_type: "artist",
-      entity_id: `artist-${yearId}-${a}`,
-      title: a,
-      route: `/editions/${yearId}/artists`,
-      subtitle: "Artist",
+  for (const name of tags.artists) {
+    entries.push({
+      entity_type: "person",
+      entity_id: `credit-artist-${yearId}-${name}`,
+      title: name,
+      subtitle: `Artist · ${yearId}`,
+      route,
+      field_title: name,
+      field_artist: name,
+      field_edition: yearId,
     });
   }
-  for (const w of tags.artworks) {
-    out.push({
-      entity_type: "artwork",
-      entity_id: `artwork-${yearId}-${w}`,
-      title: w,
-      route: `/editions/${yearId}/artworks`,
-      subtitle: "Artwork",
-    });
-  }
-  for (const v of tags.venues) {
-    out.push({
+  for (const name of tags.venues) {
+    entries.push({
       entity_type: "venue",
-      entity_id: `venue-${yearId}-${v}`,
-      title: v,
-      route: `/editions/${yearId}/venue`,
-      subtitle: "Venue",
+      entity_id: `credit-venue-${yearId}-${name}`,
+      title: name,
+      subtitle: `Venue · ${yearId}`,
+      route,
+      field_title: name,
+      field_venue: name,
+      field_edition: yearId,
     });
   }
-  return out;
+  for (const name of tags.artworks) {
+    entries.push({
+      entity_type: "artwork",
+      entity_id: `credit-artwork-${yearId}-${name}`,
+      title: name,
+      subtitle: `Independent project · ${yearId}`,
+      route,
+      field_title: name,
+      field_artist: name,
+      field_edition: yearId,
+    });
+  }
+  for (const name of tags.institutions) {
+    entries.push({
+      entity_type: "institution",
+      entity_id: `credit-institution-${yearId}-${name}`,
+      title: name,
+      subtitle: `Institution · ${yearId}`,
+      route,
+      field_title: name,
+      field_institution: name,
+      field_edition: yearId,
+    });
+  }
+
+  return entries;
 }
 
 export function mergeTagSearchIndex(args: {

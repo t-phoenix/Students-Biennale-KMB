@@ -348,10 +348,22 @@ function indexHitToSearchHit(
   if (entry.entity_type === "programme") {
     return null;
   }
-  if (entry.entity_type === "person") {
-    if (entry.field_curator) return { kind: "curator", ...base };
-    if (entry.subtitle?.startsWith("Team")) return { kind: "team", ...base };
-    if (entry.field_artist) return { kind: "artist", ...base };
+  // Tag-index person rows + legacy entity_type labels from older searchIndexFromTags.
+  if (
+    entry.entity_type === "person" ||
+    entry.entity_type === "curator" ||
+    entry.entity_type === "team" ||
+    entry.entity_type === "artist"
+  ) {
+    if (entry.entity_type === "curator" || entry.field_curator) {
+      return { kind: "curator", ...base };
+    }
+    if (entry.entity_type === "artist" || entry.field_artist) {
+      return { kind: "artist", ...base };
+    }
+    if (entry.entity_type === "team" || entry.subtitle?.startsWith("Team")) {
+      return { kind: "team", ...base };
+    }
     return { kind: "team", ...base };
   }
 
