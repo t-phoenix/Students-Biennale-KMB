@@ -56,10 +56,24 @@ export function Press() {
     return articles[articleIndex + 1];
   }, [articles, articleIndex]);
 
+  const articleHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleArticleHover = useCallback((id: string) => {
+    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
+    articleHoverTimerRef.current = setTimeout(() => {
+      setHoveredArticleId(id);
+    }, 35);
+  }, []);
+
+  const handleArticleLeave = useCallback(() => {
+    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
+    setHoveredArticleId("");
+  }, []);
+
   const activeArticleId =
     hoveredArticleId && relatedArticles.some((p) => p.id === hoveredArticleId)
       ? hoveredArticleId
-      : relatedArticles[0]?.id;
+      : "";
 
   const handleSelect = useCallback(
     (id: string) => {
@@ -174,7 +188,7 @@ export function Press() {
       {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       {relatedArticles.length > 0 ? (
         <div className="fig-grid press__related">
-          <ul className="press__list fig-c4-12">
+          <ul className="press__list fig-c4-12" onMouseLeave={handleArticleLeave}>
             {relatedArticles.map((item) => {
               const isExpanded = activeArticleId === item.id;
 
@@ -183,7 +197,7 @@ export function Press() {
                   key={item.id}
                   data-id={item.id}
                   className={`press__item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => setHoveredArticleId(item.id)}
+                  onMouseEnter={() => handleArticleHover(item.id)}
                 >
                   {/* Collapsed trigger */}
                   <div className="press__collapsed-wrap" aria-hidden={isExpanded}>
@@ -191,7 +205,14 @@ export function Press() {
                       type="button"
                       className="press__collapsed"
                       tabIndex={isExpanded ? -1 : 0}
-                      onClick={() => handleSelect(item.id)}
+                      onClick={() => {
+                        if (window.innerWidth <= 899) {
+                          if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
+                          setHoveredArticleId((prev) => (prev === item.id ? "" : item.id));
+                        } else {
+                          handleSelect(item.id);
+                        }
+                      }}
                     >
                       <span className="press__collapsed-title">{item.title}</span>
                       {item.date ? (

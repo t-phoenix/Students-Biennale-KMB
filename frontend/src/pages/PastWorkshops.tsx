@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { useProgrammes } from "../lib/programmes";
@@ -9,8 +9,21 @@ export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
   const { pastWorkshops } = useProgrammes();
   const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
+  const workshopHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const activeWorkshopId = hoveredWorkshopId || pastWorkshops[0]?.id;
+  const handleWorkshopHover = useCallback((id: string) => {
+    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+    workshopHoverTimerRef.current = setTimeout(() => {
+      setHoveredWorkshopId(id);
+    }, 35);
+  }, []);
+
+  const handleWorkshopLeave = useCallback(() => {
+    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+    setHoveredWorkshopId("");
+  }, []);
+
+  const activeWorkshopId = hoveredWorkshopId;
 
   useGSAP(
     () => {
@@ -32,7 +45,7 @@ export function PastWorkshops() {
       <div className="fig-grid past-workshops__section past-workshops-reveal">
         <h1 className="fig-label fig-subheading">PAST WORKSHOPS</h1>
         {pastWorkshops.length ? (
-          <div className="past-workshops__items fig-c4-12">
+          <div className="past-workshops__items fig-c4-12" onMouseLeave={handleWorkshopLeave}>
             {pastWorkshops.map((item) => {
               const isExpanded = activeWorkshopId === item.id;
               return (
@@ -40,14 +53,20 @@ export function PastWorkshops() {
                   key={item.id}
                   data-id={item.id}
                   className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => setHoveredWorkshopId(item.id)}
+                  onMouseEnter={() => handleWorkshopHover(item.id)}
                 >
                   <div className="past-workshops__collapsed-wrap" aria-hidden={isExpanded}>
                     <Link
                       to={`/programmes/past-workshops/${item.id}`}
                       className="past-workshops__collapsed"
                       tabIndex={isExpanded ? -1 : 0}
-                      onClick={() => setHoveredWorkshopId(item.id)}
+                      onClick={(e) => {
+                        if (window.innerWidth <= 899) {
+                          e.preventDefault();
+                          if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+                          setHoveredWorkshopId((prev) => (prev === item.id ? "" : item.id));
+                        }
+                      }}
                     >
                       <span className="past-workshops__collapsed-title">{item.title}</span>
                       <time className="past-workshops__collapsed-date">{item.year}</time>

@@ -267,8 +267,8 @@
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
-  transition: grid-template-rows 0.62s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.35s ease;
+  transition: grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.25s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-collapsed-wrap {
@@ -314,8 +314,8 @@
   display: grid;
   grid-template-rows: 0fr;
   opacity: 0;
-  transition: grid-template-rows 0.65s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.4s ease;
+  transition: grid-template-rows 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-expanded-wrap {
@@ -335,16 +335,16 @@
   column-gap: var(--grid-gutter);
   align-items: start;
   opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.3s ease,
-              transform 0.3s ease;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease,
+              transform 0.25s ease;
 }
 
 .programmes__past-item.is-expanded .programmes__past-expanded {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 0.55s ease 0.12s,
-              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.12s;
+  transition: opacity 0.32s ease 0.06s,
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1) 0.06s;
 }
 
 .programmes__past-featured-img-wrap {

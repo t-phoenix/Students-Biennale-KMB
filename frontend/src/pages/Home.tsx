@@ -80,14 +80,20 @@ export function Home() {
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
 
-  const handlePressHover = (id: string) => {
-    setHasInteractedPress(true);
-    setHoveredPressId(id);
-  };
+  const pressHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handlePressLeave = () => {
-    // Keep last hovered active or stable
-  };
+  const handlePressHover = useCallback((id: string) => {
+    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
+    pressHoverTimerRef.current = setTimeout(() => {
+      setHasInteractedPress(true);
+      setHoveredPressId(id);
+    }, 35);
+  }, []);
+
+  const handlePressLeave = useCallback(() => {
+    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
+    setHoveredPressId("");
+  }, []);
 
   useEffect(() => {
     if (razaModalOpen || openScholarId !== null || activeCard !== null) {
@@ -241,7 +247,7 @@ export function Home() {
     setSlide(index);
   }, []);
 
-  const activePressId = hoveredPressId || pressItems[0]?.id;
+  const activePressId = hoveredPressId;
 
   const openCard = useCallback((card: ActiveUpdateCard) => {
     setActiveCard(card);
@@ -1257,7 +1263,10 @@ export function Home() {
         <section id="press" className="home-section home-press">
           <div className="fig-grid">
             <h2 className="fig-label fig-heading">PRESS</h2>
-            <div className={`home-press__items fig-c4-12${hasInteractedPress ? " is-interactive" : ""}`}>
+            <div
+              className={`home-press__items fig-c4-12${hasInteractedPress ? " is-interactive" : ""}`}
+              onMouseLeave={handlePressLeave}
+            >
               {pressItems.map((item) => {
                 const isExpanded = activePressId === item.id;
                 return (
@@ -1266,7 +1275,6 @@ export function Home() {
                     data-id={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
                     onMouseEnter={() => handlePressHover(item.id)}
-                    onMouseLeave={handlePressLeave}
                   >
                     <div className="home-press__collapsed-wrap" aria-hidden={isExpanded}>
                       <Link
@@ -1276,7 +1284,9 @@ export function Home() {
                         onClick={(e) => {
                           if (window.innerWidth <= 899) {
                             e.preventDefault();
-                            handlePressHover(item.id);
+                            if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
+                            setHasInteractedPress(true);
+                            setHoveredPressId((prev) => (prev === item.id ? "" : item.id));
                           }
                         }}
                       >

@@ -52,6 +52,19 @@ export function Programmes() {
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
   const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
+  const workshopHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleWorkshopHover = useCallback((id: string) => {
+    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+    workshopHoverTimerRef.current = setTimeout(() => {
+      setHoveredWorkshopId(id);
+    }, 35);
+  }, []);
+
+  const handleWorkshopLeave = useCallback(() => {
+    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+    setHoveredWorkshopId("");
+  }, []);
   // Collapsed by default; remember expand/collapse for this browser tab only.
   const [expandedIntlAwards, setExpandedIntlAwards] = useState(() =>
     readSessionFlag(INTL_EXPAND_KEY),
@@ -68,7 +81,7 @@ export function Programmes() {
   const intlAwardsEffective = awardsInternational;
   const nationalAwardsEffective = awardsNational;
 
-  const activePastWorkshopId = hoveredWorkshopId || pastWorkshops[0]?.id;
+  const activePastWorkshopId = hoveredWorkshopId;
 
   const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
   const standardIntlAwards = useMemo(
@@ -328,7 +341,7 @@ export function Programmes() {
       <section id="past-workshops" className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
         {pastWorkshops.length ? (
-          <div className="programmes__past-items fig-c4-12">
+          <div className="programmes__past-items fig-c4-12" onMouseLeave={handleWorkshopLeave}>
             {pastWorkshops.map((item) => {
               const isExpanded = activePastWorkshopId === item.id;
               return (
@@ -336,14 +349,20 @@ export function Programmes() {
                   key={item.id}
                   data-id={item.id}
                   className={`programmes__past-item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => setHoveredWorkshopId(item.id)}
+                  onMouseEnter={() => handleWorkshopHover(item.id)}
                 >
                   <div className="programmes__past-collapsed-wrap" aria-hidden={isExpanded}>
                     <Link
                       to={`/programmes/past-workshops/${item.id}`}
                       className="programmes__past-collapsed"
                       tabIndex={isExpanded ? -1 : 0}
-                      onClick={() => setHoveredWorkshopId(item.id)}
+                      onClick={(e) => {
+                        if (window.innerWidth <= 899) {
+                          e.preventDefault();
+                          if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+                          setHoveredWorkshopId((prev) => (prev === item.id ? "" : item.id));
+                        }
+                      }}
                     >
                       <span className="programmes__past-collapsed-title">{item.title}</span>
                       <time className="programmes__past-collapsed-date">{item.year}</time>
