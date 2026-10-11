@@ -570,6 +570,13 @@
 }
 
 @media (max-width: 899px) {
+  .detail__hero-expand {
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+  }
+
   .detail__hero--cover {
     height: calc(75dvh - var(--nav-height-mobile, 56px));
     min-height: calc(75dvh - var(--nav-height-mobile, 56px));

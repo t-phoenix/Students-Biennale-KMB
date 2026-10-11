@@ -36,7 +36,7 @@
 
 .canvas-expand__close {
   position: fixed;
-  top: calc(var(--header-h, var(--nav-height, 72px)) + 24px);
+  top: 24px;
   right: var(--grid-margin, 24px);
   z-index: 100;
   background: rgba(0, 0, 0, 0.45);
@@ -62,10 +62,41 @@
 
 @media (max-width: 899px) {
   .canvas-expand__close {
-    top: calc(var(--nav-height-mobile, 56px) + 16px);
+    top: 16px;
     right: 16px;
-    width: 38px;
-    height: 38px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* When viewing artwork: coordinate Expand and Close into a clean, matching vertical pair */
+.canvas-expand__sheet--artwork .detail__hero-expand {
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+}
+
+.canvas-expand__sheet--artwork .canvas-expand__close {
+  top: 66px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+}
+
+@media (min-width: 900px) {
+  .canvas-expand__sheet--artwork .detail__hero-expand {
+    top: 24px;
+    right: var(--grid-margin, 24px);
+    width: 44px;
+    height: 44px;
+  }
+
+  .canvas-expand__sheet--artwork .canvas-expand__close {
+    top: 80px;
+    right: var(--grid-margin, 24px);
+    width: 44px;
+    height: 44px;
   }
 }
 
