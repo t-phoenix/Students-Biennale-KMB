@@ -46,7 +46,7 @@ function isEligibleImage(img: HTMLImageElement): boolean {
   if (!parent) return false;
 
   const closestIgnored = img.closest(
-    ".site-header, .site-footer, .scribble-layer, .type-inspector, .adm-, [role='dialog'], .lightbox, .modal, .carousel-nav, .brand-arrow"
+    ".site-header, .site-footer, .scribble-layer, .type-inspector, .adm-, [role='dialog'], .lightbox, .modal, .carousel-nav, .brand-arrow, .catalogue-list__thumb, .catalogue-list__preview-media, .catalogue-preview"
   );
   if (closestIgnored) return false;
 
@@ -105,7 +105,11 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
       container.classList.contains("press__feature") ||
       container.classList.contains("residencies__feature") ||
       container.dataset.parallax === "hero" ||
+      img.dataset.parallax === "hero" ||
       (container.offsetWidth > window.innerWidth * 0.8 && container.offsetHeight > 500);
+
+    // On mobile viewports (<768px), restrict parallax strictly to primary hero elements to avoid GPU stutter
+    if (window.innerWidth < 768 && !isHero) return;
 
     const travelPercent = isHero ? 10 : 8; // Noticeable, premium travel without distorting composition
     const scaleFactor = isHero ? 1.18 : 1.14; // Headroom to prevent blank edges during vertical travel

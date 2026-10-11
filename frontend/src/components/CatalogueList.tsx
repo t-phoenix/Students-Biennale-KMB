@@ -301,7 +301,9 @@ export function CatalogueList({
           data-lenis-prevent-touch
           aria-live="polite"
         >
-          {renderPreviewBody(shownId, previewFor, renderPreview)}
+          <div key={shownId} className="catalogue__preview-inner-wrap">
+            {renderPreviewBody(shownId, previewFor, renderPreview)}
+          </div>
         </aside>
       ) : null}
     </div>

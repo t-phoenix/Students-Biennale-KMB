@@ -142,23 +142,25 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
               </span>
             </button>
             <div className="mobile-drawer__submenu">
-              <button
-                type="button"
-                className="mobile-drawer__sublink is-current"
-                onClick={() => handleNavClick("/#editions")}
-              >
-                {LATEST_EDITION.id}
-              </button>
-              {PREVIOUS_EDITIONS.map((year) => (
+              <div className="mobile-drawer__submenu-inner">
                 <button
-                  key={year}
                   type="button"
-                  className="mobile-drawer__sublink"
-                  onClick={() => handleNavClick(`/editions/${year}`)}
+                  className="mobile-drawer__sublink is-current"
+                  onClick={() => handleNavClick("/#editions")}
                 >
-                  {year.replace("-", "–")}
+                  {LATEST_EDITION.id}
                 </button>
-              ))}
+                {PREVIOUS_EDITIONS.map((year) => (
+                  <button
+                    key={year}
+                    type="button"
+                    className="mobile-drawer__sublink"
+                    onClick={() => handleNavClick(`/editions/${year}`)}
+                  >
+                    {year.replace("-", "–")}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
@@ -176,27 +178,29 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
               </span>
             </button>
             <div className="mobile-drawer__submenu">
-              <button
-                type="button"
-                className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/programmes")}
-              >
-                Workshops
-              </button>
-              <button
-                type="button"
-                className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/programmes#awards")}
-              >
-                Awards
-              </button>
-              <button
-                type="button"
-                className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/programmes#residencies")}
-              >
-                Residencies
-              </button>
+              <div className="mobile-drawer__submenu-inner">
+                <button
+                  type="button"
+                  className="mobile-drawer__sublink"
+                  onClick={() => handleNavClick("/programmes")}
+                >
+                  Workshops
+                </button>
+                <button
+                  type="button"
+                  className="mobile-drawer__sublink"
+                  onClick={() => handleNavClick("/programmes#awards")}
+                >
+                  Awards
+                </button>
+                <button
+                  type="button"
+                  className="mobile-drawer__sublink"
+                  onClick={() => handleNavClick("/programmes#residencies")}
+                >
+                  Residencies
+                </button>
+              </div>
             </div>
           </div>
 
@@ -225,34 +229,36 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
               </span>
             </button>
             <div className="mobile-drawer__submenu">
-              <button
-                type="button"
-                className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/#about-kbf")}
-              >
-                Kochi Biennale Foundation
-              </button>
-              <button
-                type="button"
-                className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/#about-sb")}
-              >
-                Students&apos; Biennale
-              </button>
-              <button
-                type="button"
-                className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/#about-team")}
-              >
-                SB 2025-26 Team
-              </button>
-              <button
-                type="button"
-                className="mobile-drawer__sublink"
-                onClick={() => handleNavClick("/#about-sponsors")}
-              >
-                Sponsors of SB 2025-26
-              </button>
+              <div className="mobile-drawer__submenu-inner">
+                <button
+                  type="button"
+                  className="mobile-drawer__sublink"
+                  onClick={() => handleNavClick("/#about-kbf")}
+                >
+                  Kochi Biennale Foundation
+                </button>
+                <button
+                  type="button"
+                  className="mobile-drawer__sublink"
+                  onClick={() => handleNavClick("/#about-sb")}
+                >
+                  Students&apos; Biennale
+                </button>
+                <button
+                  type="button"
+                  className="mobile-drawer__sublink"
+                  onClick={() => handleNavClick("/#about-team")}
+                >
+                  SB 2025-26 Team
+                </button>
+                <button
+                  type="button"
+                  className="mobile-drawer__sublink"
+                  onClick={() => handleNavClick("/#about-sponsors")}
+                >
+                  Sponsors of SB 2025-26
+                </button>
+              </div>
             </div>
           </div>
         </nav>

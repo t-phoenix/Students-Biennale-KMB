@@ -43,17 +43,19 @@ export function Footer() {
           />
         </a>
         <div className="site-footer__brand-info">
-          <p>
+          <p className="site-footer__address">
             Kochi Biennale Foundation, Indian Chamber Centenary Building, Indian Chamber Road,
             Mattancherry, Kochi, Kerala 682002, India
           </p>
-          <p>All rights reserved to Kochi Biennale Foundation</p>
-          <p>
-            Designed by{" "}
-            <a href={CROW_THEORY_URL} target="_blank" rel="noreferrer">
-              The Crow Theory
-            </a>
-          </p>
+          <div className="site-footer__legal site-footer__legal--desktop">
+            <p>All rights reserved to Kochi Biennale Foundation</p>
+            <p>
+              Designed by{" "}
+              <a href={CROW_THEORY_URL} target="_blank" rel="noreferrer">
+                The Crow Theory
+              </a>
+            </p>
+          </div>
           <p className="site-footer__brand-dot">.</p>
         </div>
       </div>
@@ -120,6 +122,16 @@ export function Footer() {
           </div>
         </div>
       </nav>
+
+      <div className="site-footer__legal site-footer__legal--mobile">
+        <p>All rights reserved to Kochi Biennale Foundation</p>
+        <p>
+          Designed by{" "}
+          <a href={CROW_THEORY_URL} target="_blank" rel="noreferrer">
+            The Crow Theory
+          </a>
+        </p>
+      </div>
     </footer>
   );
 }

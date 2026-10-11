@@ -95,8 +95,8 @@ export function Header() {
       } else {
         gsap.to(header, {
           yPercent: 0,
-          duration: 0.38,
-          ease: "power3.out",
+          duration: 0.42,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
           overwrite: "auto",
         });
       }
@@ -113,8 +113,8 @@ export function Header() {
       } else {
         gsap.to(header, {
           yPercent: -100,
-          duration: 0.38,
-          ease: "power3.in",
+          duration: 0.35,
+          ease: "cubic-bezier(0.65, 0, 0.076, 1)",
           overwrite: "auto",
         });
       }

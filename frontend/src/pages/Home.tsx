@@ -359,24 +359,33 @@ export function Home() {
             const tl = gsap.timeline({
               scrollTrigger: { trigger: edition, start: "top 85%", once: true },
             });
-            tl.fromTo(
-              edition.querySelector(".fig-label"),
-              { autoAlpha: 0, y: 24 },
-              { autoAlpha: 1, y: 0, duration: 0.95, ease: "power3.out" },
-              0
-            )
-              .fromTo(
-                edition.querySelectorAll(".home-edition__body > .fig-body"),
+            const label = edition.querySelector(".fig-label");
+            if (label) {
+              tl.fromTo(
+                label,
+                { autoAlpha: 0, y: 24 },
+                { autoAlpha: 1, y: 0, duration: 0.95, ease: "power3.out" },
+                0
+              );
+            }
+            const bodies = edition.querySelectorAll(".home-edition__body > .fig-body");
+            if (bodies.length > 0) {
+              tl.fromTo(
+                bodies,
                 { autoAlpha: 0, y: 18 },
                 { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.12, ease: "power3.out" },
                 0.08
-              )
-              .fromTo(
-                edition.querySelector(".home-text-btn"),
+              );
+            }
+            const btn = edition.querySelector(".home-text-btn");
+            if (btn) {
+              tl.fromTo(
+                btn,
                 { autoAlpha: 0, y: 10 },
                 { autoAlpha: 1, y: 0, duration: 0.65, ease: "power3.out" },
                 0.25
               );
+            }
           }
 
           // 2. Sensing Grounds (.home-sensing)
@@ -385,24 +394,33 @@ export function Home() {
             const tl = gsap.timeline({
               scrollTrigger: { trigger: sensing, start: "top 85%", once: true },
             });
-            tl.fromTo(
-              sensing.querySelectorAll(".home-sensing__links .fig-subheading"),
-              { autoAlpha: 0, x: -18 },
-              { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.07, ease: "power3.out" },
-              0
-            )
-              .fromTo(
-                sensing.querySelector(".home-sensing__scroll"),
+            const links = sensing.querySelectorAll(".home-sensing__links .fig-subheading");
+            if (links.length > 0) {
+              tl.fromTo(
+                links,
+                { autoAlpha: 0, x: -18 },
+                { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.07, ease: "power3.out" },
+                0
+              );
+            }
+            const scroll = sensing.querySelector(".home-sensing__scroll");
+            if (scroll) {
+              tl.fromTo(
+                scroll,
                 { autoAlpha: 0, scale: 0.96 },
                 { autoAlpha: 1, scale: 1, duration: 1.15, ease: "power3.out" },
                 0.1
-              )
-              .fromTo(
-                sensing.querySelector(".home-sensing__cta"),
+              );
+            }
+            const cta = sensing.querySelector(".home-sensing__cta");
+            if (cta) {
+              tl.fromTo(
+                cta,
                 { autoAlpha: 0, y: 14 },
                 { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out" },
                 0.22
               );
+            }
           }
 
           // 3. Upcoming Programmes (.home-programmes)
@@ -411,30 +429,51 @@ export function Home() {
             const tl = gsap.timeline({
               scrollTrigger: { trigger: programmes, start: "top 85%", once: true },
             });
-            tl.fromTo(
-              programmes.querySelector(".home-programmes__top .fig-label"),
-              { autoAlpha: 0, y: 20 },
-              { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
-              0
-            )
-              .fromTo(
-                programmes.querySelector(".home-programmes__banner"),
+            const topLabel = programmes.querySelector(".home-programmes__top .fig-label");
+            if (topLabel) {
+              tl.fromTo(
+                topLabel,
+                { autoAlpha: 0, y: 20 },
+                { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
+                0
+              );
+            }
+            const banner = programmes.querySelector(".home-programmes__banner");
+            if (banner) {
+              tl.fromTo(
+                banner,
                 { autoAlpha: 0, scale: 1.05 },
                 { autoAlpha: 1, scale: 1, duration: 1.15, ease: "power3.out" },
                 0.08
-              )
-              .fromTo(
-                programmes.querySelectorAll(".home-programmes__rail .fig-subheading"),
+              );
+            }
+            const railLinks = programmes.querySelectorAll(".home-programmes__rail .fig-subheading");
+            if (railLinks.length > 0) {
+              tl.fromTo(
+                railLinks,
                 { autoAlpha: 0, x: -14 },
                 { autoAlpha: 1, x: 0, duration: 0.85, stagger: 0.07, ease: "power3.out" },
                 0.14
-              )
-              .fromTo(
-                programmes.querySelectorAll(".home-programmes__thumbs a"),
+              );
+            }
+            const thumbs = programmes.querySelectorAll(".home-programmes__thumbs a");
+            if (thumbs.length > 0) {
+              tl.fromTo(
+                thumbs,
                 { autoAlpha: 0, y: 24, scale: 0.96 },
                 { autoAlpha: 1, y: 0, scale: 1, duration: 0.95, stagger: 0.1, ease: "power3.out" },
                 0.2
               );
+            }
+            const mobileCards = programmes.querySelectorAll(".home-programmes__mobile-card");
+            if (mobileCards.length > 0) {
+              tl.fromTo(
+                mobileCards,
+                { autoAlpha: 0, y: 24 },
+                { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.1, ease: "power3.out" },
+                0.15
+              );
+            }
           }
 
           // 4. Press (.home-press)
@@ -443,51 +482,69 @@ export function Home() {
             const tl = gsap.timeline({
               scrollTrigger: { trigger: press, start: "top 85%", once: true },
             });
-            tl.fromTo(
-              press.querySelector(".fig-label"),
-              { autoAlpha: 0, y: 20 },
-              { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
-              0
-            )
-              .fromTo(
-                press.querySelectorAll(".home-press__item"),
+            const pressLabel = press.querySelector(".fig-label");
+            if (pressLabel) {
+              tl.fromTo(
+                pressLabel,
+                { autoAlpha: 0, y: 20 },
+                { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
+                0
+              );
+            }
+            const pressItemsEls = press.querySelectorAll(".home-press__item");
+            if (pressItemsEls.length > 0) {
+              tl.fromTo(
+                pressItemsEls,
                 { autoAlpha: 0, y: 16 },
                 { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08, ease: "power3.out" },
                 0.08
-              )
-              .fromTo(
-                press.querySelector(".home-press__more"),
+              );
+            }
+            const pressMore = press.querySelector(".home-press__more");
+            if (pressMore) {
+              tl.fromTo(
+                pressMore,
                 { autoAlpha: 0, y: 12 },
                 { autoAlpha: 1, y: 0, duration: 0.85, ease: "power3.out" },
                 0.24
               );
+            }
           }
 
           // 5. About Us (.home-about)
           const about = document.querySelector<HTMLElement>(".home-about");
           if (about) {
             // Intro + KBF Block
-            const tlAbout = gsap.timeline({
-              scrollTrigger: { trigger: about, start: "top 85%", once: true },
-            });
-            tlAbout.fromTo(
-              about.querySelector(".home-about__intro .fig-label"),
-              { autoAlpha: 0, y: 20 },
-              { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
-              0
-            )
-              .fromTo(
-                about.querySelector(".home-about__block:first-of-type .home-about__logo-wrap"),
-                { autoAlpha: 0, scale: 0.92 },
-                { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" },
-                0.08
-              )
-              .fromTo(
-                about.querySelector(".home-about__block:first-of-type p"),
-                { autoAlpha: 0, y: 14 },
+            const introLabel = about.querySelector(".home-about__intro .fig-label");
+            if (introLabel) {
+              const tlAbout = gsap.timeline({
+                scrollTrigger: { trigger: about, start: "top 85%", once: true },
+              });
+              tlAbout.fromTo(
+                introLabel,
+                { autoAlpha: 0, y: 20 },
                 { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
-                0.14
+                0
               );
+              const kbfLogo = about.querySelector(".home-about__block:first-of-type .home-about__logo-wrap");
+              if (kbfLogo) {
+                tlAbout.fromTo(
+                  kbfLogo,
+                  { autoAlpha: 0, scale: 0.92 },
+                  { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" },
+                  0.08
+                );
+              }
+              const kbfP = about.querySelector(".home-about__block:first-of-type p");
+              if (kbfP) {
+                tlAbout.fromTo(
+                  kbfP,
+                  { autoAlpha: 0, y: 14 },
+                  { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
+                  0.14
+                );
+              }
+            }
 
             // Students' Biennale Block
             const sbBlock = about.querySelectorAll(".home-about__block")[1];
@@ -495,17 +552,24 @@ export function Home() {
               const tlSb = gsap.timeline({
                 scrollTrigger: { trigger: sbBlock, start: "top 85%", once: true },
               });
-              tlSb.fromTo(
-                sbBlock.querySelector(".home-about__logo-wrap"),
-                { autoAlpha: 0, scale: 0.92 },
-                { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" },
-                0
-              ).fromTo(
-                sbBlock.querySelectorAll(".home-about__sb-copy p"),
-                { autoAlpha: 0, y: 14 },
-                { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: "power3.out" },
-                0.08
-              );
+              const sbLogo = sbBlock.querySelector(".home-about__logo-wrap");
+              if (sbLogo) {
+                tlSb.fromTo(
+                  sbLogo,
+                  { autoAlpha: 0, scale: 0.92 },
+                  { autoAlpha: 1, scale: 1, duration: 0.9, ease: "power2.out" },
+                  0
+                );
+              }
+              const sbPs = sbBlock.querySelectorAll(".home-about__sb-copy p");
+              if (sbPs.length > 0) {
+                tlSb.fromTo(
+                  sbPs,
+                  { autoAlpha: 0, y: 14 },
+                  { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.08, ease: "power3.out" },
+                  0.08
+                );
+              }
             }
 
             // Team Grid
@@ -514,17 +578,24 @@ export function Home() {
               const tlTeam = gsap.timeline({
                 scrollTrigger: { trigger: team, start: "top 85%", once: true },
               });
-              tlTeam.fromTo(
-                team.querySelector(".fig-label"),
-                { autoAlpha: 0, x: -16 },
-                { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
-                0
-              ).fromTo(
-                team.querySelectorAll(".home-about__team-cols > div"),
-                { autoAlpha: 0, y: 18 },
-                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "power3.out" },
-                0.08
-              );
+              const teamLabel = team.querySelector(".fig-label");
+              if (teamLabel) {
+                tlTeam.fromTo(
+                  teamLabel,
+                  { autoAlpha: 0, x: -16 },
+                  { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+                  0
+                );
+              }
+              const teamCols = team.querySelectorAll(".home-about__team-cols > div, .home-about__role");
+              if (teamCols.length > 0) {
+                tlTeam.fromTo(
+                  teamCols,
+                  { autoAlpha: 0, y: 18 },
+                  { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.05, ease: "power3.out" },
+                  0.08
+                );
+              }
             }
 
             // Sponsors Wall
@@ -533,24 +604,33 @@ export function Home() {
               const tlSponsors = gsap.timeline({
                 scrollTrigger: { trigger: sponsors, start: "top 88%", once: true },
               });
-              tlSponsors.fromTo(
-                sponsors.querySelector(".fig-label"),
-                { autoAlpha: 0, x: -16 },
-                { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
-                0
-              )
-                .fromTo(
-                  sponsors.querySelector(".home-about__sponsor-primary"),
+              const sponsorsLabel = sponsors.querySelector(".fig-label");
+              if (sponsorsLabel) {
+                tlSponsors.fromTo(
+                  sponsorsLabel,
+                  { autoAlpha: 0, x: -16 },
+                  { autoAlpha: 1, x: 0, duration: 0.85, ease: "power3.out" },
+                  0
+                );
+              }
+              const primarySponsor = sponsors.querySelector(".home-about__sponsor-primary");
+              if (primarySponsor) {
+                tlSponsors.fromTo(
+                  primarySponsor,
                   { autoAlpha: 0, y: 16 },
                   { autoAlpha: 1, y: 0, duration: 0.9, ease: "power3.out" },
                   0.08
-                )
-                .fromTo(
-                  sponsors.querySelectorAll(".home-about__sponsor-group"),
+                );
+              }
+              const sponsorGroups = sponsors.querySelectorAll(".home-about__sponsor-group");
+              if (sponsorGroups.length > 0) {
+                tlSponsors.fromTo(
+                  sponsorGroups,
                   { autoAlpha: 0, y: 16 },
                   { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.09, ease: "power3.out" },
                   0.18
                 );
+              }
             }
           }
         },
@@ -562,13 +642,17 @@ export function Home() {
         },
       });
     },
-    { scope: rootRef }
+    {
+      scope: rootRef,
+      dependencies: [pressItems.length, homeBannerUrl, sensingStripImages.length],
+      revertOnUpdate: true,
+    }
   );
 
   useGSAP(
     () => {
       const root = rootRef.current;
-      if (!root) return;
+      if (!root || dynamicCovers.length === 0) return;
       // Defer hero entrance until immersive splash finishes (first home visit only).
       // Use opacity (not autoAlpha) so visibility stays visible — browsers may defer
       // decode of visibility:hidden images, which caused post-splash hero lag.
@@ -1148,6 +1232,25 @@ export function Home() {
               ))}
             </div>
           </div>
+          {/* Mobile programmes cards stack (Figma node 109:4) */}
+          <div className="fig-grid home-programmes__mobile-list">
+            {[
+              { label: "Workshops", to: "/programmes", img: workshopThumb },
+              { label: "Residencies", to: "/programmes#residencies", img: residencyThumb },
+              { label: "AWARDS", to: "/programmes#awards", img: awardsThumb },
+            ].map((prog) => (
+              <Link key={prog.label} to={prog.to} className="home-programmes__mobile-card">
+                <div className="home-programmes__mobile-card-img">
+                  {prog.img ? (
+                    <img src={prog.img} alt={prog.label} />
+                  ) : (
+                    <span className="home-programmes__thumb-placeholder" aria-hidden />
+                  )}
+                </div>
+                <div className="home-programmes__mobile-card-label">{prog.label}</div>
+              </Link>
+            ))}
+          </div>
         </section>
 
         {/* Press */}
@@ -1170,7 +1273,12 @@ export function Home() {
                         to={`/press?article=${item.id}`}
                         className="home-press__collapsed"
                         tabIndex={isExpanded ? -1 : 0}
-                        onClick={() => handlePressHover(item.id)}
+                        onClick={(e) => {
+                          if (window.innerWidth <= 899) {
+                            e.preventDefault();
+                            handlePressHover(item.id);
+                          }
+                        }}
                       >
                         <span className="home-press__collapsed-title">{item.title}</span>
                         <time className="home-press__collapsed-date">{item.date}</time>
@@ -1179,7 +1287,15 @@ export function Home() {
 
                     <div className="home-press__expanded-wrap" aria-hidden={!isExpanded}>
                       <div className="home-press__expanded-inner">
-                        <div className="home-press__expanded">
+                        <div
+                          className="home-press__expanded"
+                          onClick={(e) => {
+                            if (window.innerWidth <= 899) {
+                              if ((e.target as HTMLElement).closest("a")) return;
+                              navigate(`/press?article=${item.id}`);
+                            }
+                          }}
+                        >
                           {item.image ? (
                             <Link
                               to={`/press?article=${item.id}`}

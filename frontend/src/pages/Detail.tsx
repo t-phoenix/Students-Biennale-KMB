@@ -67,13 +67,23 @@ export function Detail() {
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
-      gsap.from(".detail-reveal", {
+      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+      tl.from(".detail__hero img, .detail__hero .image-crossfade, .detail__venue-hero", {
         autoAlpha: 0,
-        x: 16,
-        duration: 0.5,
-        stagger: 0.08,
-        ease: "power2.out",
-      });
+        scale: 1.04,
+        duration: 0.95,
+        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+      }).from(
+        ".detail-reveal",
+        {
+          autoAlpha: 0,
+          y: 12,
+          duration: 0.65,
+          stagger: 0.05,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+        },
+        "-=0.7"
+      );
     },
     { scope: root, dependencies: [id, kindSeg] }
   );

@@ -92,22 +92,45 @@
 }
 
 .mobile-drawer__arrow {
+  display: inline-block;
   font-size: 22px;
   line-height: 1;
   font-weight: 300;
   color: var(--color-text-secondary);
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.mobile-drawer__group.is-expanded .mobile-drawer__arrow {
+  transform: rotate(180deg);
+}
+
+/* Butter-Smooth CSS Grid Row Interpolation */
 .mobile-drawer__submenu {
-  display: none;
-  flex-direction: column;
-  padding-bottom: 16px;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   padding-left: 12px;
-  gap: 12px;
 }
 
 .mobile-drawer__group.is-expanded .mobile-drawer__submenu {
+  grid-template-rows: 1fr;
+}
+
+.mobile-drawer__submenu-inner {
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 0;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), padding-bottom 0.35s ease;
+}
+
+.mobile-drawer__group.is-expanded .mobile-drawer__submenu-inner {
+  padding-bottom: 16px;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .mobile-drawer__sublink {
@@ -149,11 +172,12 @@
   height: 44px;
   background: var(--color-neutral-bg-light);
   border-radius: 50%;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .mobile-drawer__social-link:hover {
   opacity: 0.75;
+  transform: translateY(-2px);
 }
 
 @keyframes mobileDrawerFadeIn {
@@ -168,10 +192,30 @@
 @keyframes mobileDrawerSlideDown {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-24px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
+@keyframes mobileDrawerItemFade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-drawer__group {
+  animation: mobileDrawerItemFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.mobile-drawer__group:nth-child(1) { animation-delay: 0.06s; }
+.mobile-drawer__group:nth-child(2) { animation-delay: 0.11s; }
+.mobile-drawer__group:nth-child(3) { animation-delay: 0.16s; }
+.mobile-drawer__group:nth-child(4) { animation-delay: 0.21s; }

@@ -74,10 +74,12 @@ export function Layout() {
     }
 
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.1,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      wheelMultiplier: 0.95,
-      touchMultiplier: 1.5,
+      wheelMultiplier: 0.9,
+      touchMultiplier: 1.0,
+      infinite: false,
     });
     lenisRef.current = lenis;
     setLenisInstance(lenis);
@@ -87,9 +89,8 @@ export function Layout() {
       lenis.raf(time * 1000);
     };
     gsap.ticker.add(updateTicker);
-    // Keep lagSmoothing disabled so Lenis stays locked to the GSAP ticker.
-    // Re-enable (e.g. lagSmoothing(500, 33)) only after A/B verifying scroll feel.
-    gsap.ticker.lagSmoothing(0);
+    // Smooth lag spikes without abrupt position popping
+    gsap.ticker.lagSmoothing(500, 33);
 
     const onScroll = () => {
       syncScrollTrigger();
@@ -143,8 +144,8 @@ export function Layout() {
 
       gsap.fromTo(
         mainRef.current,
-        { autoAlpha: 0, y: 10 },
-        { autoAlpha: 1, y: 0, duration: 0.65, ease: "power3.out", overwrite: "auto" }
+        { autoAlpha: 0, y: 8 },
+        { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", overwrite: "auto" }
       );
     },
     {
