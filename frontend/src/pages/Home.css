@@ -285,6 +285,40 @@
   }
 }
 
+/* Tablet / iPad Pro Viewports (900px – 1279px):
+   Prevent 3-column squish (which collapsed the card down to ~200px);
+   give the stack a generous 5-column span so it maintains a luxurious
+   horizontal aspect ratio matching desktop and mobile. */
+@media (min-width: 900px) and (max-width: 1279px) {
+  .home-hero__stack.fig-span3-plus-gutter {
+    grid-column: 1 / span 5;
+    width: 100%;
+    max-width: 380px;
+    --card-h: 134px;
+    --peek: 8px;
+    --peek-gap: 5px;
+  }
+
+  .home-hero__card-inner {
+    padding: 16px 28px 16px 18px;
+  }
+
+  .home-hero__card-title {
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: 0.04em;
+    padding-right: 14px;
+    -webkit-line-clamp: 2;
+  }
+
+  .home-hero__card-body {
+    font-size: 12px;
+    line-height: 16.5px;
+    margin: 6px 0 0;
+    -webkit-line-clamp: 3;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-hero__stack,
   .home-hero__card {
@@ -1062,6 +1096,18 @@
   .home-hero__dots--centered button {
     width: 8px;
     height: 8px;
+    border-radius: 50%;
+    border: 1.5px solid #ffffff !important;
+    background: transparent !important;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .home-hero__dots--centered button.is-active {
+    background: #ffffff !important;
+    border-color: #ffffff !important;
   }
 
   .home-hero__meta {
@@ -1132,122 +1178,160 @@
     margin: 0;
   }
 
-  /* Vertical update cards stack on mobile with butter-smooth transform physics */
+  /* Vertical update cards stack on mobile — exact Figma / Image 2 fidelity */
   .home-hero__stack {
-    --card-h: 125px;
-    --card-gap: 8px;
-    --peek: 10px;
-    --stack-dur: 380ms;
+    --card-h: 134px;
+    --card-gap: 10px;
+    --peek-h: 8px;
+    --peek-gap: 5px;
+    --stack-dur: 350ms;
     --stack-ease: cubic-bezier(0.16, 1, 0.3, 1);
-    --stack-count: 3;
-    --stack-h-collapsed: calc(var(--card-h) + var(--peek) * (var(--stack-count) - 1));
-    --stack-h-expanded: calc(var(--card-h) * var(--stack-count) + var(--card-gap) * (var(--stack-count) - 1));
 
     position: relative;
     width: 100%;
-    height: var(--stack-h-collapsed);
-    max-height: calc(100dvh - var(--nav-height-mobile, 56px) - 120px);
+    max-width: 380px;
     margin: 0;
     z-index: 5;
     pointer-events: auto;
     outline: none;
     cursor: pointer;
-    display: block;
     overflow: visible;
     transition: height var(--stack-dur) var(--stack-ease);
   }
 
+  /* Stack height in collapsed state */
   .home-hero__stack[data-count="1"] {
-    --stack-count: 1;
+    height: var(--card-h) !important;
   }
 
   .home-hero__stack[data-count="2"] {
-    --stack-count: 2;
+    height: calc(var(--card-h) + var(--peek-gap) + var(--peek-h)) !important;
   }
 
-  .home-hero__stack[data-count="3"] {
-    --stack-count: 3;
+  .home-hero__stack[data-count="3"],
+  .home-hero__stack {
+    height: calc(var(--card-h) + (var(--peek-gap) + var(--peek-h)) * 2) !important;
   }
 
+  /* Stack height in expanded state */
   .home-hero__stack.is-mobile-expanded {
-    height: var(--stack-h-expanded);
-    overflow: visible;
+    cursor: default;
+    height: calc(var(--card-h) * 3 + var(--card-gap) * 2) !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded[data-count="1"] {
+    height: var(--card-h) !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded[data-count="2"] {
+    height: calc(var(--card-h) * 2 + var(--card-gap)) !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded[data-count="3"] {
+    height: calc(var(--card-h) * 3 + var(--card-gap) * 2) !important;
   }
 
   .home-hero__stack-backdrop {
     position: fixed;
     inset: 0;
     z-index: 4;
-    background: transparent;
+    background: rgba(0, 0, 0, 0.12);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
     pointer-events: auto;
     cursor: default;
   }
 
   .home-hero__card {
     position: absolute !important;
-    top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    height: var(--card-h) !important;
-    min-height: auto !important;
-    flex: none !important;
     background: #ffffff !important;
-    border: 0;
+    border: 0 !important;
     border-radius: 0 !important;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: 0px 4px 6px 0px rgba(0, 0, 0, 0.18) !important;
     overflow: hidden;
     pointer-events: auto !important;
     opacity: 1 !important;
-    will-change: transform, box-shadow;
+    will-change: top, height, box-shadow;
     transition:
-      transform var(--stack-dur) var(--stack-ease),
+      top var(--stack-dur) var(--stack-ease),
+      height var(--stack-dur) var(--stack-ease),
       box-shadow var(--stack-dur) var(--stack-ease);
   }
 
-  /* Collapsed resting state on mobile — smooth transform layer stacking */
+  /* COLLAPSED STATE (matching Image 2):
+     Card 0 is the full active card (uniform height var(--card-h)).
+     Cards 1 & 2 peek as clean solid white strips separated by clear gaps showing the background hero image. */
   .home-hero__card[data-offset="0"] {
-    transform: translate3d(0, 0, 0) !important;
-    z-index: 3;
+    top: 0 !important;
+    height: var(--card-h) !important;
+    z-index: 3 !important;
   }
 
   .home-hero__card[data-offset="1"] {
-    transform: translate3d(0, var(--peek), 0) !important;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
-    z-index: 2;
+    top: calc(var(--card-h) + var(--peek-gap)) !important;
+    height: var(--peek-h) !important;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.20) !important;
+    z-index: 2 !important;
   }
 
   .home-hero__card[data-offset="2"] {
-    transform: translate3d(0, calc(var(--peek) * 2), 0) !important;
-    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25) !important;
-    z-index: 1;
+    top: calc(var(--card-h) + var(--peek-gap) * 2 + var(--peek-h)) !important;
+    height: var(--peek-h) !important;
+    box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.22) !important;
+    z-index: 1 !important;
   }
 
+  .home-hero__card[data-offset="3"],
+  .home-hero__card[data-offset="4"] {
+    display: none !important;
+  }
+
+  /* Inner content hidden on collapsed peek strips */
   .home-hero__card[data-offset="1"] .home-hero__card-inner,
   .home-hero__card[data-offset="2"] .home-hero__card-inner {
     opacity: 0 !important;
     pointer-events: none !important;
   }
 
-  /* Expanded stack on mobile — butter-smooth transform glide */
+  .home-hero__card[data-offset="1"] .home-hero__card-close,
+  .home-hero__card[data-offset="2"] .home-hero__card-close {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* EXPANDED STATE:
+     Every card expands to the exact same size (var(--card-h)) with 10px vertical gaps */
   .home-hero__stack.is-mobile-expanded .home-hero__card {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08), 0 8px 20px rgba(0, 0, 0, 0.14) !important;
-    pointer-events: auto !important;
+    height: var(--card-h) !important;
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.22) !important;
   }
 
   .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="0"] {
-    transform: translate3d(0, 0, 0) !important;
+    top: 0 !important;
   }
 
   .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="1"] {
-    transform: translate3d(0, calc(var(--card-h) + var(--card-gap)), 0) !important;
+    top: calc(var(--card-h) + var(--card-gap)) !important;
   }
 
   .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="2"] {
-    transform: translate3d(0, calc((var(--card-h) + var(--card-gap)) * 2), 0) !important;
+    top: calc((var(--card-h) + var(--card-gap)) * 2) !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="3"] {
+    display: block !important;
+    top: calc((var(--card-h) + var(--card-gap)) * 3) !important;
   }
 
   .home-hero__stack.is-mobile-expanded .home-hero__card .home-hero__card-inner {
     opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .home-hero__stack.is-mobile-expanded .home-hero__card .home-hero__card-close {
+    opacity: 0.65 !important;
     pointer-events: auto !important;
   }
 
@@ -1256,10 +1340,10 @@
     flex-direction: column !important;
     align-items: stretch;
     justify-content: flex-start;
-    padding: 15px 18px !important;
+    padding: 16px 28px 16px 18px !important;
     height: 100% !important;
     box-sizing: border-box;
-    transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 250ms ease;
   }
 
   .home-hero__card-thumb {
@@ -1273,25 +1357,25 @@
   }
 
   .home-hero__card-title {
-    font-size: 18px;
-    line-height: 24px;
-    letter-spacing: 0.1em;
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: 0.04em;
     font-weight: 500;
     text-transform: uppercase;
-    color: var(--color-text-primary);
+    color: #1b171c;
     margin: 0;
-    padding-right: 24px;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: clip;
+    padding-right: 12px;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
 
   .home-hero__card-body {
-    font-size: 11px;
-    line-height: 1.5em;
-    color: #000000;
+    font-size: 12px;
+    line-height: 16.5px;
+    color: #3d3940;
     margin: 6px 0 0;
-    white-space: normal;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
@@ -1300,26 +1384,54 @@
 
   .home-hero__card-close {
     position: absolute;
-    top: 8px;
-    right: 10px;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
+    top: 12px;
+    right: 12px;
+    width: 24px;
+    height: 24px;
+    font-size: 13px;
+    line-height: 1;
     border-radius: 0;
-    opacity: 0.6 !important;
+    opacity: 0.65 !important;
     pointer-events: auto !important;
     display: grid;
     place-items: center;
     background: transparent;
     border: 0;
-    color: var(--color-text-secondary);
+    color: #777777;
     cursor: pointer;
     z-index: 10;
   }
 
   .home-hero__card-close:hover {
-    color: var(--color-text-primary);
+    color: #000000;
     opacity: 1 !important;
+  }
+
+  /* Compact mobile screens (iPhone SE ≤ 380px) */
+  @media (max-width: 380px) {
+    .home-hero__stack {
+      --card-h: 126px;
+      --peek-h: 7px;
+      --peek-gap: 4px;
+    }
+
+    .home-hero__card-inner {
+      padding: 14px 24px 14px 15px !important;
+    }
+
+    .home-hero__card-title {
+      font-size: 14.5px;
+      line-height: 20px;
+      letter-spacing: 0.03em;
+      padding-right: 10px;
+    }
+
+    .home-hero__card-body {
+      font-size: 11.5px;
+      line-height: 15px;
+      margin: 4px 0 0;
+      -webkit-line-clamp: 3;
+    }
   }
 
   /* Edition Intro */
