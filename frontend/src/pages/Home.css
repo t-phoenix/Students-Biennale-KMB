@@ -626,7 +626,7 @@
 .home-programmes__rail a {
   border: 0;
   background: transparent;
-  padding: 0 0 4px;
+  padding: 0;
   font-size: var(--type-subtitle-size);
   text-align: right;
   width: 100%;
