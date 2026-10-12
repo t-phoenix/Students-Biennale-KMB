@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { NavLink, Outlet, useLocation, useMatch, useParams } from "react-router-dom";
 import { EditionSearchResultsPanel } from "../components/EditionSearchResults";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
+import { useModalPortal } from "../lib/useModalPortal";
 import { gsap, prefersReducedMotion, useGSAP } from "../lib/motion";
 import { EditionSearchProvider, useEditionSearch } from "./EditionSearchContext";
 import "./EditionShell.css";
@@ -109,53 +111,173 @@ function EditionCatalogueMain() {
   );
 }
 
+function PreviousEditionsModal({
+  open,
+  onClose,
+  currentYearId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  currentYearId: string;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  useModalPortal({
+    open,
+    onClose,
+    panelRef,
+    initialFocusRef: closeBtnRef,
+  });
+
+  if (!open || typeof document === "undefined") return null;
+
+  const editionsList = [
+    {
+      id: LATEST_EDITION.id,
+      title: "Students' Biennale 2025–26",
+      subtitle: "Sensing Grounds",
+      isCurrent: true,
+    },
+    {
+      id: "2022-23",
+      title: "Students' Biennale 2022–23",
+      subtitle: "In the Making",
+    },
+    {
+      id: "2020-21",
+      title: "Students' Biennale 2020–21",
+      subtitle: "Words are Thinking Marks",
+    },
+    {
+      id: "2018-19",
+      title: "Students' Biennale 2018–19",
+      subtitle: "Making as Learning",
+    },
+    {
+      id: "2016-17",
+      title: "Students' Biennale 2016–17",
+      subtitle: "Second Edition",
+    },
+    {
+      id: "2014-15",
+      title: "Students' Biennale 2014–15",
+      subtitle: "Inaugural Edition",
+    },
+  ];
+
+  return createPortal(
+    <div className="edition-modal" role="presentation" data-lenis-prevent>
+      <button
+        type="button"
+        className="edition-modal__scrim"
+        aria-label="Close Previous Editions modal"
+        onClick={onClose}
+      />
+      <div
+        ref={panelRef}
+        className="edition-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edition-modal-title"
+      >
+        <div className="edition-modal__handle" aria-hidden="true" />
+        <div className="edition-modal__header">
+          <div>
+            <p className="edition-modal__kicker">Students&apos; Biennale</p>
+            <h2 id="edition-modal-title" className="edition-modal__title">
+              Previous Editions
+            </h2>
+          </div>
+          <button
+            ref={closeBtnRef}
+            type="button"
+            className="edition-modal__close-btn"
+            onClick={onClose}
+            aria-label="Close Previous Editions modal"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="edition-modal__list" aria-label="Available editions">
+          {editionsList.map((ed) => {
+            const isSelected = ed.id === currentYearId;
+            return (
+              <NavLink
+                key={ed.id}
+                to={`/editions/${ed.id}`}
+                onClick={onClose}
+                className={`edition-modal__item${isSelected ? " is-selected" : ""}`}
+              >
+                <div className="edition-modal__item-content">
+                  <div className="edition-modal__item-heading-row">
+                    <span className="edition-modal__item-year">
+                      {ed.id.replace("-", "–")}
+                    </span>
+                    {ed.isCurrent && (
+                      <span className="edition-modal__current-pill">
+                        Current Edition
+                      </span>
+                    )}
+                    {isSelected && (
+                      <span className="edition-modal__active-pill">
+                        Viewing
+                      </span>
+                    )}
+                  </div>
+                  {ed.subtitle && (
+                    <span className="edition-modal__item-subtitle">
+                      {ed.subtitle}
+                    </span>
+                  )}
+                </div>
+                <div className="edition-modal__item-arrow" aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </div>
+              </NavLink>
+            );
+          })}
+        </nav>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function EditionShellLayout() {
   const { yearId = LATEST_EDITION.id } = useParams();
   const location = useLocation();
   const { catalogues, current } = useCatalogue();
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
-  const stickyBarRef = useRef<HTMLDivElement>(null);
-  const toggleBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setIsArchiveOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    if (!isArchiveOpen) return;
-    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
-      if (stickyBarRef.current && !stickyBarRef.current.contains(e.target as Node)) {
-        setIsArchiveOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsArchiveOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("touchstart", handleOutsideClick, { passive: true });
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("touchstart", handleOutsideClick);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isArchiveOpen]);
-
-  const handleToggleArchive = () => {
-    setIsArchiveOpen((prev) => {
-      const next = !prev;
-      if (next && toggleBtnRef.current) {
-        toggleBtnRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "nearest",
-        });
-      }
-      return next;
-    });
-  };
 
   const previous = catalogues
     .filter((row) => !row.isCurrent && row.years !== yearId)
@@ -209,7 +331,7 @@ function EditionShellLayout() {
         </div>
       </aside>
 
-      {/* Mobile top header & collapsible archive (visible on <= 899px) */}
+      {/* Mobile top header & navigation (visible on <= 899px) */}
       <div className="edition__mobile-nav-wrapper">
         <div className="edition__mobile-title-row">
           <h1 className="edition__mobile-title">
@@ -217,8 +339,8 @@ function EditionShellLayout() {
           </h1>
         </div>
 
-        {/* Mobile Sticky Segmented Navigation Bar & Drawer Container */}
-        <div ref={stickyBarRef} className="edition__mobile-sticky-bar">
+        {/* Mobile Sticky Segmented Navigation Bar */}
+        <div className="edition__mobile-sticky-bar">
           <nav className="edition__mobile-tabs" aria-label="Edition sections">
             {TABS.map((tab) => (
               <NavLink
@@ -232,12 +354,11 @@ function EditionShellLayout() {
               </NavLink>
             ))}
             <button
-              ref={toggleBtnRef}
               type="button"
               className={`edition__mobile-tab edition__archive-toggle${isArchiveOpen ? " is-open" : ""}`}
-              onClick={handleToggleArchive}
+              onClick={() => setIsArchiveOpen((prev) => !prev)}
               aria-expanded={isArchiveOpen}
-              aria-controls="mobile-archive-drawer"
+              aria-haspopup="dialog"
             >
               <span>Previous Editions</span>
               <svg
@@ -256,44 +377,14 @@ function EditionShellLayout() {
               </svg>
             </button>
           </nav>
-
-          {/* Collapsible Previous Editions Drawer (sticky underneath tabs) */}
-          <div
-            id="mobile-archive-drawer"
-            className={`edition__archive-drawer${isArchiveOpen ? " is-open" : ""}`}
-            aria-hidden={!isArchiveOpen}
-          >
-            <div className="edition__archive-drawer-inner">
-              <div className="edition__archive-drawer-header">
-                <p className="edition__archive-label">PREVIOUS EDITIONS</p>
-                <button
-                  type="button"
-                  className="edition__archive-close-btn"
-                  onClick={() => setIsArchiveOpen(false)}
-                  aria-label="Close Previous Editions"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                </button>
-              </div>
-              <div className="edition__archive-chips">
-                {previousYears.map((y) => (
-                  <NavLink
-                    key={y}
-                    to={`/editions/${y}`}
-                    onClick={() => setIsArchiveOpen(false)}
-                    className="edition__archive-chip"
-                  >
-                    {y}
-                  </NavLink>
-                ))}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
+
+      <PreviousEditionsModal
+        open={isArchiveOpen}
+        onClose={() => setIsArchiveOpen(false)}
+        currentYearId={yearId}
+      />
 
       <div className="edition__main fig-c4-12">
         <EditionCatalogueMain />
