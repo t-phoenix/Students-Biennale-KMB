@@ -69,7 +69,7 @@ function navOffsetPx(targetId = "") {
     if (PROGRAMME_SECTIONS.has(targetId as ProgrammeSectionId)) return 92;
     return 72;
   }
-  const isMobile = window.matchMedia("(max-width: 899px)").matches;
+  const isMobile = window.matchMedia("(max-width: 899px), (max-width: 1024px) and (orientation: portrait)").matches;
   const prop = isMobile ? "--nav-height-mobile" : "--nav-height";
   const raw = typeof document !== "undefined"
     ? getComputedStyle(document.documentElement).getPropertyValue(prop).trim()

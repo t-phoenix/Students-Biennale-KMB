@@ -1531,6 +1531,20 @@
     margin-bottom: 24px;
   }
 
+  .home-programmes__banner {
+    width: 100%;
+    aspect-ratio: 362 / 205;
+    overflow: hidden;
+  }
+
+  .home-programmes__banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
   .home-programmes__bottom {
     display: none !important;
   }

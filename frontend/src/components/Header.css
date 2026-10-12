@@ -225,8 +225,8 @@
   display: none;
 }
 
-/* Mobile — brand mark + KBF mark + mobile navigation drawer toggle */
-@media (max-width: 899px) {
+/* Mobile & iPad Portrait — brand mark + KBF mark + mobile navigation drawer toggle */
+@media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
   .site-header {
     height: var(--nav-height-mobile, 56px);
     padding-block: 0;
