@@ -1241,9 +1241,9 @@ export function Home() {
           {/* Mobile programmes cards stack (Figma node 109:4) */}
           <div className="fig-grid home-programmes__mobile-list">
             {[
-              { label: "Workshops", to: "/programmes", img: workshopThumb },
-              { label: "Residencies", to: "/programmes#residencies", img: residencyThumb },
+              { label: "WORKSHOPS", to: "/programmes", img: workshopThumb },
               { label: "AWARDS", to: "/programmes#awards", img: awardsThumb },
+              { label: "RESIDENCIES", to: "/programmes#residencies", img: residencyThumb },
             ].map((prog) => (
               <Link key={prog.label} to={prog.to} className="home-programmes__mobile-card">
                 <div className="home-programmes__mobile-card-img">
