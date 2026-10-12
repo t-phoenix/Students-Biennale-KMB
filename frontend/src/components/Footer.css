@@ -50,6 +50,10 @@
   gap: 4px;
 }
 
+.site-footer__legal p {
+  margin: 0;
+}
+
 .site-footer__legal--mobile {
   display: none;
 }
@@ -171,7 +175,7 @@ a.site-footer__header {
   .site-footer {
     grid-template-columns: 1fr;
     padding: 48px var(--grid-margin) 60px;
-    row-gap: 36px;
+    row-gap: 28px;
     border-top: 1px solid #C3C3C3;
   }
 
@@ -203,6 +207,7 @@ a.site-footer__header {
     line-height: 1.7em;
     color: #424242;
     max-width: 100%;
+    margin: 0;
   }
 
   .site-footer__legal--desktop {
@@ -212,8 +217,8 @@ a.site-footer__header {
   .site-footer__legal--mobile {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-top: 12px;
+    gap: 10px;
+    margin-top: 0;
   }
 
   .site-footer__nav {

@@ -172,14 +172,29 @@ function EditionShellLayout() {
           <h1 className="edition__mobile-title">
             Students&apos; Biennale <span className="edition__mobile-year">{headingYears}</span>
           </h1>
+        </div>
+
+        {/* Mobile Sticky Segmented Navigation Bar */}
+        <nav className="edition__mobile-tabs" aria-label="Edition sections">
+          {TABS.map((tab) => (
+            <NavLink
+              key={tab.to}
+              to={`/editions/${yearId}/${tab.to}`}
+              className={({ isActive }) =>
+                `edition__mobile-tab${isActive ? " is-active" : ""}`
+              }
+            >
+              {tab.label}
+            </NavLink>
+          ))}
           <button
             type="button"
-            className={`edition__archive-toggle${isArchiveOpen ? " is-open" : ""}`}
+            className={`edition__mobile-tab edition__archive-toggle${isArchiveOpen ? " is-open" : ""}`}
             onClick={() => setIsArchiveOpen((prev) => !prev)}
             aria-expanded={isArchiveOpen}
             aria-controls="mobile-archive-drawer"
           >
-            <span>Archive ({previousYears.length})</span>
+            <span>Previous Editions</span>
             <svg
               className="edition__archive-chevron"
               width="12"
@@ -195,7 +210,7 @@ function EditionShellLayout() {
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
-        </div>
+        </nav>
 
         {/* Collapsible Previous Editions Drawer */}
         <div
@@ -219,21 +234,6 @@ function EditionShellLayout() {
             </div>
           </div>
         </div>
-
-        {/* Mobile Sticky Segmented Navigation Bar */}
-        <nav className="edition__mobile-tabs" aria-label="Edition sections">
-          {TABS.map((tab) => (
-            <NavLink
-              key={tab.to}
-              to={`/editions/${yearId}/${tab.to}`}
-              className={({ isActive }) =>
-                `edition__mobile-tab${isActive ? " is-active" : ""}`
-              }
-            >
-              {tab.label}
-            </NavLink>
-          ))}
-        </nav>
       </div>
 
       <div className="edition__main fig-c4-12">

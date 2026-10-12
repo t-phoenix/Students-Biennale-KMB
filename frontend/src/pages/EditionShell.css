@@ -116,9 +116,8 @@
 
   .edition__mobile-title-row {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
-    gap: 12px;
     padding-bottom: 14px;
   }
 
@@ -138,36 +137,32 @@
     font-weight: 400;
   }
 
-  /* Archive Rectangular Switcher */
+  /* Previous Editions Switcher (in mobile tabs) */
   .edition__archive-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    height: 32px;
-    background: transparent;
-    border: 1px solid color-mix(in srgb, var(--color-text-primary) 30%, transparent);
-    border-radius: 0;
-    font-family: inherit;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-text-primary);
     cursor: pointer;
-    flex-shrink: 0;
-    transition: background 0.2s ease, border-color 0.2s ease;
+    background: transparent;
+    font-family: inherit;
+    gap: 6px;
   }
 
   .edition__archive-toggle:hover,
-  .edition__archive-toggle:focus-visible,
-  .edition__archive-toggle.is-open {
-    background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
+  .edition__archive-toggle:focus-visible {
+    color: var(--color-text-primary);
     border-color: var(--color-text-primary);
+    background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+  }
+
+  .edition__archive-toggle.is-open {
+    background: var(--color-text-primary, #000000);
+    color: var(--color-text-inverse, #ffffff) !important;
+    border-color: var(--color-text-primary, #000000);
+    font-weight: 600;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-text-primary) 18%, transparent);
   }
 
   .edition__archive-chevron {
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
   }
 
   .edition__archive-toggle.is-open .edition__archive-chevron {
@@ -186,7 +181,7 @@
   .edition__archive-drawer.is-open {
     max-height: 240px;
     opacity: 1;
-    margin: 8px 0 16px;
+    margin: 12px 0 16px;
   }
 
   .edition__archive-drawer-inner {
@@ -240,6 +235,7 @@
     display: flex;
     gap: 8px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 10px 0;
     margin: 0 -4px;
     scrollbar-width: none;
