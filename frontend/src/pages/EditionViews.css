@@ -647,28 +647,6 @@
     margin-top: 16px;
     padding-top: 0;
   }
-
-  .edition-venue__links a,
-  .edition-venue__links span {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 14px;
-    border: 1px solid color-mix(in srgb, var(--color-text-primary) 22%, transparent);
-    border-radius: 0;
-    font-size: 12px;
-    font-weight: 500;
-    text-decoration: none;
-    background: var(--color-bg);
-  }
-
-  .edition-venue__links a:hover {
-    border-color: var(--color-text-primary);
-    background: color-mix(in srgb, var(--color-text-primary) 6%, transparent);
-  }
-
-  .edition-venue__links span[aria-hidden] {
-    display: none;
-  }
 }
 
 @media (max-width: 420px) {
