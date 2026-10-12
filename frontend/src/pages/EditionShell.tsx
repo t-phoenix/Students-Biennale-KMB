@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, Outlet, useLocation, useMatch, useParams } from "react-router-dom";
 import { EditionSearchResultsPanel } from "../components/EditionSearchResults";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
@@ -111,8 +111,51 @@ function EditionCatalogueMain() {
 
 function EditionShellLayout() {
   const { yearId = LATEST_EDITION.id } = useParams();
+  const location = useLocation();
   const { catalogues, current } = useCatalogue();
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const stickyBarRef = useRef<HTMLDivElement>(null);
+  const toggleBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setIsArchiveOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!isArchiveOpen) return;
+    const handleOutsideClick = (e: MouseEvent | TouchEvent) => {
+      if (stickyBarRef.current && !stickyBarRef.current.contains(e.target as Node)) {
+        setIsArchiveOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsArchiveOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("touchstart", handleOutsideClick, { passive: true });
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("touchstart", handleOutsideClick);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isArchiveOpen]);
+
+  const handleToggleArchive = () => {
+    setIsArchiveOpen((prev) => {
+      const next = !prev;
+      if (next && toggleBtnRef.current) {
+        toggleBtnRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "nearest",
+        });
+      }
+      return next;
+    });
+  };
 
   const previous = catalogues
     .filter((row) => !row.isCurrent && row.years !== yearId)
@@ -174,63 +217,79 @@ function EditionShellLayout() {
           </h1>
         </div>
 
-        {/* Mobile Sticky Segmented Navigation Bar */}
-        <nav className="edition__mobile-tabs" aria-label="Edition sections">
-          {TABS.map((tab) => (
-            <NavLink
-              key={tab.to}
-              to={`/editions/${yearId}/${tab.to}`}
-              className={({ isActive }) =>
-                `edition__mobile-tab${isActive ? " is-active" : ""}`
-              }
+        {/* Mobile Sticky Segmented Navigation Bar & Drawer Container */}
+        <div ref={stickyBarRef} className="edition__mobile-sticky-bar">
+          <nav className="edition__mobile-tabs" aria-label="Edition sections">
+            {TABS.map((tab) => (
+              <NavLink
+                key={tab.to}
+                to={`/editions/${yearId}/${tab.to}`}
+                className={({ isActive }) =>
+                  `edition__mobile-tab${isActive ? " is-active" : ""}`
+                }
+              >
+                {tab.label}
+              </NavLink>
+            ))}
+            <button
+              ref={toggleBtnRef}
+              type="button"
+              className={`edition__mobile-tab edition__archive-toggle${isArchiveOpen ? " is-open" : ""}`}
+              onClick={handleToggleArchive}
+              aria-expanded={isArchiveOpen}
+              aria-controls="mobile-archive-drawer"
             >
-              {tab.label}
-            </NavLink>
-          ))}
-          <button
-            type="button"
-            className={`edition__mobile-tab edition__archive-toggle${isArchiveOpen ? " is-open" : ""}`}
-            onClick={() => setIsArchiveOpen((prev) => !prev)}
-            aria-expanded={isArchiveOpen}
-            aria-controls="mobile-archive-drawer"
-          >
-            <span>Previous Editions</span>
-            <svg
-              className="edition__archive-chevron"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-        </nav>
+              <span>Previous Editions</span>
+              <svg
+                className="edition__archive-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
+          </nav>
 
-        {/* Collapsible Previous Editions Drawer */}
-        <div
-          id="mobile-archive-drawer"
-          className={`edition__archive-drawer${isArchiveOpen ? " is-open" : ""}`}
-          aria-hidden={!isArchiveOpen}
-        >
-          <div className="edition__archive-drawer-inner">
-            <p className="edition__archive-label">PREVIOUS EDITIONS</p>
-            <div className="edition__archive-chips">
-              {previousYears.map((y) => (
-                <NavLink
-                  key={y}
-                  to={`/editions/${y}`}
+          {/* Collapsible Previous Editions Drawer (sticky underneath tabs) */}
+          <div
+            id="mobile-archive-drawer"
+            className={`edition__archive-drawer${isArchiveOpen ? " is-open" : ""}`}
+            aria-hidden={!isArchiveOpen}
+          >
+            <div className="edition__archive-drawer-inner">
+              <div className="edition__archive-drawer-header">
+                <p className="edition__archive-label">PREVIOUS EDITIONS</p>
+                <button
+                  type="button"
+                  className="edition__archive-close-btn"
                   onClick={() => setIsArchiveOpen(false)}
-                  className="edition__archive-chip"
+                  aria-label="Close Previous Editions"
                 >
-                  {y}
-                </NavLink>
-              ))}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
+              <div className="edition__archive-chips">
+                {previousYears.map((y) => (
+                  <NavLink
+                    key={y}
+                    to={`/editions/${y}`}
+                    onClick={() => setIsArchiveOpen(false)}
+                    className="edition__archive-chip"
+                  >
+                    {y}
+                  </NavLink>
+                ))}
+              </div>
             </div>
           </div>
         </div>
