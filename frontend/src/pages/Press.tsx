@@ -56,7 +56,37 @@ export function Press() {
     return articles[articleIndex + 1];
   }, [articles, articleIndex]);
 
+  const articleHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isDesktopHover = useCallback(
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth > 899 &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+    [],
+  );
+
+  const handleArticleMouseEnter = useCallback(
+    (id: string) => {
+      if (!isDesktopHover()) return;
+      if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
+      articleHoverTimerRef.current = setTimeout(() => {
+        setExpandedArticleId(id);
+      }, 35);
+    },
+    [isDesktopHover],
+  );
+
+  const handleArticleMouseLeave = useCallback(() => {
+    if (!isDesktopHover()) return;
+    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
+    articleHoverTimerRef.current = setTimeout(() => {
+      setExpandedArticleId("");
+    }, 80);
+  }, [isDesktopHover]);
+
   const handleToggleArticle = useCallback((id: string) => {
+    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
     setExpandedArticleId((prev) => (prev === id ? "" : id));
   }, []);
 
@@ -173,7 +203,10 @@ export function Press() {
       {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       {relatedArticles.length > 0 ? (
         <div className="fig-grid press__related">
-          <ul className="press__list fig-c4-12">
+          <ul
+            className="press__list fig-c4-12"
+            onMouseLeave={handleArticleMouseLeave}
+          >
             {relatedArticles.map((item) => {
               const isExpanded = expandedArticleId === item.id;
 
@@ -182,6 +215,7 @@ export function Press() {
                   key={item.id}
                   data-id={item.id}
                   className={`press__item${isExpanded ? " is-expanded" : ""}`}
+                  onMouseEnter={() => handleArticleMouseEnter(item.id)}
                 >
                   <button
                     type="button"

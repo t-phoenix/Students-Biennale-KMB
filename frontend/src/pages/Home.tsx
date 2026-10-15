@@ -78,8 +78,37 @@ export function Home() {
   const [expandedPressId, setExpandedPressId] = useState<string>("");
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const pressHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isDesktopHover = useCallback(
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth > 899 &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+    [],
+  );
+
+  const handlePressMouseEnter = useCallback(
+    (id: string) => {
+      if (!isDesktopHover()) return;
+      if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
+      pressHoverTimerRef.current = setTimeout(() => {
+        setExpandedPressId(id);
+      }, 35);
+    },
+    [isDesktopHover],
+  );
+
+  const handlePressMouseLeave = useCallback(() => {
+    if (!isDesktopHover()) return;
+    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
+    pressHoverTimerRef.current = setTimeout(() => {
+      setExpandedPressId("");
+    }, 80);
+  }, [isDesktopHover]);
 
   const handleTogglePress = useCallback((id: string) => {
+    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
     setExpandedPressId((prev) => (prev === id ? "" : id));
   }, []);
 
@@ -1250,7 +1279,10 @@ export function Home() {
         <section id="press" className="home-section home-press">
           <div className="fig-grid">
             <h2 className="fig-label fig-heading">PRESS</h2>
-            <div className="home-press__items fig-c4-12">
+            <div
+              className="home-press__items fig-c4-12"
+              onMouseLeave={handlePressMouseLeave}
+            >
               {pressItems.map((item) => {
                 const isExpanded = expandedPressId === item.id;
                 return (
@@ -1258,6 +1290,7 @@ export function Home() {
                     key={item.id}
                     data-id={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
+                    onMouseEnter={() => handlePressMouseEnter(item.id)}
                   >
                     <button
                       type="button"
