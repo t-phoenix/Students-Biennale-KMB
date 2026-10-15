@@ -28,7 +28,7 @@ export function Press() {
   const featureRef = useRef<HTMLElement>(null);
   const [params, setParams] = useSearchParams();
   const { items: articles } = usePressItems();
-  const [hoveredArticleId, setHoveredArticleId] = useState<string>("");
+  const [expandedArticleId, setExpandedArticleId] = useState<string>("");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const articleParam = params.get("article");
@@ -56,29 +56,14 @@ export function Press() {
     return articles[articleIndex + 1];
   }, [articles, articleIndex]);
 
-  const articleHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handleArticleHover = useCallback((id: string) => {
-    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-    articleHoverTimerRef.current = setTimeout(() => {
-      setHoveredArticleId(id);
-    }, 35);
+  const handleToggleArticle = useCallback((id: string) => {
+    setExpandedArticleId((prev) => (prev === id ? "" : id));
   }, []);
-
-  const handleArticleLeave = useCallback(() => {
-    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-    setHoveredArticleId("");
-  }, []);
-
-  const activeArticleId =
-    hoveredArticleId && relatedArticles.some((p) => p.id === hoveredArticleId)
-      ? hoveredArticleId
-      : "";
 
   const handleSelect = useCallback(
     (id: string) => {
       setParams({ article: id });
-      setHoveredArticleId("");
+      setExpandedArticleId("");
       window.scrollTo({
         top: 0,
         behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -188,46 +173,34 @@ export function Press() {
       {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       {relatedArticles.length > 0 ? (
         <div className="fig-grid press__related">
-          <ul className="press__list fig-c4-12" onMouseLeave={handleArticleLeave}>
+          <ul className="press__list fig-c4-12">
             {relatedArticles.map((item) => {
-              const isExpanded = activeArticleId === item.id;
+              const isExpanded = expandedArticleId === item.id;
 
               return (
                 <li
                   key={item.id}
                   data-id={item.id}
                   className={`press__item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => handleArticleHover(item.id)}
                 >
-                  {/* Collapsed trigger */}
-                  <div className="press__collapsed-wrap" aria-hidden={isExpanded}>
-                    <button
-                      type="button"
-                      className="press__collapsed"
-                      tabIndex={isExpanded ? -1 : 0}
-                      onClick={() => {
-                        if (window.innerWidth <= 899) {
-                          if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-                          setHoveredArticleId((prev) => (prev === item.id ? "" : item.id));
-                        } else {
-                          handleSelect(item.id);
-                        }
-                      }}
-                    >
-                      <span className="press__collapsed-title">{item.title}</span>
-                      {item.date ? (
-                        <time className="press__collapsed-date">{item.date}</time>
-                      ) : null}
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    className="press__header"
+                    aria-expanded={isExpanded}
+                    onClick={() => handleToggleArticle(item.id)}
+                  >
+                    <span className="press__title">{item.title}</span>
+                    {item.date ? (
+                      <time className="press__date">{item.date}</time>
+                    ) : null}
+                  </button>
 
-                  {/* Expanded teaser card */}
-                  <div className="press__expanded-wrap" aria-hidden={!isExpanded}>
-                    <div className="press__expanded-inner">
-                      <div className="press__teaser">
+                  <div className="press__drawer-wrap" aria-hidden={!isExpanded}>
+                    <div className="press__drawer-inner">
+                      <div className="press__drawer-content">
                         <button
                           type="button"
-                          className="press__teaser-media"
+                          className="press__drawer-media"
                           tabIndex={isExpanded ? 0 : -1}
                           onClick={() => handleSelect(item.id)}
                           aria-label={`Open article: ${item.title}`}
@@ -239,20 +212,9 @@ export function Press() {
                           )}
                         </button>
 
-                        <div className="press__teaser-copy">
-                          <button
-                            type="button"
-                            className="press__teaser-head"
-                            tabIndex={isExpanded ? 0 : -1}
-                            onClick={() => handleSelect(item.id)}
-                            aria-label={`Open article: ${item.title}`}
-                          >
-                            <h3>{item.title}</h3>
-                            {item.date ? <time>{item.date}</time> : null}
-                          </button>
-
+                        <div className="press__drawer-copy">
                           {item.body ? (
-                            <div className="press__teaser-body">
+                            <div className="press__drawer-body">
                               {item.body
                                 .split("\n\n")
                                 .slice(0, 1)

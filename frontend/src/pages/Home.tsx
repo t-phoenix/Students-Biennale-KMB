@@ -75,24 +75,12 @@ export function Home() {
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [mobileCardsExpanded, setMobileCardsExpanded] = useState(false);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
-  const [hoveredPressId, setHoveredPressId] = useState<string>("");
-  const [hasInteractedPress, setHasInteractedPress] = useState(false);
+  const [expandedPressId, setExpandedPressId] = useState<string>("");
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
 
-  const pressHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const handlePressHover = useCallback((id: string) => {
-    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-    pressHoverTimerRef.current = setTimeout(() => {
-      setHasInteractedPress(true);
-      setHoveredPressId(id);
-    }, 35);
-  }, []);
-
-  const handlePressLeave = useCallback(() => {
-    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-    setHoveredPressId("");
+  const handleTogglePress = useCallback((id: string) => {
+    setExpandedPressId((prev) => (prev === id ? "" : id));
   }, []);
 
   useEffect(() => {
@@ -247,7 +235,6 @@ export function Home() {
     setSlide(index);
   }, []);
 
-  const activePressId = hoveredPressId;
 
   const openCard = useCallback((card: ActiveUpdateCard) => {
     setActiveCard(card);
@@ -1263,78 +1250,48 @@ export function Home() {
         <section id="press" className="home-section home-press">
           <div className="fig-grid">
             <h2 className="fig-label fig-heading">PRESS</h2>
-            <div
-              className={`home-press__items fig-c4-12${hasInteractedPress ? " is-interactive" : ""}`}
-              onMouseLeave={handlePressLeave}
-            >
+            <div className="home-press__items fig-c4-12">
               {pressItems.map((item) => {
-                const isExpanded = activePressId === item.id;
+                const isExpanded = expandedPressId === item.id;
                 return (
                   <article
                     key={item.id}
                     data-id={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
-                    onMouseEnter={() => handlePressHover(item.id)}
                   >
-                    <div className="home-press__collapsed-wrap" aria-hidden={isExpanded}>
-                      <Link
-                        to={`/press?article=${item.id}`}
-                        className="home-press__collapsed"
-                        tabIndex={isExpanded ? -1 : 0}
-                        onClick={(e) => {
-                          if (window.innerWidth <= 899) {
-                            e.preventDefault();
-                            if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-                            setHasInteractedPress(true);
-                            setHoveredPressId((prev) => (prev === item.id ? "" : item.id));
-                          }
-                        }}
-                      >
-                        <span className="home-press__collapsed-title">{item.title}</span>
-                        <time className="home-press__collapsed-date">{item.date}</time>
-                      </Link>
-                    </div>
+                    <button
+                      type="button"
+                      className="home-press__header"
+                      aria-expanded={isExpanded}
+                      onClick={() => handleTogglePress(item.id)}
+                    >
+                      <span className="home-press__title">{item.title}</span>
+                      <time className="home-press__date">{item.date}</time>
+                    </button>
 
-                    <div className="home-press__expanded-wrap" aria-hidden={!isExpanded}>
-                      <div className="home-press__expanded-inner">
-                        <div
-                          className="home-press__expanded"
-                          onClick={(e) => {
-                            if (window.innerWidth <= 899) {
-                              if ((e.target as HTMLElement).closest("a")) return;
-                              navigate(`/press?article=${item.id}`);
-                            }
-                          }}
-                        >
+                    <div className="home-press__drawer-wrap" aria-hidden={!isExpanded}>
+                      <div className="home-press__drawer-inner">
+                        <div className="home-press__drawer-content">
                           {item.image ? (
                             <Link
                               to={`/press?article=${item.id}`}
-                              className="home-press__featured-img-wrap"
+                              className="home-press__drawer-media"
                               tabIndex={isExpanded ? 0 : -1}
                               aria-label={`Read ${item.title}`}
                             >
                               <img
-                                className="home-press__featured-img"
+                                className="home-press__drawer-img"
                                 src={item.image}
                                 alt=""
                                 loading="lazy"
                               />
                             </Link>
                           ) : null}
-                          <div className="home-press__featured-copy">
-                            <Link
-                              to={`/press?article=${item.id}`}
-                              className="home-press__featured-head"
-                              tabIndex={isExpanded ? 0 : -1}
-                              aria-label={`Read ${item.title}`}
-                            >
-                              <h3>{item.title}</h3>
-                              <time>{item.date}</time>
-                            </Link>
+                          <div className="home-press__drawer-copy">
                             <p className="fig-body">{item.excerpt}</p>
                             <Link
                               to={`/press?article=${item.id}`}
-                              className="home-text-btn"
+                              className="home-text-btn home-press__read-btn"
                               tabIndex={isExpanded ? 0 : -1}
                             >
                               Read article...
