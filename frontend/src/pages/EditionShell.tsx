@@ -167,7 +167,13 @@ function PreviousEditionsModal({
   ];
 
   return createPortal(
-    <div className="edition-modal" role="presentation" data-lenis-prevent>
+    <div
+      className="edition-modal"
+      role="presentation"
+      data-lenis-prevent
+      data-lenis-prevent-touch
+      data-lenis-prevent-wheel
+    >
       <button
         type="button"
         className="edition-modal__scrim"
@@ -180,6 +186,8 @@ function PreviousEditionsModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="edition-modal-title"
+        data-lenis-prevent
+        data-lenis-prevent-touch
       >
         <div className="edition-modal__handle" aria-hidden="true" />
         <div className="edition-modal__header">
@@ -213,7 +221,13 @@ function PreviousEditionsModal({
           </button>
         </div>
 
-        <nav className="edition-modal__list" aria-label="Available editions">
+        <nav
+          className="edition-modal__list"
+          aria-label="Available editions"
+          data-lenis-prevent
+          data-lenis-prevent-touch
+          data-lenis-prevent-wheel
+        >
           {editionsList.map((ed) => {
             const isSelected = ed.id === currentYearId;
             return (
@@ -274,10 +288,19 @@ function EditionShellLayout() {
   const location = useLocation();
   const { catalogues, current } = useCatalogue();
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+  const tabsNavRef = useRef<HTMLElement>(null);
+  const lastToggleTimeRef = useRef(0);
 
   useEffect(() => {
     setIsArchiveOpen(false);
   }, [location.pathname]);
+
+  const handleToggleArchive = () => {
+    const now = Date.now();
+    if (now - lastToggleTimeRef.current < 350) return;
+    lastToggleTimeRef.current = now;
+    setIsArchiveOpen((prev) => !prev);
+  };
 
   const previous = catalogues
     .filter((row) => !row.isCurrent && row.years !== yearId)
@@ -341,7 +364,14 @@ function EditionShellLayout() {
 
         {/* Mobile Sticky Segmented Navigation Bar */}
         <div className="edition__mobile-sticky-bar">
-          <nav className="edition__mobile-tabs" aria-label="Edition sections">
+          <nav
+            ref={tabsNavRef}
+            className="edition__mobile-tabs"
+            aria-label="Edition sections"
+            data-lenis-prevent
+            data-lenis-prevent-touch
+            data-lenis-prevent-wheel
+          >
             {TABS.map((tab) => (
               <NavLink
                 key={tab.to}
@@ -356,7 +386,7 @@ function EditionShellLayout() {
             <button
               type="button"
               className={`edition__mobile-tab edition__archive-toggle${isArchiveOpen ? " is-open" : ""}`}
-              onClick={() => setIsArchiveOpen((prev) => !prev)}
+              onClick={handleToggleArchive}
               aria-expanded={isArchiveOpen}
               aria-haspopup="dialog"
             >

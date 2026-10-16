@@ -143,9 +143,21 @@
     background: transparent;
     font-family: inherit;
     gap: 6px;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .edition__archive-toggle:hover,
+  @media (hover: hover) and (pointer: fine) {
+    .edition__archive-toggle:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-text-primary);
+      background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+    }
+  }
+
   .edition__archive-toggle:focus-visible {
     color: var(--color-text-primary);
     border-color: var(--color-text-primary);
@@ -192,6 +204,10 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
     background: transparent;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   .edition__mobile-tabs::-webkit-scrollbar {
@@ -215,9 +231,23 @@
     border: 1px solid color-mix(in srgb, var(--color-text-primary) 14%, transparent);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     flex-shrink: 0;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
   }
 
-  .edition__mobile-tab:hover {
+  @media (hover: hover) and (pointer: fine) {
+    .edition__mobile-tab:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-text-primary);
+      background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
+    }
+  }
+
+  .edition__mobile-tab:focus-visible {
     color: var(--color-text-primary);
     border-color: var(--color-text-primary);
     background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
@@ -344,6 +374,8 @@
   padding: 14px 16px max(24px, env(safe-area-inset-bottom, 24px));
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: contain;
 }
 
 .edition-modal__item {
@@ -357,6 +389,8 @@
   border: 1px solid color-mix(in srgb, var(--color-text-primary) 10%, transparent);
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   gap: 12px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .edition-modal__item:hover,
