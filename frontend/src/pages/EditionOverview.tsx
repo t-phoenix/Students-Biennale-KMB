@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
-import { splitLinesOnScroll } from "../lib/splitTextScroll";
+import { splitLinesOnScroll, cascadeCardsOnScroll } from "../lib/splitTextScroll";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
@@ -456,25 +456,22 @@ function cleanIntroParagraphs(
             },
           });
 
-          const headings = sec.querySelectorAll(".fig-label, .fig-rail, .edition-overview__team-category, .edition-overview__bio-name");
+          const headings = sec.querySelectorAll(".fig-label, .fig-rail, .edition-overview__team-category");
           if (headings.length > 0) {
             tl.fromTo(
               headings,
               { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 1, duration: 0.85, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
               0
             );
           }
 
-          // Dense body copy text paragraphs (Curatorial note paragraphs, Curator bios):
-          // Responsive masked line splits on scroll (SplitText autoSplit + mask: "lines")
-          const textParas = sec.querySelectorAll(".edition-overview__curatorial-body p, .edition-overview__bio-body p, .fig-body");
-          if (textParas.length > 0) {
-            const cleanupSplit = splitLinesOnScroll(textParas, {
-              trigger: sec,
-              start: "top 76%",
-              delay: 0.12,
-            });
+          // Dense curatorial note text paragraphs waterfall in natural reading scroll order
+          const curatorialParas = sec.querySelectorAll<HTMLElement>(
+            ".edition-overview__curatorial-body p, .fig-body:not(.edition-overview__bio-text)"
+          );
+          if (curatorialParas.length > 0) {
+            const cleanupSplit = splitLinesOnScroll(curatorialParas);
             cleanups.push(cleanupSplit);
           }
 
@@ -483,11 +480,22 @@ function cleanIntroParagraphs(
             tl.fromTo(
               otherReveals,
               { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 1, duration: 0.85, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
               0.16
             );
           }
         });
+      }
+
+      // Curator bios: Waterfall cascade in continuous scroll order (Row 1 -> Row 2 -> Row 3)
+      const bioCards = root.current?.querySelectorAll<HTMLElement>(".edition-overview__bio-card");
+      if (bioCards && bioCards.length > 0) {
+        cleanups.push(
+          cascadeCardsOnScroll(bioCards, {
+            headingSelector: ".edition-overview__bio-name",
+            bodySelector: ".edition-overview__bio-body p",
+          })
+        );
       }
 
       return () => {

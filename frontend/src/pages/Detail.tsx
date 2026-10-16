@@ -108,12 +108,11 @@ export function Detail() {
           }
 
           // Dense body copy text paragraphs (Artwork Description, Curatorial notes, Curator bios):
-          // Unmasked ambient focus & illumination reveal, sequenced in scroll order
+          // Option 2 Editorial Waterfall, sequenced in continuous scroll order
           const textParas = sec.querySelectorAll(".detail__desc p, .detail__note-body p, .detail__curator-bio p, .fig-body");
           if (textParas.length > 0) {
             const cleanupSplit = splitLinesOnScroll(textParas, {
-              trigger: isFirst ? undefined : sec,
-              delay: isFirst ? 0.2 : undefined,
+              delay: isFirst ? 0.18 : undefined,
             });
             cleanups.push(cleanupSplit);
           }

@@ -400,11 +400,11 @@ export function Home() {
                 0.08
               );
             }
-            // Dense text paragraphs: Responsive masked line splits on scroll (SplitText autoSplit + mask: "lines")
+            // Dense text paragraphs: Option 2 Editorial Waterfall scroll reveal
             const bodies = edition.querySelectorAll(".home-edition__body > .fig-body");
             if (bodies.length > 0) {
               cleanups.push(
-                splitLinesOnScroll(bodies, { trigger: edition, start: "top 76%", delay: 0.18 })
+                splitLinesOnScroll(bodies, { trigger: edition })
               );
             }
             const btn = edition.querySelector(".home-text-btn");
@@ -576,7 +576,7 @@ export function Home() {
               const kbfP = kbfBlock.querySelectorAll("p");
               if (kbfP.length > 0) {
                 cleanups.push(
-                  splitLinesOnScroll(kbfP, { trigger: kbfBlock, start: "top 76%", delay: 0.14 })
+                  splitLinesOnScroll(kbfP, { trigger: kbfBlock })
                 );
               }
             }
@@ -599,7 +599,7 @@ export function Home() {
               const sbPs = sbBlock.querySelectorAll(".home-about__sb-copy p");
               if (sbPs.length > 0) {
                 cleanups.push(
-                  splitLinesOnScroll(sbPs, { trigger: sbBlock, start: "top 76%", delay: 0.14 })
+                  splitLinesOnScroll(sbPs, { trigger: sbBlock })
                 );
               }
             }

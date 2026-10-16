@@ -212,19 +212,16 @@ body::-webkit-scrollbar-thumb:active,
   }
 }
 
-/* Unmasked Scroll Reveal (GSAP Focus & Ambient Line Settling) */
-.scroll-reveal-line,
-.scroll-reveal-piece {
+/* Option 2: Editorial Waterfall Scroll Reveal (Zero Blur, Pure GPU Transform) */
+.scroll-reveal-line {
   display: block;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scroll-reveal-line,
-  .scroll-reveal-piece {
+  .scroll-reveal-line {
     opacity: 1 !important;
     transform: none !important;
-    filter: none !important;
   }
 }
 
