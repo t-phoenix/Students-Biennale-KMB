@@ -18,6 +18,7 @@ import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { preloadUrls } from "../lib/preloadImages";
 import { GalleryLightbox } from "../components/GalleryLightbox";
+import { PreviousEditionsButton, PreviousEditionsModal } from "../components/PreviousEditionsModal";
 import "./EditionOverview.css";
 
 /** Split subtitle/title lines for the right-aligned title rail in previous editions. */
@@ -208,10 +209,15 @@ export function EditionOverview() {
   const slideIndexRef = useRef(0);
   const [slide, setSlide] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const fallback = getEditionOverview(yearId);
   const { catalogue } = useEditionCatalogue(yearId);
   const { catalogues } = useCatalogue();
   const isPreviousEdition = yearId !== LATEST_EDITION.id;
+
+  useEffect(() => {
+    setIsArchiveOpen(false);
+  }, [yearId]);
 
   // Extract dynamic sections with fallback to static data
   const title =
@@ -569,25 +575,39 @@ function cleanIntroParagraphs(
       <div className="fig-grid edition-overview__section">
         {isPreviousEdition ? (
           <div className="fig-rail edition-overview__title-rail edition-overview__reveal">
-            {subtitleLines.map((line, idx) => (
-              <p
-                key={line + idx}
-                className={
-                  idx === 0
-                    ? "edition-overview__title-main"
-                    : "edition-overview__title-edition"
-                }
-              >
-                {line}
-              </p>
-            ))}
+            <div className="edition-overview__title-group">
+              {subtitleLines.map((line, idx) => (
+                <p
+                  key={line + idx}
+                  className={
+                    idx === 0
+                      ? "edition-overview__title-main"
+                      : "edition-overview__title-edition"
+                  }
+                >
+                  {line}
+                </p>
+              ))}
+            </div>
+            <PreviousEditionsButton
+              isOpen={isArchiveOpen}
+              onClick={() => setIsArchiveOpen((prev) => !prev)}
+              className="edition-overview__archive-toggle"
+            />
           </div>
         ) : (
-          <h1 className="fig-label fig-heading edition-overview__title edition-overview__reveal">
-            {title}
-            <br />
-            {subtitle}
-          </h1>
+          <div className="fig-label fig-heading edition-overview__title edition-overview__reveal edition-overview__title-wrap">
+            <h1 className="edition-overview__title-text">
+              {title}
+              <br />
+              {subtitle}
+            </h1>
+            <PreviousEditionsButton
+              isOpen={isArchiveOpen}
+              onClick={() => setIsArchiveOpen((prev) => !prev)}
+              className="edition-overview__archive-toggle edition-overview__archive-toggle--current"
+            />
+          </div>
         )}
         <div className="fig-c4-9 edition-overview__intro edition-overview__reveal">
           {intro.map((para, i) => (
@@ -780,6 +800,12 @@ function cleanIntroParagraphs(
           onIndexChange={setLightboxIndex}
         />
       ) : null}
+
+      <PreviousEditionsModal
+        open={isArchiveOpen}
+        onClose={() => setIsArchiveOpen(false)}
+        currentYearId={yearId}
+      />
     </div>
   );
 }

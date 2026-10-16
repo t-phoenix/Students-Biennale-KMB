@@ -50,16 +50,21 @@
   font: inherit;
   color: inherit;
   cursor: pointer;
+  touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
   transition: opacity 0.25s ease;
 }
 
-.past-workshops__header:hover {
-  opacity: 0.7;
+@media (hover: hover) and (pointer: fine) {
+  .past-workshops__header:hover {
+    opacity: 0.7;
+  }
 }
 
 .past-workshops__title {
@@ -72,6 +77,9 @@
   margin: 0;
   user-select: none;
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
   pointer-events: none;
 }
 
@@ -83,6 +91,9 @@
   flex: 0 0 auto;
   user-select: none;
   -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -webkit-touch-callout: none;
   pointer-events: none;
 }
 

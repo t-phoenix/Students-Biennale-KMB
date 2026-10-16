@@ -89,9 +89,9 @@ export function Home() {
     [],
   );
 
-  const handlePressMouseEnter = useCallback(
-    (id: string) => {
-      if (!isDesktopHover()) return;
+  const handlePressPointerEnter = useCallback(
+    (e: React.PointerEvent, id: string) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
       if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
       pressHoverTimerRef.current = setTimeout(() => {
         setHoveredPressId(id);
@@ -100,13 +100,16 @@ export function Home() {
     [isDesktopHover],
   );
 
-  const handlePressMouseLeave = useCallback(() => {
-    if (!isDesktopHover()) return;
-    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-    pressHoverTimerRef.current = setTimeout(() => {
-      setHoveredPressId("");
-    }, 80);
-  }, [isDesktopHover]);
+  const handlePressPointerLeave = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
+      if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
+      pressHoverTimerRef.current = setTimeout(() => {
+        setHoveredPressId("");
+      }, 80);
+    },
+    [isDesktopHover],
+  );
 
   const handleTogglePress = useCallback((id: string) => {
     if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
@@ -1285,7 +1288,7 @@ export function Home() {
             <h2 className="fig-label fig-heading">PRESS</h2>
             <div
               className="home-press__items fig-c4-12"
-              onMouseLeave={handlePressMouseLeave}
+              onPointerLeave={handlePressPointerLeave}
             >
               {pressItems.map((item) => {
                 const isExpanded = activePressId === item.id;
@@ -1294,7 +1297,7 @@ export function Home() {
                     key={item.id}
                     data-id={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
-                    onMouseEnter={() => handlePressMouseEnter(item.id)}
+                    onPointerEnter={(e) => handlePressPointerEnter(e, item.id)}
                   >
                     <button
                       type="button"

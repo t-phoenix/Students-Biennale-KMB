@@ -20,9 +20,9 @@ export function PastWorkshops() {
     [],
   );
 
-  const handleWorkshopMouseEnter = useCallback(
-    (id: string) => {
-      if (!isDesktopHover()) return;
+  const handleWorkshopPointerEnter = useCallback(
+    (e: React.PointerEvent, id: string) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
       if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
       workshopHoverTimerRef.current = setTimeout(() => {
         setHoveredWorkshopId(id);
@@ -31,13 +31,16 @@ export function PastWorkshops() {
     [isDesktopHover],
   );
 
-  const handleWorkshopMouseLeave = useCallback(() => {
-    if (!isDesktopHover()) return;
-    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-    workshopHoverTimerRef.current = setTimeout(() => {
-      setHoveredWorkshopId("");
-    }, 80);
-  }, [isDesktopHover]);
+  const handleWorkshopPointerLeave = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
+      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+      workshopHoverTimerRef.current = setTimeout(() => {
+        setHoveredWorkshopId("");
+      }, 80);
+    },
+    [isDesktopHover],
+  );
 
   const handleToggleWorkshop = useCallback((id: string) => {
     if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
@@ -69,7 +72,7 @@ export function PastWorkshops() {
         {pastWorkshops.length ? (
           <div
             className="past-workshops__items fig-c4-12"
-            onMouseLeave={handleWorkshopMouseLeave}
+            onPointerLeave={handleWorkshopPointerLeave}
           >
             {pastWorkshops.map((item) => {
               const isExpanded = activeWorkshopId === item.id;
@@ -78,7 +81,7 @@ export function PastWorkshops() {
                   key={item.id}
                   data-id={item.id}
                   className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => handleWorkshopMouseEnter(item.id)}
+                  onPointerEnter={(e) => handleWorkshopPointerEnter(e, item.id)}
                 >
                   <button
                     type="button"

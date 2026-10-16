@@ -67,9 +67,9 @@ export function Press() {
     [],
   );
 
-  const handleArticleMouseEnter = useCallback(
-    (id: string) => {
-      if (!isDesktopHover()) return;
+  const handleArticlePointerEnter = useCallback(
+    (e: React.PointerEvent, id: string) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
       if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
       articleHoverTimerRef.current = setTimeout(() => {
         setHoveredArticleId(id);
@@ -78,13 +78,16 @@ export function Press() {
     [isDesktopHover],
   );
 
-  const handleArticleMouseLeave = useCallback(() => {
-    if (!isDesktopHover()) return;
-    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-    articleHoverTimerRef.current = setTimeout(() => {
-      setHoveredArticleId("");
-    }, 80);
-  }, [isDesktopHover]);
+  const handleArticlePointerLeave = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
+      if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
+      articleHoverTimerRef.current = setTimeout(() => {
+        setHoveredArticleId("");
+      }, 80);
+    },
+    [isDesktopHover],
+  );
 
   const handleToggleArticle = useCallback((id: string) => {
     if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
@@ -210,7 +213,7 @@ export function Press() {
         <div className="fig-grid press__related">
           <ul
             className="press__list fig-c4-12"
-            onMouseLeave={handleArticleMouseLeave}
+            onPointerLeave={handleArticlePointerLeave}
           >
             {relatedArticles.map((item) => {
               const isExpanded = activeArticleId === item.id;
@@ -220,7 +223,7 @@ export function Press() {
                   key={item.id}
                   data-id={item.id}
                   className={`press__item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => handleArticleMouseEnter(item.id)}
+                  onPointerEnter={(e) => handleArticlePointerEnter(e, item.id)}
                 >
                   <button
                     type="button"
