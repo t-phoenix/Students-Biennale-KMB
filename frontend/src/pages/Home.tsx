@@ -75,7 +75,8 @@ export function Home() {
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [mobileCardsExpanded, setMobileCardsExpanded] = useState(false);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
-  const [expandedPressId, setExpandedPressId] = useState<string>("");
+  const [clickedPressId, setClickedPressId] = useState<string>("");
+  const [hoveredPressId, setHoveredPressId] = useState<string>("");
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
   const pressHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -93,7 +94,7 @@ export function Home() {
       if (!isDesktopHover()) return;
       if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
       pressHoverTimerRef.current = setTimeout(() => {
-        setExpandedPressId(id);
+        setHoveredPressId(id);
       }, 35);
     },
     [isDesktopHover],
@@ -103,14 +104,17 @@ export function Home() {
     if (!isDesktopHover()) return;
     if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
     pressHoverTimerRef.current = setTimeout(() => {
-      setExpandedPressId("");
+      setHoveredPressId("");
     }, 80);
   }, [isDesktopHover]);
 
   const handleTogglePress = useCallback((id: string) => {
     if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-    setExpandedPressId((prev) => (prev === id ? "" : id));
+    setHoveredPressId("");
+    setClickedPressId((prev) => (prev === id ? "" : id));
   }, []);
+
+  const activePressId = clickedPressId || hoveredPressId;
 
   useEffect(() => {
     if (razaModalOpen || openScholarId !== null || activeCard !== null) {
@@ -1284,7 +1288,7 @@ export function Home() {
               onMouseLeave={handlePressMouseLeave}
             >
               {pressItems.map((item) => {
-                const isExpanded = expandedPressId === item.id;
+                const isExpanded = activePressId === item.id;
                 return (
                   <article
                     key={item.id}
@@ -1296,6 +1300,7 @@ export function Home() {
                       type="button"
                       className="home-press__header"
                       aria-expanded={isExpanded}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => handleTogglePress(item.id)}
                     >
                       <span className="home-press__title">{item.title}</span>

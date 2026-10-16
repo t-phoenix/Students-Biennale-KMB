@@ -28,7 +28,8 @@ export function Press() {
   const featureRef = useRef<HTMLElement>(null);
   const [params, setParams] = useSearchParams();
   const { items: articles } = usePressItems();
-  const [expandedArticleId, setExpandedArticleId] = useState<string>("");
+  const [clickedArticleId, setClickedArticleId] = useState<string>("");
+  const [hoveredArticleId, setHoveredArticleId] = useState<string>("");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const articleParam = params.get("article");
@@ -71,7 +72,7 @@ export function Press() {
       if (!isDesktopHover()) return;
       if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
       articleHoverTimerRef.current = setTimeout(() => {
-        setExpandedArticleId(id);
+        setHoveredArticleId(id);
       }, 35);
     },
     [isDesktopHover],
@@ -81,19 +82,23 @@ export function Press() {
     if (!isDesktopHover()) return;
     if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
     articleHoverTimerRef.current = setTimeout(() => {
-      setExpandedArticleId("");
+      setHoveredArticleId("");
     }, 80);
   }, [isDesktopHover]);
 
   const handleToggleArticle = useCallback((id: string) => {
     if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-    setExpandedArticleId((prev) => (prev === id ? "" : id));
+    setHoveredArticleId("");
+    setClickedArticleId((prev) => (prev === id ? "" : id));
   }, []);
+
+  const activeArticleId = clickedArticleId || hoveredArticleId;
 
   const handleSelect = useCallback(
     (id: string) => {
       setParams({ article: id });
-      setExpandedArticleId("");
+      setHoveredArticleId("");
+      setClickedArticleId("");
       window.scrollTo({
         top: 0,
         behavior: prefersReducedMotion() ? "auto" : "smooth",
@@ -208,7 +213,7 @@ export function Press() {
             onMouseLeave={handleArticleMouseLeave}
           >
             {relatedArticles.map((item) => {
-              const isExpanded = expandedArticleId === item.id;
+              const isExpanded = activeArticleId === item.id;
 
               return (
                 <li
@@ -221,6 +226,7 @@ export function Press() {
                     type="button"
                     className="press__header"
                     aria-expanded={isExpanded}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleToggleArticle(item.id)}
                   >
                     <span className="press__title">{item.title}</span>

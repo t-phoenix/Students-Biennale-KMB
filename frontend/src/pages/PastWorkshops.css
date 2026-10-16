@@ -17,11 +17,19 @@
 .past-workshops__items {
   display: flex;
   flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .past-workshops__item {
   border-top: 1px solid var(--color-neutral-gray-light);
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .past-workshops__item:last-child {

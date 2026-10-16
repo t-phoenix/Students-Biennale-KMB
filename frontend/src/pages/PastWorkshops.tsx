@@ -8,7 +8,8 @@ import "./PastWorkshops.css";
 export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
   const { pastWorkshops } = useProgrammes();
-  const [expandedWorkshopId, setExpandedWorkshopId] = useState<string>("");
+  const [clickedWorkshopId, setClickedWorkshopId] = useState<string>("");
+  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
   const workshopHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isDesktopHover = useCallback(
@@ -24,7 +25,7 @@ export function PastWorkshops() {
       if (!isDesktopHover()) return;
       if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
       workshopHoverTimerRef.current = setTimeout(() => {
-        setExpandedWorkshopId(id);
+        setHoveredWorkshopId(id);
       }, 35);
     },
     [isDesktopHover],
@@ -34,14 +35,17 @@ export function PastWorkshops() {
     if (!isDesktopHover()) return;
     if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
     workshopHoverTimerRef.current = setTimeout(() => {
-      setExpandedWorkshopId("");
+      setHoveredWorkshopId("");
     }, 80);
   }, [isDesktopHover]);
 
   const handleToggleWorkshop = useCallback((id: string) => {
     if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-    setExpandedWorkshopId((prev) => (prev === id ? "" : id));
+    setHoveredWorkshopId("");
+    setClickedWorkshopId((prev) => (prev === id ? "" : id));
   }, []);
+
+  const activeWorkshopId = clickedWorkshopId || hoveredWorkshopId;
 
   useGSAP(
     () => {
@@ -68,7 +72,7 @@ export function PastWorkshops() {
             onMouseLeave={handleWorkshopMouseLeave}
           >
             {pastWorkshops.map((item) => {
-              const isExpanded = expandedWorkshopId === item.id;
+              const isExpanded = activeWorkshopId === item.id;
               return (
                 <article
                   key={item.id}
@@ -80,6 +84,7 @@ export function PastWorkshops() {
                     type="button"
                     className="past-workshops__header"
                     aria-expanded={isExpanded}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleToggleWorkshop(item.id)}
                   >
                     <span className="past-workshops__title">{item.title}</span>
