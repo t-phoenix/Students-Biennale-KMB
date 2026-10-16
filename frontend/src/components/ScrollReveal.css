@@ -1,0 +1,33 @@
+.scroll-reveal {
+  /* Inherit existing block typography & spacing from parent */
+  position: relative;
+}
+
+.scroll-reveal-text {
+  display: block;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+}
+
+.scroll-reveal-word,
+.scroll-reveal-piece {
+  display: inline-block;
+  font: inherit;
+  color: inherit;
+  will-change: opacity, transform, filter;
+}
+
+/* Ensure proper spacing between inline-block words */
+.scroll-reveal-word {
+  white-space: pre-wrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal-piece {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

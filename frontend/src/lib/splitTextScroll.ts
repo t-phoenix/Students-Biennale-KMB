@@ -7,17 +7,19 @@ export interface SplitLinesScrollOptions {
   stagger?: number;
   delay?: number;
   ease?: string;
+  baseOpacity?: number;
+  enableBlur?: boolean;
+  blurStrength?: number;
 }
 
 /**
- * Applies responsive masked line reveals on scroll using GSAP SplitText (autoSplit + mask).
- * Matches the official GSAP demo: https://demos.gsap.com/demo/responsive-line-splits-on-scroll/
+ * Applies unmasked ambient focus & illumination reveal on scroll (inspired by React Bits ScrollReveal).
  *
- * SECTION-WISE ANIMATION:
- * Rather than animating paragraph-by-paragraph (which creates disjointed isolated chunks),
- * all text paragraphs belonging to a particular section are unified into a single SplitText
- * animation. All lines across the entire section flow in one unified, cascading stagger
- * from top to bottom, triggered by the section.
+ * UNMASKED & SECTION-WISE:
+ * - NO clipping masks (`mask` is not used; `overflow: hidden` is never added).
+ * - Text paragraphs are split into words and smoothly transition from a soft ambient
+ *   dimmed state (`baseOpacity: 0.12`, `blur: 3px`) into full sharp contrast (`opacity: 1`, `blur: 0px`).
+ * - All paragraphs in a section flow together in a continuous, graceful cascade.
  */
 export function splitLinesOnScroll(
   targets: gsap.DOMTarget,
@@ -80,28 +82,37 @@ export function splitLinesOnScroll(
       });
 
       try {
-        // Pass ALL section paragraphs to SplitText.create at once so `self.lines`
-        // contains the unified lines across the entire section in DOM order.
+        // Split by words without ANY masks
         const split = SplitText.create(sectionElements, {
-          type: "lines",
-          linesClass: "split-line",
-          mask: "lines",
+          type: "words",
+          wordsClass: "scroll-reveal-piece",
           autoSplit: true,
           onSplit: (self) => {
-            if (!self.lines || !self.lines.length) return;
-            return gsap.from(self.lines, {
-              scrollTrigger: {
-                trigger: triggerSection,
-                start: options.start ?? "top 80%",
-                once: true,
+            if (!self.words || !self.words.length) return;
+            const baseOpacity = options.baseOpacity ?? 0.14;
+            const enableBlur = options.enableBlur ?? true;
+            const blur = enableBlur ? (options.blurStrength ?? 3) : 0;
+
+            return gsap.fromTo(
+              self.words,
+              {
+                opacity: baseOpacity,
+                filter: blur ? `blur(${blur}px)` : "none",
               },
-              yPercent: 105,
-              autoAlpha: 0,
-              duration: options.duration ?? 0.85,
-              stagger: options.stagger ?? 0.05,
-              delay: options.delay ?? 0.08,
-              ease: options.ease ?? "power3.out",
-            });
+              {
+                scrollTrigger: {
+                  trigger: triggerSection,
+                  start: options.start ?? "top 80%",
+                  once: true,
+                },
+                opacity: 1,
+                filter: "blur(0px)",
+                duration: options.duration ?? 0.75,
+                stagger: options.stagger ?? 0.02,
+                delay: options.delay ?? 0.06,
+                ease: options.ease ?? "power2.out",
+              }
+            );
           },
         });
 
@@ -110,7 +121,7 @@ export function splitLinesOnScroll(
         });
         instances.push(split);
       } catch (err) {
-        console.warn("SplitText section error:", err);
+        console.warn("ScrollReveal section error:", err);
       }
     });
   };

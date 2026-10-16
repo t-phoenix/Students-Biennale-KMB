@@ -212,15 +212,17 @@ body::-webkit-scrollbar-thumb:active,
   }
 }
 
-/* Responsive Line Splits on Scroll (GSAP SplitText Masking) */
-.split-line-mask {
-  overflow: clip !important;
-  overflow: hidden;
-  display: block;
+/* Unmasked Scroll Reveal (GSAP Focus & Ambient Fade) */
+.scroll-reveal-piece {
+  display: inline-block;
+  will-change: opacity, filter;
 }
 
-.split-line {
-  display: block;
-  will-change: transform, opacity;
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal-piece {
+    opacity: 1 !important;
+    filter: none !important;
+  }
 }
+
 
