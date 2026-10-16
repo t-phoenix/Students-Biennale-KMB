@@ -19,10 +19,10 @@ export function PastWorkshopDetail() {
       if (prefersReducedMotion()) return;
       gsap.from(".workshop-reveal", {
         autoAlpha: 0,
-        y: 20,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power2.out",
+        y: 36,
+        duration: 1.4,
+        stagger: 0.12,
+        ease: "cubic-bezier(0.12, 0.8, 0.25, 1)",
       });
     },
     { scope: root, dependencies: [id] }

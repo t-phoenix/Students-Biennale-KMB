@@ -17,8 +17,10 @@
   position: sticky;
   top: var(--nav-height);
   width: 100%;
-  min-height: calc(100dvh - var(--nav-height));
-  height: calc(100dvh - var(--nav-height));
+  min-height: calc(100vh - var(--nav-height));
+  height: calc(100vh - var(--nav-height));
+  min-height: calc(100svh - var(--nav-height));
+  height: calc(100svh - var(--nav-height));
   overflow: hidden;
   background: var(--color-neutral-white);
   isolation: isolate;

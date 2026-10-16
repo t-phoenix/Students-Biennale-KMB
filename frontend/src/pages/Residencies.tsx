@@ -59,12 +59,12 @@ export function Residencies() {
       }
       gsap.fromTo(
         el,
-        { autoAlpha: 0, y: 24 },
+        { autoAlpha: 0, y: 40 },
         {
           autoAlpha: 1,
           y: 0,
-          duration: 0.95,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+          duration: 1.4,
+          ease: "cubic-bezier(0.12, 0.8, 0.25, 1)",
           clearProps: "opacity,visibility,transform",
         }
       );
