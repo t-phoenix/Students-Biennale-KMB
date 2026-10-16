@@ -13,10 +13,11 @@ export interface SplitLinesScrollOptions {
  * Applies responsive masked line reveals on scroll using GSAP SplitText (autoSplit + mask).
  * Matches the official GSAP demo: https://demos.gsap.com/demo/responsive-line-splits-on-scroll/
  *
- * Each line is wrapped in a clipping mask (`mask: "lines"`).
- * Lines wipe upward from within their individual overflow-clipped masks.
- * The outer container never shifts or jumps, giving a stable, luxurious editorial feel.
- * With `autoSplit: true`, line splits automatically recalculate on resize or font loading.
+ * SECTION-WISE ANIMATION:
+ * Rather than animating paragraph-by-paragraph (which creates disjointed isolated chunks),
+ * all text paragraphs belonging to a particular section are unified into a single SplitText
+ * animation. All lines across the entire section flow in one unified, cascading stagger
+ * from top to bottom, triggered by the section.
  */
 export function splitLinesOnScroll(
   targets: gsap.DOMTarget,
@@ -34,27 +35,54 @@ export function splitLinesOnScroll(
   const init = () => {
     if (isCleanedUp) return;
 
-    elements.forEach((el) => {
-      if (!el || !el.textContent?.trim()) return;
+    // Filter valid visible elements
+    const validElements = elements.filter((el) => {
+      if (!el || !el.textContent?.trim()) return false;
       // Skip hidden / unmounted elements (e.g. collapsed drawers)
-      if (el.offsetParent === null && el.getClientRects().length === 0) return;
+      if (el.offsetParent === null && el.getClientRects().length === 0) return false;
+      return true;
+    });
 
-      // Avoid double splitting on the same element
-      if ((el as any)._splitTextActive) {
-        try {
-          (el as any)._splitTextActive.revert();
-          (el as any)._splitTextActive.kill();
-        } catch (_) {}
-      }
+    if (!validElements.length) return;
 
-      const triggerEl = options.trigger
-        ? typeof options.trigger === "string"
-          ? document.querySelector(options.trigger) || el
-          : options.trigger
-        : el;
+    // Group elements by section so all paragraphs in a particular section
+    // animate together across that section rather than paragraph-wise.
+    const groups: Map<Element, HTMLElement[]> = new Map();
+
+    if (options.trigger) {
+      const triggerEl =
+        typeof options.trigger === "string"
+          ? document.querySelector(options.trigger) || validElements[0]
+          : options.trigger;
+      groups.set(triggerEl, validElements);
+    } else {
+      validElements.forEach((el) => {
+        const section =
+          el.closest<HTMLElement>(
+            "section, .detail__section, .detail__section--tight, .edition-overview__section, .home-section, .home-about__block, .fig-grid"
+          ) || el.parentElement || el;
+        const list = groups.get(section) || [];
+        list.push(el);
+        groups.set(section, list);
+      });
+    }
+
+    groups.forEach((sectionElements, triggerSection) => {
+      // Revert previous instance on these elements if any
+      sectionElements.forEach((el) => {
+        if ((el as any)._splitTextActive) {
+          try {
+            (el as any)._splitTextActive.revert();
+            (el as any)._splitTextActive.kill();
+          } catch (_) {}
+          delete (el as any)._splitTextActive;
+        }
+      });
 
       try {
-        const split = SplitText.create(el, {
+        // Pass ALL section paragraphs to SplitText.create at once so `self.lines`
+        // contains the unified lines across the entire section in DOM order.
+        const split = SplitText.create(sectionElements, {
           type: "lines",
           linesClass: "split-line",
           mask: "lines",
@@ -63,24 +91,26 @@ export function splitLinesOnScroll(
             if (!self.lines || !self.lines.length) return;
             return gsap.from(self.lines, {
               scrollTrigger: {
-                trigger: triggerEl,
-                start: options.start ?? "top 82%",
+                trigger: triggerSection,
+                start: options.start ?? "top 80%",
                 once: true,
               },
               yPercent: 105,
               autoAlpha: 0,
-              duration: options.duration ?? 0.88,
-              stagger: options.stagger ?? 0.07,
+              duration: options.duration ?? 0.85,
+              stagger: options.stagger ?? 0.05,
               delay: options.delay ?? 0.08,
               ease: options.ease ?? "power3.out",
             });
           },
         });
 
-        (el as any)._splitTextActive = split;
+        sectionElements.forEach((el) => {
+          (el as any)._splitTextActive = split;
+        });
         instances.push(split);
       } catch (err) {
-        console.warn("SplitText error:", err);
+        console.warn("SplitText section error:", err);
       }
     });
   };

@@ -39,7 +39,7 @@ export function FormattedParagraphs({
     if (!container) return;
     const paras = container.querySelectorAll("p");
     if (!paras.length) return;
-    return splitLinesOnScroll(paras);
+    return splitLinesOnScroll(paras, { trigger: container });
   }, [text, splitLines]);
 
   const paras = text
