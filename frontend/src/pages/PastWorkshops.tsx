@@ -8,22 +8,40 @@ import "./PastWorkshops.css";
 export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
   const { pastWorkshops } = useProgrammes();
-  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
+  const [expandedWorkshopId, setExpandedWorkshopId] = useState<string>("");
   const workshopHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleWorkshopHover = useCallback((id: string) => {
+  const isDesktopHover = useCallback(
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth > 899 &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+    [],
+  );
+
+  const handleWorkshopMouseEnter = useCallback(
+    (id: string) => {
+      if (!isDesktopHover()) return;
+      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+      workshopHoverTimerRef.current = setTimeout(() => {
+        setExpandedWorkshopId(id);
+      }, 35);
+    },
+    [isDesktopHover],
+  );
+
+  const handleWorkshopMouseLeave = useCallback(() => {
+    if (!isDesktopHover()) return;
     if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
     workshopHoverTimerRef.current = setTimeout(() => {
-      setHoveredWorkshopId(id);
-    }, 35);
-  }, []);
+      setExpandedWorkshopId("");
+    }, 80);
+  }, [isDesktopHover]);
 
-  const handleWorkshopLeave = useCallback(() => {
+  const handleToggleWorkshop = useCallback((id: string) => {
     if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-    setHoveredWorkshopId("");
+    setExpandedWorkshopId((prev) => (prev === id ? "" : id));
   }, []);
-
-  const activeWorkshopId = hoveredWorkshopId;
 
   useGSAP(
     () => {
@@ -45,53 +63,53 @@ export function PastWorkshops() {
       <div className="fig-grid past-workshops__section past-workshops-reveal">
         <h1 className="fig-label fig-subheading">PAST WORKSHOPS</h1>
         {pastWorkshops.length ? (
-          <div className="past-workshops__items fig-c4-12" onMouseLeave={handleWorkshopLeave}>
+          <div
+            className="past-workshops__items fig-c4-12"
+            onMouseLeave={handleWorkshopMouseLeave}
+          >
             {pastWorkshops.map((item) => {
-              const isExpanded = activeWorkshopId === item.id;
+              const isExpanded = expandedWorkshopId === item.id;
               return (
                 <article
                   key={item.id}
                   data-id={item.id}
                   className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => handleWorkshopHover(item.id)}
+                  onMouseEnter={() => handleWorkshopMouseEnter(item.id)}
                 >
-                  <div className="past-workshops__collapsed-wrap" aria-hidden={isExpanded}>
-                    <Link
-                      to={`/programmes/past-workshops/${item.id}`}
-                      className="past-workshops__collapsed"
-                      tabIndex={isExpanded ? -1 : 0}
-                      onClick={(e) => {
-                        if (window.innerWidth <= 899) {
-                          e.preventDefault();
-                          if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-                          setHoveredWorkshopId((prev) => (prev === item.id ? "" : item.id));
-                        }
-                      }}
-                    >
-                      <span className="past-workshops__collapsed-title">{item.title}</span>
-                      <time className="past-workshops__collapsed-date">{item.year}</time>
-                    </Link>
-                  </div>
+                  <button
+                    type="button"
+                    className="past-workshops__header"
+                    aria-expanded={isExpanded}
+                    onClick={() => handleToggleWorkshop(item.id)}
+                  >
+                    <span className="past-workshops__title">{item.title}</span>
+                    <time className="past-workshops__date">{item.year}</time>
+                  </button>
 
-                  <div className="past-workshops__expanded-wrap" aria-hidden={!isExpanded}>
-                    <div className="past-workshops__expanded-inner">
-                      <div className="past-workshops__expanded">
+                  <div className="past-workshops__drawer-wrap" aria-hidden={!isExpanded}>
+                    <div className="past-workshops__drawer-inner">
+                      <div className="past-workshops__drawer-content">
                         {item.heroImage ? (
-                          <div className="past-workshops__featured-img-wrap">
+                          <Link
+                            to={`/programmes/past-workshops/${item.id}`}
+                            className="past-workshops__drawer-media"
+                            tabIndex={isExpanded ? 0 : -1}
+                            aria-label={`Read ${item.title}`}
+                          >
                             <img
-                              className="past-workshops__featured-img"
+                              className="past-workshops__drawer-img"
                               src={item.heroImage}
                               alt=""
                               loading="lazy"
                             />
-                          </div>
+                          </Link>
                         ) : (
-                          <div className="past-workshops__featured-img-wrap past-workshops__featured-placeholder" aria-hidden />
+                          <div
+                            className="past-workshops__drawer-media past-workshops__drawer-placeholder"
+                            aria-hidden
+                          />
                         )}
-                        <div className="past-workshops__featured-copy">
-                          <div className="past-workshops__featured-head">
-                            <h3>{item.title}</h3>
-                          </div>
+                        <div className="past-workshops__drawer-copy">
                           {item.facilitators ? (
                             <span className="past-workshops__facilitators">
                               Facilitators : {item.facilitators}
@@ -107,11 +125,11 @@ export function PastWorkshops() {
                           <Link
                             to={`/programmes/past-workshops/${item.id}`}
                             className="home-text-btn past-workshops__more-btn"
+                            tabIndex={isExpanded ? 0 : -1}
                           >
                             Read more...
                           </Link>
                         </div>
-                        <time className="past-workshops__featured-date">{item.year}</time>
                       </div>
                     </div>
                   </div>
