@@ -113,7 +113,7 @@ export function Detail() {
           if (textParas.length > 0) {
             const cleanupSplit = splitLinesOnScroll(textParas, {
               trigger: isFirst ? undefined : sec,
-              mode: isFirst ? "enter" : "scrub",
+              delay: isFirst ? 0.2 : undefined,
             });
             cleanups.push(cleanupSplit);
           }

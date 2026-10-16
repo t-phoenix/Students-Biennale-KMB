@@ -3,28 +3,35 @@ import { gsap, SplitText, prefersReducedMotion } from "./motion";
 export interface SplitLinesScrollOptions {
   trigger?: Element | string;
   start?: string;
-  end?: string;
   duration?: number;
   stagger?: number;
   delay?: number;
   ease?: string;
   baseOpacity?: number;
+  baseOffset?: number;
   enableBlur?: boolean;
   blurStrength?: number;
-  mode?: "scrub" | "enter";
 }
 
 /**
- * Applies unmasked ambient focus & illumination reveal, sequenced in scroll order.
+ * Applies unmasked ambient line-settling and illumination reveal on scroll.
  *
- * SCROLL-SEQUENCED & UNMASKED:
- * - NO clipping masks (no overflow:hidden or clipping rectangles).
- * - Tied directly to scroll position (`scrub` mode by default): as the user scrolls,
- *   sections illuminate sequentially in natural reading order down the page.
- * - Mobile-calibrated:
- *   - Mobile (≤899px): High resting opacity (0.42), 0 blur for 60/120fps GPU performance,
- *     responsive 0.1s scrub catchup, triggers early at top 90%.
- *   - Desktop (>899px): 0.20 resting opacity, subtle 2px blur, silky 0.35s scrub damping.
+ * KEY BEHAVIORS:
+ * 1. AUTO-COMPLETES & STAYS SHARP:
+ *    - Once triggered by scrolling into view, it animates forward to 100% completion
+ *      and stays permanently sharp (never pauses halfway, never reverses on scroll-up).
+ * 2. MOBILE READABILITY & DELAY:
+ *    - Triggers at the active reading zone (`top 78%`) with a deliberate 0.16s delay,
+ *      so mobile readers see the text settle in cleanly before their eyes.
+ *    - Zero blur on mobile for smooth 60/120fps GPU performance.
+ * 3. LINE SETTLING MOTION ("Each line settles in as you scroll"):
+ *    - Splits by natural lines (NO clipping masks, no overflow:hidden).
+ *    - Each line gently settles vertically (`y: 7px → 0px` on GPU compositor)
+ *      with soft staggered illumination, simulating line-height breathing
+ *      without causing destructive document reflow.
+ * 4. SECTION-WISE UNIFIED STAGGER:
+ *    - All paragraphs across a particular section are unified into a single
+ *      continuous top-to-bottom sequence.
  */
 export function splitLinesOnScroll(
   targets: gsap.DOMTarget,
@@ -55,7 +62,7 @@ export function splitLinesOnScroll(
     const isMobile = window.innerWidth <= 899;
 
     // Group elements by section so all paragraphs in a particular section
-    // sequence together across that section rather than paragraph-wise.
+    // animate together across that section rather than paragraph-wise.
     const groups: Map<Element, HTMLElement[]> = new Map();
 
     if (options.trigger) {
@@ -89,63 +96,42 @@ export function splitLinesOnScroll(
       });
 
       try {
+        // Split by lines without ANY clipping mask wrappers
         const split = SplitText.create(sectionElements, {
-          type: "words",
-          wordsClass: "scroll-reveal-piece",
+          type: "lines",
+          linesClass: "scroll-reveal-line",
           autoSplit: true,
           onSplit: (self) => {
-            if (!self.words || !self.words.length) return;
+            if (!self.lines || !self.lines.length) return;
 
             // Responsive mobile vs desktop calibration
-            const baseOpacity = isMobile ? 0.42 : (options.baseOpacity ?? 0.2);
+            const baseOpacity = isMobile ? 0.35 : (options.baseOpacity ?? 0.18);
             const enableBlur = !isMobile && (options.enableBlur ?? true);
             const blur = enableBlur ? (options.blurStrength ?? 2) : 0;
-            const useScrub = options.mode !== "enter";
+            const yOffset = isMobile ? 6 : (options.baseOffset ?? 7);
 
-            if (useScrub) {
-              // Scroll-sequenced reveal: words illuminate in direct lockstep with scroll progress
-              return gsap.fromTo(
-                self.words,
-                {
-                  opacity: baseOpacity,
-                  filter: blur ? `blur(${blur}px)` : "none",
+            return gsap.fromTo(
+              self.lines,
+              {
+                opacity: baseOpacity,
+                y: yOffset,
+                filter: blur ? `blur(${blur}px)` : "none",
+              },
+              {
+                scrollTrigger: {
+                  trigger: triggerSection,
+                  start: isMobile ? "top 78%" : (options.start ?? "top 80%"),
+                  once: true, // Auto-completes cleanly forward and stays permanently sharp!
                 },
-                {
-                  scrollTrigger: {
-                    trigger: triggerSection,
-                    start: isMobile ? "top 90%" : (options.start ?? "top 84%"),
-                    end: isMobile ? "bottom 65%" : (options.end ?? "bottom 55%"),
-                    scrub: isMobile ? 0.1 : 0.35,
-                  },
-                  opacity: 1,
-                  filter: "blur(0px)",
-                  stagger: isMobile ? 0.008 : 0.018,
-                  ease: "none",
-                }
-              );
-            } else {
-              // Enter mode: smooth editorial wave when entering view
-              return gsap.fromTo(
-                self.words,
-                {
-                  opacity: baseOpacity,
-                  filter: blur ? `blur(${blur}px)` : "none",
-                },
-                {
-                  scrollTrigger: {
-                    trigger: triggerSection,
-                    start: isMobile ? "top 90%" : (options.start ?? "top 82%"),
-                    once: true,
-                  },
-                  opacity: 1,
-                  filter: "blur(0px)",
-                  duration: isMobile ? 0.42 : (options.duration ?? 0.7),
-                  stagger: isMobile ? 0.008 : (options.stagger ?? 0.018),
-                  delay: options.delay ?? 0.04,
-                  ease: "power2.out",
-                }
-              );
-            }
+                opacity: 1,
+                y: 0,
+                filter: "blur(0px)",
+                duration: isMobile ? 0.48 : (options.duration ?? 0.65),
+                stagger: isMobile ? 0.035 : (options.stagger ?? 0.045),
+                delay: isMobile ? 0.16 : (options.delay ?? 0.08),
+                ease: options.ease ?? "power3.out",
+              }
+            );
           },
         });
 
@@ -154,7 +140,7 @@ export function splitLinesOnScroll(
         });
         instances.push(split);
       } catch (err) {
-        console.warn("ScrollReveal section error:", err);
+        console.warn("ScrollReveal line-settle error:", err);
       }
     });
   };

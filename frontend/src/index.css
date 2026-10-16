@@ -212,17 +212,21 @@ body::-webkit-scrollbar-thumb:active,
   }
 }
 
-/* Unmasked Scroll Reveal (GSAP Focus & Ambient Fade) */
+/* Unmasked Scroll Reveal (GSAP Focus & Ambient Line Settling) */
+.scroll-reveal-line,
 .scroll-reveal-piece {
-  display: inline-block;
-  will-change: opacity, filter;
+  display: block;
+  will-change: transform, opacity, filter;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scroll-reveal-line,
   .scroll-reveal-piece {
     opacity: 1 !important;
+    transform: none !important;
     filter: none !important;
   }
 }
+
 
 
