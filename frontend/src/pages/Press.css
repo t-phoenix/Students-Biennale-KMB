@@ -380,6 +380,21 @@
   .press__header {
     padding: 14px 0;
   }
+
+  .press__title {
+    font-size: clamp(15px, 4.2vw, 18px);
+    line-height: clamp(21px, 5.2vw, 25px);
+    letter-spacing: -0.008em;
+    font-weight: 500;
+  }
+
+  .press__date {
+    font-size: 16px;
+    font-weight: 400;
+    color: #545454;
+    white-space: nowrap;
+    text-align: right;
+  }
 }
 
 @media (max-width: 599px) {
