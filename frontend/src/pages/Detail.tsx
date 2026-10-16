@@ -91,15 +91,15 @@ export function Detail() {
             delay: isFirst ? 0.12 : 0.08,
           });
 
-          // Headings, labels, and metadata
+          // Headings, labels, and metadata: pure opacity fade without down-to-up movement
           const labelsAndHeadings = sec.querySelectorAll(
             ".detail__label, .detail__title, .detail__meta, .detail__curated-by, .detail__zone, .detail__artists > div, .detail__cards"
           );
           if (labelsAndHeadings.length > 0) {
             tl.fromTo(
               labelsAndHeadings,
-              { autoAlpha: 0, y: 16 },
-              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 0 },
+              { autoAlpha: 1, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
               0
             );
           }

@@ -437,8 +437,8 @@ function cleanIntroParagraphs(
       if (topItems && topItems.length > 0) {
         gsap.fromTo(
           topItems,
-          { autoAlpha: 0, y: 20 },
-          { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)", delay: 0.1 }
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)", delay: 0.1 }
         );
       }
 
@@ -458,8 +458,8 @@ function cleanIntroParagraphs(
           if (headings.length > 0) {
             tl.fromTo(
               headings,
-              { autoAlpha: 0, y: 16 },
-              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 0 },
+              { autoAlpha: 1, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
               0
             );
           }
@@ -480,8 +480,8 @@ function cleanIntroParagraphs(
           if (otherReveals.length > 0) {
             tl.fromTo(
               otherReveals,
-              { autoAlpha: 0, y: 16 },
-              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 0 },
+              { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
               0.16
             );
           }

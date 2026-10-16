@@ -392,8 +392,8 @@ export function Home() {
             if (label) {
               tl.fromTo(
                 label,
-                { autoAlpha: 0, y: 28 },
-                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.08
               );
             }
@@ -428,8 +428,8 @@ export function Home() {
             if (links.length > 0) {
               tl.fromTo(
                 links,
-                { autoAlpha: 0, x: -20 },
-                { autoAlpha: 1, x: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.08
               );
             }
@@ -437,8 +437,8 @@ export function Home() {
             if (scroll) {
               tl.fromTo(
                 scroll,
-                { autoAlpha: 0, scale: 0.97 },
-                { autoAlpha: 1, scale: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.18
               );
             }
@@ -446,8 +446,8 @@ export function Home() {
             if (cta) {
               tl.fromTo(
                 cta,
-                { autoAlpha: 0, y: 16 },
-                { autoAlpha: 1, y: 0, duration: 0.9, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.9, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.28
               );
             }
@@ -463,8 +463,8 @@ export function Home() {
             if (topLabel) {
               tl.fromTo(
                 topLabel,
-                { autoAlpha: 0, y: 28 },
-                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.08
               );
             }
@@ -472,8 +472,8 @@ export function Home() {
             if (banner) {
               tl.fromTo(
                 banner,
-                { autoAlpha: 0, scale: 1.03 },
-                { autoAlpha: 1, scale: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.16
               );
             }
@@ -481,8 +481,8 @@ export function Home() {
             if (railLinks.length > 0) {
               tl.fromTo(
                 railLinks,
-                { autoAlpha: 0, x: -16 },
-                { autoAlpha: 1, x: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.2
               );
             }
@@ -490,8 +490,8 @@ export function Home() {
             if (thumbs.length > 0) {
               tl.fromTo(
                 thumbs,
-                { autoAlpha: 0, y: 24, scale: 0.97 },
-                { autoAlpha: 1, y: 0, scale: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.24
               );
             }
@@ -499,8 +499,8 @@ export function Home() {
             if (mobileCards.length > 0) {
               tl.fromTo(
                 mobileCards,
-                { autoAlpha: 0, y: 24 },
-                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.22
               );
             }
@@ -516,8 +516,8 @@ export function Home() {
             if (pressLabel) {
               tl.fromTo(
                 pressLabel,
-                { autoAlpha: 0, y: 28 },
-                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.08
               );
             }
@@ -525,8 +525,8 @@ export function Home() {
             if (pressItemsEls.length > 0) {
               tl.fromTo(
                 pressItemsEls,
-                { autoAlpha: 0, y: 20 },
-                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.16
               );
             }
@@ -534,14 +534,14 @@ export function Home() {
             if (pressMore) {
               tl.fromTo(
                 pressMore,
-                { autoAlpha: 0, y: 16 },
-                { autoAlpha: 1, y: 0, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0.26
               );
             }
           }
 
-          // 5. About Us (.home-about) — Smooth scroll reveals with pure opacity on dense text paragraphs (NO position jump)
+          // 5. About Us (.home-about) — Smooth scroll reveals with pure opacity (NO position jump)
           const about = document.querySelector<HTMLElement>(".home-about");
           if (about) {
             // Intro ("ABOUT US")
@@ -552,8 +552,8 @@ export function Home() {
               });
               tlAbout.fromTo(
                 introLabel,
-                { autoAlpha: 0, y: 24 },
-                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                 0
               );
             }
@@ -568,8 +568,8 @@ export function Home() {
               if (kbfLogo) {
                 tlKbf.fromTo(
                   kbfLogo,
-                  { autoAlpha: 0, scale: 0.96 },
-                  { autoAlpha: 1, scale: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                   0
                 );
               }
@@ -594,8 +594,8 @@ export function Home() {
               if (sbLogo) {
                 tlSb.fromTo(
                   sbLogo,
-                  { autoAlpha: 0, scale: 0.96 },
-                  { autoAlpha: 1, scale: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                   0
                 );
               }
@@ -620,8 +620,8 @@ export function Home() {
               if (teamLabel) {
                 tlTeam.fromTo(
                   teamLabel,
-                  { autoAlpha: 0, x: -16 },
-                  { autoAlpha: 1, x: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                   0
                 );
               }
@@ -646,8 +646,8 @@ export function Home() {
               if (sponsorsLabel) {
                 tlSponsors.fromTo(
                   sponsorsLabel,
-                  { autoAlpha: 0, x: -16 },
-                  { autoAlpha: 1, x: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
                   0
                 );
               }

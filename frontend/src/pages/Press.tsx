@@ -120,10 +120,9 @@ export function Press() {
       }
       gsap.fromTo(
         el,
-        { autoAlpha: 0, y: 16 },
+        { autoAlpha: 0 },
         {
           autoAlpha: 1,
-          y: 0,
           duration: 0.95,
           delay: 0.12,
           ease: "cubic-bezier(0.16, 1, 0.3, 1)",

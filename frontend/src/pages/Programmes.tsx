@@ -202,10 +202,9 @@ export function Programmes() {
         sections.forEach((sec) => {
           gsap.fromTo(
             sec,
-            { autoAlpha: 0, y: 24 },
+            { autoAlpha: 0 },
             {
               autoAlpha: 1,
-              y: 0,
               duration: 0.95,
               delay: 0.1,
               ease: "cubic-bezier(0.16, 1, 0.3, 1)",
