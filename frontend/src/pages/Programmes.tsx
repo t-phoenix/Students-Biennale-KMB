@@ -51,19 +51,44 @@ export function Programmes() {
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
+  const [clickedWorkshopId, setClickedWorkshopId] = useState<string>("");
   const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
   const workshopHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleWorkshopHover = useCallback((id: string) => {
-    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-    workshopHoverTimerRef.current = setTimeout(() => {
-      setHoveredWorkshopId(id);
-    }, 35);
-  }, []);
+  const isDesktopHover = useCallback(
+    () =>
+      typeof window !== "undefined" &&
+      window.innerWidth > 899 &&
+      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
+    [],
+  );
 
-  const handleWorkshopLeave = useCallback(() => {
+  const handleWorkshopPointerEnter = useCallback(
+    (e: React.PointerEvent, id: string) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
+      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+      workshopHoverTimerRef.current = setTimeout(() => {
+        setHoveredWorkshopId(id);
+      }, 35);
+    },
+    [isDesktopHover],
+  );
+
+  const handleWorkshopPointerLeave = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
+      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
+      workshopHoverTimerRef.current = setTimeout(() => {
+        setHoveredWorkshopId("");
+      }, 80);
+    },
+    [isDesktopHover],
+  );
+
+  const handleToggleWorkshop = useCallback((id: string) => {
     if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
     setHoveredWorkshopId("");
+    setClickedWorkshopId((prev) => (prev === id ? "" : id));
   }, []);
   // Collapsed by default; remember expand/collapse for this browser tab only.
   const [expandedIntlAwards, setExpandedIntlAwards] = useState(() =>
@@ -81,7 +106,7 @@ export function Programmes() {
   const intlAwardsEffective = awardsInternational;
   const nationalAwardsEffective = awardsNational;
 
-  const activePastWorkshopId = hoveredWorkshopId;
+  const activePastWorkshopId = clickedWorkshopId || hoveredWorkshopId;
 
   const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
   const standardIntlAwards = useMemo(
@@ -341,7 +366,10 @@ export function Programmes() {
       <section id="past-workshops" className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
         {pastWorkshops.length ? (
-          <div className="programmes__past-items fig-c4-12" onMouseLeave={handleWorkshopLeave}>
+          <div
+            className="programmes__past-items fig-c4-12"
+            onPointerLeave={handleWorkshopPointerLeave}
+          >
             {pastWorkshops.map((item) => {
               const isExpanded = activePastWorkshopId === item.id;
               return (
@@ -349,45 +377,43 @@ export function Programmes() {
                   key={item.id}
                   data-id={item.id}
                   className={`programmes__past-item${isExpanded ? " is-expanded" : ""}`}
-                  onMouseEnter={() => handleWorkshopHover(item.id)}
+                  onPointerEnter={(e) => handleWorkshopPointerEnter(e, item.id)}
                 >
-                  <div className="programmes__past-collapsed-wrap" aria-hidden={isExpanded}>
-                    <Link
-                      to={`/programmes/past-workshops/${item.id}`}
-                      className="programmes__past-collapsed"
-                      tabIndex={isExpanded ? -1 : 0}
-                      onClick={(e) => {
-                        if (window.innerWidth <= 899) {
-                          e.preventDefault();
-                          if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-                          setHoveredWorkshopId((prev) => (prev === item.id ? "" : item.id));
-                        }
-                      }}
-                    >
-                      <span className="programmes__past-collapsed-title">{item.title}</span>
-                      <time className="programmes__past-collapsed-date">{item.year}</time>
-                    </Link>
-                  </div>
+                  <button
+                    type="button"
+                    className="programmes__past-header"
+                    aria-expanded={isExpanded}
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => handleToggleWorkshop(item.id)}
+                  >
+                    <span className="programmes__past-title">{item.title}</span>
+                    <time className="programmes__past-date">{item.year}</time>
+                  </button>
 
-                  <div className="programmes__past-expanded-wrap" aria-hidden={!isExpanded}>
-                    <div className="programmes__past-expanded-inner">
-                      <div className="programmes__past-expanded">
+                  <div className="programmes__past-drawer-wrap" aria-hidden={!isExpanded}>
+                    <div className="programmes__past-drawer-inner">
+                      <div className="programmes__past-drawer-content">
                         {item.heroImage ? (
-                          <div className="programmes__past-featured-img-wrap">
+                          <Link
+                            to={`/programmes/past-workshops/${item.id}`}
+                            className="programmes__past-drawer-media"
+                            tabIndex={isExpanded ? 0 : -1}
+                            aria-label={`Read ${item.title}`}
+                          >
                             <img
-                              className="programmes__past-featured-img"
+                              className="programmes__past-drawer-img"
                               src={item.heroImage}
                               alt=""
                               loading="lazy"
                             />
-                          </div>
+                          </Link>
                         ) : (
-                          <div className="programmes__past-featured-img-wrap programmes__past-featured-placeholder" aria-hidden />
+                          <div
+                            className="programmes__past-drawer-media programmes__past-drawer-placeholder"
+                            aria-hidden
+                          />
                         )}
-                        <div className="programmes__past-featured-copy">
-                          <div className="programmes__past-featured-head">
-                            <h3>{item.title}</h3>
-                          </div>
+                        <div className="programmes__past-drawer-copy">
                           {item.facilitators ? (
                             <span className="programmes__past-facilitators">
                               Facilitators : {item.facilitators}
@@ -403,11 +429,11 @@ export function Programmes() {
                           <Link
                             to={`/programmes/past-workshops/${item.id}`}
                             className="home-text-btn programmes__past-more-btn"
+                            tabIndex={isExpanded ? 0 : -1}
                           >
                             Read more...
                           </Link>
                         </div>
-                        <time className="programmes__past-featured-date">{item.year}</time>
                       </div>
                     </div>
                   </div>
