@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { NavLink, Outlet, useLocation, useMatch, useParams } from "react-router-dom";
 import { EditionSearchResultsPanel } from "../components/EditionSearchResults";
-import { PreviousEditionsButton, PreviousEditionsModal } from "../components/PreviousEditionsModal";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
+import { useModalPortal } from "../lib/useModalPortal";
 import { gsap, prefersReducedMotion, useGSAP } from "../lib/motion";
 import { EditionSearchProvider, useEditionSearch } from "./EditionSearchContext";
 import "./EditionShell.css";
@@ -110,6 +111,164 @@ function EditionCatalogueMain() {
   );
 }
 
+function PreviousEditionsModal({
+  open,
+  onClose,
+  currentYearId,
+}: {
+  open: boolean;
+  onClose: () => void;
+  currentYearId: string;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  useModalPortal({
+    open,
+    onClose,
+    panelRef,
+    initialFocusRef: closeBtnRef,
+  });
+
+  if (!open || typeof document === "undefined") return null;
+
+  const editionsList = [
+    {
+      id: LATEST_EDITION.id,
+      title: "Students' Biennale 2025–26",
+      subtitle: "Sensing Grounds",
+      isCurrent: true,
+    },
+    {
+      id: "2022-23",
+      title: "Students' Biennale 2022–23",
+      subtitle: "In the Making",
+    },
+    {
+      id: "2020-21",
+      title: "Students' Biennale 2020–21",
+      subtitle: "Words are Thinking Marks",
+    },
+    {
+      id: "2018-19",
+      title: "Students' Biennale 2018–19",
+      subtitle: "Making as Learning",
+    },
+    {
+      id: "2016-17",
+      title: "Students' Biennale 2016–17",
+      subtitle: "Second Edition",
+    },
+    {
+      id: "2014-15",
+      title: "Students' Biennale 2014–15",
+      subtitle: "Inaugural Edition",
+    },
+  ];
+
+  return createPortal(
+    <div className="edition-modal" role="presentation" data-lenis-prevent>
+      <button
+        type="button"
+        className="edition-modal__scrim"
+        aria-label="Close Previous Editions modal"
+        onClick={onClose}
+      />
+      <div
+        ref={panelRef}
+        className="edition-modal__panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edition-modal-title"
+      >
+        <div className="edition-modal__handle" aria-hidden="true" />
+        <div className="edition-modal__header">
+          <div>
+            <p className="edition-modal__kicker">Students&apos; Biennale</p>
+            <h2 id="edition-modal-title" className="edition-modal__title">
+              Previous Editions
+            </h2>
+          </div>
+          <button
+            ref={closeBtnRef}
+            type="button"
+            className="edition-modal__close-btn"
+            onClick={onClose}
+            aria-label="Close Previous Editions modal"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <nav className="edition-modal__list" aria-label="Available editions">
+          {editionsList.map((ed) => {
+            const isSelected = ed.id === currentYearId;
+            return (
+              <NavLink
+                key={ed.id}
+                to={`/editions/${ed.id}`}
+                onClick={onClose}
+                className={`edition-modal__item${isSelected ? " is-selected" : ""}`}
+              >
+                <div className="edition-modal__item-content">
+                  <div className="edition-modal__item-heading-row">
+                    <span className="edition-modal__item-year">
+                      {ed.id.replace("-", "–")}
+                    </span>
+                    {ed.isCurrent && (
+                      <span className="edition-modal__current-pill">
+                        Current Edition
+                      </span>
+                    )}
+                    {isSelected && (
+                      <span className="edition-modal__active-pill">
+                        Viewing
+                      </span>
+                    )}
+                  </div>
+                  {ed.subtitle && (
+                    <span className="edition-modal__item-subtitle">
+                      {ed.subtitle}
+                    </span>
+                  )}
+                </div>
+                <div className="edition-modal__item-arrow" aria-hidden="true">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </div>
+              </NavLink>
+            );
+          })}
+        </nav>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function EditionShellLayout() {
   const { yearId = LATEST_EDITION.id } = useParams();
   const location = useLocation();
@@ -131,7 +290,7 @@ function EditionShellLayout() {
 
   return (
     <div className="edition fig-grid" data-node-id="6:1310">
-      {/* Desktop stationery left rail (hidden on <= 899px and tablet portrait) */}
+      {/* Desktop stationery left rail (hidden on <= 899px) */}
       <aside className="edition__rail fig-rail edition__rail--desktop">
         <h1 className="fig-heading">
           Students&apos; Biennale
@@ -172,17 +331,12 @@ function EditionShellLayout() {
         </div>
       </aside>
 
-      {/* Mobile top header & navigation (visible on <= 899px and tablet portrait) */}
+      {/* Mobile top header & navigation (visible on <= 899px) */}
       <div className="edition__mobile-nav-wrapper">
         <div className="edition__mobile-title-row">
           <h1 className="edition__mobile-title">
             Students&apos; Biennale <span className="edition__mobile-year">{headingYears}</span>
           </h1>
-          <PreviousEditionsButton
-            isOpen={isArchiveOpen}
-            onClick={() => setIsArchiveOpen((prev) => !prev)}
-            className="edition__archive-toggle--title"
-          />
         </div>
 
         {/* Mobile Sticky Segmented Navigation Bar */}
@@ -199,11 +353,29 @@ function EditionShellLayout() {
                 {tab.label}
               </NavLink>
             ))}
-            <PreviousEditionsButton
-              isOpen={isArchiveOpen}
+            <button
+              type="button"
+              className={`edition__mobile-tab edition__archive-toggle${isArchiveOpen ? " is-open" : ""}`}
               onClick={() => setIsArchiveOpen((prev) => !prev)}
-              className="edition__archive-toggle--tab"
-            />
+              aria-expanded={isArchiveOpen}
+              aria-haspopup="dialog"
+            >
+              <span>Previous Editions</span>
+              <svg
+                className="edition__archive-chevron"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
           </nav>
         </div>
       </div>

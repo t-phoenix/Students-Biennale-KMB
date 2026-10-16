@@ -50,11 +50,8 @@ export function useModalPortal({ open, onClose, panelRef, initialFocusRef }: Opt
     };
     window.addEventListener("keydown", onKey);
 
-    const isTouch = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
     const t = window.setTimeout(() => {
-      if (!isTouch) {
-        initialFocusRef_.current?.current?.focus({ preventScroll: true });
-      }
+      initialFocusRef_.current?.current?.focus({ preventScroll: true });
     }, 30);
 
     return () => {

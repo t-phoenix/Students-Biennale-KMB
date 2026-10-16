@@ -370,25 +370,6 @@ export function Header() {
     isOpenRef.current = false;
   }, []);
 
-  useEffect(() => {
-    if (!activeDropdown) return;
-    const handleOutside = (e: PointerEvent) => {
-      const target = e.target as Node | null;
-      if (
-        navRef.current &&
-        !navRef.current.contains(target) &&
-        dropdownPanelRef.current &&
-        !dropdownPanelRef.current.contains(target)
-      ) {
-        closeImmediate();
-      }
-    };
-    document.addEventListener("pointerdown", handleOutside);
-    return () => {
-      document.removeEventListener("pointerdown", handleOutside);
-    };
-  }, [activeDropdown, closeImmediate]);
-
   const goToSection = (
     hash: HomeSectionId,
     event: MouseEvent<HTMLAnchorElement>
@@ -527,16 +508,7 @@ export function Header() {
                     ? "is-active"
                     : undefined
                 }
-                onClick={(e) => {
-                  if (item.hasDropdown) {
-                    if (activeDropdown !== item.hash) {
-                      e.preventDefault();
-                      openDropdown(item.hash);
-                      return;
-                    }
-                  }
-                  goToSection(item.hash, e);
-                }}
+                onClick={(e) => goToSection(item.hash, e)}
                 onMouseEnter={() => warmRoute(`/#${item.hash}`)}
                 onFocus={() => warmRoute(`/#${item.hash}`)}
               >
