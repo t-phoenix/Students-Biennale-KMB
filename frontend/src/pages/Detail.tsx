@@ -108,13 +108,12 @@ export function Detail() {
           }
 
           // Dense body copy text paragraphs (Artwork Description, Curatorial notes, Curator bios):
-          // Responsive masked line splits on scroll (SplitText autoSplit + mask: "lines")
+          // Unmasked ambient focus & illumination reveal, sequenced in scroll order
           const textParas = sec.querySelectorAll(".detail__desc p, .detail__note-body p, .detail__curator-bio p, .fig-body");
           if (textParas.length > 0) {
             const cleanupSplit = splitLinesOnScroll(textParas, {
               trigger: isFirst ? undefined : sec,
-              start: "top 78%",
-              delay: isFirst ? 0.2 : 0.12,
+              mode: isFirst ? "enter" : "scrub",
             });
             cleanups.push(cleanupSplit);
           }

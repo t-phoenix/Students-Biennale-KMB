@@ -3,6 +3,7 @@ import { gsap, SplitText, prefersReducedMotion } from "./motion";
 export interface SplitLinesScrollOptions {
   trigger?: Element | string;
   start?: string;
+  end?: string;
   duration?: number;
   stagger?: number;
   delay?: number;
@@ -10,16 +11,20 @@ export interface SplitLinesScrollOptions {
   baseOpacity?: number;
   enableBlur?: boolean;
   blurStrength?: number;
+  mode?: "scrub" | "enter";
 }
 
 /**
- * Applies unmasked ambient focus & illumination reveal on scroll (inspired by React Bits ScrollReveal).
+ * Applies unmasked ambient focus & illumination reveal, sequenced in scroll order.
  *
- * UNMASKED & SECTION-WISE:
- * - NO clipping masks (`mask` is not used; `overflow: hidden` is never added).
- * - Text paragraphs are split into words and smoothly transition from a soft ambient
- *   dimmed state (`baseOpacity: 0.12`, `blur: 3px`) into full sharp contrast (`opacity: 1`, `blur: 0px`).
- * - All paragraphs in a section flow together in a continuous, graceful cascade.
+ * SCROLL-SEQUENCED & UNMASKED:
+ * - NO clipping masks (no overflow:hidden or clipping rectangles).
+ * - Tied directly to scroll position (`scrub` mode by default): as the user scrolls,
+ *   sections illuminate sequentially in natural reading order down the page.
+ * - Mobile-calibrated:
+ *   - Mobile (≤899px): High resting opacity (0.42), 0 blur for 60/120fps GPU performance,
+ *     responsive 0.1s scrub catchup, triggers early at top 90%.
+ *   - Desktop (>899px): 0.20 resting opacity, subtle 2px blur, silky 0.35s scrub damping.
  */
 export function splitLinesOnScroll(
   targets: gsap.DOMTarget,
@@ -47,8 +52,10 @@ export function splitLinesOnScroll(
 
     if (!validElements.length) return;
 
+    const isMobile = window.innerWidth <= 899;
+
     // Group elements by section so all paragraphs in a particular section
-    // animate together across that section rather than paragraph-wise.
+    // sequence together across that section rather than paragraph-wise.
     const groups: Map<Element, HTMLElement[]> = new Map();
 
     if (options.trigger) {
@@ -82,37 +89,63 @@ export function splitLinesOnScroll(
       });
 
       try {
-        // Split by words without ANY masks
         const split = SplitText.create(sectionElements, {
           type: "words",
           wordsClass: "scroll-reveal-piece",
           autoSplit: true,
           onSplit: (self) => {
             if (!self.words || !self.words.length) return;
-            const baseOpacity = options.baseOpacity ?? 0.14;
-            const enableBlur = options.enableBlur ?? true;
-            const blur = enableBlur ? (options.blurStrength ?? 3) : 0;
 
-            return gsap.fromTo(
-              self.words,
-              {
-                opacity: baseOpacity,
-                filter: blur ? `blur(${blur}px)` : "none",
-              },
-              {
-                scrollTrigger: {
-                  trigger: triggerSection,
-                  start: options.start ?? "top 80%",
-                  once: true,
+            // Responsive mobile vs desktop calibration
+            const baseOpacity = isMobile ? 0.42 : (options.baseOpacity ?? 0.2);
+            const enableBlur = !isMobile && (options.enableBlur ?? true);
+            const blur = enableBlur ? (options.blurStrength ?? 2) : 0;
+            const useScrub = options.mode !== "enter";
+
+            if (useScrub) {
+              // Scroll-sequenced reveal: words illuminate in direct lockstep with scroll progress
+              return gsap.fromTo(
+                self.words,
+                {
+                  opacity: baseOpacity,
+                  filter: blur ? `blur(${blur}px)` : "none",
                 },
-                opacity: 1,
-                filter: "blur(0px)",
-                duration: options.duration ?? 0.75,
-                stagger: options.stagger ?? 0.02,
-                delay: options.delay ?? 0.06,
-                ease: options.ease ?? "power2.out",
-              }
-            );
+                {
+                  scrollTrigger: {
+                    trigger: triggerSection,
+                    start: isMobile ? "top 90%" : (options.start ?? "top 84%"),
+                    end: isMobile ? "bottom 65%" : (options.end ?? "bottom 55%"),
+                    scrub: isMobile ? 0.1 : 0.35,
+                  },
+                  opacity: 1,
+                  filter: "blur(0px)",
+                  stagger: isMobile ? 0.008 : 0.018,
+                  ease: "none",
+                }
+              );
+            } else {
+              // Enter mode: smooth editorial wave when entering view
+              return gsap.fromTo(
+                self.words,
+                {
+                  opacity: baseOpacity,
+                  filter: blur ? `blur(${blur}px)` : "none",
+                },
+                {
+                  scrollTrigger: {
+                    trigger: triggerSection,
+                    start: isMobile ? "top 90%" : (options.start ?? "top 82%"),
+                    once: true,
+                  },
+                  opacity: 1,
+                  filter: "blur(0px)",
+                  duration: isMobile ? 0.42 : (options.duration ?? 0.7),
+                  stagger: isMobile ? 0.008 : (options.stagger ?? 0.018),
+                  delay: options.delay ?? 0.04,
+                  ease: "power2.out",
+                }
+              );
+            }
           },
         });
 
