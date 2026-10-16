@@ -684,9 +684,15 @@ export function Home() {
       // Use opacity (not autoAlpha) so visibility stays visible — browsers may defer
       // decode of visibility:hidden images, which caused post-splash hero lag.
       // Pre-set the parallax start scale (1.12) under the splash so handoff does not
-      // jump from scale 1 → 1.12 when ScrollTrigger arms.
+      // jump from scale 1 → 1.12 when ScrollTrigger arms (DESKTOP ONLY).
+      // Mobile is strictly locked to scale 1 without any transforms.
+      const isDesktop = typeof window !== "undefined" && window.innerWidth > 899;
       if (splashWillShow && !splashCompleted) {
-        gsap.set(".home-hero__slides", { scale: 1.12, transformOrigin: "center center" });
+        if (isDesktop) {
+          gsap.set(".home-hero__slides", { scale: 1.12, transformOrigin: "center center" });
+        } else {
+          gsap.set(".home-hero__slides", { scale: 1, clearProps: "transform" });
+        }
         gsap.set(".home-hero__slide", { opacity: 0, visibility: "visible" });
         gsap.set(
           ".home-hero__card, .home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
@@ -699,9 +705,13 @@ export function Home() {
 
       withMotionPreference({
         animate: () => {
-          // Keep the splash handoff scale continuous — never snap 1 → 1.12 on reveal.
-          if (splashWillShow) {
-            gsap.set(".home-hero__slides", { scale: 1.12, transformOrigin: "center center" });
+          // Keep the splash handoff scale continuous — never snap 1 → 1.12 on reveal (desktop only).
+          if (isDesktop) {
+            if (splashWillShow) {
+              gsap.set(".home-hero__slides", { scale: 1.12, transformOrigin: "center center" });
+            }
+          } else {
+            gsap.set(".home-hero__slides", { scale: 1, clearProps: "transform" });
           }
 
           // 1. Initial Hero Background & Content Entrance Choreography

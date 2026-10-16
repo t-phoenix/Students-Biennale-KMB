@@ -1051,9 +1051,12 @@
   .home-hero {
     position: sticky;
     top: var(--nav-height-mobile, 56px);
-    height: calc(100dvh - var(--nav-height-mobile, 56px));
-    min-height: calc(100dvh - var(--nav-height-mobile, 56px));
-    max-height: calc(100dvh - var(--nav-height-mobile, 56px));
+    height: calc(100vh - var(--nav-height-mobile, 56px));
+    height: calc(100svh - var(--nav-height-mobile, 56px));
+    min-height: calc(100vh - var(--nav-height-mobile, 56px));
+    min-height: calc(100svh - var(--nav-height-mobile, 56px));
+    max-height: calc(100vh - var(--nav-height-mobile, 56px));
+    max-height: calc(100svh - var(--nav-height-mobile, 56px));
     overflow: hidden;
     z-index: 1;
   }
