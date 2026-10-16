@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { splitLinesOnScroll } from "../lib/splitTextScroll";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
@@ -429,6 +430,7 @@ function cleanIntroParagraphs(
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
+      const cleanups: (() => void)[] = [];
 
       // Top intro/hero block reveals on load
       const topItems = root.current?.querySelectorAll(
@@ -464,16 +466,16 @@ function cleanIntroParagraphs(
             );
           }
 
-          // Dense text paragraphs (Curatorial note paragraphs, Curator bios):
-          // Pure soft opacity fade (NO position jump)
+          // Dense body copy text paragraphs (Curatorial note paragraphs, Curator bios):
+          // Responsive masked line splits on scroll (SplitText autoSplit + mask: "lines")
           const textParas = sec.querySelectorAll(".edition-overview__curatorial-body p, .edition-overview__bio-body p, .fig-body");
           if (textParas.length > 0) {
-            tl.fromTo(
-              textParas,
-              { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-              0.12
-            );
+            const cleanupSplit = splitLinesOnScroll(textParas, {
+              trigger: sec,
+              start: "top 76%",
+              delay: 0.12,
+            });
+            cleanups.push(cleanupSplit);
           }
 
           const otherReveals = sec.querySelectorAll(".edition-overview__downloads-grid, .edition-overview__team-grid, .edition-overview__slot");
@@ -487,6 +489,10 @@ function cleanIntroParagraphs(
           }
         });
       }
+
+      return () => {
+        cleanups.forEach((c) => c());
+      };
     },
     { scope: root, dependencies: [yearId] },
   );

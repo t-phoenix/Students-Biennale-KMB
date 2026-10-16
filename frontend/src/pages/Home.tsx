@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../lib/motion";
+import { splitLinesOnScroll } from "../lib/splitTextScroll";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
 import { SpotlightModal } from "../components/SpotlightModal";
@@ -380,6 +381,8 @@ export function Home() {
 
   useGSAP(
     () => {
+      const cleanups: (() => void)[] = [];
+
       withMotionPreference({
         animate: () => {
           // 1. Edition Intro (#editions)
@@ -397,14 +400,11 @@ export function Home() {
                 0.08
               );
             }
-            // Dense text paragraphs: pure opacity fade (NO position jump)
+            // Dense text paragraphs: Responsive masked line splits on scroll (SplitText autoSplit + mask: "lines")
             const bodies = edition.querySelectorAll(".home-edition__body > .fig-body");
             if (bodies.length > 0) {
-              tl.fromTo(
-                bodies,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.2
+              cleanups.push(
+                splitLinesOnScroll(bodies, { trigger: edition, start: "top 76%", delay: 0.18 })
               );
             }
             const btn = edition.querySelector(".home-text-btn");
@@ -573,13 +573,10 @@ export function Home() {
                   0
                 );
               }
-              const kbfP = kbfBlock.querySelector("p");
-              if (kbfP) {
-                tlKbf.fromTo(
-                  kbfP,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                  0.12
+              const kbfP = kbfBlock.querySelectorAll("p");
+              if (kbfP.length > 0) {
+                cleanups.push(
+                  splitLinesOnScroll(kbfP, { trigger: kbfBlock, start: "top 76%", delay: 0.14 })
                 );
               }
             }
@@ -601,11 +598,8 @@ export function Home() {
               }
               const sbPs = sbBlock.querySelectorAll(".home-about__sb-copy p");
               if (sbPs.length > 0) {
-                tlSb.fromTo(
-                  sbPs,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                  0.12
+                cleanups.push(
+                  splitLinesOnScroll(sbPs, { trigger: sbBlock, start: "top 76%", delay: 0.14 })
                 );
               }
             }
@@ -670,6 +664,10 @@ export function Home() {
           );
         },
       });
+
+      return () => {
+        cleanups.forEach((c) => c());
+      };
     },
     {
       scope: rootRef,

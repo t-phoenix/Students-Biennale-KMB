@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { splitLinesOnScroll } from "../lib/splitTextScroll";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
@@ -67,6 +68,8 @@ export function Detail() {
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
+      const cleanups: (() => void)[] = [];
+
       // Hero top element animation
       gsap.from(".detail__hero img, .detail__hero .image-crossfade, .detail__venue-hero, .detail__portrait img", {
         autoAlpha: 0,
@@ -104,19 +107,23 @@ export function Detail() {
             );
           }
 
-          // Dense text paragraphs (Artwork Description, Curatorial notes, Curator bios):
-          // Pure soft opacity fade (NO position jump)
+          // Dense body copy text paragraphs (Artwork Description, Curatorial notes, Curator bios):
+          // Responsive masked line splits on scroll (SplitText autoSplit + mask: "lines")
           const textParas = sec.querySelectorAll(".detail__desc p, .detail__note-body p, .detail__curator-bio p, .fig-body");
           if (textParas.length > 0) {
-            tl.fromTo(
-              textParas,
-              { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-              0.12
-            );
+            const cleanupSplit = splitLinesOnScroll(textParas, {
+              trigger: isFirst ? undefined : sec,
+              start: "top 78%",
+              delay: isFirst ? 0.2 : 0.12,
+            });
+            cleanups.push(cleanupSplit);
           }
         });
       }
+
+      return () => {
+        cleanups.forEach((c) => c());
+      };
     },
     { scope: root, dependencies: [id, kindSeg] }
   );

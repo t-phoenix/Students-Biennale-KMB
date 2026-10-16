@@ -211,3 +211,16 @@ body::-webkit-scrollbar-thumb:active,
     overflow-y: overlay;
   }
 }
+
+/* Responsive Line Splits on Scroll (GSAP SplitText Masking) */
+.split-line-mask {
+  overflow: clip !important;
+  overflow: hidden;
+  display: block;
+}
+
+.split-line {
+  display: block;
+  will-change: transform, opacity;
+}
+

@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { splitLinesOnScroll } from "../lib/splitTextScroll";
 
 type Props = {
   text: string;
@@ -23,17 +24,30 @@ export function FormattedParagraphs({
   text,
   paragraphClassName,
   className,
+  splitLines = false,
 }: {
   text: string;
   paragraphClassName?: string;
   className?: string;
+  splitLines?: boolean;
 }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!splitLines) return;
+    const container = containerRef.current;
+    if (!container) return;
+    const paras = container.querySelectorAll("p");
+    if (!paras.length) return;
+    return splitLinesOnScroll(paras);
+  }, [text, splitLines]);
+
   const paras = text
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean);
   return (
-    <div className={className}>
+    <div ref={containerRef} className={className}>
       {paras.map((para, i) => (
         <p key={`${i}-${para.slice(0, 24)}`} className={paragraphClassName}>
           {renderInline(para)}
