@@ -386,33 +386,33 @@ export function Home() {
           const edition = document.querySelector<HTMLElement>(".home-edition");
           if (edition) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: edition, start: "top 88%", once: true },
+              scrollTrigger: { trigger: edition, start: "top 72%", once: true },
             });
             const label = edition.querySelector(".fig-label");
             if (label) {
               tl.fromTo(
                 label,
-                { autoAlpha: 0, y: 44 },
-                { autoAlpha: 1, y: 0, duration: 1.45, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0
+                { autoAlpha: 0, y: 36 },
+                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.1
               );
             }
             const bodies = edition.querySelectorAll(".home-edition__body > .fig-body");
             if (bodies.length > 0) {
               tl.fromTo(
                 bodies,
-                { autoAlpha: 0, y: 36 },
-                { autoAlpha: 1, y: 0, duration: 1.35, stagger: 0.12, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.1
+                { autoAlpha: 0, y: 32 },
+                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.22
               );
             }
             const btn = edition.querySelector(".home-text-btn");
             if (btn) {
               tl.fromTo(
                 btn,
-                { autoAlpha: 0, y: 24 },
-                { autoAlpha: 1, y: 0, duration: 1.25, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.28
+                { autoAlpha: 0, y: 20 },
+                { autoAlpha: 1, y: 0, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.36
               );
             }
           }
@@ -421,33 +421,33 @@ export function Home() {
           const sensing = document.querySelector<HTMLElement>(".home-sensing");
           if (sensing) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: sensing, start: "top 88%", once: true },
+              scrollTrigger: { trigger: sensing, start: "top 72%", once: true },
             });
             const links = sensing.querySelectorAll(".home-sensing__links .fig-subheading");
             if (links.length > 0) {
               tl.fromTo(
                 links,
-                { autoAlpha: 0, x: -28 },
-                { autoAlpha: 1, x: 0, duration: 1.35, stagger: 0.08, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0
+                { autoAlpha: 0, x: -24 },
+                { autoAlpha: 1, x: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.1
               );
             }
             const scroll = sensing.querySelector(".home-sensing__scroll");
             if (scroll) {
               tl.fromTo(
                 scroll,
-                { autoAlpha: 0, scale: 0.94 },
-                { autoAlpha: 1, scale: 1, duration: 1.55, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.12
+                { autoAlpha: 0, scale: 0.96 },
+                { autoAlpha: 1, scale: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.2
               );
             }
             const cta = sensing.querySelector(".home-sensing__cta");
             if (cta) {
               tl.fromTo(
                 cta,
-                { autoAlpha: 0, y: 28 },
-                { autoAlpha: 1, y: 0, duration: 1.3, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.24
+                { autoAlpha: 0, y: 24 },
+                { autoAlpha: 1, y: 0, duration: 0.9, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.3
               );
             }
           }
@@ -456,51 +456,51 @@ export function Home() {
           const programmes = document.querySelector<HTMLElement>(".home-programmes");
           if (programmes) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: programmes, start: "top 88%", once: true },
+              scrollTrigger: { trigger: programmes, start: "top 72%", once: true },
             });
             const topLabel = programmes.querySelector(".home-programmes__top .fig-label");
             if (topLabel) {
               tl.fromTo(
                 topLabel,
-                { autoAlpha: 0, y: 44 },
-                { autoAlpha: 1, y: 0, duration: 1.45, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0
+                { autoAlpha: 0, y: 36 },
+                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.1
               );
             }
             const banner = programmes.querySelector(".home-programmes__banner");
             if (banner) {
               tl.fromTo(
                 banner,
-                { autoAlpha: 0, scale: 1.05 },
-                { autoAlpha: 1, scale: 1, duration: 1.55, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.1
+                { autoAlpha: 0, scale: 1.04 },
+                { autoAlpha: 1, scale: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.18
               );
             }
             const railLinks = programmes.querySelectorAll(".home-programmes__rail .fig-subheading");
             if (railLinks.length > 0) {
               tl.fromTo(
                 railLinks,
-                { autoAlpha: 0, x: -24 },
-                { autoAlpha: 1, x: 0, duration: 1.35, stagger: 0.08, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.16
+                { autoAlpha: 0, x: -20 },
+                { autoAlpha: 1, x: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.22
               );
             }
             const thumbs = programmes.querySelectorAll(".home-programmes__thumbs a");
             if (thumbs.length > 0) {
               tl.fromTo(
                 thumbs,
-                { autoAlpha: 0, y: 40, scale: 0.95 },
-                { autoAlpha: 1, y: 0, scale: 1, duration: 1.45, stagger: 0.12, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.22
+                { autoAlpha: 0, y: 32, scale: 0.96 },
+                { autoAlpha: 1, y: 0, scale: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.26
               );
             }
             const mobileCards = programmes.querySelectorAll(".home-programmes__mobile-card");
             if (mobileCards.length > 0) {
               tl.fromTo(
                 mobileCards,
-                { autoAlpha: 0, y: 40 },
-                { autoAlpha: 1, y: 0, duration: 1.4, stagger: 0.12, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.18
+                { autoAlpha: 0, y: 32 },
+                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.24
               );
             }
           }
@@ -509,163 +509,42 @@ export function Home() {
           const press = document.querySelector<HTMLElement>(".home-press");
           if (press) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: press, start: "top 88%", once: true },
+              scrollTrigger: { trigger: press, start: "top 72%", once: true },
             });
             const pressLabel = press.querySelector(".fig-label");
             if (pressLabel) {
               tl.fromTo(
                 pressLabel,
-                { autoAlpha: 0, y: 44 },
-                { autoAlpha: 1, y: 0, duration: 1.45, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0
+                { autoAlpha: 0, y: 36 },
+                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.1
               );
             }
             const pressItemsEls = press.querySelectorAll(".home-press__item");
             if (pressItemsEls.length > 0) {
               tl.fromTo(
                 pressItemsEls,
-                { autoAlpha: 0, y: 36 },
-                { autoAlpha: 1, y: 0, duration: 1.35, stagger: 0.1, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.1
+                { autoAlpha: 0, y: 32 },
+                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.18
               );
             }
             const pressMore = press.querySelector(".home-press__more");
             if (pressMore) {
               tl.fromTo(
                 pressMore,
-                { autoAlpha: 0, y: 24 },
-                { autoAlpha: 1, y: 0, duration: 1.25, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0.26
+                { autoAlpha: 0, y: 20 },
+                { autoAlpha: 1, y: 0, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.28
               );
             }
           }
 
-          // 5. About Us (.home-about)
-          const about = document.querySelector<HTMLElement>(".home-about");
-          if (about) {
-            // Intro + KBF Block
-            const introLabel = about.querySelector(".home-about__intro .fig-label");
-            if (introLabel) {
-              const tlAbout = gsap.timeline({
-                scrollTrigger: { trigger: about, start: "top 88%", once: true },
-              });
-              tlAbout.fromTo(
-                introLabel,
-                { autoAlpha: 0, y: 44 },
-                { autoAlpha: 1, y: 0, duration: 1.45, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                0
-              );
-              const kbfLogo = about.querySelector(".home-about__block:first-of-type .home-about__logo-wrap");
-              if (kbfLogo) {
-                tlAbout.fromTo(
-                  kbfLogo,
-                  { autoAlpha: 0, scale: 0.92 },
-                  { autoAlpha: 1, scale: 1, duration: 1.35, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0.1
-                );
-              }
-              const kbfP = about.querySelector(".home-about__block:first-of-type p");
-              if (kbfP) {
-                tlAbout.fromTo(
-                  kbfP,
-                  { autoAlpha: 0, y: 32 },
-                  { autoAlpha: 1, y: 0, duration: 1.35, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0.16
-                );
-              }
-            }
-
-            // Students' Biennale Block
-            const sbBlock = about.querySelectorAll(".home-about__block")[1];
-            if (sbBlock) {
-              const tlSb = gsap.timeline({
-                scrollTrigger: { trigger: sbBlock, start: "top 88%", once: true },
-              });
-              const sbLogo = sbBlock.querySelector(".home-about__logo-wrap");
-              if (sbLogo) {
-                tlSb.fromTo(
-                  sbLogo,
-                  { autoAlpha: 0, scale: 0.92 },
-                  { autoAlpha: 1, scale: 1, duration: 1.35, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0
-                );
-              }
-              const sbPs = sbBlock.querySelectorAll(".home-about__sb-copy p");
-              if (sbPs.length > 0) {
-                tlSb.fromTo(
-                  sbPs,
-                  { autoAlpha: 0, y: 32 },
-                  { autoAlpha: 1, y: 0, duration: 1.35, stagger: 0.1, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0.1
-                );
-              }
-            }
-
-            // Team Grid
-            const team = about.querySelector<HTMLElement>(".home-about__team");
-            if (team) {
-              const tlTeam = gsap.timeline({
-                scrollTrigger: { trigger: team, start: "top 88%", once: true },
-              });
-              const teamLabel = team.querySelector(".fig-label");
-              if (teamLabel) {
-                tlTeam.fromTo(
-                  teamLabel,
-                  { autoAlpha: 0, x: -24 },
-                  { autoAlpha: 1, x: 0, duration: 1.35, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0
-                );
-              }
-              const teamCols = team.querySelectorAll(".home-about__team-cols > div, .home-about__role");
-              if (teamCols.length > 0) {
-                tlTeam.fromTo(
-                  teamCols,
-                  { autoAlpha: 0, y: 36 },
-                  { autoAlpha: 1, y: 0, duration: 1.35, stagger: 0.08, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0.1
-                );
-              }
-            }
-
-            // Sponsors Wall
-            const sponsors = about.querySelector<HTMLElement>(".home-about__sponsors");
-            if (sponsors) {
-              const tlSponsors = gsap.timeline({
-                scrollTrigger: { trigger: sponsors, start: "top 88%", once: true },
-              });
-              const sponsorsLabel = sponsors.querySelector(".fig-label");
-              if (sponsorsLabel) {
-                tlSponsors.fromTo(
-                  sponsorsLabel,
-                  { autoAlpha: 0, x: -24 },
-                  { autoAlpha: 1, x: 0, duration: 1.35, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0
-                );
-              }
-              const primarySponsor = sponsors.querySelector(".home-about__sponsor-primary");
-              if (primarySponsor) {
-                tlSponsors.fromTo(
-                  primarySponsor,
-                  { autoAlpha: 0, y: 32 },
-                  { autoAlpha: 1, y: 0, duration: 1.35, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0.1
-                );
-              }
-              const sponsorGroups = sponsors.querySelectorAll(".home-about__sponsor-group");
-              if (sponsorGroups.length > 0) {
-                tlSponsors.fromTo(
-                  sponsorGroups,
-                  { autoAlpha: 0, y: 32 },
-                  { autoAlpha: 1, y: 0, duration: 1.35, stagger: 0.1, ease: "cubic-bezier(0.12, 0.8, 0.25, 1)" },
-                  0.18
-                );
-              }
-            }
-          }
+          // 5. About Us & Sponsors (.home-about): Static by design — no scroll reveal animation
         },
         onReduce: () => {
           gsap.set(
-            ".home-section, .fig-label, .home-edition__body .fig-body, .home-text-btn, .home-sensing__scroll, .home-programmes__banner, .home-about__sponsor-unit, .home-about__sponsor-group",
+            ".home-section, .fig-label, .home-edition__body .fig-body, .home-text-btn, .home-sensing__scroll, .home-programmes__banner",
             { autoAlpha: 1, x: 0, y: 0, scale: 1 }
           );
         },

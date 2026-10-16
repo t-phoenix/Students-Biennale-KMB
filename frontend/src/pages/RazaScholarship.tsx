@@ -26,13 +26,14 @@ export function RazaScholarship() {
       if (prefersReducedMotion()) return;
       gsap.fromTo(
         ".raza-reveal",
-        { autoAlpha: 0, y: 40 },
+        { autoAlpha: 0, y: 32 },
         {
           autoAlpha: 1,
           y: 0,
-          duration: 1.4,
-          stagger: 0.12,
-          ease: "cubic-bezier(0.12, 0.8, 0.25, 1)",
+          duration: 0.95,
+          delay: 0.12,
+          stagger: 0.08,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
           clearProps: "opacity,visibility,transform",
         }
       );
