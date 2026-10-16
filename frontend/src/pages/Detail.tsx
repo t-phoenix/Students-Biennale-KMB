@@ -67,23 +67,56 @@ export function Detail() {
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.from(".detail__hero img, .detail__hero .image-crossfade, .detail__venue-hero", {
+      // Hero top element animation
+      gsap.from(".detail__hero img, .detail__hero .image-crossfade, .detail__venue-hero, .detail__portrait img", {
         autoAlpha: 0,
-        scale: 1.04,
+        scale: 1.03,
         duration: 0.95,
         ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-      }).from(
-        ".detail-reveal",
-        {
-          autoAlpha: 0,
-          y: 12,
-          duration: 0.65,
-          stagger: 0.05,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-        },
-        "-=0.7"
-      );
+      });
+
+      // Scroll-triggered reveals for all sections along the scroll
+      const sections = root.current?.querySelectorAll<HTMLElement>(".detail__section, .detail__section--tight");
+      if (sections && sections.length > 0) {
+        sections.forEach((sec, idx) => {
+          const isFirst = idx === 0;
+          const tl = gsap.timeline({
+            scrollTrigger: isFirst
+              ? undefined
+              : {
+                  trigger: sec,
+                  start: "top 78%",
+                  once: true,
+                },
+            delay: isFirst ? 0.12 : 0.08,
+          });
+
+          // Headings, labels, and metadata
+          const labelsAndHeadings = sec.querySelectorAll(
+            ".detail__label, .detail__title, .detail__meta, .detail__curated-by, .detail__zone, .detail__artists > div, .detail__cards"
+          );
+          if (labelsAndHeadings.length > 0) {
+            tl.fromTo(
+              labelsAndHeadings,
+              { autoAlpha: 0, y: 16 },
+              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              0
+            );
+          }
+
+          // Dense text paragraphs (Artwork Description, Curatorial notes, Curator bios):
+          // Pure soft opacity fade (NO position jump)
+          const textParas = sec.querySelectorAll(".detail__desc p, .detail__note-body p, .detail__curator-bio p, .fig-body");
+          if (textParas.length > 0) {
+            tl.fromTo(
+              textParas,
+              { autoAlpha: 0 },
+              { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              0.12
+            );
+          }
+        });
+      }
     },
     { scope: root, dependencies: [id, kindSeg] }
   );

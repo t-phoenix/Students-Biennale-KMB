@@ -19,7 +19,7 @@ export function PastWorkshopDetail() {
       if (prefersReducedMotion()) return;
       gsap.from(".workshop-reveal", {
         autoAlpha: 0,
-        y: 32,
+        y: 16,
         duration: 0.95,
         delay: 0.12,
         stagger: 0.08,

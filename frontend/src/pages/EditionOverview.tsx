@@ -429,17 +429,64 @@ function cleanIntroParagraphs(
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
-      gsap.fromTo(
-        ".edition-overview__reveal",
-        { autoAlpha: 0, y: 12 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.85,
-          stagger: { amount: 0.35, ease: "power2.out" },
-          ease: "power3.out",
-        },
+
+      // Top intro/hero block reveals on load
+      const topItems = root.current?.querySelectorAll(
+        ".edition-overview__title-rail, .edition-overview__title, .edition-overview__intro, .edition-overview__links"
       );
+      if (topItems && topItems.length > 0) {
+        gsap.fromTo(
+          topItems,
+          { autoAlpha: 0, y: 20 },
+          { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)", delay: 0.1 }
+        );
+      }
+
+      // Scroll-triggered reveals for subsequent sections (Curatorial notes, Bios, Downloads, etc.)
+      const sections = root.current?.querySelectorAll<HTMLElement>(".edition-overview__section");
+      if (sections && sections.length > 0) {
+        sections.forEach((sec) => {
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: sec,
+              start: "top 76%",
+              once: true,
+            },
+          });
+
+          const headings = sec.querySelectorAll(".fig-label, .fig-rail, .edition-overview__team-category, .edition-overview__bio-name");
+          if (headings.length > 0) {
+            tl.fromTo(
+              headings,
+              { autoAlpha: 0, y: 16 },
+              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              0
+            );
+          }
+
+          // Dense text paragraphs (Curatorial note paragraphs, Curator bios):
+          // Pure soft opacity fade (NO position jump)
+          const textParas = sec.querySelectorAll(".edition-overview__curatorial-body p, .edition-overview__bio-body p, .fig-body");
+          if (textParas.length > 0) {
+            tl.fromTo(
+              textParas,
+              { autoAlpha: 0 },
+              { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              0.12
+            );
+          }
+
+          const otherReveals = sec.querySelectorAll(".edition-overview__downloads-grid, .edition-overview__team-grid, .edition-overview__slot");
+          if (otherReveals.length > 0) {
+            tl.fromTo(
+              otherReveals,
+              { autoAlpha: 0, y: 16 },
+              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              0.16
+            );
+          }
+        });
+      }
     },
     { scope: root, dependencies: [yearId] },
   );

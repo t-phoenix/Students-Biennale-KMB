@@ -26,7 +26,7 @@ export function RazaScholarship() {
       if (prefersReducedMotion()) return;
       gsap.fromTo(
         ".raza-reveal",
-        { autoAlpha: 0, y: 32 },
+        { autoAlpha: 0, y: 16 },
         {
           autoAlpha: 1,
           y: 0,

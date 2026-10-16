@@ -202,7 +202,7 @@ export function Programmes() {
         sections.forEach((sec) => {
           gsap.fromTo(
             sec,
-            { autoAlpha: 0, y: 36 },
+            { autoAlpha: 0, y: 24 },
             {
               autoAlpha: 1,
               y: 0,
@@ -211,7 +211,7 @@ export function Programmes() {
               ease: "cubic-bezier(0.16, 1, 0.3, 1)",
               scrollTrigger: {
                 trigger: sec,
-                start: "top 72%",
+                start: "top 76%",
                 once: true,
               },
               clearProps: "opacity,visibility,transform",

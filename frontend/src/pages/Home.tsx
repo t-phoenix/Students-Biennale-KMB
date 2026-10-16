@@ -386,33 +386,34 @@ export function Home() {
           const edition = document.querySelector<HTMLElement>(".home-edition");
           if (edition) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: edition, start: "top 72%", once: true },
+              scrollTrigger: { trigger: edition, start: "top 76%", once: true },
             });
             const label = edition.querySelector(".fig-label");
             if (label) {
               tl.fromTo(
                 label,
-                { autoAlpha: 0, y: 36 },
+                { autoAlpha: 0, y: 28 },
                 { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.1
+                0.08
               );
             }
+            // Dense text paragraphs: pure opacity fade (NO position jump)
             const bodies = edition.querySelectorAll(".home-edition__body > .fig-body");
             if (bodies.length > 0) {
               tl.fromTo(
                 bodies,
-                { autoAlpha: 0, y: 32 },
-                { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.22
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.2
               );
             }
             const btn = edition.querySelector(".home-text-btn");
             if (btn) {
               tl.fromTo(
                 btn,
-                { autoAlpha: 0, y: 20 },
-                { autoAlpha: 1, y: 0, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.36
+                { autoAlpha: 0 },
+                { autoAlpha: 1, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0.32
               );
             }
           }
@@ -421,33 +422,33 @@ export function Home() {
           const sensing = document.querySelector<HTMLElement>(".home-sensing");
           if (sensing) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: sensing, start: "top 72%", once: true },
+              scrollTrigger: { trigger: sensing, start: "top 76%", once: true },
             });
             const links = sensing.querySelectorAll(".home-sensing__links .fig-subheading");
             if (links.length > 0) {
               tl.fromTo(
                 links,
-                { autoAlpha: 0, x: -24 },
+                { autoAlpha: 0, x: -20 },
                 { autoAlpha: 1, x: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.1
+                0.08
               );
             }
             const scroll = sensing.querySelector(".home-sensing__scroll");
             if (scroll) {
               tl.fromTo(
                 scroll,
-                { autoAlpha: 0, scale: 0.96 },
+                { autoAlpha: 0, scale: 0.97 },
                 { autoAlpha: 1, scale: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.2
+                0.18
               );
             }
             const cta = sensing.querySelector(".home-sensing__cta");
             if (cta) {
               tl.fromTo(
                 cta,
-                { autoAlpha: 0, y: 24 },
+                { autoAlpha: 0, y: 16 },
                 { autoAlpha: 1, y: 0, duration: 0.9, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.3
+                0.28
               );
             }
           }
@@ -456,51 +457,51 @@ export function Home() {
           const programmes = document.querySelector<HTMLElement>(".home-programmes");
           if (programmes) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: programmes, start: "top 72%", once: true },
+              scrollTrigger: { trigger: programmes, start: "top 76%", once: true },
             });
             const topLabel = programmes.querySelector(".home-programmes__top .fig-label");
             if (topLabel) {
               tl.fromTo(
                 topLabel,
-                { autoAlpha: 0, y: 36 },
+                { autoAlpha: 0, y: 28 },
                 { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.1
+                0.08
               );
             }
             const banner = programmes.querySelector(".home-programmes__banner");
             if (banner) {
               tl.fromTo(
                 banner,
-                { autoAlpha: 0, scale: 1.04 },
+                { autoAlpha: 0, scale: 1.03 },
                 { autoAlpha: 1, scale: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.18
+                0.16
               );
             }
             const railLinks = programmes.querySelectorAll(".home-programmes__rail .fig-subheading");
             if (railLinks.length > 0) {
               tl.fromTo(
                 railLinks,
-                { autoAlpha: 0, x: -20 },
+                { autoAlpha: 0, x: -16 },
                 { autoAlpha: 1, x: 0, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.22
+                0.2
               );
             }
             const thumbs = programmes.querySelectorAll(".home-programmes__thumbs a");
             if (thumbs.length > 0) {
               tl.fromTo(
                 thumbs,
-                { autoAlpha: 0, y: 32, scale: 0.96 },
+                { autoAlpha: 0, y: 24, scale: 0.97 },
                 { autoAlpha: 1, y: 0, scale: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.26
+                0.24
               );
             }
             const mobileCards = programmes.querySelectorAll(".home-programmes__mobile-card");
             if (mobileCards.length > 0) {
               tl.fromTo(
                 mobileCards,
-                { autoAlpha: 0, y: 32 },
+                { autoAlpha: 0, y: 24 },
                 { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.24
+                0.22
               );
             }
           }
@@ -509,42 +510,162 @@ export function Home() {
           const press = document.querySelector<HTMLElement>(".home-press");
           if (press) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: press, start: "top 72%", once: true },
+              scrollTrigger: { trigger: press, start: "top 76%", once: true },
             });
             const pressLabel = press.querySelector(".fig-label");
             if (pressLabel) {
               tl.fromTo(
                 pressLabel,
-                { autoAlpha: 0, y: 36 },
+                { autoAlpha: 0, y: 28 },
                 { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.1
+                0.08
               );
             }
             const pressItemsEls = press.querySelectorAll(".home-press__item");
             if (pressItemsEls.length > 0) {
               tl.fromTo(
                 pressItemsEls,
-                { autoAlpha: 0, y: 32 },
+                { autoAlpha: 0, y: 20 },
                 { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.18
+                0.16
               );
             }
             const pressMore = press.querySelector(".home-press__more");
             if (pressMore) {
               tl.fromTo(
                 pressMore,
-                { autoAlpha: 0, y: 20 },
+                { autoAlpha: 0, y: 16 },
                 { autoAlpha: 1, y: 0, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
-                0.28
+                0.26
               );
             }
           }
 
-          // 5. About Us & Sponsors (.home-about): Static by design — no scroll reveal animation
+          // 5. About Us (.home-about) — Smooth scroll reveals with pure opacity on dense text paragraphs (NO position jump)
+          const about = document.querySelector<HTMLElement>(".home-about");
+          if (about) {
+            // Intro ("ABOUT US")
+            const introLabel = about.querySelector(".home-about__intro .fig-label");
+            if (introLabel) {
+              const tlAbout = gsap.timeline({
+                scrollTrigger: { trigger: about, start: "top 76%", once: true },
+              });
+              tlAbout.fromTo(
+                introLabel,
+                { autoAlpha: 0, y: 24 },
+                { autoAlpha: 1, y: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                0
+              );
+            }
+
+            // KBF Block
+            const kbfBlock = about.querySelector<HTMLElement>("#about-kbf");
+            if (kbfBlock) {
+              const tlKbf = gsap.timeline({
+                scrollTrigger: { trigger: kbfBlock, start: "top 76%", once: true },
+              });
+              const kbfLogo = kbfBlock.querySelector(".home-about__logo-wrap");
+              if (kbfLogo) {
+                tlKbf.fromTo(
+                  kbfLogo,
+                  { autoAlpha: 0, scale: 0.96 },
+                  { autoAlpha: 1, scale: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0
+                );
+              }
+              const kbfP = kbfBlock.querySelector("p");
+              if (kbfP) {
+                tlKbf.fromTo(
+                  kbfP,
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0.12
+                );
+              }
+            }
+
+            // Students' Biennale Block
+            const sbBlock = about.querySelector<HTMLElement>("#about-sb");
+            if (sbBlock) {
+              const tlSb = gsap.timeline({
+                scrollTrigger: { trigger: sbBlock, start: "top 76%", once: true },
+              });
+              const sbLogo = sbBlock.querySelector(".home-about__logo-wrap");
+              if (sbLogo) {
+                tlSb.fromTo(
+                  sbLogo,
+                  { autoAlpha: 0, scale: 0.96 },
+                  { autoAlpha: 1, scale: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0
+                );
+              }
+              const sbPs = sbBlock.querySelectorAll(".home-about__sb-copy p");
+              if (sbPs.length > 0) {
+                tlSb.fromTo(
+                  sbPs,
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, stagger: 0.12, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0.12
+                );
+              }
+            }
+
+            // Team Grid
+            const team = about.querySelector<HTMLElement>("#about-team");
+            if (team) {
+              const tlTeam = gsap.timeline({
+                scrollTrigger: { trigger: team, start: "top 76%", once: true },
+              });
+              const teamLabel = team.querySelector(".fig-label");
+              if (teamLabel) {
+                tlTeam.fromTo(
+                  teamLabel,
+                  { autoAlpha: 0, x: -16 },
+                  { autoAlpha: 1, x: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0
+                );
+              }
+              const teamCols = team.querySelectorAll(".home-about__team-cols > div");
+              if (teamCols.length > 0) {
+                tlTeam.fromTo(
+                  teamCols,
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0.1
+                );
+              }
+            }
+
+            // Sponsors Wall
+            const sponsors = about.querySelector<HTMLElement>("#about-sponsors");
+            if (sponsors) {
+              const tlSponsors = gsap.timeline({
+                scrollTrigger: { trigger: sponsors, start: "top 76%", once: true },
+              });
+              const sponsorsLabel = sponsors.querySelector(".fig-label");
+              if (sponsorsLabel) {
+                tlSponsors.fromTo(
+                  sponsorsLabel,
+                  { autoAlpha: 0, x: -16 },
+                  { autoAlpha: 1, x: 0, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0
+                );
+              }
+              const sponsorItems = sponsors.querySelectorAll(".home-about__sponsor-primary, .home-about__sponsor-group");
+              if (sponsorItems.length > 0) {
+                tlSponsors.fromTo(
+                  sponsorItems,
+                  { autoAlpha: 0 },
+                  { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  0.1
+                );
+              }
+            }
+          }
         },
         onReduce: () => {
           gsap.set(
-            ".home-section, .fig-label, .home-edition__body .fig-body, .home-text-btn, .home-sensing__scroll, .home-programmes__banner",
+            ".home-section, .fig-label, .home-edition__body .fig-body, .home-text-btn, .home-sensing__scroll, .home-programmes__banner, .home-about__logo-wrap, .home-about__sb-copy p, #about-kbf p, .home-about__team-cols > div, .home-about__sponsor-primary, .home-about__sponsor-group",
             { autoAlpha: 1, x: 0, y: 0, scale: 1 }
           );
         },

@@ -55,7 +55,7 @@ export function PastWorkshops() {
       if (prefersReducedMotion()) return;
       gsap.fromTo(
         ".past-workshops-reveal",
-        { autoAlpha: 0, y: 36 },
+        { autoAlpha: 0, y: 20 },
         {
           autoAlpha: 1,
           y: 0,

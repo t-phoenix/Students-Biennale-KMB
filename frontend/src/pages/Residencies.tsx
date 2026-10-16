@@ -59,7 +59,7 @@ export function Residencies() {
       }
       gsap.fromTo(
         el,
-        { autoAlpha: 0, y: 32 },
+        { autoAlpha: 0, y: 16 },
         {
           autoAlpha: 1,
           y: 0,
