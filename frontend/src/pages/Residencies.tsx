@@ -57,7 +57,17 @@ export function Residencies() {
         gsap.set(el, { autoAlpha: 1 });
         return;
       }
-      gsap.fromTo(el, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.35, ease: "power2.out" });
+      gsap.fromTo(
+        el,
+        { autoAlpha: 0, y: 24 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.95,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+          clearProps: "opacity,visibility,transform",
+        }
+      );
     },
     { dependencies: [featured?.id], scope: root },
   );

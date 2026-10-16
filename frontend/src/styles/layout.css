@@ -292,9 +292,33 @@
   display: inline-block;
   text-decoration: none;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
 }
 
-.home-text-btn:hover {
-  color: var(--color-text-primary);
+@media (pointer: coarse) {
+  .home-text-btn {
+    position: relative;
+  }
+
+  .home-text-btn::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 44px;
+    min-height: 44px;
+    width: calc(100% + 16px);
+    height: calc(100% + 16px);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home-text-btn:hover {
+    color: var(--color-text-primary);
+  }
 }

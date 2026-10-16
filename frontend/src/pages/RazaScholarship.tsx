@@ -24,14 +24,18 @@ export function RazaScholarship() {
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
-      gsap.from(".raza-reveal", {
-        autoAlpha: 0,
-        y: 16,
-        duration: 0.65,
-        stagger: 0.1,
-        ease: "power2.out",
-        clearProps: "opacity,visibility,transform",
-      });
+      gsap.fromTo(
+        ".raza-reveal",
+        { autoAlpha: 0, y: 28 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.95,
+          stagger: 0.12,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+          clearProps: "opacity,visibility,transform",
+        }
+      );
     },
     { scope: root }
   );

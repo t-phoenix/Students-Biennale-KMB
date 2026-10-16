@@ -9,6 +9,10 @@
   padding: 10px;
   display: grid;
   place-items: center;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   transition: background 0.2s ease;
 }
 
@@ -32,8 +36,10 @@
   color: #ffffff;
 }
 
-.carousel-nav[data-tone="dark"]:hover {
-  background: rgba(255, 255, 255, 0.3);
+@media (hover: hover) and (pointer: fine) {
+  .carousel-nav[data-tone="dark"]:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
 }
 
 .carousel-nav[data-tone="dark"] .brand-arrow {
@@ -46,8 +52,10 @@
   color: #000000;
 }
 
-.carousel-nav[data-tone="light"]:hover {
-  background: rgba(0, 0, 0, 0.12);
+@media (hover: hover) and (pointer: fine) {
+  .carousel-nav[data-tone="light"]:hover {
+    background: rgba(0, 0, 0, 0.12);
+  }
 }
 
 .carousel-nav[data-tone="light"] .brand-arrow {
@@ -60,8 +68,10 @@
   color: #000000;
 }
 
-.carousel-nav[data-tone="unknown"]:hover {
-  background: rgba(0, 0, 0, 0.12);
+@media (hover: hover) and (pointer: fine) {
+  .carousel-nav[data-tone="unknown"]:hover {
+    background: rgba(0, 0, 0, 0.12);
+  }
 }
 
 .carousel-nav[data-tone="unknown"] .brand-arrow {

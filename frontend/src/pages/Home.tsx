@@ -733,9 +733,9 @@ export function Home() {
                 autoAlpha: 1,
                 y: 0,
                 rotation: 0,
-                stagger: 0.09,
-                duration: 0.85,
-                ease: "power3.out",
+                stagger: 0.1,
+                duration: 1.05,
+                ease: "cubic-bezier(0.16, 1, 0.3, 1)",
                 clearProps: "transform,rotation",
               },
               0.15
@@ -743,13 +743,13 @@ export function Home() {
             .fromTo(
               ".home-hero__credit p, .home-hero__mobile-meta",
               { autoAlpha: 0, y: 14 },
-              { autoAlpha: 1, y: 0, duration: 0.8, stagger: 0.08 },
+              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "power3.out" },
               0.25
             )
             .fromTo(
               ".home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
               { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.9, ease: "power2.out" },
+              { autoAlpha: 1, duration: 1.0, ease: "power2.out" },
               0.4
             );
 

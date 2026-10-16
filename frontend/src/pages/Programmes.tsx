@@ -198,17 +198,25 @@ export function Programmes() {
     () => {
       const reduced = prefersReducedMotion();
       if (!reduced) {
-        gsap.fromTo(
-          ".prog-reveal",
-          { autoAlpha: 0 },
-          {
-            autoAlpha: 1,
-            duration: 0.65,
-            stagger: { amount: 0.25, ease: "power2.out" },
-            ease: "power2.out",
-            clearProps: "opacity,visibility,transform",
-          }
-        );
+        const sections = gsap.utils.toArray<HTMLElement>(".prog-reveal");
+        sections.forEach((sec) => {
+          gsap.fromTo(
+            sec,
+            { autoAlpha: 0, y: 28 },
+            {
+              autoAlpha: 1,
+              y: 0,
+              duration: 0.95,
+              ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+              scrollTrigger: {
+                trigger: sec,
+                start: "top 88%",
+                once: true,
+              },
+              clearProps: "opacity,visibility,transform",
+            }
+          );
+        });
       }
 
       let cleanupHero: (() => void) | undefined;

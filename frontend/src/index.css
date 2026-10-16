@@ -8,6 +8,7 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -57,11 +58,86 @@ a {
 img {
   max-width: 100%;
   display: block;
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 button {
   font: inherit;
   cursor: pointer;
+}
+
+/* Mobile Touch Hygiene & Interactive Target Standard (WCAG 2.5.8 / Apple HIG)
+   Never modifies visual typography, geometry, or colors; purely interaction rules. */
+a,
+button,
+input,
+select,
+textarea,
+label,
+summary,
+[role="button"],
+[tabindex] {
+  touch-action: manipulation;
+}
+
+button,
+[role="button"],
+nav a,
+.home-nav a,
+.site-header a,
+.cta-link,
+.brand-arrow,
+.carousel-nav,
+.carousel-dots button,
+.home-text-btn,
+.fig-subheading,
+.fig-tab,
+.tag-chip,
+.filter-btn,
+.modal-close,
+.lightbox-close {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+button svg,
+a svg,
+[role="button"] svg,
+.brand-arrow {
+  pointer-events: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+svg {
+  -webkit-user-drag: none;
+  user-drag: none;
+}
+
+p,
+.fig-body,
+article p,
+blockquote,
+figcaption,
+.editorial-text {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  button:active,
+  [role="button"]:active,
+  a:active {
+    opacity: 0.72;
+    transition: opacity 0.08s ease;
+  }
 }
 
 /*

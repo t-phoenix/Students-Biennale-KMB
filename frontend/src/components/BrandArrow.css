@@ -3,6 +3,9 @@
   vertical-align: middle;
   flex: none;
   color: inherit;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
   transition: transform 0.25s ease;
 }
 
