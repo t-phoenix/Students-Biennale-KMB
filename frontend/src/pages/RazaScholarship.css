@@ -173,4 +173,10 @@
     grid-template-columns: 1fr;
     gap: 24px;
   }
+
+  .raza-page__scholar-name {
+    font-size: 16px;
+    line-height: 22px;
+    margin: 12px 0 6px;
+  }
 }

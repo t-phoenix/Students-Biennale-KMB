@@ -456,7 +456,7 @@
 .programmes__award {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   border: none;
   background: transparent;
   padding: 0;
@@ -476,7 +476,7 @@
   aspect-ratio: 315 / 273;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .programmes__award-media img {
@@ -496,11 +496,11 @@
 
 .programmes__awards h3 {
   margin: 0;
-  font-size: var(--type-body-size);
-  line-height: 22px;
-  font-weight: 600;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.05em;
 }
 
 .programmes__awards p {
@@ -742,6 +742,16 @@
   .programmes__cards,
   .programmes__awards {
     row-gap: 48px;
+  }
+
+  .programmes__award-media {
+    margin-bottom: 6px;
+  }
+
+  .programmes__awards h3 {
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: 0.05em;
   }
 
   .programmes__more {

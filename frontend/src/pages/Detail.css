@@ -482,10 +482,9 @@
   text-underline-offset: 3px;
 }
 
-/* More room between rows than fig-sub-3's shared 20px gap — client feedback
-   wanted space between one card's text and the next row's image. */
+/* Card grid row gap — unified to 60px matching Programmes awards */
 .fig-sub-3.detail__cards {
-  row-gap: 64px;
+  row-gap: 60px;
 }
 
 .detail__cards a {
@@ -499,7 +498,7 @@
   aspect-ratio: 315 / 273;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .detail__cards-media img {
@@ -514,11 +513,11 @@
 
 .detail__cards strong {
   display: block;
-  margin-top: 20px;
+  margin-top: 0;
   font-size: 18px;
-  line-height: var(--type-body-line);
+  line-height: 24px;
   font-weight: 500;
-  letter-spacing: 1.6px;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -633,6 +632,27 @@
   .detail__next {
     grid-column: auto;
     justify-self: auto;
+  }
+
+  /* Curator page artwork cards mobile rhythm (matches Programmes awards) */
+  .fig-sub-3.detail__cards {
+    row-gap: 48px;
+  }
+
+  .detail__cards-media {
+    margin-bottom: 12px;
+  }
+
+  .detail__cards strong {
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: 0.05em;
+  }
+}
+
+@media (max-width: 599px) {
+  .fig-sub-3.detail__cards {
+    row-gap: 40px;
   }
 }
 
