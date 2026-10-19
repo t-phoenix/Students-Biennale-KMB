@@ -923,6 +923,11 @@ export function Home() {
     touchStartY.current = null;
   };
 
+  const handleTouchCancel = () => {
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
+
   return (
     <div ref={rootRef} className="home" data-node-id="6:1016">
       {/* Hero — full viewport width; overlays on 12-col (60 / 20) */}
@@ -931,6 +936,7 @@ export function Home() {
         aria-label="Hero"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
       >
         <div
           className="home-hero__slides"

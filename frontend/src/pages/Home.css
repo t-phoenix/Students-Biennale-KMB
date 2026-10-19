@@ -44,6 +44,10 @@
   height: 100%;
   object-fit: cover;
   max-width: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  pointer-events: none;
 }
 
 /* Overlay grid — the page's 12 columns, stretched to the full hero width so it
