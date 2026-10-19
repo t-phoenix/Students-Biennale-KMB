@@ -56,7 +56,15 @@ function EditionSearchToolbar() {
           aria-pressed={view === "grid"}
           aria-label="Grid view"
         >
-          <img src="/icons/grid-view.svg" alt="" width={36} height={36} />
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <path
+              d="M13.0612 8.81633V27.9184M23.6735 8.81633V27.9184M27.9184 13.0612H8.81633M27.9184 23.6735H8.81633"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
         <button
           type="button"
@@ -65,7 +73,15 @@ function EditionSearchToolbar() {
           aria-pressed={view === "list"}
           aria-label="List view"
         >
-          <img src="/icons/list-view.svg" alt="" width={36} height={36} />
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+            <path
+              d="M8.08163 11.7551H28.6531M8.08163 18H24.6122M8.08163 24.2449H18.7347"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       </div>
     </div>
