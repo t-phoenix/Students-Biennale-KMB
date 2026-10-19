@@ -108,11 +108,11 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
       img.dataset.parallax === "hero" ||
       (container.offsetWidth > window.innerWidth * 0.8 && container.offsetHeight > 500);
 
-    // On mobile viewports (<768px), restrict parallax strictly to primary hero elements to avoid GPU stutter
-    if (window.innerWidth < 768 && !isHero) return;
-
-    const travelPercent = isHero ? 10 : 8; // Noticeable, premium travel without distorting composition
-    const scaleFactor = isHero ? 1.18 : 1.14; // Headroom to prevent blank edges during vertical travel
+    const isMobile = window.innerWidth < 768;
+    // Calibrated travel & scale: subtle & rock-solid on mobile to prevent clipping/stutter, editorial on desktop
+    const travelPercent = isHero ? (isMobile ? 8 : 10) : (isMobile ? 6 : 8);
+    const scaleFactor = isHero ? (isMobile ? 1.14 : 1.18) : (isMobile ? 1.12 : 1.14);
+    const scrubVal = isMobile ? 0.4 : 0.6; // Snappier finger tracking on touch devices
 
     // Ensure container hides overflow
     container.classList.add("has-parallax-container");
@@ -136,7 +136,7 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
           trigger: container,
           start: "top bottom",
           end: "bottom top",
-          scrub: 0.6, // Smooth organic lag aligned with Lenis scroll
+          scrub: scrubVal,
           invalidateOnRefresh: true,
         },
       }

@@ -1746,11 +1746,17 @@
   .home-about__team-cols {
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 28px;
+  }
+
+  .home-about__team-cols > div {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
   }
 
   .home-about__role {
-    margin-bottom: 25px;
+    margin-bottom: 0;
   }
 
   .home-about__role strong {
@@ -1758,9 +1764,10 @@
     font-size: 16px;
     font-weight: 500;
     letter-spacing: 0.05em;
+    line-height: 28px;
     text-transform: uppercase;
     color: var(--color-text-primary);
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
   .home-about__role span {
@@ -1785,15 +1792,12 @@
     margin-bottom: 24px;
   }
 
-  .home-about__sponsor-heading {
+  /* Primary supporter (Supported By / Tata Trusts) — kept pristine */
+  .home-about__sponsor-primary .home-about__sponsor-heading {
     font-size: 18px;
     line-height: 36px;
     font-weight: 500;
     text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-
-  .home-about__sponsor-primary .home-about__sponsor-heading {
     margin-bottom: 16px;
   }
 
@@ -1815,15 +1819,27 @@
     margin-top: 8px;
   }
 
+  /* Secondary groups (Other Donors & Venue Support) — unified with Team spec */
   .home-about__sponsors-grid {
     grid-template-columns: 1fr;
     row-gap: 28px;
     margin-top: 36px;
   }
 
+  .home-about__sponsor-group .home-about__sponsor-heading {
+    font-size: 16px;
+    line-height: 28px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    margin: 0 0 6px;
+  }
+
   .home-about__sponsor-list li {
     font-size: 16px;
-    line-height: 42px;
+    line-height: 36px;
+    font-weight: 400;
     color: var(--color-text-primary);
   }
 }
