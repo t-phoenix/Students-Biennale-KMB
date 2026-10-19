@@ -1059,32 +1059,12 @@
     max-height: calc(100svh - var(--nav-height-mobile, 56px));
     overflow: hidden;
     z-index: 1;
+    touch-action: pan-y;
   }
 
-  /* Mobile hero carousel navigation arrows */
-  .carousel-nav {
-    display: flex !important;
-    position: absolute;
-    top: 48%;
-    transform: translateY(-50%);
-    width: 36px;
-    height: 36px;
-    padding: 4px;
-    z-index: 3;
-    pointer-events: auto;
-  }
-
-  .carousel-nav--prev {
-    left: 8px;
-  }
-
-  .carousel-nav--next {
-    right: 8px;
-  }
-
-  .carousel-nav .brand-arrow {
-    width: 26px;
-    height: 26px;
+  /* Hide hero carousel navigation arrows on mobile — user swipes to cycle */
+  .home-hero .carousel-nav {
+    display: none !important;
   }
 
   /* Centered carousel dots at bottom */

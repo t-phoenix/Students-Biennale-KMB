@@ -892,6 +892,12 @@ export function Home() {
   const touchStartY = useRef<number | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Avoid hijacking taps or gestures on interactive cards or pagination dots
+    if ((e.target as HTMLElement).closest(".home-hero__card, .home-hero__card-close, .carousel-dots")) {
+      touchStartX.current = null;
+      touchStartY.current = null;
+      return;
+    }
     if (e.touches.length === 1) {
       touchStartX.current = e.touches[0].clientX;
       touchStartY.current = e.touches[0].clientY;
@@ -905,7 +911,8 @@ export function Home() {
     const diffX = touchStartX.current - touchEndX;
     const diffY = touchStartY.current - touchEndY;
 
-    if (Math.abs(diffX) > 40 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+    // Responsive horizontal swipe threshold (flick or drag)
+    if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY) * 1.2) {
       if (diffX > 0) {
         goToSlide((slide + 1) % covers.length);
       } else {
@@ -919,12 +926,15 @@ export function Home() {
   return (
     <div ref={rootRef} className="home" data-node-id="6:1016">
       {/* Hero — full viewport width; overlays on 12-col (60 / 20) */}
-      <section className="home-hero" aria-label="Hero">
+      <section
+        className="home-hero"
+        aria-label="Hero"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div
           className="home-hero__slides"
           aria-hidden
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
         >
           {covers.map((c, index) => (
             <img
