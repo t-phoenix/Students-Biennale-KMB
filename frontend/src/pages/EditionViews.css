@@ -611,14 +611,14 @@
 
   /* Venues Rows */
   .edition-venue-rows {
-    gap: 40px;
+    gap: 48px;
   }
 
   .edition-venue {
     grid-template-columns: 1fr;
     row-gap: 16px;
-    border-bottom: 1px solid color-mix(in srgb, var(--color-text-primary) 12%, transparent);
-    padding-bottom: 32px;
+    border-bottom: none;
+    padding-bottom: 0;
   }
 
   .edition-venue__media {
