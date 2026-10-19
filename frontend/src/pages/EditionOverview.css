@@ -438,20 +438,76 @@ button.edition-overview__slot:hover img {
     margin-bottom: 16px;
   }
 
+  /* Previous editions & overview: The Team single column layout on mobile */
+  .edition-overview__team-category {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    margin-bottom: 16px;
+  }
+
   .edition-overview__curator-bios {
-    grid-template-columns: 1fr;
-    row-gap: 28px;
-  }
-
-  .edition-overview__team-grid {
+    display: flex;
     flex-direction: column;
-    gap: 24px;
+    grid-template-columns: 1fr;
+    width: 100%;
+    row-gap: 28px;
+    gap: 28px;
   }
 
-  .edition-overview__team-grid--cols-1 .edition-overview__team-col,
-  .edition-overview__team-grid--cols-2 .edition-overview__team-col,
-  .edition-overview__team-grid--cols-3 .edition-overview__team-col {
+  .edition-overview__bio-card {
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    gap: 8px;
+  }
+
+  .edition-overview__bio-name {
+    font-size: 16px;
+    line-height: 28px;
+  }
+
+  .edition-overview__team-grid,
+  .edition-overview__team-grid--cols-1,
+  .edition-overview__team-grid--cols-2,
+  .edition-overview__team-grid--cols-3 {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    gap: 28px !important;
+  }
+
+  .edition-overview__team-col {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 28px !important;
+  }
+
+  .edition-overview__role {
+    margin-bottom: 0 !important;
+  }
+
+  .edition-overview__role-title {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text-primary);
+    margin-bottom: 6px;
+  }
+
+  .edition-overview__role-member {
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 36px;
+    color: var(--color-text-primary);
   }
 
   .edition-overview__downloads-section {

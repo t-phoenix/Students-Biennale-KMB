@@ -10,7 +10,7 @@ import { HighlightText } from "../components/HighlightText";
 import { FormattedParagraphs } from "../components/FormattedText";
 import { ImageCrossfadeStack } from "../components/ImageCrossfadeStack";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
-import { venueImages, RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS } from "../data/site";
+import { venueImages, RAZA_SCHOLAR_ARTWORKS, RAZA_SCHOLARS, hasActualTourUrl } from "../data/site";
 import { prefetchNextArtwork } from "../lib/predictivePrefetch";
 import {
   artworkDetailPath,
@@ -482,18 +482,20 @@ export function Detail() {
             <h1>
               <HighlightText text={v.name} query={highlight} />
             </h1>
-            <p className="detail__venue-links">
-              {v.mapUrl ? (
-                <a href={v.mapUrl} target="_blank" rel="noreferrer">
-                  Google Map
-                </a>
-              ) : null}
-              {v.tourUrl ? (
-                <a href={v.tourUrl} target="_blank" rel="noreferrer">
-                  Virtual Tour
-                </a>
-              ) : null}
-            </p>
+            {v.mapUrl || hasActualTourUrl(v.tourUrl, v.mapUrl) ? (
+              <p className="detail__venue-links">
+                {v.mapUrl ? (
+                  <a href={v.mapUrl} target="_blank" rel="noreferrer">
+                    Google Map
+                  </a>
+                ) : null}
+                {hasActualTourUrl(v.tourUrl, v.mapUrl) ? (
+                  <a href={v.tourUrl} target="_blank" rel="noreferrer">
+                    Virtual Tour
+                  </a>
+                ) : null}
+              </p>
+            ) : null}
             <FormattedParagraphs
               text={v.description}
               className="detail__venue-desc"

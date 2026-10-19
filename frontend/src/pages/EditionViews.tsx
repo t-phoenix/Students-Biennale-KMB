@@ -1,7 +1,7 @@
 import { useRef, type RefObject } from "react";
 import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
-import { type CuratorCard } from "../data/site";
+import { type CuratorCard, hasActualTourUrl } from "../data/site";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { CatalogueList } from "../components/CatalogueList";
 import { FormattedParagraphs, stripMarkdownLite } from "../components/FormattedText";
@@ -381,23 +381,23 @@ export function VenueView() {
                   <Link className="edition-venue__more" to={`/editions/${yearId}/venue/${v.id}`}>
                     Read more...
                   </Link>
-                  <p className="edition-venue__links">
-                    {v.mapUrl ? (
-                      <a href={v.mapUrl} target="_blank" rel="noreferrer">
-                        Google Map
-                      </a>
-                    ) : (
-                      <span>Google Map</span>
-                    )}
-                    <span aria-hidden>/</span>
-                    {v.tourUrl ? (
-                      <a href={v.tourUrl} target="_blank" rel="noreferrer">
-                        Virtual Tour
-                      </a>
-                    ) : (
-                      <span>Virtual Tour</span>
-                    )}
-                  </p>
+                  {v.mapUrl || hasActualTourUrl(v.tourUrl, v.mapUrl) ? (
+                    <p className="edition-venue__links">
+                      {v.mapUrl ? (
+                        <a href={v.mapUrl} target="_blank" rel="noreferrer">
+                          Google Map
+                        </a>
+                      ) : null}
+                      {v.mapUrl && hasActualTourUrl(v.tourUrl, v.mapUrl) ? (
+                        <span aria-hidden>/</span>
+                      ) : null}
+                      {hasActualTourUrl(v.tourUrl, v.mapUrl) ? (
+                        <a href={v.tourUrl} target="_blank" rel="noreferrer">
+                          Virtual Tour
+                        </a>
+                      ) : null}
+                    </p>
+                  ) : null}
                 </div>
               </article>
             );

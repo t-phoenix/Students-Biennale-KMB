@@ -493,6 +493,19 @@ export type VenueCard = {
   searchText?: string;
 };
 
+/**
+ * Checks whether a tour URL is an actual virtual tour link (e.g. 360 / Matterport),
+ * rather than an empty string or duplicate of the Google Map link.
+ */
+export function hasActualTourUrl(tourUrl?: string, mapUrl?: string): boolean {
+  if (!tourUrl) return false;
+  const trimmed = tourUrl.trim();
+  if (!trimmed || trimmed === "#") return false;
+  if (mapUrl && trimmed === mapUrl.trim()) return false;
+  if (/^https?:\/\/(www\.)?(google\.com\/maps|maps\.google\.com)\/\?q=/i.test(trimmed)) return false;
+  return true;
+}
+
 /** The six edition venues, in the order and with the copy from Figma 718:1326. */
 export type ArtistCard = {
   id: string;

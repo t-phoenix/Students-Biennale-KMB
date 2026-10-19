@@ -448,7 +448,6 @@ export const VENUES: VenueCard[] = [
       "/venues/st-andrews-3.jpg",
     ],
     mapUrl: "https://maps.google.com/?q=St+Andrews+Parish+Hall+Fort+Kochi",
-    tourUrl: "https://maps.google.com/?q=St+Andrews+Parish+Hall+Fort+Kochi",
   },
   {
     id: "vkl",
@@ -460,7 +459,6 @@ export const VENUES: VenueCard[] = [
     image: "/venues/vkl.jpg",
     images: ["/venues/vkl.jpg"],
     mapUrl: "https://maps.google.com/?q=VKL+Warehouse+Fort+Kochi",
-    tourUrl: "https://maps.google.com/?q=VKL+Warehouse+Fort+Kochi",
   },
   {
     id: "bms",
@@ -472,7 +470,6 @@ export const VENUES: VenueCard[] = [
     image: "/venues/bms.jpg",
     images: ["/venues/bms.jpg"],
     mapUrl: "https://maps.google.com/?q=BMS+Warehouse+Mattancherry",
-    tourUrl: "https://maps.google.com/?q=BMS+Warehouse+Mattancherry",
   },
   {
     id: "arthshila",
@@ -484,7 +481,6 @@ export const VENUES: VenueCard[] = [
     image: "/venues/arthshila.jpg",
     images: ["/venues/arthshila.jpg"],
     mapUrl: "https://maps.google.com/?q=Arthshila+Kochi",
-    tourUrl: "https://maps.google.com/?q=Arthshila+Kochi",
   },
   {
     id: "david-hall",
@@ -496,7 +492,6 @@ export const VENUES: VenueCard[] = [
     image: "/venues/david-hall.jpg",
     images: ["/venues/david-hall.jpg"],
     mapUrl: "https://maps.google.com/?q=David+Hall+Fort+Kochi",
-    tourUrl: "https://maps.google.com/?q=David+Hall+Fort+Kochi",
   },
   {
     id: "space",
@@ -508,7 +503,6 @@ export const VENUES: VenueCard[] = [
     image: "/venues/space.jpg",
     images: ["/venues/space.jpg"],
     mapUrl: "https://maps.google.com/?q=Space+Gallery+Fort+Kochi",
-    tourUrl: "https://maps.google.com/?q=Space+Gallery+Fort+Kochi",
   },
 ];
 
