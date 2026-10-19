@@ -450,7 +450,7 @@
 }
 
 .programmes__awards {
-  row-gap: 60px;
+  row-gap: 64px;
 }
 
 .programmes__award {
@@ -476,7 +476,7 @@
   aspect-ratio: 315 / 273;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .programmes__award-media img {

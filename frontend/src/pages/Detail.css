@@ -482,9 +482,9 @@
   text-underline-offset: 3px;
 }
 
-/* Card grid row gap — unified to 60px matching Programmes awards */
+/* Card grid row gap — 64px reference spacing */
 .fig-sub-3.detail__cards {
-  row-gap: 60px;
+  row-gap: 64px;
 }
 
 .detail__cards a {
@@ -498,7 +498,7 @@
   aspect-ratio: 315 / 273;
   overflow: hidden;
   background: var(--color-neutral-gray-mid);
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .detail__cards-media img {

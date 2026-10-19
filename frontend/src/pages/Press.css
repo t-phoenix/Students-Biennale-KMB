@@ -378,7 +378,12 @@
   }
 
   .press__header {
-    padding: 14px 0;
+    padding: 16px 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
   }
 
   .press__title {
@@ -399,9 +404,9 @@
 
 @media (max-width: 599px) {
   .press__header {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 12px;
+    flex-direction: row !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
   }
 }
 
