@@ -42,13 +42,16 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
     setExpandedSection((prev) => (prev === section ? null : section));
   };
 
-  // Lock body scroll when open
+  // Lock body scroll and pause Lenis when open
   useEffect(() => {
     if (isOpen) {
       const prevOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
+      const lenis = getLenisInstance();
+      lenis?.stop();
       return () => {
         document.body.style.overflow = prevOverflow;
+        lenis?.start();
       };
     }
   }, [isOpen]);
@@ -114,9 +117,9 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
   if (!isOpen) return null;
 
   return (
-    <div className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation Menu">
+    <div className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation Menu" data-lenis-prevent>
       <div className="mobile-drawer__backdrop" onClick={onClose} aria-hidden="true" />
-      <div className="mobile-drawer__content">
+      <div className="mobile-drawer__content" data-lenis-prevent>
         <div className="mobile-drawer__top">
           <button
             type="button"

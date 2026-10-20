@@ -204,6 +204,7 @@ export function EditionOverview() {
   const [searchParams] = useSearchParams();
   const highlight = searchParams.get("highlight") ?? "";
   const root = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
   const heroTlRef = useRef<gsap.core.Timeline | null>(null);
   const slidesRef = useRef<HTMLElement[]>([]);
   const slideIndexRef = useRef(0);
@@ -427,6 +428,84 @@ function cleanIntroParagraphs(
   const currentHeroSrc = heroImages[slide] ?? heroImages[0] ?? "";
   const dotsTone = useCarouselDotsTone(currentHeroSrc, "center");
 
+  // Touch gesture handling on Edition Overview hero: horizontal swipe
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    let startX = 0;
+    let startY = 0;
+    let isHorizontalGesture: boolean | null = null;
+    let tracking = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      if ((e.target as HTMLElement).closest(".carousel-dots, button, a")) {
+        tracking = false;
+        return;
+      }
+      tracking = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isHorizontalGesture = null;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!tracking || e.touches.length !== 1) return;
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const diffX = currentX - startX;
+      const diffY = currentY - startY;
+
+      if (isHorizontalGesture === null) {
+        if (Math.hypot(diffX, diffY) > 6) {
+          isHorizontalGesture = Math.abs(diffX) > Math.abs(diffY);
+        }
+      }
+
+      if (isHorizontalGesture && e.cancelable) {
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!tracking) return;
+      tracking = false;
+      if (isHorizontalGesture && e.changedTouches.length > 0) {
+        const endX = e.changedTouches[0].clientX;
+        const diffX = startX - endX;
+        const count = heroImages.length;
+        if (count > 1 && Math.abs(diffX) > 28) {
+          const currentIdx = slideIndexRef.current;
+          const nextIdx =
+            diffX > 0
+              ? (currentIdx + 1) % count
+              : (currentIdx - 1 + count) % count;
+          goToSlide(nextIdx);
+          resumeHeroTimeline(nextIdx);
+        }
+      }
+      isHorizontalGesture = null;
+    };
+
+    const onTouchCancel = () => {
+      tracking = false;
+      isHorizontalGesture = null;
+    };
+
+    hero.addEventListener("touchstart", onTouchStart, { passive: true });
+    hero.addEventListener("touchmove", onTouchMove, { passive: false });
+    hero.addEventListener("touchend", onTouchEnd, { passive: true });
+    hero.addEventListener("touchcancel", onTouchCancel, { passive: true });
+
+    return () => {
+      hero.removeEventListener("touchstart", onTouchStart);
+      hero.removeEventListener("touchmove", onTouchMove);
+      hero.removeEventListener("touchend", onTouchEnd);
+      hero.removeEventListener("touchcancel", onTouchCancel);
+    };
+  }, [heroImages.length, goToSlide, resumeHeroTimeline]);
+
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
@@ -568,7 +647,7 @@ function cleanIntroParagraphs(
       ref={root}
       className={`edition-overview${isPreviousEdition ? " edition-overview--previous" : ""}`}
     >
-      <div className="edition-overview__hero">
+      <div ref={heroRef} className="edition-overview__hero">
         {heroImages.length ? (
           <>
             <div className="edition-overview__hero-slides">

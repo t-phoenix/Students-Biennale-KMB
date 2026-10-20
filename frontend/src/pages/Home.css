@@ -1063,7 +1063,7 @@
     max-height: calc(100svh - var(--nav-height-mobile, 56px));
     overflow: hidden;
     z-index: 1;
-    touch-action: pan-y;
+    touch-action: pan-y pinch-zoom;
   }
 
   /* Hide hero carousel navigation arrows on mobile — user swipes to cycle */

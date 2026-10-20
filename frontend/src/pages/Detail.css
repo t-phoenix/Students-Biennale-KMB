@@ -591,6 +591,12 @@
     padding-top: 40px;
   }
 
+  /* Second (and later) curator in duo/collective on mobile:
+     Matches the image-to-name gap (24px portrait margin-bottom + 24px fig-grid row-gap = 48px) */
+  .detail__section--tight {
+    padding-top: 48px;
+  }
+
   .detail__year {
     text-align: left;
   }

@@ -12,6 +12,7 @@
   inset: 0;
   z-index: 4500;
   background: var(--color-neutral-white);
+  pointer-events: none;
 }
 
 .site-layout__main {
@@ -21,11 +22,11 @@
   padding-top: var(--nav-height);
 }
 
-html.lenis-scrolling,
-html.lenis-scrolling *,
-html.is-scrolling-to,
-html.is-scrolling-to * {
-  pointer-events: none !important;
+/* Prevent accidental hover triggers only during programmatic desktop scroll */
+@media (hover: hover) and (pointer: fine) {
+  html.is-scrolling-to {
+    pointer-events: none;
+  }
 }
 
 @media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {

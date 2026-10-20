@@ -67,6 +67,8 @@ export function Home() {
   const heroTlRef = useRef<gsap.core.Timeline | null>(null);
   const slidesRef = useRef<HTMLElement[]>([]);
   const slideIndexRef = useRef(0);
+  const heroRef = useRef<HTMLElement>(null);
+  const heroAutoResumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [slide, setSlide] = useState(0);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
@@ -140,6 +142,7 @@ export function Home() {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
+      if ((e.target as HTMLElement)?.closest(".home-hero__stack")) return;
       if (e.touches.length === 1) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
@@ -150,8 +153,8 @@ export function Home() {
       if (e.touches.length === 1) {
         const dx = e.touches[0].clientX - touchStartX;
         const dy = e.touches[0].clientY - touchStartY;
-        // Only collapse on intentional swipe / scroll gesture (> 10px movement)
-        if (Math.hypot(dx, dy) > 10) {
+        // Only collapse on intentional swipe / scroll gesture (> 25px movement outside stack)
+        if (Math.hypot(dx, dy) > 25) {
           collapse();
         }
       }
@@ -260,17 +263,41 @@ export function Home() {
     if (first) ensureLcpImagePreload(first);
   }, [covers]);
 
-  const goToSlide = useCallback((index: number) => {
-    const slides = slidesRef.current;
-    if (!slides.length || index < 0 || index >= slides.length) return;
-    if (index === slideIndexRef.current) return;
-
-    setMobileCardsExpanded(false);
-    heroTlRef.current?.pause();
-    jumpToSlide(slides, slideIndexRef.current, index);
-    slideIndexRef.current = index;
-    setSlide(index);
+  const resumeHeroTimeline = useCallback((fromIndex: number) => {
+    if (heroAutoResumeTimerRef.current) {
+      clearTimeout(heroAutoResumeTimerRef.current);
+      heroAutoResumeTimerRef.current = null;
+    }
+    heroAutoResumeTimerRef.current = setTimeout(() => {
+      const slides = slidesRef.current;
+      if (!slides.length || slides.length <= 1) return;
+      buildAutoSlideTimeline(
+        slides,
+        fromIndex,
+        (next) => {
+          slideIndexRef.current = next;
+          setSlide(next);
+        },
+        heroTlRef,
+      );
+    }, 5000);
   }, []);
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      const slides = slidesRef.current;
+      if (!slides.length || index < 0 || index >= slides.length) return;
+      if (index === slideIndexRef.current) return;
+
+      setMobileCardsExpanded(false);
+      heroTlRef.current?.pause();
+      jumpToSlide(slides, slideIndexRef.current, index);
+      slideIndexRef.current = index;
+      setSlide(index);
+      resumeHeroTimeline(index);
+    },
+    [resumeHeroTimeline],
+  );
 
 
   const openCard = useCallback((card: ActiveUpdateCard) => {
@@ -776,8 +803,16 @@ export function Home() {
               heroTlRef
             );
             const hero = root.querySelector<HTMLElement>(".home-hero");
-            const pause = () => tl.pause();
-            const play = () => {
+            const onPointerEnter = (e: Event) => {
+              if ((e as PointerEvent).pointerType && (e as PointerEvent).pointerType !== "mouse") return;
+              if (heroAutoResumeTimerRef.current) {
+                clearTimeout(heroAutoResumeTimerRef.current);
+                heroAutoResumeTimerRef.current = null;
+              }
+              tl.pause();
+            };
+            const onPointerLeave = (e: Event) => {
+              if ((e as PointerEvent).pointerType && (e as PointerEvent).pointerType !== "mouse") return;
               buildAutoSlideTimeline(
                 slidesRef.current,
                 slideIndexRef.current,
@@ -788,18 +823,22 @@ export function Home() {
                 heroTlRef
               );
             };
-            hero?.addEventListener("pointerenter", pause);
-            hero?.addEventListener("pointerleave", play);
-            hero?.addEventListener("focusin", pause);
-            hero?.addEventListener("focusout", play);
+            hero?.addEventListener("pointerenter", onPointerEnter as EventListener);
+            hero?.addEventListener("pointerleave", onPointerLeave as EventListener);
+            hero?.addEventListener("focusin", onPointerEnter as EventListener);
+            hero?.addEventListener("focusout", onPointerLeave as EventListener);
             cleanupHero = () => {
+              if (heroAutoResumeTimerRef.current) {
+                clearTimeout(heroAutoResumeTimerRef.current);
+                heroAutoResumeTimerRef.current = null;
+              }
               heroTl.kill();
               heroTlRef.current?.kill();
               heroTlRef.current = null;
-              hero?.removeEventListener("pointerenter", pause);
-              hero?.removeEventListener("pointerleave", play);
-              hero?.removeEventListener("focusin", pause);
-              hero?.removeEventListener("focusout", play);
+              hero?.removeEventListener("pointerenter", onPointerEnter as EventListener);
+              hero?.removeEventListener("pointerleave", onPointerLeave as EventListener);
+              hero?.removeEventListener("focusin", onPointerEnter as EventListener);
+              hero?.removeEventListener("focusout", onPointerLeave as EventListener);
             };
           }
 
@@ -888,55 +927,100 @@ export function Home() {
     }
   );
 
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
+  // Touch gesture handling on hero: smooth horizontal swipe between slides
+  // while preserving natural vertical page scrolling.
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    // Avoid hijacking taps or gestures on interactive cards or pagination dots
-    if ((e.target as HTMLElement).closest(".home-hero__card, .home-hero__card-close, .carousel-dots")) {
-      touchStartX.current = null;
-      touchStartY.current = null;
-      return;
-    }
-    if (e.touches.length === 1) {
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
-    }
-  };
+    let startX = 0;
+    let startY = 0;
+    let isHorizontalGesture: boolean | null = null;
+    let tracking = false;
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null || covers.length <= 1) return;
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const diffX = touchStartX.current - touchEndX;
-    const diffY = touchStartY.current - touchEndY;
-
-    // Responsive horizontal swipe threshold (flick or drag)
-    if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY) * 1.2) {
-      if (diffX > 0) {
-        goToSlide((slide + 1) % covers.length);
-      } else {
-        goToSlide((slide - 1 + covers.length) % covers.length);
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return;
+      // Do not hijack taps on interactive cards, close buttons, dots, or links
+      if (
+        (e.target as HTMLElement).closest(
+          ".home-hero__card, .home-hero__card-close, .carousel-dots, button, a"
+        )
+      ) {
+        tracking = false;
+        return;
       }
-    }
-    touchStartX.current = null;
-    touchStartY.current = null;
-  };
+      tracking = true;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isHorizontalGesture = null;
+    };
 
-  const handleTouchCancel = () => {
-    touchStartX.current = null;
-    touchStartY.current = null;
-  };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!tracking || e.touches.length !== 1) return;
+      const currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
+      const diffX = currentX - startX;
+      const diffY = currentY - startY;
+
+      if (isHorizontalGesture === null) {
+        // Once finger moves > 6px, lock gesture direction
+        if (Math.hypot(diffX, diffY) > 6) {
+          isHorizontalGesture = Math.abs(diffX) > Math.abs(diffY);
+        }
+      }
+
+      if (isHorizontalGesture) {
+        // Horizontal swipe confirmed: prevent vertical scroll / gesture abort
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!tracking) return;
+      tracking = false;
+      if (isHorizontalGesture && e.changedTouches.length > 0) {
+        const endX = e.changedTouches[0].clientX;
+        const diffX = startX - endX;
+        const count = covers.length;
+        if (count > 1 && Math.abs(diffX) > 28) {
+          const currentIdx = slideIndexRef.current;
+          if (diffX > 0) {
+            goToSlide((currentIdx + 1) % count);
+          } else {
+            goToSlide((currentIdx - 1 + count) % count);
+          }
+        }
+      }
+      isHorizontalGesture = null;
+    };
+
+    const onTouchCancel = () => {
+      tracking = false;
+      isHorizontalGesture = null;
+    };
+
+    hero.addEventListener("touchstart", onTouchStart, { passive: true });
+    hero.addEventListener("touchmove", onTouchMove, { passive: false });
+    hero.addEventListener("touchend", onTouchEnd, { passive: true });
+    hero.addEventListener("touchcancel", onTouchCancel, { passive: true });
+
+    return () => {
+      hero.removeEventListener("touchstart", onTouchStart);
+      hero.removeEventListener("touchmove", onTouchMove);
+      hero.removeEventListener("touchend", onTouchEnd);
+      hero.removeEventListener("touchcancel", onTouchCancel);
+    };
+  }, [covers.length, goToSlide]);
 
   return (
     <div ref={rootRef} className="home" data-node-id="6:1016">
       {/* Hero — full viewport width; overlays on 12-col (60 / 20) */}
       <section
+        ref={heroRef}
         className="home-hero"
         aria-label="Hero"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchCancel}
       >
         <div
           className="home-hero__slides"
