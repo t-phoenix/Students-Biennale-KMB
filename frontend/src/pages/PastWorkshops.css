@@ -215,7 +215,14 @@
 @media (max-width: 899px) {
   .past-workshops__section {
     padding-top: 40px;
-    padding-bottom: 40px;
+    padding-bottom: 0;
+  }
+
+  .past-workshops h1.fig-subheading {
+    font-size: var(--type-subtitle-size);
+    font-weight: 400;
+    line-height: var(--type-subtitle-line);
+    letter-spacing: 0.055em;
   }
 
   .past-workshops__drawer-content {
