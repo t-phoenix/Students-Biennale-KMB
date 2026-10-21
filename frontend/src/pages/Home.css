@@ -477,11 +477,11 @@
 .home-edition__body {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-para, 26px);
+  gap: 0;
 }
 
-.home-edition__body .fig-body + .fig-body {
-  margin-top: 0;
+.home-edition__body > .fig-body + .fig-body {
+  margin-top: var(--spacing-para, 26px);
 }
 
 /* Expands in place instead of opening a modal — height is animated via GSAP
