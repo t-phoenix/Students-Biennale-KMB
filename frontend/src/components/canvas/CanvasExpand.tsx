@@ -46,6 +46,13 @@ export function CanvasExpand({ item, origin, onClose, onNext }: Props) {
     prefetchArtworkGallery(artwork);
   }, [artwork]);
 
+  useEffect(() => {
+    // Guarantee header is untucked immediately whenever an article is opened
+    window.dispatchEvent(
+      new CustomEvent("canvas:tuck-header", { detail: { tucked: false, immediate: true } })
+    );
+  }, []);
+
   const goNextArtwork = useCallback(() => {
     if (!nextArtwork || !onNext) return;
     onNext(nextArtwork);

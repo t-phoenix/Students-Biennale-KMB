@@ -39,21 +39,39 @@ export function DiscoverArtworks() {
     prefetchDiscoverViewport(artworks, w, h, sourceKey);
   }, [artworks, sourceKey]);
 
+  const expandRef = useRef(false);
+  expandRef.current = Boolean(expand);
+
   const tuckHeader = useCallback(() => {
-    if (isSearchFocusedRef.current) return;
+    if (isSearchFocusedRef.current || expandRef.current) return;
     setIsTucked(true);
     window.dispatchEvent(new CustomEvent("canvas:tuck-header", { detail: { tucked: true } }));
   }, []);
 
-  const untuckHeader = useCallback(() => {
+  const untuckHeader = useCallback((immediate?: boolean | unknown) => {
+    if (idleTimerRef.current) {
+      clearTimeout(idleTimerRef.current);
+      idleTimerRef.current = null;
+    }
     setIsTucked(false);
-    window.dispatchEvent(new CustomEvent("canvas:tuck-header", { detail: { tucked: false } }));
+    window.dispatchEvent(
+      new CustomEvent("canvas:tuck-header", {
+        detail: { tucked: false, immediate: immediate === true },
+      })
+    );
   }, []);
+
+  // Guarantee that whenever an article opens, header is immediately untucked and present
+  useEffect(() => {
+    if (expand) {
+      untuckHeader(true);
+    }
+  }, [expand, untuckHeader]);
 
   // When interacting with the canvas, header slides up and search moves to top
   useEffect(() => {
     const onInteract = () => {
-      if (isSearchFocusedRef.current) return;
+      if (isSearchFocusedRef.current || expandRef.current) return;
       tuckHeader();
       if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
       idleTimerRef.current = setTimeout(() => {
@@ -112,9 +130,13 @@ export function DiscoverArtworks() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [untuckHeader]);
 
-  const onSelect = useCallback((item: CanvasItem, el: HTMLButtonElement) => {
-    setExpand({ item, origin: el.getBoundingClientRect() });
-  }, []);
+  const onSelect = useCallback(
+    (item: CanvasItem, el: HTMLButtonElement) => {
+      untuckHeader(true);
+      setExpand({ item, origin: el.getBoundingClientRect() });
+    },
+    [untuckHeader]
+  );
 
   const onNext = useCallback((nextArtwork: ArtworkCard) => {
     setExpand((prev) => {
@@ -136,7 +158,7 @@ export function DiscoverArtworks() {
       <div
         ref={searchBarRef}
         className={`discover__search${expand ? " is-hidden" : ""}`}
-        onPointerEnter={untuckHeader}
+        onPointerEnter={() => untuckHeader()}
         aria-hidden={Boolean(expand)}
       >
         <div className={`discover__search-field${isActive ? " is-active" : ""}`}>

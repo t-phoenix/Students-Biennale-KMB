@@ -85,21 +85,19 @@ export function Header() {
   const isHiddenRef = useRef(false);
   const isHoveredRef = useRef(false);
 
-  const showHeader = useCallback(() => {
+  const showHeader = useCallback((immediate = false) => {
     const header = headerRef.current;
     if (!header) return;
-    if (isHiddenRef.current) {
-      isHiddenRef.current = false;
-      if (prefersReducedMotion()) {
-        gsap.set(header, { yPercent: 0 });
-      } else {
-        gsap.to(header, {
-          yPercent: 0,
-          duration: 0.42,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          overwrite: "auto",
-        });
-      }
+    isHiddenRef.current = false;
+    if (immediate || prefersReducedMotion()) {
+      gsap.set(header, { yPercent: 0 });
+    } else {
+      gsap.to(header, {
+        yPercent: 0,
+        duration: 0.35,
+        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+        overwrite: "auto",
+      });
     }
   }, []);
 
@@ -129,17 +127,19 @@ export function Header() {
 
   useEffect(() => {
     // Ensure header is always visible on route change / refresh
-    showHeader();
+    showHeader(true);
 
     if (location.pathname === "/artworks") {
       const onTuck = (e: Event) => {
-        const tucked = Boolean((e as CustomEvent<{ tucked: boolean }>).detail?.tucked);
+        const detail = (e as CustomEvent<{ tucked: boolean; immediate?: boolean }>).detail;
+        const tucked = Boolean(detail?.tucked);
+        const immediate = Boolean(detail?.immediate);
         if (tucked) {
           if (!isHoveredRef.current && !activeDropdown) {
             hideHeader();
           }
         } else {
-          showHeader();
+          showHeader(immediate);
         }
       };
 
