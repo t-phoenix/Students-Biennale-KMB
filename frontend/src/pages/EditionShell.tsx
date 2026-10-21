@@ -242,7 +242,7 @@ function EditionShellLayout() {
                 key={tab.to}
                 to={`/editions/${yearId}/${tab.to}`}
                 className={({ isActive }) =>
-                  `edition__mobile-tab${isActive ? " is-active" : ""}`
+                  `edition__mobile-tab${isActive && !isArchiveOpen ? " is-active" : ""}`
                 }
               >
                 {tab.label}
