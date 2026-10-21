@@ -341,30 +341,218 @@ export function Home() {
     { dependencies: [editionExpanded], scope: rootRef }
   );
 
-  // Sensing Grounds image strip — continuous right-to-left auto-scroll with smooth hover slowdown.
+  // Sensing Grounds image strip —
+  // Desktop (> 899px): continuous right-to-left auto-scroll with smooth hover slowdown.
+  // Mobile (<= 899px): interactive swipe left & right with momentum deceleration, dwell pause, and auto-resume.
   useGSAP(
     () => {
       const track = sensingTrackRef.current;
       if (!track || prefersReducedMotion() || sensingStripImages.length === 0) return;
 
-      const tween = gsap.to(track, {
-        xPercent: -50,
-        duration: 28,
-        ease: "none",
-        repeat: -1,
+      const mm = gsap.matchMedia();
+
+      // DESKTOP (> 899px): continuous marquee with hover slowdown
+      mm.add("(min-width: 900px)", () => {
+        const tween = gsap.to(track, {
+          xPercent: -50,
+          duration: 28,
+          ease: "none",
+          repeat: -1,
+        });
+
+        const container = track.parentElement;
+        const slowDown = () => gsap.to(tween, { timeScale: 0.25, duration: 0.8, ease: "power2.out" });
+        const speedUp = () => gsap.to(tween, { timeScale: 1, duration: 0.8, ease: "power2.out" });
+
+        container?.addEventListener("pointerenter", slowDown);
+        container?.addEventListener("pointerleave", speedUp);
+
+        return () => {
+          container?.removeEventListener("pointerenter", slowDown);
+          container?.removeEventListener("pointerleave", speedUp);
+          tween.kill();
+        };
       });
 
-      const container = track.parentElement;
-      const slowDown = () => gsap.to(tween, { timeScale: 0.25, duration: 0.8, ease: "power2.out" });
-      const speedUp = () => gsap.to(tween, { timeScale: 1, duration: 0.8, ease: "power2.out" });
+      // MOBILE (<= 899px): interactive swipe with momentum deceleration & auto-resume
+      mm.add("(max-width: 899px)", () => {
+        const wrap = gsap.utils.wrap(-50, 0);
+        let currentXPercent = wrap(Number(gsap.getProperty(track, "xPercent")) || 0);
+        let isDragging = false;
+        let isGesturing = false;
+        let startX = 0;
+        let startY = 0;
+        let lastX = 0;
+        let lastTime = 0;
+        let velocityX = 0; // px / ms
+        let momentumTween: gsap.core.Tween | null = null;
+        let resumeTween: gsap.core.Tween | null = null;
+        let resumeTimeout: ReturnType<typeof setTimeout> | null = null;
 
-      container?.addEventListener("pointerenter", slowDown);
-      container?.addEventListener("pointerleave", speedUp);
+        // Auto-scroll speed: -50% in 28 seconds => ~-1.785% per second
+        const BASE_CRUISE_SPEED = -50 / 28;
+        let currentSpeed = BASE_CRUISE_SPEED;
+        let isAutoScrolling = true;
+
+        const updatePosition = (pct: number) => {
+          currentXPercent = wrap(pct);
+          gsap.set(track, { xPercent: currentXPercent });
+        };
+
+        const stopAllMotion = () => {
+          isAutoScrolling = false;
+          if (resumeTimeout) {
+            clearTimeout(resumeTimeout);
+            resumeTimeout = null;
+          }
+          if (momentumTween) {
+            momentumTween.kill();
+            momentumTween = null;
+          }
+          if (resumeTween) {
+            resumeTween.kill();
+            resumeTween = null;
+          }
+        };
+
+        const scheduleAutoResume = () => {
+          if (resumeTimeout) clearTimeout(resumeTimeout);
+          // Dwell in stopped position for 1.2s so user can view where they scrolled to
+          resumeTimeout = setTimeout(() => {
+            currentSpeed = 0;
+            isAutoScrolling = true;
+            // Smoothly accelerate speed back to cruise speed over 1.2s ("stopping can be accelerated down / then animate again")
+            const speedObj = { speed: 0 };
+            resumeTween = gsap.to(speedObj, {
+              speed: BASE_CRUISE_SPEED,
+              duration: 1.2,
+              ease: "power2.inOut",
+              onUpdate: () => {
+                currentSpeed = speedObj.speed;
+              },
+              onComplete: () => {
+                resumeTween = null;
+              },
+            });
+          }, 1200);
+        };
+
+        const tickerCallback = (_time: number, deltaTime: number) => {
+          if (isDragging || !isAutoScrolling) return;
+          const dt = deltaTime / 1000;
+          updatePosition(currentXPercent + currentSpeed * dt);
+        };
+
+        gsap.ticker.add(tickerCallback);
+
+        const onPointerDown = (e: PointerEvent) => {
+          stopAllMotion();
+          isDragging = true;
+          isGesturing = false;
+          startX = e.clientX;
+          startY = e.clientY;
+          lastX = e.clientX;
+          lastTime = performance.now();
+          velocityX = 0;
+          try {
+            track.setPointerCapture(e.pointerId);
+          } catch {}
+        };
+
+        const onPointerMove = (e: PointerEvent) => {
+          if (!isDragging) return;
+
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+
+          // Check if user is scrolling vertically vs swiping the strip
+          if (!isGesturing) {
+            if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) {
+              // Vertical scroll intent: release capture and don't hijack scroll
+              isDragging = false;
+              try {
+                track.releasePointerCapture(e.pointerId);
+              } catch {}
+              scheduleAutoResume();
+              return;
+            }
+            if (Math.abs(dx) > 6) {
+              isGesturing = true;
+              lastX = e.clientX;
+              lastTime = performance.now();
+            }
+          }
+
+          if (isGesturing) {
+            const now = performance.now();
+            const dt = Math.max(now - lastTime, 8);
+            const stepDx = e.clientX - lastX;
+            // Smooth velocity calculation (px / ms)
+            velocityX = 0.65 * (stepDx / dt) + 0.35 * velocityX;
+            lastX = e.clientX;
+            lastTime = now;
+
+            const trackWidth = track.offsetWidth || 1;
+            const deltaPercent = (stepDx / trackWidth) * 100;
+            updatePosition(currentXPercent + deltaPercent);
+          }
+        };
+
+        const onPointerEnd = (e: PointerEvent) => {
+          if (!isDragging && !isGesturing) return;
+          isDragging = false;
+          try {
+            track.releasePointerCapture(e.pointerId);
+          } catch {}
+
+          if (!isGesturing) {
+            scheduleAutoResume();
+            return;
+          }
+
+          // If flicked with velocity, apply decelerating momentum ("stopping can be accelerated down")
+          const trackWidth = track.offsetWidth || 1;
+          const velocityPercentPerSec = ((velocityX * 1000) / trackWidth) * 100;
+
+          if (Math.abs(velocityPercentPerSec) > 3) {
+            const coastDistance = gsap.utils.clamp(-35, 35, velocityPercentPerSec * 0.45);
+            const coastDuration = gsap.utils.clamp(0.6, 1.3, Math.abs(coastDistance) / 20 + 0.45);
+            const state = { pct: currentXPercent };
+
+            momentumTween = gsap.to(state, {
+              pct: currentXPercent + coastDistance,
+              duration: coastDuration,
+              ease: "power2.out", // smooth deceleration down to zero
+              onUpdate: () => {
+                updatePosition(state.pct);
+              },
+              onComplete: () => {
+                momentumTween = null;
+                scheduleAutoResume();
+              },
+            });
+          } else {
+            scheduleAutoResume();
+          }
+        };
+
+        track.addEventListener("pointerdown", onPointerDown);
+        track.addEventListener("pointermove", onPointerMove);
+        track.addEventListener("pointerup", onPointerEnd);
+        track.addEventListener("pointercancel", onPointerEnd);
+
+        return () => {
+          stopAllMotion();
+          gsap.ticker.remove(tickerCallback);
+          track.removeEventListener("pointerdown", onPointerDown);
+          track.removeEventListener("pointermove", onPointerMove);
+          track.removeEventListener("pointerup", onPointerEnd);
+          track.removeEventListener("pointercancel", onPointerEnd);
+        };
+      });
 
       return () => {
-        container?.removeEventListener("pointerenter", slowDown);
-        container?.removeEventListener("pointerleave", speedUp);
-        tween.kill();
+        mm.revert();
       };
     },
     { scope: rootRef, dependencies: [sensingStripImages.join("|")] }
@@ -1261,7 +1449,7 @@ export function Home() {
                   <div ref={sensingTrackRef} className="home-sensing__scroll-track" data-no-parallax="true">
                     {[...sensingStripImages, ...sensingStripImages].map((src, i) => (
                       <div className="home-sensing__scroll-item" key={`${src}-${i}`} data-no-parallax="true">
-                        <img src={src} alt="" data-no-parallax="true" />
+                        <img src={src} alt="" data-no-parallax="true" draggable={false} />
                       </div>
                     ))}
                   </div>

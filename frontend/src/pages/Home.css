@@ -1484,12 +1484,22 @@
     margin-top: 32px;
     margin-inline: calc(-1 * var(--grid-margin, 20px));
     padding-inline: var(--grid-margin, 20px);
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .home-sensing__scroll-track {
-    -webkit-overflow-scrolling: touch;
-    scroll-snap-type: x proximity;
+    display: flex;
     gap: 17px;
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .home-sensing__scroll-track:active {
+    cursor: grabbing;
   }
 
   .home-sensing__scroll-item {
@@ -1497,6 +1507,14 @@
     height: 182px;
     flex: 0 0 220px;
     aspect-ratio: auto;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .home-sensing__scroll-item img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
   }
 
   .home-sensing__peek {
