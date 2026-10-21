@@ -94,7 +94,7 @@ function TeamGrid({
 function CuratorialNoteSection({
   note,
   highlight,
-  isPreviousEdition,
+  isPreviousEdition: _isPreviousEdition,
 }: {
   note: { title: string; paragraphs: string[] };
   highlight: string;
@@ -102,15 +102,9 @@ function CuratorialNoteSection({
 }) {
   return (
     <div className="fig-grid edition-overview__section edition-overview__curatorial-note">
-      <div
-        className={
-          isPreviousEdition
-            ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-            : "fig-label fig-label--sub edition-overview__reveal"
-        }
-      >
+      <h3 className="fig-label fig-label--sub edition-overview__reveal">
         {note.title.toUpperCase()}
-      </div>
+      </h3>
       <div className="fig-c4-9 edition-overview__curatorial-body edition-overview__reveal">
         {note.paragraphs.map((para, i) => (
           <p key={i} className="fig-body">
@@ -773,24 +767,18 @@ function cleanIntroParagraphs(
       {/* Curator bios (archive) or static TeamGrid (current TEAM_COLS / past static grids) */}
       {isPreviousEdition && curatorBios.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <div className="fig-rail edition-overview__rail-label edition-overview__reveal">
+          <h3 className="fig-label fig-label--sub edition-overview__reveal">
             THE TEAM
-          </div>
+          </h3>
           <div className="fig-c4-12 edition-overview__reveal">
             <CuratorBiosGrid bios={curatorBios} highlight={highlight} />
           </div>
         </div>
       ) : team && team.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
+          <h3 className="fig-label fig-label--sub edition-overview__reveal">
             THE TEAM
-          </div>
+          </h3>
           <div className="fig-c4-12 edition-overview__reveal">
             <TeamGrid team={team} highlight={highlight} />
           </div>
@@ -809,15 +797,9 @@ function cleanIntroParagraphs(
       {/* Participating Institutions & Artists (2022-23) or Participating Institutions (2014-15, 2016-17, 2018-19, 2020-21) */}
       {institutionsWithArtists.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
+          <h3 className="fig-label fig-label--sub edition-overview__reveal">
             PARTICIPATING INSTITUTIONS AND ARTISTS
-          </div>
+          </h3>
           <InstitutionsAndArtistsList
             items={institutionsWithArtists}
             highlight={highlight}
@@ -825,15 +807,9 @@ function cleanIntroParagraphs(
         </div>
       ) : institutions.length > 0 ? (
         <div className="fig-grid edition-overview__section">
-          <div
-            className={
-              isPreviousEdition
-                ? "fig-rail edition-overview__rail-label edition-overview__reveal"
-                : "fig-label fig-label--sub edition-overview__reveal"
-            }
-          >
+          <h3 className="fig-label fig-label--sub edition-overview__reveal">
             PARTICIPATING INSTITUTIONS
-          </div>
+          </h3>
           {isPreviousEdition ? (
             <InstitutionsList names={institutions} highlight={highlight} />
           ) : (

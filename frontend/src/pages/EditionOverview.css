@@ -109,21 +109,20 @@
   color: var(--color-text-primary);
 }
 
-/* Previous edition section rail label (THE TEAM, PARTICIPATING INSTITUTIONS, CURATORIAL NOTE)
-   In Figma (66:49, 66:58, 66:303, 66:399, 66:531, 66:1040):
-   cols 1-3 (x: 61, width: 294), 20px, Medium 500, letter-spacing: 0.1em, text-transform: uppercase, text-align: right. */
+/* Section subheading labels (THE TEAM, PARTICIPATING INSTITUTIONS, CURATORIAL NOTE, OVERVIEW)
+   Matches Home page "STUDENTS' BIENNALE 2025-26 TEAM" on desktop and mobile. */
+.edition-overview .fig-label--sub,
 .edition-overview--previous .edition-overview__rail-label {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  grid-column: 1 / span 3;
+  margin: 0;
   text-align: right;
+  padding-inline-end: var(--grid-gutter, 20px);
   font-size: 20px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0.1em;
+  line-height: 28px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--color-text-primary);
-  margin: 0;
 }
 
 .edition-overview--previous .edition-overview__intro .fig-body {
@@ -424,7 +423,7 @@ button.edition-overview__slot:hover img {
   }
 
   .edition-overview__section {
-    padding-top: 44px;
+    padding-top: 48px;
   }
 
   .edition-overview__title-rail {
@@ -432,10 +431,17 @@ button.edition-overview__slot:hover img {
     text-align: left;
   }
 
+  .edition-overview .fig-label--sub,
   .edition-overview--previous .edition-overview__rail-label {
-    align-items: flex-start;
+    grid-column: 1 / -1;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
     text-align: left;
-    margin-bottom: 16px;
+    padding-inline-end: 0;
   }
 
   /* Previous editions & overview: The Team single column layout on mobile */
@@ -511,7 +517,7 @@ button.edition-overview__slot:hover img {
   }
 
   .edition-overview__downloads-section {
-    padding-top: 44px;
+    padding-top: 48px;
   }
 
   .edition-overview__downloads-grid {
@@ -529,7 +535,7 @@ button.edition-overview__slot:hover img {
   }
 
   .edition-overview__gallery {
-    padding-top: 44px;
+    padding-top: 48px;
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
@@ -538,7 +544,7 @@ button.edition-overview__slot:hover img {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 44px;
+    padding-top: 48px;
     width: 100%;
   }
 
