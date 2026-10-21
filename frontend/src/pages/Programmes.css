@@ -620,7 +620,7 @@
 .programmes__raza-intro {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--spacing-md);
 }
 
 .programmes__raza-intro p {

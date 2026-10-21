@@ -68,7 +68,7 @@
   font-size: 16px;
   line-height: 1.7;
   color: var(--color-text-primary, #000000);
-  margin: 0 0 20px;
+  margin: 0 0 var(--spacing-md);
 }
 
 .raza-page__col p:last-child {

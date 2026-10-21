@@ -53,7 +53,7 @@
 }
 
 .press__body p {
-  margin: 0 0 16px;
+  margin: 0 0 var(--spacing-md);
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
 }

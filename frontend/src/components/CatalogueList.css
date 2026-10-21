@@ -324,7 +324,7 @@
 .curator-panel__bio {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md);
 }
 
 .curator-panel__bio p {
