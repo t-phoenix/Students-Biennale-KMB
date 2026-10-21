@@ -113,13 +113,58 @@ export function Programmes() {
     () => intlAwardsEffective.filter((a) => !razaIds.has(a.artworkId)),
     [intlAwardsEffective, razaIds],
   );
-  const visibleStandardAwards = expandedIntlAwards
-    ? standardIntlAwards
-    : standardIntlAwards.slice(0, awardsPreviewCount);
+  const previewIntlAwards = useMemo(
+    () => standardIntlAwards.slice(0, awardsPreviewCount),
+    [standardIntlAwards, awardsPreviewCount],
+  );
+  const remainingIntlAwards = useMemo(
+    () => standardIntlAwards.slice(awardsPreviewCount),
+    [standardIntlAwards, awardsPreviewCount],
+  );
 
-  const visibleNationalAwards = expandedNationalAwards
-    ? nationalAwardsEffective
-    : nationalAwardsEffective.slice(0, awardsPreviewCount);
+  const previewNationalAwards = useMemo(
+    () => nationalAwardsEffective.slice(0, awardsPreviewCount),
+    [nationalAwardsEffective, awardsPreviewCount],
+  );
+  const remainingNationalAwards = useMemo(
+    () => nationalAwardsEffective.slice(awardsPreviewCount),
+    [nationalAwardsEffective, awardsPreviewCount],
+  );
+
+  const intlAnchorRef = useRef<HTMLDivElement>(null);
+  const nationalAnchorRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleIntlAwards = useCallback(() => {
+    setExpandedIntlAwards((open) => {
+      const next = !open;
+      writeSessionFlag(INTL_EXPAND_KEY, next);
+      if (!next && intlAnchorRef.current) {
+        const rect = intlAnchorRef.current.getBoundingClientRect();
+        const targetY = window.scrollY + rect.bottom - (window.innerHeight - 100);
+        window.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
+      }
+      return next;
+    });
+  }, []);
+
+  const handleToggleNationalAwards = useCallback(() => {
+    setExpandedNationalAwards((open) => {
+      const next = !open;
+      writeSessionFlag(NATIONAL_EXPAND_KEY, next);
+      if (!next && nationalAnchorRef.current) {
+        const rect = nationalAnchorRef.current.getBoundingClientRect();
+        const targetY = window.scrollY + rect.bottom - (window.innerHeight - 100);
+        window.scrollTo({
+          top: Math.max(0, targetY),
+          behavior: prefersReducedMotion() ? "auto" : "smooth",
+        });
+      }
+      return next;
+    });
+  }, []);
 
   const razaEffective = {
     title: raza.title || DEFAULT_RAZA.title,
@@ -160,6 +205,8 @@ export function Programmes() {
   }));
   const hasMoreIntlAwards =
     standardIntlAwards.length > awardsPreviewCount || razaAwardCards.length > 0;
+  const hasMoreNationalAwards =
+    nationalAwardsEffective.length > awardsPreviewCount;
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -460,101 +507,135 @@ export function Programmes() {
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">INTERNATIONAL AWARDS</h2>
           {intlAwardsEffective.length ? (
-          <div className="programmes__awards fig-c4-12 fig-sub-3">
-            {visibleStandardAwards.map((a) => (
-              <Link
-                key={a.id ?? `international-${a.name}-${a.artwork}`}
-                className="programmes__award"
-                to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
-              >
-                <div className="programmes__award-media">
-                  {a.image ? <img src={a.image} alt="" /> : null}
-                </div>
-                <h3>
-                  {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
-                </h3>
-                {a.artwork ? (
-                  <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                    <MetaRow label="Artwork" value={a.artwork} />
-                  </MetaGrid>
-                ) : null}
-                <p>
-                  {a.artists?.length
-                    ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
-                      a.institution
-                    : a.institution}
-                </p>
-              </Link>
-            ))}
-
-            {/* Raza - Students' Biennale Scholarship Subsection — revealed when expanded by View More */}
-            {expandedIntlAwards ? (
-              <>
-                <div className="programmes__raza-heading-row" id="raza">
-                  <button
-                    type="button"
-                    className="programmes__raza-title-btn"
-                    onClick={() => setRazaModalOpen(true)}
-                    aria-label="Open Students' Biennale 2025–26 x Beaux Arts de Marseille Spotlight"
-                    title="Click to spotlight Raza - Students' Biennale Scholarship"
+            <>
+              <div className="programmes__awards fig-c4-12 fig-sub-3">
+                {previewIntlAwards.map((a) => (
+                  <Link
+                    key={a.id ?? `international-${a.name}-${a.artwork}`}
+                    className="programmes__award"
+                    to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
                   >
-                    <span>STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE</span>
-                    <span className="programmes__raza-title-arrow" aria-hidden>↗</span>
-                  </button>
-                </div>
+                    <div className="programmes__award-media">
+                      {a.image ? <img src={a.image} alt="" /> : null}
+                    </div>
+                    <h3>
+                      {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                    </h3>
+                    {a.artwork ? (
+                      <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                        <MetaRow label="Artwork" value={a.artwork} />
+                      </MetaGrid>
+                    ) : null}
+                    <p>
+                      {a.artists?.length
+                        ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                          a.institution
+                        : a.institution}
+                    </p>
+                  </Link>
+                ))}
+              </div>
 
-                {razaAwardCards.map((s) => {
-                  const href = catalogueArtworkHref(s.id);
-                  const card = (
-                    <>
-                      <div className="programmes__award-media">
-                        <img src={s.image} alt={s.name} />
+              <div ref={intlAnchorRef} className="programmes__expand-anchor" />
+
+              {hasMoreIntlAwards ? (
+                <div
+                  className={`programmes__expandable fig-c4-12${
+                    expandedIntlAwards ? " is-expanded" : ""
+                  }`}
+                  aria-hidden={!expandedIntlAwards}
+                >
+                  <div className="programmes__expandable-inner">
+                    <div className="programmes__awards fig-sub-3 programmes__awards--extra">
+                      {remainingIntlAwards.map((a) => (
+                        <Link
+                          key={a.id ?? `international-${a.name}-${a.artwork}`}
+                          className="programmes__award"
+                          to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
+                        >
+                          <div className="programmes__award-media">
+                            {a.image ? <img src={a.image} alt="" /> : null}
+                          </div>
+                          <h3>
+                            {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                          </h3>
+                          {a.artwork ? (
+                            <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                              <MetaRow label="Artwork" value={a.artwork} />
+                            </MetaGrid>
+                          ) : null}
+                          <p>
+                            {a.artists?.length
+                              ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                                a.institution
+                              : a.institution}
+                          </p>
+                        </Link>
+                      ))}
+
+                      {/* Raza - Students' Biennale Scholarship Subsection */}
+                      <div className="programmes__raza-heading-row" id="raza">
+                        <button
+                          type="button"
+                          className="programmes__raza-title-btn"
+                          onClick={() => setRazaModalOpen(true)}
+                          aria-label="Open Students' Biennale 2025–26 x Beaux Arts de Marseille Spotlight"
+                          title="Click to spotlight Raza - Students' Biennale Scholarship"
+                        >
+                          <span>STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE</span>
+                          <span className="programmes__raza-title-arrow" aria-hidden>↗</span>
+                        </button>
                       </div>
-                      <h3>{s.name}</h3>
-                      {s.artwork ? (
-                        <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                          <MetaRow label="Artwork" value={s.artwork} />
-                        </MetaGrid>
-                      ) : null}
-                      {s.institution ? <p>{s.institution}</p> : null}
-                    </>
-                  );
-                  if (href) {
-                    return (
-                      <Link key={s.id} className="programmes__award" to={href}>
-                        {card}
-                      </Link>
-                    );
-                  }
-                  return (
-                    <button
-                      key={s.id}
-                      type="button"
-                      className="programmes__award"
-                      onClick={() => setOpenScholarId(s.id)}
-                    >
-                      {card}
-                    </button>
-                  );
-                })}
-              </>
-            ) : null}
-          </div>
+
+                      {razaAwardCards.map((s) => {
+                        const href = catalogueArtworkHref(s.id);
+                        const card = (
+                          <>
+                            <div className="programmes__award-media">
+                              <img src={s.image} alt={s.name} />
+                            </div>
+                            <h3>{s.name}</h3>
+                            {s.artwork ? (
+                              <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                                <MetaRow label="Artwork" value={s.artwork} />
+                              </MetaGrid>
+                            ) : null}
+                            {s.institution ? <p>{s.institution}</p> : null}
+                          </>
+                        );
+                        if (href) {
+                          return (
+                            <Link key={s.id} className="programmes__award" to={href}>
+                              {card}
+                            </Link>
+                          );
+                        }
+                        return (
+                          <button
+                            key={s.id}
+                            type="button"
+                            className="programmes__award"
+                            onClick={() => setOpenScholarId(s.id)}
+                          >
+                            {card}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+            </>
           ) : (
             <SectionEmpty>No international awards published yet.</SectionEmpty>
           )}
+
           {hasMoreIntlAwards ? (
             <CtaLink
               className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
               lines={expandedIntlAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
               spacing={["0.26em", "0.135em"]}
-              onClick={() =>
-                setExpandedIntlAwards((open) => {
-                  const next = !open;
-                  writeSessionFlag(INTL_EXPAND_KEY, next);
-                  return next;
-                })
-              }
+              onClick={handleToggleIntlAwards}
             />
           ) : null}
         </section>
@@ -562,48 +643,86 @@ export function Programmes() {
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">NATIONAL AWARDS</h2>
           {awardsNational.length ? (
-          <div className="programmes__awards fig-c4-12 fig-sub-3">
-            {visibleNationalAwards.map((a) => (
-              <Link
-                key={a.id ?? `national-${a.name}-${a.artwork}`}
-                className="programmes__award"
-                to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
-              >
-                <div className="programmes__award-media">
-                  {a.image ? <img src={a.image} alt="" /> : null}
+            <>
+              <div className="programmes__awards fig-c4-12 fig-sub-3">
+                {previewNationalAwards.map((a) => (
+                  <Link
+                    key={a.id ?? `national-${a.name}-${a.artwork}`}
+                    className="programmes__award"
+                    to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
+                  >
+                    <div className="programmes__award-media">
+                      {a.image ? <img src={a.image} alt="" /> : null}
+                    </div>
+                    <h3>
+                      {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                    </h3>
+                    {a.artwork ? (
+                      <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                        <MetaRow label="Artwork" value={a.artwork} />
+                      </MetaGrid>
+                    ) : null}
+                    <p>
+                      {a.artists?.length
+                        ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                          a.institution
+                        : a.institution}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+
+              <div ref={nationalAnchorRef} className="programmes__expand-anchor" />
+
+              {hasMoreNationalAwards ? (
+                <div
+                  className={`programmes__expandable fig-c4-12${
+                    expandedNationalAwards ? " is-expanded" : ""
+                  }`}
+                  aria-hidden={!expandedNationalAwards}
+                >
+                  <div className="programmes__expandable-inner">
+                    <div className="programmes__awards fig-sub-3 programmes__awards--extra">
+                      {remainingNationalAwards.map((a) => (
+                        <Link
+                          key={a.id ?? `national-${a.name}-${a.artwork}`}
+                          className="programmes__award"
+                          to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
+                        >
+                          <div className="programmes__award-media">
+                            {a.image ? <img src={a.image} alt="" /> : null}
+                          </div>
+                          <h3>
+                            {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                          </h3>
+                          {a.artwork ? (
+                            <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                              <MetaRow label="Artwork" value={a.artwork} />
+                            </MetaGrid>
+                          ) : null}
+                          <p>
+                            {a.artists?.length
+                              ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                                a.institution
+                              : a.institution}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <h3>
-                  {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
-                </h3>
-                {a.artwork ? (
-                  <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                    <MetaRow label="Artwork" value={a.artwork} />
-                  </MetaGrid>
-                ) : null}
-                <p>
-                  {a.artists?.length
-                    ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
-                      a.institution
-                    : a.institution}
-                </p>
-              </Link>
-            ))}
-          </div>
+              ) : null}
+            </>
           ) : (
             <SectionEmpty>No national awards published yet.</SectionEmpty>
           )}
-          {awardsNational.length > awardsPreviewCount ? (
+
+          {hasMoreNationalAwards ? (
             <CtaLink
               className={`fig-cta-end programmes__more${expandedNationalAwards ? " programmes__more--collapse" : ""}`}
               lines={expandedNationalAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
               spacing={["0.26em", "0.135em"]}
-              onClick={() =>
-                setExpandedNationalAwards((open) => {
-                  const next = !open;
-                  writeSessionFlag(NATIONAL_EXPAND_KEY, next);
-                  return next;
-                })
-              }
+              onClick={handleToggleNationalAwards}
             />
           ) : null}
         </section>

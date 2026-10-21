@@ -147,6 +147,11 @@ export function Press() {
     <div ref={root} className="press">
       {/* Title and byline on cols 1–3, article on cols 4–9 (Figma 1:789 / 1:793) */}
       <div className="fig-grid press__head">
+        {featured.image ? (
+          <div className="press__feature-media press__feature-media--mobile">
+            <img src={featured.image} alt="" />
+          </div>
+        ) : null}
         <div className="press__rail fig-rail">
           <h1>{featured.title}</h1>
           <MetaGrid className="press__meta">
@@ -155,7 +160,7 @@ export function Press() {
           </MetaGrid>
         </div>
         <article ref={featureRef} className="press__feature fig-c4-9">
-          <div className="press__feature-media">
+          <div className="press__feature-media press__feature-media--desktop">
             {featured.image ? (
               <img src={featured.image} alt="" />
             ) : (

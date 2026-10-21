@@ -849,3 +849,49 @@
     margin-top: 32px;
   }
 }
+
+/* Smooth Expandable Drawer for Awards */
+.programmes__expandable {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  pointer-events: none;
+  transition: grid-template-rows 0.48s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.35s ease;
+  min-width: 0;
+}
+
+.programmes__expandable.is-expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.programmes__expandable-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.programmes__awards--extra {
+  padding-top: 64px;
+}
+
+.programmes__expand-anchor {
+  grid-column: 1 / -1;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 899px) {
+  .programmes__awards--extra {
+    padding-top: 48px;
+  }
+}
+
+@media (max-width: 599px) {
+  .programmes__awards--extra {
+    padding-top: 40px;
+  }
+}
