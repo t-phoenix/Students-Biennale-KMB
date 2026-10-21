@@ -823,7 +823,7 @@
 }
 
 .home-press__drawer-copy {
-  grid-column: 4 / span 6;
+  grid-column: 1 / -1;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-para, 26px);
@@ -840,8 +840,7 @@
   line-height: 1.7em;
   color: #545454;
   font-style: italic;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
   cursor: pointer;
   align-self: flex-start;
   transition: opacity 0.25s ease, color 0.25s ease;
@@ -850,6 +849,17 @@
 .home-press__read-btn:hover {
   opacity: 0.7;
   color: var(--color-text-primary);
+}
+
+@media (min-width: 900px) {
+  .home-press__drawer-copy {
+    grid-column: 4 / span 5;
+    min-height: 251px;
+  }
+
+  .home-press__read-btn {
+    margin-top: auto;
+  }
 }
 
 /* Main Nav About Anchor — lands flush below sticky nav so previous section is fully hidden */

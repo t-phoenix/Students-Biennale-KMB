@@ -1626,7 +1626,11 @@ export function Home() {
                             </Link>
                           ) : null}
                           <div className="home-press__drawer-copy">
-                            <p className="fig-body">{item.excerpt}</p>
+                            <p className="fig-body">
+                              {item.body
+                                ? item.body.split(/\n\s*\n/).map((p) => p.trim()).find(Boolean) || item.excerpt
+                                : item.excerpt}
+                            </p>
                             <Link
                               to={`/press?article=${item.id}`}
                               className="home-text-btn home-press__read-btn"
