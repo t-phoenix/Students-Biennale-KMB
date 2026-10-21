@@ -134,7 +134,7 @@
 .edition-overview__intro {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
 }
 
 .edition-overview__intro p {
@@ -285,7 +285,7 @@
 .edition-overview__curatorial-body {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
 }
 
 .edition-overview__curatorial-body p {

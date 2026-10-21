@@ -477,7 +477,7 @@
 .home-edition__body {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
 }
 
 .home-edition__body .fig-body + .fig-body {
@@ -491,11 +491,11 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
 }
 
 .home-edition__more .fig-body:first-child {
-  margin-top: var(--spacing-md);
+  margin-top: var(--spacing-para, 26px);
 }
 
 .home-text-btn {
@@ -826,7 +826,7 @@
   grid-column: 4 / span 6;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
 }
 
 .home-press__drawer-copy p,
@@ -907,7 +907,7 @@
 .home-about__sb-copy {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
 }
 
 .home-about__team {
@@ -1626,7 +1626,7 @@
     grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-md);
+    gap: var(--spacing-para, 26px);
   }
 
   .home-press__drawer-copy p.fig-body {

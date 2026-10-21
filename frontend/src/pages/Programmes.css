@@ -192,7 +192,7 @@
   grid-column: 4 / span 5;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
   max-width: 524px;
   width: 100%;
   min-width: 0;
@@ -408,7 +408,7 @@
   grid-column: 4 / span 6;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
   max-width: 524px;
 }
 
@@ -620,7 +620,7 @@
 .programmes__raza-intro {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
 }
 
 .programmes__raza-intro p {

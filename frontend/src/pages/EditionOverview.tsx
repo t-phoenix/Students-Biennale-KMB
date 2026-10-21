@@ -274,11 +274,16 @@ function cleanIntroParagraphs(
   });
 }
 
-  const rawIntro = isPreviousEdition
-    ? (fallback.intro.length ? fallback.intro : catalogue.overview ? catalogue.overview.split("\n\n").map((p) => p.trim()).filter(Boolean) : [])
-    : (catalogue.overview
-        ? catalogue.overview.split("\n\n").map((p) => p.trim()).filter(Boolean)
-        : fallback.intro);
+  const rawIntro = (
+    isPreviousEdition
+      ? (fallback.intro.length ? fallback.intro : catalogue.overview ? catalogue.overview.split("\n\n") : [])
+      : (catalogue.overview
+          ? catalogue.overview.split("\n\n")
+          : fallback.intro)
+  )
+    .flatMap((p) => p.split(/\n\s*\n/))
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   const intro = cleanIntroParagraphs(rawIntro, isPreviousEdition, title, subtitle);
 

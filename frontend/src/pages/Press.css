@@ -53,7 +53,7 @@
 }
 
 .press__body p {
-  margin: 0 0 var(--spacing-md);
+  margin: 0 0 var(--spacing-para, 26px);
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
 }
@@ -265,7 +265,7 @@
   grid-column: 4 / span 6;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--spacing-para, 26px);
   min-width: 0;
 }
 
