@@ -719,12 +719,16 @@
   }
 
   .programmes__block {
+    padding-block: 48px;
+  }
+
+  #awards .programmes__block {
     padding-top: 40px;
     padding-bottom: 0;
   }
 
-  .programmes__block h1.fig-subheading,
-  .programmes__block h2.fig-subheading {
+  #awards .programmes__block h1.fig-subheading,
+  #awards .programmes__block h2.fig-subheading {
     font-size: var(--type-subtitle-size);
     font-weight: 400;
     line-height: var(--type-subtitle-line);
@@ -830,6 +834,10 @@
 
 @media (max-width: 599px) {
   .programmes__block {
+    padding-block: 40px;
+  }
+
+  #awards .programmes__block {
     padding-top: 40px;
     padding-bottom: 0;
   }
