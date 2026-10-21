@@ -13,10 +13,6 @@
   cursor: grabbing;
 }
 
-.infinite-canvas.is-grabbing .canvas-tile {
-  pointer-events: none;
-}
-
 /* Idle-gated ambient zoom lives here, entirely separate from the pan
    (translate) logic below — scale only, anchored to the viewport center. */
 .infinite-canvas__zoom {

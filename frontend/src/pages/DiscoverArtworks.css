@@ -31,6 +31,18 @@
   transition: opacity 0.3s var(--ease-craft, ease), visibility 0.3s var(--ease-craft, ease);
 }
 
+/* Extend background upwards behind the header so no gap or canvas ever peeks through during animation */
+.discover__search::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.98);
+  pointer-events: none;
+}
+
 .discover__search.is-hidden {
   opacity: 0;
   visibility: hidden;

@@ -24,7 +24,7 @@ type Props = {
 const REPEAT_X = 3;
 /** Vertical repeat count *per column* — each column has its own period. */
 const REPEAT_Y = 3;
-const DRAG_THRESHOLD = 5;
+const DRAG_THRESHOLD = 12;
 
 /** How far a released flick glides, as a multiplier on its exit velocity. */
 const THROW_DISTANCE_MULT = 14;
@@ -359,30 +359,41 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     };
 
     const onPointerUp = (e: PointerEvent) => {
-      if (e.pointerId !== pointerId.current) return;
-      dragging.current = false;
-      pointerId.current = null;
       root.classList.remove("is-grabbing");
-      try {
-        if (root.hasPointerCapture(e.pointerId)) root.releasePointerCapture(e.pointerId);
-      } catch {
-        /* ignore */
+      if (e.pointerId !== pointerId.current && dragging.current) {
+        // If an unexpected pointer up occurred while dragging, still clean up
+        dragging.current = false;
+        pointerId.current = null;
+      }
+      if (e.pointerId === pointerId.current) {
+        dragging.current = false;
+        pointerId.current = null;
+        try {
+          if (root.hasPointerCapture(e.pointerId)) root.releasePointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
+
+        const speed = Math.hypot(vel.current.x, vel.current.y);
+        if (speed > 0.4 && !prefersReducedMotion()) {
+          const targetX = offset.current.x + vel.current.x * THROW_DISTANCE_MULT;
+          const targetY = offset.current.y + vel.current.y * THROW_DISTANCE_MULT;
+          const duration = clamp(0.5 + speed * 0.03, 0.5, 1.4);
+          glideTween.current?.kill();
+          glideTween.current = gsap.to(offset.current, {
+            x: targetX,
+            y: targetY,
+            duration,
+            ease: "power3.out",
+            onUpdate: applyTransform,
+          });
+        }
       }
 
-      const speed = Math.hypot(vel.current.x, vel.current.y);
-      if (speed > 0.4 && !prefersReducedMotion()) {
-        const targetX = offset.current.x + vel.current.x * THROW_DISTANCE_MULT;
-        const targetY = offset.current.y + vel.current.y * THROW_DISTANCE_MULT;
-        const duration = clamp(0.5 + speed * 0.03, 0.5, 1.4);
-        glideTween.current?.kill();
-        glideTween.current = gsap.to(offset.current, {
-          x: targetX,
-          y: targetY,
-          duration,
-          ease: "power3.out",
-          onUpdate: applyTransform,
-        });
-      }
+      // Allow click events on tiles fired synchronously in this tick, but reset suppression immediately after
+      setTimeout(() => {
+        suppressClick.current = false;
+      }, 50);
     };
 
     const onWheel = (e: WheelEvent) => {

@@ -16,6 +16,7 @@
   opacity: 1;
   filter: grayscale(0%);
   pointer-events: auto;
+  touch-action: manipulation;
   transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
     filter 0.3s ease;

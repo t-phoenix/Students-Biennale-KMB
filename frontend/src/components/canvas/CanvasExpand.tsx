@@ -103,8 +103,8 @@ export function CanvasExpand({ item, origin, onClose, onNext }: Props) {
       // Measure the sheet at its natural full-size layout, then compute the
       // transform that shrinks it down onto the origin tile's exact rect.
       const final = sheet.getBoundingClientRect();
-      const scaleX = origin.width / final.width;
-      const scaleY = origin.height / final.height;
+      const scaleX = final.width > 0 && origin.width > 0 ? origin.width / final.width : 1;
+      const scaleY = final.height > 0 && origin.height > 0 ? origin.height / final.height : 1;
       const x = origin.left + origin.width / 2 - (final.left + final.width / 2);
       const y = origin.top + origin.height / 2 - (final.top + final.height / 2);
       flip.current = { x, y, scaleX, scaleY };
