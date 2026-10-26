@@ -9,6 +9,13 @@
   transition: transform 0.25s ease;
 }
 
+@media (max-width: 899px) {
+  .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .brand-arrow {
     transition: none;

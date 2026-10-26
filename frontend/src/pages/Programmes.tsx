@@ -505,7 +505,7 @@ export function Programmes() {
           it, then National Awards. */}
       <div id="awards">
         <section className="programmes__block fig-grid prog-reveal">
-          <h2 className="fig-label fig-subheading">INTERNATIONAL AWARDS</h2>
+          <h2 className="fig-label fig-subheading">TATA TRUSTS SB INTERNATIONAL AWARDS</h2>
           {intlAwardsEffective.length ? (
             <>
               <div className="programmes__awards fig-c4-12 fig-sub-3">
@@ -641,7 +641,7 @@ export function Programmes() {
         </section>
 
         <section className="programmes__block fig-grid prog-reveal">
-          <h2 className="fig-label fig-subheading">NATIONAL AWARDS</h2>
+          <h2 className="fig-label fig-subheading">TATA TRUSTS SB NATIONAL AWARDS</h2>
           {awardsNational.length ? (
             <>
               <div className="programmes__awards fig-c4-12 fig-sub-3">

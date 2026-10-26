@@ -62,6 +62,17 @@
   transition: transform 0.25s ease;
 }
 
+@media (max-width: 899px) {
+  .cta-link {
+    gap: 10px;
+  }
+
+  .cta-link .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+}
+
 /* Direction-aware hover micro-interactions strictly for fine pointers (mouse) */
 @media (hover: hover) and (pointer: fine) {
   .cta-link--right:hover .brand-arrow {

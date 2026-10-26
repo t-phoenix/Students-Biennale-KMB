@@ -110,14 +110,14 @@
   letter-spacing: 0.1em;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 899px) {
   .gallery-lightbox__nav {
     padding: 10px 12px;
   }
 
-  .gallery-lightbox__nav img {
-    width: 14px;
-    height: 19px;
+  .gallery-lightbox__nav .brand-arrow {
+    width: 35px;
+    height: 35px;
   }
 
   .gallery-lightbox__close {

@@ -124,15 +124,15 @@
 .spotlight__column {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--spacing-para, 24px);
   min-width: 0;
 }
 
 .spotlight__column p {
   margin: 0;
-  font-size: var(--type-body-size);
-  line-height: 1.65;
-  color: var(--color-text-primary);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-primary, #000000);
 }
 
 @media (max-width: 899px) {

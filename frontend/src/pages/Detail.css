@@ -553,6 +553,13 @@
   transition: transform 0.25s ease;
 }
 
+@media (max-width: 899px) {
+  .detail__back .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+}
+
 .detail__back:hover .brand-arrow {
   transform: translateX(-4px);
 }

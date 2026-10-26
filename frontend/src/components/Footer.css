@@ -54,6 +54,11 @@
   margin: 0;
 }
 
+.site-footer__legal--desktop p {
+  max-width: none;
+  white-space: nowrap;
+}
+
 .site-footer__legal--mobile {
   display: none;
 }

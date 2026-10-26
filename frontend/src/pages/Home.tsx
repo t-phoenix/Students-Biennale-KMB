@@ -1476,12 +1476,16 @@ export function Home() {
           <div className="spotlight__body--split fig-sub-2">
             <div className="spotlight__column">
               {sensingModalCol1.map((p) => (
-                <p key={p.slice(0, 48)}>{p}</p>
+                <p key={p.slice(0, 48)} className="fig-body">
+                  {p}
+                </p>
               ))}
             </div>
             <div className="spotlight__column">
               {sensingModalCol2.map((p) => (
-                <p key={p.slice(0, 48)}>{p}</p>
+                <p key={p.slice(0, 48)} className="fig-body">
+                  {p}
+                </p>
               ))}
             </div>
           </div>
@@ -1770,7 +1774,7 @@ export function Home() {
                   />
                 </div>
                 <p className="home-about__sponsor-caption">
-                  The Kochi Biennale Foundation is grateful for their support.
+                  We are grateful to Tata Trusts for their continued support since 2016.
                 </p>
               </div>
 

@@ -30,6 +30,17 @@
   display: block;
 }
 
+@media (max-width: 899px) {
+  .carousel-nav {
+    padding: 6px;
+  }
+
+  .carousel-nav .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+}
+
 /* Dark slide edge — white arrow (default). */
 .carousel-nav[data-tone="dark"] {
   background: rgba(255, 255, 255, 0.15);
