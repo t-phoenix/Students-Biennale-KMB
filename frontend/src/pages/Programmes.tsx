@@ -5,7 +5,6 @@ import { buildAutoSlideTimeline, jumpToSlide, initSlideStack } from "../lib/imag
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
-import { CtaLink } from "../components/CtaLink";
 import { ResidenciesBand } from "../components/ResidenciesBand";
 import { RazaSpotlightModal } from "../components/RazaSpotlightModal";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
@@ -22,25 +21,6 @@ function catalogueArtworkHref(scholarId: string): string | null {
   return `/editions/${LATEST_EDITION.id}/artworks/${artworkId}?from=awards`;
 }
 
-const INTL_EXPAND_KEY = "programmes_awards_intl_expanded";
-const NATIONAL_EXPAND_KEY = "programmes_awards_national_expanded";
-
-function readSessionFlag(key: string): boolean {
-  try {
-    return sessionStorage.getItem(key) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function writeSessionFlag(key: string, value: boolean) {
-  try {
-    if (value) sessionStorage.setItem(key, "1");
-    else sessionStorage.removeItem(key);
-  } catch {
-    /* ignore quota / private mode */
-  }
-}
 
 export function Programmes() {
   const navigate = useNavigate();
@@ -90,81 +70,17 @@ export function Programmes() {
     setHoveredWorkshopId("");
     setClickedWorkshopId((prev) => (prev === id ? "" : id));
   }, []);
-  // Collapsed by default; remember expand/collapse for this browser tab only.
-  const [expandedIntlAwards, setExpandedIntlAwards] = useState(() =>
-    readSessionFlag(INTL_EXPAND_KEY),
-  );
-  const [expandedNationalAwards, setExpandedNationalAwards] = useState(() =>
-    readSessionFlag(NATIONAL_EXPAND_KEY),
-  );
   const { heroCovers } = useProgrammesCovers();
   const currentHeroSrc = heroCovers[heroSlide]?.image_url ?? heroCovers[0]?.image_url ?? "";
   const dotsTone = useCarouselDotsTone(currentHeroSrc, "center");
   const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
     useProgrammes();
-  const awardsPreviewCount = 3;
-  const intlAwardsEffective = awardsInternational;
-  const nationalAwardsEffective = awardsNational;
-
   const activePastWorkshopId = clickedWorkshopId || hoveredWorkshopId;
-
   const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
   const standardIntlAwards = useMemo(
-    () => intlAwardsEffective.filter((a) => !razaIds.has(a.artworkId)),
-    [intlAwardsEffective, razaIds],
+    () => awardsInternational.filter((a) => !razaIds.has(a.artworkId)),
+    [awardsInternational, razaIds],
   );
-  const previewIntlAwards = useMemo(
-    () => standardIntlAwards.slice(0, awardsPreviewCount),
-    [standardIntlAwards, awardsPreviewCount],
-  );
-  const remainingIntlAwards = useMemo(
-    () => standardIntlAwards.slice(awardsPreviewCount),
-    [standardIntlAwards, awardsPreviewCount],
-  );
-
-  const previewNationalAwards = useMemo(
-    () => nationalAwardsEffective.slice(0, awardsPreviewCount),
-    [nationalAwardsEffective, awardsPreviewCount],
-  );
-  const remainingNationalAwards = useMemo(
-    () => nationalAwardsEffective.slice(awardsPreviewCount),
-    [nationalAwardsEffective, awardsPreviewCount],
-  );
-
-  const intlAnchorRef = useRef<HTMLDivElement>(null);
-  const nationalAnchorRef = useRef<HTMLDivElement>(null);
-
-  const handleToggleIntlAwards = useCallback(() => {
-    setExpandedIntlAwards((open) => {
-      const next = !open;
-      writeSessionFlag(INTL_EXPAND_KEY, next);
-      if (!next && intlAnchorRef.current) {
-        const rect = intlAnchorRef.current.getBoundingClientRect();
-        const targetY = window.scrollY + rect.bottom - (window.innerHeight - 100);
-        window.scrollTo({
-          top: Math.max(0, targetY),
-          behavior: prefersReducedMotion() ? "auto" : "smooth",
-        });
-      }
-      return next;
-    });
-  }, []);
-
-  const handleToggleNationalAwards = useCallback(() => {
-    setExpandedNationalAwards((open) => {
-      const next = !open;
-      writeSessionFlag(NATIONAL_EXPAND_KEY, next);
-      if (!next && nationalAnchorRef.current) {
-        const rect = nationalAnchorRef.current.getBoundingClientRect();
-        const targetY = window.scrollY + rect.bottom - (window.innerHeight - 100);
-        window.scrollTo({
-          top: Math.max(0, targetY),
-          behavior: prefersReducedMotion() ? "auto" : "smooth",
-        });
-      }
-      return next;
-    });
-  }, []);
 
   const razaEffective = {
     title: raza.title || DEFAULT_RAZA.title,
@@ -203,10 +119,6 @@ export function Programmes() {
     ...card,
     image: razaEffective.scholars.find((s) => s.id === card.id)?.image || "",
   }));
-  const hasMoreIntlAwards =
-    standardIntlAwards.length > awardsPreviewCount;
-  const hasMoreNationalAwards =
-    nationalAwardsEffective.length > awardsPreviewCount;
 
   const goToSlide = useCallback((index: number) => {
     const slides = slidesRef.current;
@@ -502,176 +414,72 @@ export function Programmes() {
       <div id="awards">
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">TATA TRUSTS SB INTERNATIONAL AWARDS</h2>
-          {intlAwardsEffective.length ? (
-            <>
-              <div className="programmes__awards fig-c4-12 fig-sub-3">
-                {previewIntlAwards.map((a) => (
-                  <Link
-                    key={a.id ?? `international-${a.name}-${a.artwork}`}
-                    className="programmes__award"
-                    to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
-                  >
-                    <div className="programmes__award-media">
-                      {a.image ? <img src={a.image} alt="" /> : null}
-                    </div>
-                    <h3>
-                      {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
-                    </h3>
-                    {a.artwork ? (
-                      <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                        <MetaRow label="Artwork" value={a.artwork} />
-                      </MetaGrid>
-                    ) : null}
-                    <p>
-                      {a.artists?.length
-                        ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
-                          a.institution
-                        : a.institution}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-
-              <div ref={intlAnchorRef} className="programmes__expand-anchor" />
-
-              {hasMoreIntlAwards ? (
-                <div
-                  className={`programmes__expandable fig-c4-12${
-                    expandedIntlAwards ? " is-expanded" : ""
-                  }`}
-                  aria-hidden={!expandedIntlAwards}
+          {standardIntlAwards.length ? (
+            <div className="programmes__awards fig-c4-12 fig-sub-3">
+              {standardIntlAwards.map((a) => (
+                <Link
+                  key={a.id ?? `international-${a.name}-${a.artwork}`}
+                  className="programmes__award"
+                  to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
                 >
-                  <div className="programmes__expandable-inner">
-                    <div className="programmes__awards fig-sub-3 programmes__awards--extra">
-                      {remainingIntlAwards.map((a) => (
-                        <Link
-                          key={a.id ?? `international-${a.name}-${a.artwork}`}
-                          className="programmes__award"
-                          to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
-                        >
-                          <div className="programmes__award-media">
-                            {a.image ? <img src={a.image} alt="" /> : null}
-                          </div>
-                          <h3>
-                            {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
-                          </h3>
-                          {a.artwork ? (
-                            <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                              <MetaRow label="Artwork" value={a.artwork} />
-                            </MetaGrid>
-                          ) : null}
-                          <p>
-                            {a.artists?.length
-                              ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
-                                a.institution
-                              : a.institution}
-                          </p>
-                        </Link>
-                      ))}
-                    </div>
+                  <div className="programmes__award-media">
+                    {a.image ? <img src={a.image} alt="" /> : null}
                   </div>
-                </div>
-              ) : null}
-            </>
+                  <h3>
+                    {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                  </h3>
+                  {a.artwork ? (
+                    <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                      <MetaRow label="Artwork" value={a.artwork} />
+                    </MetaGrid>
+                  ) : null}
+                  <p>
+                    {a.artists?.length
+                      ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                        a.institution
+                      : a.institution}
+                  </p>
+                </Link>
+              ))}
+            </div>
           ) : (
             <SectionEmpty>No international awards published yet.</SectionEmpty>
           )}
-
-          {hasMoreIntlAwards ? (
-            <CtaLink
-              className={`fig-cta-end programmes__more${expandedIntlAwards ? " programmes__more--collapse" : ""}`}
-              lines={expandedIntlAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
-              spacing={["0.26em", "0.135em"]}
-              onClick={handleToggleIntlAwards}
-            />
-          ) : null}
         </section>
 
         <section className="programmes__block fig-grid prog-reveal">
           <h2 className="fig-label fig-subheading">TATA TRUSTS SB NATIONAL AWARDS</h2>
           {awardsNational.length ? (
-            <>
-              <div className="programmes__awards fig-c4-12 fig-sub-3">
-                {previewNationalAwards.map((a) => (
-                  <Link
-                    key={a.id ?? `national-${a.name}-${a.artwork}`}
-                    className="programmes__award"
-                    to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
-                  >
-                    <div className="programmes__award-media">
-                      {a.image ? <img src={a.image} alt="" /> : null}
-                    </div>
-                    <h3>
-                      {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
-                    </h3>
-                    {a.artwork ? (
-                      <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                        <MetaRow label="Artwork" value={a.artwork} />
-                      </MetaGrid>
-                    ) : null}
-                    <p>
-                      {a.artists?.length
-                        ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
-                          a.institution
-                        : a.institution}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-
-              <div ref={nationalAnchorRef} className="programmes__expand-anchor" />
-
-              {hasMoreNationalAwards ? (
-                <div
-                  className={`programmes__expandable fig-c4-12${
-                    expandedNationalAwards ? " is-expanded" : ""
-                  }`}
-                  aria-hidden={!expandedNationalAwards}
+            <div className="programmes__awards fig-c4-12 fig-sub-3">
+              {awardsNational.map((a) => (
+                <Link
+                  key={a.id ?? `national-${a.name}-${a.artwork}`}
+                  className="programmes__award"
+                  to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
                 >
-                  <div className="programmes__expandable-inner">
-                    <div className="programmes__awards fig-sub-3 programmes__awards--extra">
-                      {remainingNationalAwards.map((a) => (
-                        <Link
-                          key={a.id ?? `national-${a.name}-${a.artwork}`}
-                          className="programmes__award"
-                          to={`/editions/${LATEST_EDITION.id}/artworks/${a.artworkId}?from=awards`}
-                        >
-                          <div className="programmes__award-media">
-                            {a.image ? <img src={a.image} alt="" /> : null}
-                          </div>
-                          <h3>
-                            {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
-                          </h3>
-                          {a.artwork ? (
-                            <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                              <MetaRow label="Artwork" value={a.artwork} />
-                            </MetaGrid>
-                          ) : null}
-                          <p>
-                            {a.artists?.length
-                              ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
-                                a.institution
-                              : a.institution}
-                          </p>
-                        </Link>
-                      ))}
-                    </div>
+                  <div className="programmes__award-media">
+                    {a.image ? <img src={a.image} alt="" /> : null}
                   </div>
-                </div>
-              ) : null}
-            </>
+                  <h3>
+                    {a.artists?.length ? a.artists.map((artist) => artist.name).join(" · ") : a.name}
+                  </h3>
+                  {a.artwork ? (
+                    <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                      <MetaRow label="Artwork" value={a.artwork} />
+                    </MetaGrid>
+                  ) : null}
+                  <p>
+                    {a.artists?.length
+                      ? a.artists.map((artist) => artist.institution).filter(Boolean).join(" · ") ||
+                        a.institution
+                      : a.institution}
+                  </p>
+                </Link>
+              ))}
+            </div>
           ) : (
             <SectionEmpty>No national awards published yet.</SectionEmpty>
           )}
-
-          {hasMoreNationalAwards ? (
-            <CtaLink
-              className={`fig-cta-end programmes__more${expandedNationalAwards ? " programmes__more--collapse" : ""}`}
-              lines={expandedNationalAwards ? ["VIEW", "LESS"] : ["VIEW", "MORE"]}
-              spacing={["0.26em", "0.135em"]}
-              onClick={handleToggleNationalAwards}
-            />
-          ) : null}
         </section>
       </div>
 
