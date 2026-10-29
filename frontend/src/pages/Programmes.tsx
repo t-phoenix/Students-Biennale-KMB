@@ -204,7 +204,7 @@ export function Programmes() {
     image: razaEffective.scholars.find((s) => s.id === card.id)?.image || "",
   }));
   const hasMoreIntlAwards =
-    standardIntlAwards.length > awardsPreviewCount || razaAwardCards.length > 0;
+    standardIntlAwards.length > awardsPreviewCount;
   const hasMoreNationalAwards =
     nationalAwardsEffective.length > awardsPreviewCount;
 
@@ -218,14 +218,10 @@ export function Programmes() {
     setHeroSlide(index);
   }, []);
 
-  // Deep-link #raza opens the spotlight (and needs the intl block expanded).
-  // Do NOT auto-expand on #awards — that hash is used for scroll targets and
-  // was forcing VIEW LESS on every Programmes visit.
+  // Deep-link #raza opens the spotlight modal
   useEffect(() => {
     const applyHash = () => {
       if (window.location.hash !== "#raza") return;
-      setExpandedIntlAwards(true);
-      writeSessionFlag(INTL_EXPAND_KEY, true);
       setRazaModalOpen(true);
     };
     applyHash();
@@ -572,55 +568,6 @@ export function Programmes() {
                           </p>
                         </Link>
                       ))}
-
-                      {/* Raza - Students' Biennale Scholarship Subsection */}
-                      <div className="programmes__raza-heading-row" id="raza">
-                        <button
-                          type="button"
-                          className="programmes__raza-title-btn"
-                          onClick={() => setRazaModalOpen(true)}
-                          aria-label="Open Students' Biennale 2025–26 x Beaux Arts de Marseille Spotlight"
-                          title="Click to spotlight Raza - Students' Biennale Scholarship"
-                        >
-                          <span>STUDENTS’ BIENNALE 2025–26 X BEAUX ARTS DE MARSEILLE</span>
-                          <span className="programmes__raza-title-arrow" aria-hidden>↗</span>
-                        </button>
-                      </div>
-
-                      {razaAwardCards.map((s) => {
-                        const href = catalogueArtworkHref(s.id);
-                        const card = (
-                          <>
-                            <div className="programmes__award-media">
-                              <img src={s.image} alt={s.name} />
-                            </div>
-                            <h3>{s.name}</h3>
-                            {s.artwork ? (
-                              <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
-                                <MetaRow label="Artwork" value={s.artwork} />
-                              </MetaGrid>
-                            ) : null}
-                            {s.institution ? <p>{s.institution}</p> : null}
-                          </>
-                        );
-                        if (href) {
-                          return (
-                            <Link key={s.id} className="programmes__award" to={href}>
-                              {card}
-                            </Link>
-                          );
-                        }
-                        return (
-                          <button
-                            key={s.id}
-                            type="button"
-                            className="programmes__award"
-                            onClick={() => setOpenScholarId(s.id)}
-                          >
-                            {card}
-                          </button>
-                        );
-                      })}
                     </div>
                   </div>
                 </div>
@@ -728,6 +675,63 @@ export function Programmes() {
         </section>
       </div>
 
+      {/* 4) SB 2025-26 X BEAUX ARTS DE MARSEILLE */}
+      <section id="raza" className="programmes__block fig-grid prog-reveal">
+        <h2 className="fig-label fig-subheading">
+          <button
+            type="button"
+            className="programmes__subheading-btn"
+            onClick={() => setRazaModalOpen(true)}
+            aria-label="Open SB 2025-26 x Beaux Arts de Marseille Spotlight"
+            title="Click to spotlight SB 2025-26 x Beaux Arts de Marseille"
+          >
+            <span>SB 2025–26 X BEAUX ARTS DE MARSEILLE</span>
+            <span className="programmes__subheading-arrow" aria-hidden>↗</span>
+          </button>
+        </h2>
+        {razaAwardCards.length ? (
+          <div className="programmes__awards fig-c4-12 fig-sub-3">
+            {razaAwardCards.map((s) => {
+              const href = catalogueArtworkHref(s.id);
+              const card = (
+                <>
+                  <div className="programmes__award-media">
+                    <img src={s.image} alt={s.name} />
+                  </div>
+                  <h3>{s.name}</h3>
+                  {s.artwork ? (
+                    <MetaGrid className="programmes__award-meta meta-grid--compact meta-grid--tight-colon">
+                      <MetaRow label="Artwork" value={s.artwork} />
+                    </MetaGrid>
+                  ) : null}
+                  {s.institution ? <p>{s.institution}</p> : null}
+                </>
+              );
+              if (href) {
+                return (
+                  <Link key={s.id} className="programmes__award" to={href}>
+                    {card}
+                  </Link>
+                );
+              }
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  className="programmes__award"
+                  onClick={() => setOpenScholarId(s.id)}
+                >
+                  {card}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <SectionEmpty>No exchange awards published yet.</SectionEmpty>
+        )}
+      </section>
+
+      {/* 5) Residencies */}
       <section id="residencies" className="programmes__block programmes__block--residencies prog-reveal">
         <div className="fig-grid">
           <h2 className="fig-label fig-subheading">RESIDENCIES</h2>
@@ -746,13 +750,10 @@ export function Programmes() {
         onClose={() => setRazaModalOpen(false)}
         onSelectScholar={(scholarId) => {
           setRazaModalOpen(false);
-          writeSessionFlag(INTL_EXPAND_KEY, true);
-          setExpandedIntlAwards(true);
           const href = catalogueArtworkHref(scholarId);
           if (href) {
-            // Replace #raza so browser back returns to the awards grid, not the modal.
             if (window.location.hash === "#raza") {
-              navigate("/programmes#awards", { replace: true });
+              navigate("/programmes#raza", { replace: true });
             }
             navigate(href);
             return;

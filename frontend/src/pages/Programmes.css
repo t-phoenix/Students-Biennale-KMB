@@ -16,6 +16,7 @@
 
 #workshops,
 #past-workshops,
+#raza,
 #residencies {
   scroll-margin-top: calc(var(--nav-height, 72px) + 20px);
 }
@@ -523,6 +524,41 @@
 
 .programmes__more {
   margin-top: 60px;
+}
+
+/* Subheading button for interactive section headers like SB 2025-26 x Beaux Arts */
+.programmes__subheading-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  display: inline;
+  transition: opacity 0.2s ease;
+}
+
+.programmes__subheading-btn:hover {
+  opacity: 0.65;
+}
+
+.programmes__subheading-arrow {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 0.85em;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.programmes__subheading-btn:hover .programmes__subheading-arrow {
+  transform: translate(2px, -2px);
 }
 
 /* Raza Section Subsection Heading (Figma 50:1773 & 50:2228) */
