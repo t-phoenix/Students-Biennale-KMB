@@ -754,8 +754,22 @@
     padding-bottom: 80px;
   }
 
+  /* Mobile inter-section spacing: 60px top and bottom */
   .programmes__block {
-    padding-block: 48px;
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
+  #awards .programmes__block {
+    padding-top: 60px;
+    padding-bottom: 60px;
+  }
+
+  /* Clear section boundary dividers on mobile */
+  #awards .programmes__block:nth-child(2),
+  #raza,
+  #residencies {
+    border-top: 1px solid var(--color-neutral-gray-light);
   }
 
   /* Mobile title-to-content/image spacing across programmes sections */
@@ -769,15 +783,10 @@
 
   .programmes__block h1.fig-subheading,
   .programmes__block h2.fig-subheading {
-    font-size: var(--type-subtitle-size);
-    font-weight: 400;
-    line-height: var(--type-subtitle-line);
-    letter-spacing: 0.055em;
-  }
-
-  #awards .programmes__block {
-    padding-top: 40px;
-    padding-bottom: 0;
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 24px;
+    letter-spacing: 0.05em;
   }
 
   .programmes__single-workshop {
@@ -878,14 +887,6 @@
 }
 
 @media (max-width: 599px) {
-  .programmes__block {
-    padding-block: 40px;
-  }
-
-  #awards .programmes__block {
-    padding-top: 40px;
-    padding-bottom: 0;
-  }
 
   .programmes__past-header {
     flex-direction: row !important;
