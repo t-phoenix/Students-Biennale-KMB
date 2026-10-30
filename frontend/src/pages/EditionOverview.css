@@ -125,7 +125,8 @@
   color: var(--color-text-primary);
 }
 
-.edition-overview--previous .edition-overview__intro .fig-body {
+.edition-overview__intro .fig-body,
+.edition-overview__intro p {
   font-size: 16px;
   line-height: 1.7;
   color: var(--color-text-primary);

@@ -186,6 +186,9 @@
 
 .detail__desc p {
   margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
 }
 
 .detail__curated-by strong {
@@ -338,9 +341,12 @@
   gap: var(--spacing-para, 26px);
 }
 
-.detail__curator-bio .fig-body {
+.detail__curator-bio .fig-body,
+.detail__curator-bio p {
   margin: 0;
+  font-size: 16px;
   line-height: 1.7;
+  color: var(--color-text-primary);
 }
 
 /* Underline removed and the whole block unified to one colour (secondary
@@ -400,9 +406,12 @@
   gap: var(--spacing-para, 26px);
 }
 
-.detail__note-body .fig-body {
+.detail__note-body .fig-body,
+.detail__note-body p {
   margin: 0;
+  font-size: 16px;
   line-height: 1.7;
+  color: var(--color-text-primary);
 }
 
 /* Wider gutter above between the Artists grid and Curated By block. */
@@ -467,8 +476,12 @@
   gap: var(--spacing-para, 26px);
 }
 
-.detail__venue-desc p {
+.detail__venue-desc p,
+.detail__venue-desc .fig-body {
   margin: 0;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
 }
 
 .detail__venue-links {

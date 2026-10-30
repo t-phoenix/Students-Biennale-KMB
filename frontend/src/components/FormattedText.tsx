@@ -22,7 +22,7 @@ export function FormattedText({ text, className, as: Tag = "span" }: Props) {
 /** Split on blank lines into paragraphs, each with inline markdown. */
 export function FormattedParagraphs({
   text,
-  paragraphClassName,
+  paragraphClassName = "fig-body",
   className,
   splitLines = false,
 }: {

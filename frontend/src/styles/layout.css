@@ -224,6 +224,15 @@
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   font-weight: var(--type-body-weight);
+  color: var(--color-text-primary);
+}
+
+/* Editorial paragraph standard: 16px font-size, 1.7 line-height across all devices */
+.fig-body p,
+p.fig-body {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text-primary);
 }
 
 /* Tier C — 6 columns. Labels move above their content; bands go full width;

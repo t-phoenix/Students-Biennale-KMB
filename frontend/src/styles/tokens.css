@@ -37,7 +37,7 @@
   --type-subtitle-weight: 500;
 
   --type-body-size: 16px;
-  --type-body-line: 24px;
+  --type-body-line: 1.7;
   --type-body-weight: 400;
 
   --type-body-emphasis-weight: 500;
@@ -85,8 +85,8 @@
     --type-title-line: clamp(28px, 5.5vw, 32px);
     --type-subtitle-size: clamp(16px, 3.8vw, 19px);
     --type-subtitle-line: clamp(22px, 4.8vw, 26px);
-    --type-body-size: 15px;
-    --type-body-line: 22px;
+    --type-body-size: 16px;
+    --type-body-line: 1.7;
     --type-caption-size: 14px;
     --type-caption-line: 20px;
   }
@@ -98,8 +98,8 @@
     --type-title-line: clamp(24px, 6vw, 28px);
     --type-subtitle-size: clamp(15px, 4.2vw, 18px);
     --type-subtitle-line: clamp(20px, 5.2vw, 24px);
-    --type-body-size: 14px;
-    --type-body-line: 21px;
+    --type-body-size: 16px;
+    --type-body-line: 1.7;
     --type-caption-size: 13px;
     --type-caption-line: 18px;
   }

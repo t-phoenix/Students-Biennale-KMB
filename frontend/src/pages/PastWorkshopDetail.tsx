@@ -77,9 +77,9 @@ export function PastWorkshopDetail() {
           </div>
 
           {descriptionParas.length ? (
-            <div className="past-workshop-detail__body">
+            <div className="past-workshop-detail__body fig-body">
               {descriptionParas.map((paragraph, pIdx) => (
-                <p key={pIdx}>{paragraph}</p>
+                <p key={pIdx} className="fig-body">{paragraph}</p>
               ))}
             </div>
           ) : (
