@@ -11,32 +11,61 @@ interface RGB {
   b: number;
 }
 
-// 4 brand chevron colors cycling continuously in 10s stages:
-// 1st Black -> 2nd Green -> 3rd Cyan Blue -> 4th Red
+// 3 brand colors cycling continuously in 10s stages:
+// 1st Green (#b4cf45) -> 2nd Cyan Blue (#7bc8c0) -> 3rd Red (#e83239)
 const CYCLE_COLORS: RGB[] = [
-  { r: 27, g: 23, b: 28 },   // 1. Black (#1b171c)
-  { r: 180, g: 207, b: 69 },  // 2. Green (#b4cf45)
-  { r: 123, g: 200, b: 192 }, // 3. Cyan blue (#7bc8c0)
-  { r: 232, g: 50, b: 57 },   // 4. Red (#e83239)
+  { r: 180, g: 207, b: 69 },  // 0: Green (#b4cf45)
+  { r: 123, g: 200, b: 192 }, // 1: Cyan blue (#7bc8c0)
+  { r: 232, g: 50, b: 57 },   // 2: Red (#e83239)
 ];
 
-const CYCLE_STAGE_MS = 10000; // 10 seconds per color transition
-const CYCLE_TOTAL_MS = CYCLE_COLORS.length * CYCLE_STAGE_MS; // 40 seconds total cycle
+// 4th color: Black (#1b171c), only appears via shortcut and then cycles back to the other colors
+const BLACK_COLOR: RGB = { r: 27, g: 23, b: 28 };
 
-function getCycleColorAtTime(timestamp: number): string {
-  const t = ((timestamp % CYCLE_TOTAL_MS) + CYCLE_TOTAL_MS) % CYCLE_TOTAL_MS;
+const CYCLE_STAGE_MS = 10000; // 10 seconds per transition
+const MAIN_CYCLE_TOTAL_MS = CYCLE_COLORS.length * CYCLE_STAGE_MS; // 30 seconds total cycle
+
+interface CycleState {
+  fromBlackTime: number | null; // active when shortcut 4 (Black) was pressed
+  baseWallTime: number;
+  baseCycleStage: number; // 0: Green, 1: Cyan Blue, 2: Red
+}
+
+function lerpRGB(c1: RGB, c2: RGB, progress: number): string {
+  const p = Math.max(0, Math.min(1, progress));
+  const r = Math.round(c1.r + (c2.r - c1.r) * p);
+  const g = Math.round(c1.g + (c2.g - c1.g) * p);
+  const b = Math.round(c1.b + (c2.b - c1.b) * p);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function getCycleColor(timestamp: number, state: CycleState): string {
+  // If Black was selected via shortcut 4:
+  if (state.fromBlackTime !== null) {
+    const elapsedSinceBlack = timestamp - state.fromBlackTime;
+    if (elapsedSinceBlack < CYCLE_STAGE_MS) {
+      // Transitions smoothly from Black -> Green over 10 seconds
+      const progress = elapsedSinceBlack / CYCLE_STAGE_MS;
+      return lerpRGB(BLACK_COLOR, CYCLE_COLORS[0], progress);
+    }
+    // After 10s, smoothly merges into the normal cycle starting from Green
+    const elapsedAfterGreen = elapsedSinceBlack - CYCLE_STAGE_MS;
+    const t = elapsedAfterGreen % MAIN_CYCLE_TOTAL_MS;
+    const stage = Math.floor(t / CYCLE_STAGE_MS);
+    const nextStage = (stage + 1) % CYCLE_COLORS.length;
+    const progress = (t % CYCLE_STAGE_MS) / CYCLE_STAGE_MS;
+    return lerpRGB(CYCLE_COLORS[stage], CYCLE_COLORS[nextStage], progress);
+  }
+
+  // Normal 3-color brand cycle (Green -> Cyan Blue -> Red -> Green...)
+  const elapsed = timestamp - state.baseWallTime;
+  const initialOffset = state.baseCycleStage * CYCLE_STAGE_MS;
+  const t = (((initialOffset + elapsed) % MAIN_CYCLE_TOTAL_MS) + MAIN_CYCLE_TOTAL_MS) % MAIN_CYCLE_TOTAL_MS;
   const stage = Math.floor(t / CYCLE_STAGE_MS);
   const nextStage = (stage + 1) % CYCLE_COLORS.length;
   const progress = (t % CYCLE_STAGE_MS) / CYCLE_STAGE_MS;
 
-  const c1 = CYCLE_COLORS[stage];
-  const c2 = CYCLE_COLORS[nextStage];
-
-  const r = Math.round(c1.r + (c2.r - c1.r) * progress);
-  const g = Math.round(c1.g + (c2.g - c1.g) * progress);
-  const b = Math.round(c1.b + (c2.b - c1.b) * progress);
-
-  return `rgb(${r}, ${g}, ${b})`;
+  return lerpRGB(CYCLE_COLORS[stage], CYCLE_COLORS[nextStage], progress);
 }
 
 const DEFAULT_WIDTH = 10;
@@ -347,6 +376,11 @@ export function SketchLayer() {
   const { pathname } = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const cycleBaseTimeRef = useRef<{ baseWallTime: number; baseCycleTime: number }>({
+    baseWallTime: Date.now(),
+    baseCycleTime: 0,
+  });
+
   const [supported, setSupported] = useState(false);
   const [mode, setMode] = useState<SketchMode>('navigate');
   const [brushWidth, setBrushWidth] = useState(DEFAULT_WIDTH);
@@ -354,7 +388,7 @@ export function SketchLayer() {
     x: 0,
     y: 0,
     on: false,
-    color: getCycleColorAtTime(Date.now()),
+    color: getCycleColor(Date.now(), { baseWallTime: Date.now(), baseCycleTime: 0 }),
   });
   const [nudgeDismissing, setNudgeDismissing] = useState<{ x: number; y: number } | null>(null);
 
@@ -378,6 +412,17 @@ export function SketchLayer() {
   const setModeBoth = useCallback((m: SketchMode) => {
     modeRef.current = m;
     setMode(m);
+  }, []);
+
+  const jumpToColorStage = useCallback((stageIndex: number) => {
+    const now = Date.now();
+    cycleBaseTimeRef.current = {
+      baseWallTime: now,
+      baseCycleTime: stageIndex * CYCLE_STAGE_MS,
+    };
+    const newColor = getCycleColor(now, cycleBaseTimeRef.current);
+    setCursor((c) => ({ ...c, color: newColor }));
+    redrawRef.current();
   }, []);
 
   // Every stroke's position is re-derived from its anchor element's live
@@ -581,7 +626,7 @@ export function SketchLayer() {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      const nowColor = getCycleColorAtTime(Date.now());
+      const nowColor = getCycleColor(Date.now(), cycleBaseTimeRef.current);
       cursorRef.current = { x: e.clientX, y: e.clientY };
       const overHeaderFooter = isOverHeaderOrFooter(e.clientX, e.clientY);
       const overHero = isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY);
@@ -646,7 +691,7 @@ export function SketchLayer() {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const nowColor = getCycleColorAtTime(Date.now());
+      const nowColor = getCycleColor(Date.now(), cycleBaseTimeRef.current);
       const rawAnchor = elementUnderPoint(canvas, e.clientX, e.clientY);
       const anchor = findStationaryAnchor(rawAnchor);
       const rect = anchor.getBoundingClientRect();
@@ -731,6 +776,30 @@ export function SketchLayer() {
       } else if (key === ']') {
         e.preventDefault();
         setBrushWidth((w) => clampWidth(w + 2));
+      } else if (key === '1') {
+        e.preventDefault();
+        jumpToColorStage(0);
+      } else if (key === '2') {
+        e.preventDefault();
+        jumpToColorStage(1);
+      } else if (key === '3') {
+        e.preventDefault();
+        jumpToColorStage(2);
+      } else if (key === '4') {
+        e.preventDefault();
+        jumpToColorStage(3);
+      } else if (key.toLowerCase() === 'g') {
+        e.preventDefault();
+        jumpToColorStage(0);
+      } else if (key.toLowerCase() === 'c' || key.toLowerCase() === 't') {
+        e.preventDefault();
+        jumpToColorStage(1);
+      } else if (key.toLowerCase() === 'r') {
+        e.preventDefault();
+        jumpToColorStage(2);
+      } else if (key.toLowerCase() === 'w') {
+        e.preventDefault();
+        jumpToColorStage(3);
       }
     };
 
