@@ -16,12 +16,12 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 - **Toggle Sketch Mode** — Press `P` to activate/deactivate sketch mode (active from navigate or nudge).
 - **Draw Strokes** — Click and drag to draw freehand strokes, rendered as a clean smoothed line.
 - **Adjust Brush Size** — Press `[` to decrease or `]` to increase (1px – 28px, default 10px, step 2px).
-- **Change Colors** — Press `1` (Teal `#7bc8c0` - default), `2` (Red `#ec3b43`), `3` (Black `#000000`), or `4` (White `#ffffff`).
-- **Highlighter Transparency** — Rendered at 50% opacity for a bold yet translucent highlighter sketch effect.
+- **Brand 4-Color Smooth Cycling** — Automatically and smoothly cycles across the 4 brand chevron colors: **1st Black (`#1b171c`)**, **2nd Green (`#b4cf45`)**, **3rd Cyan Blue (`#7bc8c0`)**, and **4th Red (`#e83239`)**, transitioning in 10-second stages (40s full cycle). A single continuous stroke drawn over 30 seconds smoothly transitions color through these stages along the line.
+- **Highlighter Transparency** — Rendered at **65% opacity** for a clean, rich highlighter aesthetic.
 - **Hero & Cover Restriction** — Drawing and idle nudges are disallowed on hero sections and cover images, allowing standard interactions.
 - **Stationary Anchoring on Moving Strips** — Strokes drawn across animated marquees (e.g. the "Sensing Grounds" image strip) are anchored to the stationary section container so they stay fixed in place on the top layer and scroll vertically with the page, rather than translating with the horizontal image animation.
+- **Stroke Persistence** — No inactivity timeout; sketches remain on the page indefinitely while the user stays on that page. Only refreshing the page or navigating to another page removes the sketches.
 - **Soft Exit** — Press `P`, `Esc`, or scroll wheel to exit back to navigation while **preserving all strokes on the page**.
-- **Hard Exit** — Double-click, hover/click header or footer, route change, or 10s auto-exit timeout to **exit and clear all strokes**.
 - **Element-Anchored Strokes** — Each stroke is pinned to the actual DOM element drawn on, as a pixel offset from its top-left corner scaled uniformly by one factor (not per-axis) — so it tracks scroll, resize, and layout reflow like a sticker on that element, without ever stretching or squeezing. See [Element-Anchored Redraw](#element-anchored-redraw-supersedes-page-space-model) below.
 
 ### Visual Feedback
@@ -96,14 +96,8 @@ Note this uses **width** as the scale signal, matching how stroke width already 
 | **P** | Toggle sketch mode on/off | Global / Nudge |
 | **[** | Decrease brush size (min: 1px, step: 2px) | Sketch only |
 | **]** | Increase brush size (max: 28px, step: 2px) | Sketch only |
-| **1** or **T** | Set brush color to Teal (`#7bc8c0` - default) | Sketch only |
-| **2** | Set brush color to Red (`#ec3b43`) | Sketch only |
-| **3** | Set brush color to Black (`#000000`) | Sketch only |
-| **4** | Set brush color to White (`#ffffff`) | Sketch only |
-| **G** | Set brush color to Neon Green (`#39ff14`) | Sketch only |
 | **Esc** | Soft exit sketch mode (preserves strokes) | Sketch only |
 | **Wheel Scroll** | Soft exit sketch mode (preserves strokes) | Sketch only |
-| **Double-click** | Hard exit sketch mode (clears all strokes) | Sketch only |
 
 ## Device Support
 

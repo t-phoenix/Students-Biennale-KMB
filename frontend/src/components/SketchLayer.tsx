@@ -5,22 +5,48 @@ import './SketchLayer.css';
 
 type SketchMode = 'navigate' | 'nudge' | 'sketch' | 'drawing';
 
-const TEAL = '#7bc8c0';
-const WHITE = '#ffffff';
-const RED = '#ec3b43';
-const BLACK = '#000000';
-const NEON_GREEN = '#39ff14';
+interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
 
-const DEFAULT_COLOR = TEAL;
+// 4 brand chevron colors cycling continuously in 10s stages:
+// 1st Black -> 2nd Green -> 3rd Cyan Blue -> 4th Red
+const CYCLE_COLORS: RGB[] = [
+  { r: 27, g: 23, b: 28 },   // 1. Black (#1b171c)
+  { r: 180, g: 207, b: 69 },  // 2. Green (#b4cf45)
+  { r: 123, g: 200, b: 192 }, // 3. Cyan blue (#7bc8c0)
+  { r: 232, g: 50, b: 57 },   // 4. Red (#e83239)
+];
+
+const CYCLE_STAGE_MS = 10000; // 10 seconds per color transition
+const CYCLE_TOTAL_MS = CYCLE_COLORS.length * CYCLE_STAGE_MS; // 40 seconds total cycle
+
+function getCycleColorAtTime(timestamp: number): string {
+  const t = ((timestamp % CYCLE_TOTAL_MS) + CYCLE_TOTAL_MS) % CYCLE_TOTAL_MS;
+  const stage = Math.floor(t / CYCLE_STAGE_MS);
+  const nextStage = (stage + 1) % CYCLE_COLORS.length;
+  const progress = (t % CYCLE_STAGE_MS) / CYCLE_STAGE_MS;
+
+  const c1 = CYCLE_COLORS[stage];
+  const c2 = CYCLE_COLORS[nextStage];
+
+  const r = Math.round(c1.r + (c2.r - c1.r) * progress);
+  const g = Math.round(c1.g + (c2.g - c1.g) * progress);
+  const b = Math.round(c1.b + (c2.b - c1.b) * progress);
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 const DEFAULT_WIDTH = 10;
-const DEFAULT_OPACITY = 0.5;
+const DEFAULT_OPACITY = 0.65;
 
 const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
 const IDLE_MS = 3000;
 const BURST_MAX = 2; // Up to 2 nudges before quiet period
 const RESET_COOLDOWN_MS = 30000; // 30 seconds quiet window after 2 nudges, then resets count
-const AUTO_EXIT_MS = 10000;
 
 function clampWidth(w: number) {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, w));
@@ -35,11 +61,13 @@ function clampWidth(w: number) {
 interface AnchoredPoint {
   ox: number;
   oy: number;
+  color: string;
 }
 
 interface ResolvedPoint {
   x: number;
   y: number;
+  color: string;
 }
 
 interface Stroke {
@@ -152,33 +180,30 @@ function elementUnderPoint(canvas: HTMLCanvasElement, x: number, y: number): Ele
   return el && el !== document.documentElement ? el : document.body;
 }
 
-function toAnchoredPoint(rect: DOMRect, clientX: number, clientY: number): AnchoredPoint {
+function toAnchoredPoint(rect: DOMRect, clientX: number, clientY: number, color: string): AnchoredPoint {
   return {
     ox: clientX - rect.left,
     oy: clientY - rect.top,
+    color,
   };
 }
 
-// Clean smoothed line: a solid quadratic-curve stroke through the captured
-// points (rounded caps/joins), with no grain/texture overlay. Operates on
-// already-resolved (absolute, viewport-space) points.
+// Clean smoothed line: quadratic-curve stroke through captured points.
+// Smoothly blends gradient colors across segments when cycling across colors.
 function drawResolvedStroke(
   ctx: CanvasRenderingContext2D,
   pts: ResolvedPoint[],
-  color: string,
+  defaultColor: string,
   width: number,
   opacity: number = DEFAULT_OPACITY
 ) {
   if (pts.length === 0) return;
 
   ctx.save();
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.fillStyle = color;
-  ctx.strokeStyle = color;
   ctx.globalAlpha = opacity;
 
   if (pts.length === 1) {
+    ctx.fillStyle = pts[0].color || defaultColor;
     ctx.beginPath();
     ctx.arc(pts[0].x, pts[0].y, width / 2, 0, Math.PI * 2);
     ctx.fill();
@@ -186,18 +211,117 @@ function drawResolvedStroke(
     return;
   }
 
+  if (pts.length === 2) {
+    const c0 = pts[0].color || defaultColor;
+    const c1 = pts[1].color || defaultColor;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    if (c0 !== c1) {
+      const grad = ctx.createLinearGradient(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+      grad.addColorStop(0, c0);
+      grad.addColorStop(1, c1);
+      ctx.strokeStyle = grad;
+    } else {
+      ctx.strokeStyle = c0;
+    }
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    ctx.lineTo(pts[1].x, pts[1].y);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  // pts.length >= 3
+  const firstColor = pts[0].color || defaultColor;
+  let isUniform = true;
+  for (let i = 1; i < pts.length; i++) {
+    if ((pts[i].color || defaultColor) !== firstColor) {
+      isUniform = false;
+      break;
+    }
+  }
+
+  if (isUniform) {
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = width;
+    ctx.strokeStyle = firstColor;
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length - 1; i++) {
+      const mx = (pts[i].x + pts[i + 1].x) / 2;
+      const my = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+    }
+    const last = pts[pts.length - 1];
+    const secondLast = pts[pts.length - 2];
+    ctx.quadraticCurveTo(secondLast.x, secondLast.y, last.x, last.y);
+    ctx.stroke();
+    ctx.restore();
+    return;
+  }
+
+  // Multi-color curve with smooth gradient transitions between points
   ctx.lineWidth = width;
+  ctx.lineCap = 'butt';
+  ctx.lineJoin = 'round';
+
+  // Smooth start cap
+  ctx.fillStyle = pts[0].color || defaultColor;
   ctx.beginPath();
-  ctx.moveTo(pts[0].x, pts[0].y);
+  ctx.arc(pts[0].x, pts[0].y, width / 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  let prevX = pts[0].x;
+  let prevY = pts[0].y;
+
   for (let i = 1; i < pts.length - 1; i++) {
     const mx = (pts[i].x + pts[i + 1].x) / 2;
     const my = (pts[i].y + pts[i + 1].y) / 2;
+    const c0 = pts[i - 1].color || defaultColor;
+    const c1 = pts[i].color || defaultColor;
+
+    ctx.beginPath();
+    ctx.moveTo(prevX, prevY);
     ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
+
+    if (c0 !== c1) {
+      const grad = ctx.createLinearGradient(prevX, prevY, mx, my);
+      grad.addColorStop(0, c0);
+      grad.addColorStop(1, c1);
+      ctx.strokeStyle = grad;
+    } else {
+      ctx.strokeStyle = c0;
+    }
+    ctx.stroke();
+
+    prevX = mx;
+    prevY = my;
   }
+
+  // Final segment to last point
   const last = pts[pts.length - 1];
-  const secondLast = pts[pts.length - 2];
-  ctx.quadraticCurveTo(secondLast.x, secondLast.y, last.x, last.y);
+  const lastColor = last.color || defaultColor;
+  const secondLastColor = pts[pts.length - 2].color || defaultColor;
+  ctx.beginPath();
+  ctx.moveTo(prevX, prevY);
+  ctx.lineTo(last.x, last.y);
+  if (secondLastColor !== lastColor) {
+    const grad = ctx.createLinearGradient(prevX, prevY, last.x, last.y);
+    grad.addColorStop(0, secondLastColor);
+    grad.addColorStop(1, lastColor);
+    ctx.strokeStyle = grad;
+  } else {
+    ctx.strokeStyle = lastColor;
+  }
   ctx.stroke();
+
+  // Smooth end cap
+  ctx.fillStyle = lastColor;
+  ctx.beginPath();
+  ctx.arc(last.x, last.y, width / 2, 0, Math.PI * 2);
+  ctx.fill();
 
   ctx.restore();
 }
@@ -210,7 +334,11 @@ function resolveStrokePoints(stroke: Stroke): { points: ResolvedPoint[]; width: 
   // resizes with its anchor like a sticker, never warped independently.
   const scale = stroke.anchorWidth > 0 ? rect.width / stroke.anchorWidth : 1;
   return {
-    points: stroke.points.map((p) => ({ x: rect.left + p.ox * scale, y: rect.top + p.oy * scale })),
+    points: stroke.points.map((p) => ({
+      x: rect.left + p.ox * scale,
+      y: rect.top + p.oy * scale,
+      color: p.color || stroke.color,
+    })),
     width: stroke.width * scale,
   };
 }
@@ -221,9 +349,13 @@ export function SketchLayer() {
 
   const [supported, setSupported] = useState(false);
   const [mode, setMode] = useState<SketchMode>('navigate');
-  const [brushColor, setBrushColor] = useState<string>(DEFAULT_COLOR);
   const [brushWidth, setBrushWidth] = useState(DEFAULT_WIDTH);
-  const [cursor, setCursor] = useState({ x: 0, y: 0, on: false });
+  const [cursor, setCursor] = useState({
+    x: 0,
+    y: 0,
+    on: false,
+    color: getCycleColorAtTime(Date.now()),
+  });
   const [nudgeDismissing, setNudgeDismissing] = useState<{ x: number; y: number } | null>(null);
 
   const cursorRef = useRef({ x: 0, y: 0 });
@@ -231,10 +363,8 @@ export function SketchLayer() {
   const strokesRef = useRef<Stroke[]>([]);
   const currentStrokeRef = useRef<Stroke | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autoExitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dprRef = useRef(1);
   const reducedMotionRef = useRef(false);
-  const brushColorRef = useRef(DEFAULT_COLOR);
   const brushWidthRef = useRef(DEFAULT_WIDTH);
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
@@ -243,7 +373,6 @@ export function SketchLayer() {
   const lastNudgeDismissedAtRef = useRef(0);
   const hasEnteredSketchRef = useRef(false);
 
-  brushColorRef.current = brushColor;
   brushWidthRef.current = brushWidth;
 
   const setModeBoth = useCallback((m: SketchMode) => {
@@ -313,9 +442,6 @@ export function SketchLayer() {
   const clearIdleTimer = useCallback(() => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
   }, []);
-  const clearAutoExitTimer = useCallback(() => {
-    if (autoExitTimerRef.current) clearTimeout(autoExitTimerRef.current);
-  }, []);
 
   const startIdleTimer = useCallback(() => {
     clearIdleTimer();
@@ -375,53 +501,32 @@ export function SketchLayer() {
     }
   }, [setModeBoth, startIdleTimer]);
 
-  // Hard exit: clears all strokes (double-click, header/footer, route change, 10s inactivity)
+  // Hard exit: clears all strokes only on route change or explicit reset
   const hardExit = useCallback(() => {
-    clearAutoExitTimer();
     currentStrokeRef.current = null;
     strokesRef.current = [];
     setModeBoth('navigate');
     setCursor((c) => ({ ...c, on: false }));
     redrawRef.current();
     startIdleTimer();
-  }, [clearAutoExitTimer, setModeBoth, startIdleTimer]);
-
-  const startAutoExitTimer = useCallback(() => {
-    clearAutoExitTimer();
-    if (modeRef.current === 'sketch' || modeRef.current === 'drawing') {
-      autoExitTimerRef.current = setTimeout(() => {
-        if (modeRef.current === 'sketch' || modeRef.current === 'drawing') hardExit();
-      }, AUTO_EXIT_MS);
-    }
-  }, [clearAutoExitTimer, hardExit]);
+  }, [setModeBoth, startIdleTimer]);
 
   const enterSketch = useCallback(() => {
     hasEnteredSketchRef.current = true;
     clearIdleTimer();
-    clearAutoExitTimer();
     const active = document.activeElement;
     if (active instanceof HTMLElement) active.blur();
     setModeBoth('sketch');
-    startAutoExitTimer();
-  }, [clearIdleTimer, clearAutoExitTimer, setModeBoth, startAutoExitTimer]);
+  }, [clearIdleTimer, setModeBoth]);
 
-  // Soft exit: keeps strokes on the page (P toggle, Esc, wheel scroll)
+  // Soft exit: keeps all strokes on the page (P toggle, Esc, wheel scroll)
   const softExit = useCallback(() => {
-    clearAutoExitTimer();
     currentStrokeRef.current = null;
     setModeBoth('navigate');
     startIdleTimer();
-  }, [clearAutoExitTimer, setModeBoth, startIdleTimer]);
+  }, [setModeBoth, startIdleTimer]);
 
-  const exitOrDismiss = useCallback(() => {
-    if (modeRef.current === 'nudge') {
-      dismissNudge();
-    } else if (modeRef.current === 'sketch' || modeRef.current === 'drawing') {
-      hardExit();
-    }
-  }, [dismissNudge, hardExit]);
-
-  // Route change -> hard exit (matches production: sketches clear on navigation)
+  // Route change -> clear sketches (sketches persist while staying on the page)
   useEffect(() => {
     if (prevPathRef.current !== pathname) {
       prevPathRef.current = pathname;
@@ -473,15 +578,15 @@ export function SketchLayer() {
     const tick = () => {
       const m = modeRef.current;
       if (m === 'navigate') startIdleTimer();
-      else if (m === 'sketch') startAutoExitTimer();
     };
 
     const handlePointerMove = (e: PointerEvent) => {
+      const nowColor = getCycleColorAtTime(Date.now());
       cursorRef.current = { x: e.clientX, y: e.clientY };
       const overHeaderFooter = isOverHeaderOrFooter(e.clientX, e.clientY);
       const overHero = isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY);
       const disallowed = overHeaderFooter || overHero;
-      setCursor({ x: e.clientX, y: e.clientY, on: !disallowed });
+      setCursor({ x: e.clientX, y: e.clientY, on: !disallowed, color: nowColor });
 
       const m = modeRef.current;
       const canvas = canvasRef.current;
@@ -497,7 +602,14 @@ export function SketchLayer() {
       }
 
       if ((m === 'nudge' || m === 'sketch' || m === 'drawing') && overHeaderFooter) {
-        exitOrDismiss();
+        if (m === 'nudge') {
+          dismissNudge();
+        } else if (m === 'drawing' && currentStrokeRef.current) {
+          strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
+          currentStrokeRef.current = null;
+          setModeBoth('sketch');
+          redraw();
+        }
         return;
       }
       if (m === 'nudge') {
@@ -507,13 +619,11 @@ export function SketchLayer() {
 
       if (m === 'drawing' && currentStrokeRef.current) {
         if (overHero) {
-          startAutoExitTimer();
           return;
         }
         const rect = currentStrokeRef.current.anchor.getBoundingClientRect();
-        currentStrokeRef.current.points.push(toAnchoredPoint(rect, e.clientX, e.clientY));
+        currentStrokeRef.current.points.push(toAnchoredPoint(rect, e.clientX, e.clientY, nowColor));
         redraw();
-        startAutoExitTimer();
         return;
       }
       tick();
@@ -523,12 +633,10 @@ export function SketchLayer() {
       if (modeRef.current !== 'sketch' || e.button !== 0 || isFormElement(e.target)) return;
 
       if (e.detail >= 2) {
-        exitOrDismiss();
         e.preventDefault();
         return;
       }
       if (isOverHeaderOrFooter(e.clientX, e.clientY)) {
-        exitOrDismiss();
         return;
       }
       if (isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY)) {
@@ -538,15 +646,15 @@ export function SketchLayer() {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      clearAutoExitTimer();
+      const nowColor = getCycleColorAtTime(Date.now());
       const rawAnchor = elementUnderPoint(canvas, e.clientX, e.clientY);
       const anchor = findStationaryAnchor(rawAnchor);
       const rect = anchor.getBoundingClientRect();
       currentStrokeRef.current = {
         anchor,
         anchorWidth: rect.width,
-        points: [toAnchoredPoint(rect, e.clientX, e.clientY)],
-        color: brushColorRef.current,
+        points: [toAnchoredPoint(rect, e.clientX, e.clientY, nowColor)],
+        color: nowColor,
         width: brushWidthRef.current,
         opacity: DEFAULT_OPACITY,
       };
@@ -565,13 +673,11 @@ export function SketchLayer() {
       strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
       currentStrokeRef.current = null;
       setModeBoth('sketch');
-      startAutoExitTimer();
       redraw();
     };
 
     const handleDblClick = (e: MouseEvent) => {
-      if (modeRef.current !== 'sketch' && modeRef.current !== 'drawing') return;
-      exitOrDismiss();
+      // Strokes persist on double-click; double-clicking does not clear drawings
       e.preventDefault();
     };
 
@@ -622,37 +728,9 @@ export function SketchLayer() {
       if (key === '[') {
         e.preventDefault();
         setBrushWidth((w) => clampWidth(w - 2));
-        startAutoExitTimer();
       } else if (key === ']') {
         e.preventDefault();
         setBrushWidth((w) => clampWidth(w + 2));
-        startAutoExitTimer();
-      } else if (key === '1') {
-        e.preventDefault();
-        setBrushColor(TEAL);
-        startAutoExitTimer();
-      } else if (key === '2') {
-        e.preventDefault();
-        setBrushColor(RED);
-        startAutoExitTimer();
-      } else if (key === '3') {
-        e.preventDefault();
-        setBrushColor(BLACK);
-        startAutoExitTimer();
-      } else if (key === '4') {
-        e.preventDefault();
-        setBrushColor(WHITE);
-        startAutoExitTimer();
-      } else if (key.toLowerCase() === 't') {
-        e.preventDefault();
-        setBrushColor(TEAL);
-        startAutoExitTimer();
-      } else if (key.toLowerCase() === 'g') {
-        e.preventDefault();
-        setBrushColor(NEON_GREEN);
-        startAutoExitTimer();
-      } else {
-        startAutoExitTimer();
       }
     };
 
@@ -678,7 +756,6 @@ export function SketchLayer() {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('keydown', handleKeyDown);
       clearIdleTimer();
-      clearAutoExitTimer();
     };
   }, [
     supported,
@@ -686,12 +763,9 @@ export function SketchLayer() {
     scheduleRedraw,
     resizeCanvas,
     startIdleTimer,
-    startAutoExitTimer,
     clearIdleTimer,
-    clearAutoExitTimer,
     setModeBoth,
     dismissNudge,
-    exitOrDismiss,
     softExit,
     enterSketch,
   ]);
@@ -739,7 +813,14 @@ export function SketchLayer() {
           {mode === 'nudge' ? (
             <span className="scribble-brush__hint">press P</span>
           ) : (
-            <span className="scribble-brush__ring" style={{ width: brushWidth, height: brushWidth, borderColor: 'currentColor' }} />
+            <span
+              className="scribble-brush__ring"
+              style={{
+                width: brushWidth,
+                height: brushWidth,
+                borderColor: cursor.color || 'currentColor',
+              }}
+            />
           )}
         </div>
       )}
