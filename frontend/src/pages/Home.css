@@ -836,6 +836,7 @@
 }
 
 .home-press__read-btn {
+  margin-top: 0;
   font-size: 16px;
   line-height: 1.7em;
   color: #545454;

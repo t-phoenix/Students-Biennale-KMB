@@ -70,6 +70,7 @@
 }
 
 .press__feature > p {
+  margin: 0;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
 }
@@ -298,7 +299,9 @@
 }
 
 .press__teaser p,
-.press__teaser-body p {
+.press__teaser-body p,
+.press__drawer-copy p,
+.press__drawer-body p {
   margin: 0;
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
