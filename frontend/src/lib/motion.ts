@@ -50,6 +50,14 @@ ScrollTrigger.config({
   ignoreMobileResize: true,
 });
 
+// Prevent browser automatic scroll restoration from conflicting with SPA navigation
+if (typeof window !== 'undefined') {
+  ScrollTrigger.clearScrollMemory('manual');
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+}
+
 /** Call once at app bootstrap if needed. */
 export function initMotion() {
   gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);

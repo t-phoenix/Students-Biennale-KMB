@@ -25,7 +25,7 @@ export function PastWorkshopDetail() {
         ease: "cubic-bezier(0.16, 1, 0.3, 1)",
       });
     },
-    { scope: root, dependencies: [id] }
+    { scope: root, dependencies: [id, workshop?.id] }
   );
 
   if (status === "loading") {

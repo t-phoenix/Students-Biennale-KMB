@@ -123,7 +123,7 @@ export function Detail() {
         cleanups.forEach((c) => c());
       };
     },
-    { scope: root, dependencies: [id, kindSeg] }
+    { scope: root, dependencies: [id, kindSeg, data.item?.id] }
   );
 
   useGSAP(

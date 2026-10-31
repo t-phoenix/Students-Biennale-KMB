@@ -153,8 +153,8 @@ export function Programmes() {
     () => {
       const reduced = prefersReducedMotion();
       if (!reduced) {
-        const sections = gsap.utils.toArray<HTMLElement>(".prog-reveal");
-        sections.forEach((sec) => {
+        const sections = root.current?.querySelectorAll<HTMLElement>(".prog-reveal");
+        sections?.forEach((sec) => {
           gsap.fromTo(
             sec,
             { autoAlpha: 0 },

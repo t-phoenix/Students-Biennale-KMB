@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Lenis from "lenis";
-import { gsap, syncScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { gsap, ScrollTrigger, syncScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { SketchLayer } from "./SketchLayer";
@@ -144,8 +144,15 @@ export function Layout() {
 
       gsap.fromTo(
         mainRef.current,
-        { autoAlpha: 0, y: 8 },
-        { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out", overwrite: "auto" }
+        { opacity: 0, y: 8 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.45,
+          ease: "power3.out",
+          overwrite: "auto",
+          clearProps: "opacity,transform",
+        }
       );
     },
     {
@@ -170,10 +177,26 @@ export function Layout() {
 
     if (samePage && lenisRef.current) {
       lenisRef.current.scrollTo(0);
-      return;
+    } else {
+      window.scrollTo(0, 0);
+      lenisRef.current?.scrollTo(0, { immediate: true });
     }
-    window.scrollTo(0, 0);
-    lenisRef.current?.scrollTo(0, { immediate: true });
+
+    // Keep ScrollTrigger synchronized with reset scroll and recalculated layout
+    ScrollTrigger.clearScrollMemory('manual');
+    syncScrollTrigger();
+
+    const rafId = requestAnimationFrame(() => {
+      ScrollTrigger.refresh();
+    });
+    const timerId = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 150);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.clearTimeout(timerId);
+    };
   }, [location.pathname, location.key]);
 
   useEffect(() => {
@@ -233,7 +256,9 @@ export function Layout() {
     <div className={`site-layout${isDiscover ? " site-layout--discover" : ""}`}>
       <Header />
       <div ref={mainRef} className="site-layout__main">
-        <Outlet />
+        <Suspense fallback={<div className="route-fallback" aria-hidden="true" />}>
+          <Outlet />
+        </Suspense>
       </div>
       {isDiscover ? null : <Footer />}
       <SketchLayer />
