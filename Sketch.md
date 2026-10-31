@@ -16,7 +16,12 @@ The Sketch feature is an interactive drawing overlay that allows users to annota
 - **Toggle Sketch Mode** — Press `P` to activate/deactivate sketch mode (active from navigate or nudge).
 - **Draw Strokes** — Click and drag to draw freehand strokes, rendered as a clean smoothed line.
 - **Adjust Brush Size** — Press `[` to decrease or `]` to increase (1px – 28px, default 10px, step 2px).
-- **Brand 4-Color Smooth Cycling** — Automatically and smoothly cycles across the 4 brand chevron colors: **1st Black (`#1b171c`)**, **2nd Green (`#b4cf45`)**, **3rd Cyan Blue (`#7bc8c0`)**, and **4th Red (`#e83239`)**, transitioning in 10-second stages (40s full cycle). A single continuous stroke drawn over 30 seconds smoothly transitions color through these stages along the line.
+- **Brand 3-Color Smooth Cycling** — Automatically and smoothly cycles across the 3 brand chevron colors: **1st Green (`#b4cf45`)**, **2nd Cyan Blue (`#7bc8c0`)**, and **3rd Red (`#e83239`)**, transitioning in 10-second stages (30s full cycle). A single continuous stroke drawn across seconds smoothly transitions color through these stages along the line.
+- **Quick Color Shortcuts (Keys 1, 2, 3, 4)** —
+  - `1` / `G`: Instantly snaps brush color to **Green (`#b4cf45`)** and continues cycling from there.
+  - `2` / `C` / `T`: Instantly snaps brush color to **Cyan Blue (`#7bc8c0`)** and continues cycling from there.
+  - `3` / `R`: Instantly snaps brush color to **Red (`#e83239`)** and continues cycling from there.
+  - `4` / `B`: Instantly snaps brush color to **Black (`#1b171c`)**. Black is shortcut-only and does not exist in the regular automatic cycle; once activated, it smoothly transitions over 10 seconds into Green, seamlessly rejoining the 3-color loop.
 - **Highlighter Transparency** — Rendered at **65% opacity** for a clean, rich highlighter aesthetic.
 - **Hero & Cover Restriction** — Drawing and idle nudges are disallowed on hero sections and cover images, allowing standard interactions.
 - **Stationary Anchoring on Moving Strips** — Strokes drawn across animated marquees (e.g. the "Sensing Grounds" image strip) are anchored to the stationary section container so they stay fixed in place on the top layer and scroll vertically with the page, rather than translating with the horizontal image animation.
@@ -94,6 +99,10 @@ Note this uses **width** as the scale signal, matching how stroke width already 
 | Key | Action | Mode |
 |-----|--------|------|
 | **P** | Toggle sketch mode on/off | Global / Nudge |
+| **1** / **G** | Snap color to Green (`#b4cf45`) and resume cycle | Sketch only |
+| **2** / **C** / **T** | Snap color to Cyan Blue (`#7bc8c0`) and resume cycle | Sketch only |
+| **3** / **R** | Snap color to Red (`#e83239`) and resume cycle | Sketch only |
+| **4** / **B** | Snap color to Black (`#1b171c`), transition to Green over 10s, then resume cycle | Sketch only |
 | **[** | Decrease brush size (min: 1px, step: 2px) | Sketch only |
 | **]** | Increase brush size (max: 28px, step: 2px) | Sketch only |
 | **Esc** | Soft exit sketch mode (preserves strokes) | Sketch only |

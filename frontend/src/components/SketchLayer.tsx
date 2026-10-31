@@ -376,19 +376,28 @@ export function SketchLayer() {
   const { pathname } = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const cycleBaseTimeRef = useRef<{ baseWallTime: number; baseCycleTime: number }>({
+  const cycleStateRef = useRef<CycleState>({
+    fromBlackTime: null,
     baseWallTime: Date.now(),
-    baseCycleTime: 0,
+    baseCycleStage: 0,
   });
 
   const [supported, setSupported] = useState(false);
   const [mode, setMode] = useState<SketchMode>('navigate');
   const [brushWidth, setBrushWidth] = useState(DEFAULT_WIDTH);
-  const [cursor, setCursor] = useState({
-    x: 0,
-    y: 0,
-    on: false,
-    color: getCycleColor(Date.now(), { baseWallTime: Date.now(), baseCycleTime: 0 }),
+  const [cursor, setCursor] = useState(() => {
+    const now = Date.now();
+    const initialCycle: CycleState = {
+      fromBlackTime: null,
+      baseWallTime: now,
+      baseCycleStage: 0,
+    };
+    return {
+      x: 0,
+      y: 0,
+      on: false,
+      color: getCycleColor(now, initialCycle),
+    };
   });
   const [nudgeDismissing, setNudgeDismissing] = useState<{ x: number; y: number } | null>(null);
 
@@ -414,13 +423,25 @@ export function SketchLayer() {
     setMode(m);
   }, []);
 
-  const jumpToColorStage = useCallback((stageIndex: number) => {
+  const jumpToColor = useCallback((keyIndex: number) => {
     const now = Date.now();
-    cycleBaseTimeRef.current = {
-      baseWallTime: now,
-      baseCycleTime: stageIndex * CYCLE_STAGE_MS,
-    };
-    const newColor = getCycleColor(now, cycleBaseTimeRef.current);
+    if (keyIndex === 3) {
+      // 4th color is Black (#1b171c): only appears as shortcut,
+      // transitions to Green over 10s, then rejoins standard 30s cycle
+      cycleStateRef.current = {
+        fromBlackTime: now,
+        baseWallTime: now,
+        baseCycleStage: 0,
+      };
+    } else {
+      // Keys 1 (Green), 2 (Cyan Blue), 3 (Red)
+      cycleStateRef.current = {
+        fromBlackTime: null,
+        baseWallTime: now,
+        baseCycleStage: keyIndex,
+      };
+    }
+    const newColor = getCycleColor(now, cycleStateRef.current);
     setCursor((c) => ({ ...c, color: newColor }));
     redrawRef.current();
   }, []);
@@ -626,7 +647,7 @@ export function SketchLayer() {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
-      const nowColor = getCycleColor(Date.now(), cycleBaseTimeRef.current);
+      const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
       cursorRef.current = { x: e.clientX, y: e.clientY };
       const overHeaderFooter = isOverHeaderOrFooter(e.clientX, e.clientY);
       const overHero = isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY);
@@ -691,7 +712,7 @@ export function SketchLayer() {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const nowColor = getCycleColor(Date.now(), cycleBaseTimeRef.current);
+      const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
       const rawAnchor = elementUnderPoint(canvas, e.clientX, e.clientY);
       const anchor = findStationaryAnchor(rawAnchor);
       const rect = anchor.getBoundingClientRect();
@@ -776,30 +797,18 @@ export function SketchLayer() {
       } else if (key === ']') {
         e.preventDefault();
         setBrushWidth((w) => clampWidth(w + 2));
-      } else if (key === '1') {
+      } else if (key === '1' || key.toLowerCase() === 'g') {
         e.preventDefault();
-        jumpToColorStage(0);
-      } else if (key === '2') {
+        jumpToColor(0); // 1: Green (#b4cf45)
+      } else if (key === '2' || key.toLowerCase() === 'c' || key.toLowerCase() === 't') {
         e.preventDefault();
-        jumpToColorStage(1);
-      } else if (key === '3') {
+        jumpToColor(1); // 2: Cyan Blue (#7bc8c0)
+      } else if (key === '3' || key.toLowerCase() === 'r') {
         e.preventDefault();
-        jumpToColorStage(2);
-      } else if (key === '4') {
+        jumpToColor(2); // 3: Red (#e83239)
+      } else if (key === '4' || key.toLowerCase() === 'b' || key.toLowerCase() === 'w') {
         e.preventDefault();
-        jumpToColorStage(3);
-      } else if (key.toLowerCase() === 'g') {
-        e.preventDefault();
-        jumpToColorStage(0);
-      } else if (key.toLowerCase() === 'c' || key.toLowerCase() === 't') {
-        e.preventDefault();
-        jumpToColorStage(1);
-      } else if (key.toLowerCase() === 'r') {
-        e.preventDefault();
-        jumpToColorStage(2);
-      } else if (key.toLowerCase() === 'w') {
-        e.preventDefault();
-        jumpToColorStage(3);
+        jumpToColor(3); // 4: Black (#1b171c) - shortcut only, transitions to green then resumes cycle
       }
     };
 
@@ -837,6 +846,7 @@ export function SketchLayer() {
     dismissNudge,
     softExit,
     enterSketch,
+    jumpToColor,
   ]);
 
   if (!supported) return null;
