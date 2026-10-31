@@ -22,8 +22,9 @@
 }
 
 .cta-link__label {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
+  width: fit-content;
   text-align: right;
   align-items: flex-end;
   font-family: var(--font-body, "Degular Variable", sans-serif);
@@ -36,6 +37,33 @@
 .cta-link--left .cta-link__label {
   text-align: left;
   align-items: flex-start;
+}
+
+/* When the lockup is full-justified (e.g. EXPLORE EDITION, VIEW MORE, READ MORE),
+   the container stretches both lines so first and last characters align flush on left and right */
+.cta-link--justified .cta-link__label {
+  align-items: stretch;
+}
+
+.cta-link__line {
+  display: block;
+  white-space: nowrap;
+}
+
+.cta-link__line--base {
+  display: block;
+  white-space: nowrap;
+}
+
+.cta-link__line--justified {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cta-link__line--justified span {
+  display: inline-block;
+  flex: none;
 }
 
 .cta-link__line-desktop {
