@@ -803,7 +803,7 @@ function cleanIntroParagraphs(
       {institutionsWithArtists.length > 0 ? (
         <div className="fig-grid edition-overview__section">
           <h3 className="fig-label fig-label--sub edition-overview__reveal">
-            PARTICIPATING INSTITUTIONS AND ARTISTS
+            PARTICIPATING <br />INSTITUTIONS AND <br />ARTISTS
           </h3>
           <InstitutionsAndArtistsList
             items={institutionsWithArtists}
@@ -813,7 +813,7 @@ function cleanIntroParagraphs(
       ) : institutions.length > 0 ? (
         <div className="fig-grid edition-overview__section">
           <h3 className="fig-label fig-label--sub edition-overview__reveal">
-            PARTICIPATING INSTITUTIONS
+            PARTICIPATING <br />INSTITUTIONS
           </h3>
           {isPreviousEdition ? (
             <InstitutionsList names={institutions} highlight={highlight} />

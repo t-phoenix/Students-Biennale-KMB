@@ -616,7 +616,7 @@ const ED_2022_23: EditionOverviewData = {
   },
   {
     "institution": "Film and Television Institute of India, Pune, Maharashtra",
-    "artists": "Adheep Das\\\nColleges"
+    "artists": "Adheep Das"
   },
   {
     "institution": "Imphal College, Imphal, Manipur",

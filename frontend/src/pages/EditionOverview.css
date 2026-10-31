@@ -303,6 +303,7 @@
   font-size: 16px;
   line-height: 1.7;
   color: var(--color-text-primary);
+  max-width: none;
 }
 
 .edition-overview__pipe {
@@ -430,6 +431,10 @@ button.edition-overview__slot:hover img {
   .edition-overview__title-rail {
     align-items: flex-start;
     text-align: left;
+  }
+
+  .edition-overview .fig-label--sub br {
+    display: none;
   }
 
   .edition-overview .fig-label--sub,
