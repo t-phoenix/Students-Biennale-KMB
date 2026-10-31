@@ -5,9 +5,14 @@ import './SketchLayer.css';
 
 type SketchMode = 'navigate' | 'nudge' | 'sketch' | 'drawing';
 
+const NEON_GREEN = '#39ff14';
 const WHITE = '#ffffff';
 const RED = '#ec3b43';
 const BLACK = '#000000';
+
+const DEFAULT_COLOR = NEON_GREEN;
+const DEFAULT_WIDTH = 10;
+const DEFAULT_OPACITY = 0.25;
 
 const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
@@ -42,6 +47,7 @@ interface Stroke {
   points: AnchoredPoint[];
   color: string;
   width: number;
+  opacity?: number;
 }
 
 // Desktop, laptop, and iPad only - matches production: width >= 768 AND (fine pointer OR iPad)
@@ -77,6 +83,64 @@ function isOverHeaderOrFooter(x: number, y: number) {
   );
 }
 
+const HERO_OR_COVER_SELECTORS = [
+  '.home-hero',
+  '.edition-overview__hero',
+  '.programmes__hero',
+  '.detail__hero',
+  '.detail__venue-hero',
+  '.past-workshop-detail__feature-media',
+  '.residencies__feature-media',
+  '[data-hero]',
+  '[data-cover]',
+  '[data-no-sketch]',
+  '[class*="--cover"]',
+].join(', ');
+
+function isOverHeroOrCover(canvas: HTMLCanvasElement | null, x: number, y: number): boolean {
+  if (typeof document === 'undefined') return false;
+  let el: Element | null = null;
+  if (canvas) {
+    const prev = canvas.style.pointerEvents;
+    canvas.style.pointerEvents = 'none';
+    el = document.elementFromPoint(x, y);
+    canvas.style.pointerEvents = prev;
+  } else {
+    el = document.elementFromPoint(x, y);
+  }
+  if (!el || el === document.documentElement || el === document.body) return false;
+  if (el.closest('.site-hero-hold')) return false;
+  if (el.closest(HERO_OR_COVER_SELECTORS)) return true;
+
+  const closestHero = el.closest('[class*="hero"]');
+  if (closestHero && !closestHero.classList.contains('site-hero-hold')) {
+    return true;
+  }
+  return false;
+}
+
+function findStationaryAnchor(rawEl: Element): Element {
+  // 1. If inside the Sensing Grounds strip (the moving image section in Home.tsx):
+  // Anchor to the stationary section container so the stroke scrolls vertically
+  // with the page but doesn't track horizontal marquee animation.
+  const sensingSection = rawEl.closest('.home-sensing');
+  if (sensingSection) {
+    return sensingSection;
+  }
+
+  // 2. Generic check for any horizontally moving/animated marquee or track
+  const movingContainer = rawEl.closest(
+    '.home-sensing__scroll, .home-sensing__scroll-track, .home-sensing__scroll-item, [data-marquee], [class*="marquee"], [class*="ticker"], [class*="carousel-track"]'
+  );
+  if (movingContainer) {
+    const stationaryParent =
+      movingContainer.closest('section, main, article, .home-section, [class*="section"]') || document.body;
+    return stationaryParent;
+  }
+
+  return rawEl;
+}
+
 // Finds the real page element under a point, temporarily disabling the
 // canvas's own hit-testing so it doesn't just return itself.
 function elementUnderPoint(canvas: HTMLCanvasElement, x: number, y: number): Element {
@@ -97,7 +161,13 @@ function toAnchoredPoint(rect: DOMRect, clientX: number, clientY: number): Ancho
 // Clean smoothed line: a solid quadratic-curve stroke through the captured
 // points (rounded caps/joins), with no grain/texture overlay. Operates on
 // already-resolved (absolute, viewport-space) points.
-function drawResolvedStroke(ctx: CanvasRenderingContext2D, pts: ResolvedPoint[], color: string, width: number) {
+function drawResolvedStroke(
+  ctx: CanvasRenderingContext2D,
+  pts: ResolvedPoint[],
+  color: string,
+  width: number,
+  opacity: number = DEFAULT_OPACITY
+) {
   if (pts.length === 0) return;
 
   ctx.save();
@@ -105,7 +175,7 @@ function drawResolvedStroke(ctx: CanvasRenderingContext2D, pts: ResolvedPoint[],
   ctx.lineJoin = 'round';
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
-  ctx.globalAlpha = 1;
+  ctx.globalAlpha = opacity;
 
   if (pts.length === 1) {
     ctx.beginPath();
@@ -150,8 +220,8 @@ export function SketchLayer() {
 
   const [supported, setSupported] = useState(false);
   const [mode, setMode] = useState<SketchMode>('navigate');
-  const [brushColor, setBrushColor] = useState<string>(BLACK);
-  const [brushWidth, setBrushWidth] = useState(1);
+  const [brushColor, setBrushColor] = useState<string>(DEFAULT_COLOR);
+  const [brushWidth, setBrushWidth] = useState(DEFAULT_WIDTH);
   const [cursor, setCursor] = useState({ x: 0, y: 0, on: false });
   const [nudgeDismissing, setNudgeDismissing] = useState<{ x: number; y: number } | null>(null);
 
@@ -163,8 +233,8 @@ export function SketchLayer() {
   const autoExitTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dprRef = useRef(1);
   const reducedMotionRef = useRef(false);
-  const brushColorRef = useRef(BLACK);
-  const brushWidthRef = useRef(1);
+  const brushColorRef = useRef(DEFAULT_COLOR);
+  const brushWidthRef = useRef(DEFAULT_WIDTH);
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
   const redrawScheduledRef = useRef(false);
@@ -194,11 +264,21 @@ export function SketchLayer() {
 
     for (const stroke of strokesRef.current) {
       const resolved = resolveStrokePoints(stroke);
-      if (resolved) drawResolvedStroke(ctx, resolved.points, stroke.color, resolved.width);
+      if (resolved) {
+        drawResolvedStroke(ctx, resolved.points, stroke.color, resolved.width, stroke.opacity ?? DEFAULT_OPACITY);
+      }
     }
     if (currentStrokeRef.current) {
       const resolved = resolveStrokePoints(currentStrokeRef.current);
-      if (resolved) drawResolvedStroke(ctx, resolved.points, currentStrokeRef.current.color, resolved.width);
+      if (resolved) {
+        drawResolvedStroke(
+          ctx,
+          resolved.points,
+          currentStrokeRef.current.color,
+          resolved.width,
+          currentStrokeRef.current.opacity ?? DEFAULT_OPACITY
+        );
+      }
     }
   }, []);
   redrawRef.current = redraw;
@@ -262,6 +342,13 @@ export function SketchLayer() {
 
     idleTimerRef.current = setTimeout(() => {
       if (modeRef.current === 'navigate' && !hasEnteredSketchRef.current) {
+        if (
+          isOverHeaderOrFooter(cursorRef.current.x, cursorRef.current.y) ||
+          isOverHeroOrCover(canvasRef.current, cursorRef.current.x, cursorRef.current.y)
+        ) {
+          return;
+        }
+
         const currentNow = Date.now();
         if (currentNow - lastNudgeDismissedAtRef.current >= RESET_COOLDOWN_MS) {
           nudgeCountRef.current = 0;
@@ -355,7 +442,10 @@ export function SketchLayer() {
     const el = document.documentElement;
     const hide = mode === 'nudge' || mode === 'sketch' || mode === 'drawing';
     el.classList.toggle('scribble-hide-cursor', hide);
-    return () => el.classList.remove('scribble-hide-cursor');
+    return () => {
+      el.classList.remove('scribble-hide-cursor');
+      el.classList.remove('scribble-cursor-allow-hero');
+    };
   }, [mode]);
 
   useEffect(() => {
@@ -388,9 +478,23 @@ export function SketchLayer() {
     const handlePointerMove = (e: PointerEvent) => {
       cursorRef.current = { x: e.clientX, y: e.clientY };
       const overHeaderFooter = isOverHeaderOrFooter(e.clientX, e.clientY);
-      setCursor({ x: e.clientX, y: e.clientY, on: !overHeaderFooter });
+      const overHero = isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY);
+      const disallowed = overHeaderFooter || overHero;
+      setCursor({ x: e.clientX, y: e.clientY, on: !disallowed });
 
       const m = modeRef.current;
+      const canvas = canvasRef.current;
+
+      if (m === 'sketch' || m === 'drawing') {
+        if (overHero && m !== 'drawing') {
+          if (canvas) canvas.style.pointerEvents = 'none';
+          document.documentElement.classList.add('scribble-cursor-allow-hero');
+        } else {
+          if (canvas) canvas.style.pointerEvents = 'auto';
+          document.documentElement.classList.remove('scribble-cursor-allow-hero');
+        }
+      }
+
       if ((m === 'nudge' || m === 'sketch' || m === 'drawing') && overHeaderFooter) {
         exitOrDismiss();
         return;
@@ -401,6 +505,10 @@ export function SketchLayer() {
       }
 
       if (m === 'drawing' && currentStrokeRef.current) {
+        if (overHero) {
+          startAutoExitTimer();
+          return;
+        }
         const rect = currentStrokeRef.current.anchor.getBoundingClientRect();
         currentStrokeRef.current.points.push(toAnchoredPoint(rect, e.clientX, e.clientY));
         redraw();
@@ -422,12 +530,16 @@ export function SketchLayer() {
         exitOrDismiss();
         return;
       }
+      if (isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY)) {
+        return;
+      }
 
       const canvas = canvasRef.current;
       if (!canvas) return;
 
       clearAutoExitTimer();
-      const anchor = elementUnderPoint(canvas, e.clientX, e.clientY);
+      const rawAnchor = elementUnderPoint(canvas, e.clientX, e.clientY);
+      const anchor = findStationaryAnchor(rawAnchor);
       const rect = anchor.getBoundingClientRect();
       currentStrokeRef.current = {
         anchor,
@@ -435,6 +547,7 @@ export function SketchLayer() {
         points: [toAnchoredPoint(rect, e.clientX, e.clientY)],
         color: brushColorRef.current,
         width: brushWidthRef.current,
+        opacity: DEFAULT_OPACITY,
       };
       setModeBoth('drawing');
       try {
@@ -515,7 +628,7 @@ export function SketchLayer() {
         startAutoExitTimer();
       } else if (key === '1') {
         e.preventDefault();
-        setBrushColor(WHITE);
+        setBrushColor(NEON_GREEN);
         startAutoExitTimer();
       } else if (key === '2') {
         e.preventDefault();
@@ -524,6 +637,14 @@ export function SketchLayer() {
       } else if (key === '3') {
         e.preventDefault();
         setBrushColor(BLACK);
+        startAutoExitTimer();
+      } else if (key === '4') {
+        e.preventDefault();
+        setBrushColor(WHITE);
+        startAutoExitTimer();
+      } else if (key.toLowerCase() === 'g') {
+        e.preventDefault();
+        setBrushColor(NEON_GREEN);
         startAutoExitTimer();
       } else {
         startAutoExitTimer();
@@ -539,6 +660,7 @@ export function SketchLayer() {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      document.documentElement.classList.remove('scribble-cursor-allow-hero');
       window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('scroll', scheduleRedraw);
       unsubscribeLenis();

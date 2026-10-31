@@ -97,3 +97,9 @@ html.scribble-hide-cursor,
 html.scribble-hide-cursor * {
   cursor: none !important;
 }
+
+/* Allow native cursor over hero / cover areas where sketching is disallowed */
+html.scribble-cursor-allow-hero,
+html.scribble-cursor-allow-hero * {
+  cursor: auto !important;
+}
