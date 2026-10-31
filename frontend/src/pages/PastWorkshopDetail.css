@@ -49,6 +49,10 @@
   position: relative;
 }
 
+.past-workshop-detail__feature-media--mobile {
+  display: none;
+}
+
 .past-workshop-detail__feature-media img {
   width: 100%;
   height: 100%;
@@ -157,6 +161,16 @@
 @media (max-width: 899px) {
   .past-workshop-detail__head {
     padding-top: 32px;
+  }
+
+  .past-workshop-detail__feature-media--mobile {
+    display: block;
+    grid-column: 1 / -1;
+    margin-bottom: 24px;
+  }
+
+  .past-workshop-detail__feature-media--desktop {
+    display: none;
   }
 
   .past-workshop-detail__rail {

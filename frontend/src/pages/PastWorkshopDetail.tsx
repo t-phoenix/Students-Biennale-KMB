@@ -58,6 +58,11 @@ export function PastWorkshopDetail() {
   return (
     <div ref={root} className="past-workshop-detail" key={workshop.id}>
       <div className="fig-grid past-workshop-detail__head workshop-reveal">
+        {workshop.heroImage ? (
+          <div className="past-workshop-detail__feature-media past-workshop-detail__feature-media--mobile">
+            <img src={workshop.heroImage} alt="" />
+          </div>
+        ) : null}
         <div className="past-workshop-detail__rail fig-rail">
           <h1>{workshop.title}</h1>
           <MetaGrid className="past-workshop-detail__meta">
@@ -68,7 +73,7 @@ export function PastWorkshopDetail() {
         </div>
 
         <article className="past-workshop-detail__feature fig-c4-9">
-          <div className="past-workshop-detail__feature-media">
+          <div className="past-workshop-detail__feature-media past-workshop-detail__feature-media--desktop">
             {workshop.heroImage ? (
               <img src={workshop.heroImage} alt="" />
             ) : (

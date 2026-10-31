@@ -439,8 +439,7 @@
   color: var(--color-text-secondary);
   width: fit-content;
   display: inline-block;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  text-decoration: none;
   cursor: pointer;
   transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
 }
@@ -449,6 +448,7 @@
   .programmes__past-more-btn:hover {
     color: var(--color-text-primary);
     opacity: 0.7;
+    text-decoration: none;
   }
 }
 
