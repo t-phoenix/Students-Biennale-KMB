@@ -587,6 +587,24 @@
   margin-top: 60px;
 }
 
+/* iPad Landscape Viewports (iPad Mini, 10.2", Air, Pro 11", Pro 12.9"):
+   Eliminate the large blank area after EXPLORE EDITION by releasing
+   the 100vh minimum container height and tightening the bottom padding. */
+@media (min-width: 768px) and (max-width: 1366px) and (orientation: landscape),
+       (hover: none) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) and (orientation: landscape) {
+  .home-edition-wrap {
+    min-height: auto;
+  }
+
+  .home-edition-wrap .home-sensing {
+    padding-bottom: 40px;
+  }
+
+  .home-sensing__cta {
+    margin-top: 36px;
+  }
+}
+
 .home-press__more {
   margin-top: 60px;
 }
