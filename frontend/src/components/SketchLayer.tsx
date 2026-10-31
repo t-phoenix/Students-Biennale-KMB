@@ -5,14 +5,15 @@ import './SketchLayer.css';
 
 type SketchMode = 'navigate' | 'nudge' | 'sketch' | 'drawing';
 
-const NEON_GREEN = '#39ff14';
+const TEAL = '#7bc8c0';
 const WHITE = '#ffffff';
 const RED = '#ec3b43';
 const BLACK = '#000000';
+const NEON_GREEN = '#39ff14';
 
-const DEFAULT_COLOR = NEON_GREEN;
+const DEFAULT_COLOR = TEAL;
 const DEFAULT_WIDTH = 10;
-const DEFAULT_OPACITY = 0.25;
+const DEFAULT_OPACITY = 0.5;
 
 const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
@@ -628,7 +629,7 @@ export function SketchLayer() {
         startAutoExitTimer();
       } else if (key === '1') {
         e.preventDefault();
-        setBrushColor(NEON_GREEN);
+        setBrushColor(TEAL);
         startAutoExitTimer();
       } else if (key === '2') {
         e.preventDefault();
@@ -641,6 +642,10 @@ export function SketchLayer() {
       } else if (key === '4') {
         e.preventDefault();
         setBrushColor(WHITE);
+        startAutoExitTimer();
+      } else if (key.toLowerCase() === 't') {
+        e.preventDefault();
+        setBrushColor(TEAL);
         startAutoExitTimer();
       } else if (key.toLowerCase() === 'g') {
         e.preventDefault();
