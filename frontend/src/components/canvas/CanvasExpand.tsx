@@ -189,7 +189,7 @@ export function CanvasExpand({ item, origin, onClose, onNext }: Props) {
                   <CtaLink
                     className="canvas-expand__next"
                     onClick={goNextArtwork}
-                    lines={["NEXT"]}
+                    lines={["NEXT", "ARTWORK"]}
                   />
                 </div>
               ) : null}

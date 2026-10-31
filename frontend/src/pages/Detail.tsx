@@ -235,7 +235,7 @@ export function Detail() {
               className="detail__next"
               variant="next"
               to={artworkDetailPath(yearId, next.id, searchParams, artworkNav)}
-              lines={["NEXT"]}
+              lines={["NEXT", "ARTWORK"]}
             />
           ) : null}
         </div>
