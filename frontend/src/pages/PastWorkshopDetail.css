@@ -161,12 +161,13 @@
 @media (max-width: 899px) {
   .past-workshop-detail__head {
     padding-top: 32px;
+    row-gap: 0;
   }
 
   .past-workshop-detail__feature-media--mobile {
     display: block;
     grid-column: 1 / -1;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
 
   .past-workshop-detail__feature-media--desktop {
@@ -178,7 +179,12 @@
   }
 
   .past-workshop-detail__rail h1 {
+    margin: 0 0 28px;
     text-align: left;
+  }
+
+  .past-workshop-detail__meta {
+    margin: 0 0 28px;
   }
 
   .past-workshop-detail__meta .meta-grid__value {
