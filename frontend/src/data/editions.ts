@@ -190,7 +190,7 @@ const ED_2014_15: EditionOverviewData = {
   "Department of Fine Arts, Aligarh Muslim University",
   "College of Fine Arts, JNA&FAU, Hyderabad",
   "Department of Fine Arts, Andhra University, Visakhapatnam",
-  "Department of Fine Arts, Sarojini Naidu School of Arts and Communication, University of Hyderabad",
+  "Department of Fine Arts, Sarojini Naidu School of Arts and Communication, University\u00A0of\u00A0Hyderabad",
   "Government College of Art, Chandigarh",
   "Government College of Fine Arts, Jabalpur",
   "Imphal Art College, Manipur",
