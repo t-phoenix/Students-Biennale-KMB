@@ -314,8 +314,9 @@
 
 .edition-overview__pipe {
   font-weight: 400;
-  padding: 0 0.25em;
+  padding: 0;
   color: var(--color-text-secondary, #545454);
+  white-space: nowrap;
 }
 
 .edition-overview__inst-name {

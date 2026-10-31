@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { splitLinesOnScroll, cascadeCardsOnScroll } from "../lib/splitTextScroll";
@@ -124,12 +124,14 @@ function InstitutionsList({
   highlight: string;
 }) {
   return (
-    <p className="fig-c4-12 fig-body edition-overview__institutions">
+    <p className="fig-c4-12 fig-body edition-overview__institutions edition-overview__reveal">
       {names.map((name, index) => (
-        <span key={name}>
-          {index > 0 ? <span className="edition-overview__pipe"> | </span> : null}
+        <Fragment key={name}>
+          {index > 0 ? (
+            <span className="edition-overview__pipe">{"\u00A0| "}</span>
+          ) : null}
           <HighlightText text={name} query={highlight} />
-        </span>
+        </Fragment>
       ))}
     </p>
   );
@@ -143,10 +145,12 @@ function InstitutionsAndArtistsList({
   highlight: string;
 }) {
   return (
-    <p className="fig-c4-12 fig-body edition-overview__institutions-artists">
+    <p className="fig-c4-12 fig-body edition-overview__institutions-artists edition-overview__reveal">
       {items.map((item, idx) => (
-        <span key={idx}>
-          {idx > 0 ? <span className="edition-overview__pipe"> | </span> : null}
+        <Fragment key={idx}>
+          {idx > 0 ? (
+            <span className="edition-overview__pipe">{"\u00A0| "}</span>
+          ) : null}
           <strong className="edition-overview__inst-name">
             <HighlightText text={item.institution} query={highlight} />
           </strong>
@@ -155,7 +159,7 @@ function InstitutionsAndArtistsList({
               {" — "}<HighlightText text={item.artists} query={highlight} />
             </span>
           ) : null}
-        </span>
+        </Fragment>
       ))}
     </p>
   );
@@ -546,14 +550,16 @@ function cleanIntroParagraphs(
 
           // Dense curatorial note text paragraphs waterfall in natural reading scroll order
           const curatorialParas = sec.querySelectorAll<HTMLElement>(
-            ".edition-overview__curatorial-body p, .fig-body:not(.edition-overview__bio-text)"
+            ".edition-overview__curatorial-body p, .fig-body:not(.edition-overview__bio-text):not(.edition-overview__institutions):not(.edition-overview__institutions-artists)"
           );
           if (curatorialParas.length > 0) {
             const cleanupSplit = splitLinesOnScroll(curatorialParas);
             cleanups.push(cleanupSplit);
           }
 
-          const otherReveals = sec.querySelectorAll(".edition-overview__downloads-grid, .edition-overview__team-grid, .edition-overview__slot");
+          const otherReveals = sec.querySelectorAll(
+            ".edition-overview__downloads-grid, .edition-overview__team-grid, .edition-overview__slot, .edition-overview__institutions, .edition-overview__institutions-artists"
+          );
           if (otherReveals.length > 0) {
             tl.fromTo(
               otherReveals,

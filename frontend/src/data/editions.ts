@@ -416,15 +416,15 @@ const ED_2022_23: EditionOverviewData = {
   },
   {
     "name": "Arushi Vats",
-    "bio": "Arushi Vats is a curator and writer based in New Delhi, India. Her essays have been published in Art India Magazine, Runway Journal, Alternative South Asia Photography, LSE International History, Critical Collective, Write | Art | Connect; and in catalogues and anthologies by Serendipity Arts Foundation, New Delhi; Museum of Art and Photography, Bangalore \\(forthcoming, December 2022\\). She has attended residencies at La Napoule Art Foundation, France \\(2022\\) and the digital Momus Emerging Critics Residency \\(2021\\)."
+    "bio": "Arushi Vats is a curator and writer based in New Delhi, India. Her essays have been published in Art India Magazine, Runway Journal, Alternative South Asia Photography, LSE International History, Critical Collective, Write | Art | Connect; and in catalogues and anthologies by Serendipity Arts Foundation, New Delhi; Museum of Art and Photography, Bangalore (forthcoming, December 2022). She has attended residencies at La Napoule Art Foundation, France (2022) and the digital Momus Emerging Critics Residency (2021)."
   },
   {
     "name": "Premjish Achari",
-    "bio": "Premjish Achari teaches art history and theory at Shiv Nadar University, Greater Noida. He initiated Future Collaborations, a platform to promote theoretically and politically informed curation as an essential aspect of contemporary art practice. He recently curated All Canaries Bear Watching, part of the Indo UK collaboration GRID Heritage Project, SAA/JNU, Delhi \\(2022\\), and was editorial supervisor of Lokame Tharavadu \\(‘The World Is One Family’, 2021\\), organised by the Kochi Biennale Foundation."
+    "bio": "Premjish Achari teaches art history and theory at Shiv Nadar University, Greater Noida. He initiated Future Collaborations, a platform to promote theoretically and politically informed curation as an essential aspect of contemporary art practice. He recently curated All Canaries Bear Watching, part of the Indo UK collaboration GRID Heritage Project, SAA/JNU, Delhi (2022), and was editorial supervisor of Lokame Tharavadu (‘The World Is One Family’, 2021), organised by the Kochi Biennale Foundation."
   },
   {
     "name": "Saviya Lopes and Yogesh Barve",
-    "bio": "Saviya Lopes and Yogesh Barve are visual art practitioners at Clark House Initiative, Mumbai. The core of their practice lies in creating visuals and engaging in conversations that are part of their own social and cultural experiences. The intersection of their practices is in archives, history, community and education. Saviya and Yogesh were both invited to the 11th Gwangju Biennale as fellows for the Eighth Climate \\(what does art do?\\) Forum in 2016."
+    "bio": "Saviya Lopes and Yogesh Barve are visual art practitioners at Clark House Initiative, Mumbai. The core of their practice lies in creating visuals and engaging in conversations that are part of their own social and cultural experiences. The intersection of their practices is in archives, history, community and education. Saviya and Yogesh were both invited to the 11th Gwangju Biennale as fellows for the Eighth Climate (what does art do?) Forum in 2016."
   },
   {
     "name": "Suvani Suri",
@@ -507,7 +507,7 @@ const ED_2022_23: EditionOverviewData = {
     "artists": "Alfarah Sameen, Saman Ali, Sufi Yazdani, Sajan"
   },
   {
-    "institution": "Ambedkar University, New Delhi \\(incl. School of Culture and Creative Expressions\\)",
+    "institution": "Ambedkar University, New Delhi (incl. School of Culture and Creative Expressions)",
     "artists": "Vanshika Babbar, Kulsoom Khan, Tanya Maheshwari"
   },
   {
@@ -567,7 +567,7 @@ const ED_2022_23: EditionOverviewData = {
     "artists": "Ankita Sahu, Divya Chandra, Khushboo Gupta, Malvika Mishra, Muskan Parekh, Pritha Mallick"
   },
   {
-    "institution": "National Institute of Design \\(NID\\), Gandhinagar",
+    "institution": "National Institute of Design (NID), Gandhinagar",
     "artists": "Kush Kukreja, Nourin C. S"
   },
   {
@@ -624,7 +624,7 @@ const ED_2022_23: EditionOverviewData = {
   },
   {
     "institution": "KMEA College of Architecture, Kerala",
-    "artists": "24 students \\(2019 Batch\\)"
+    "artists": "24 students (2019 Batch)"
   },
   {
     "institution": "St. Anthony's College, Shillong, Meghalaya",
