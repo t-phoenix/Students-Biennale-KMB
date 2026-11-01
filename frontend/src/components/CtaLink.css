@@ -51,14 +51,25 @@
 }
 
 .cta-link__line--base {
-  display: block;
+  display: flex;
+  width: fit-content;
   white-space: nowrap;
+}
+
+.cta-link__line--base span {
+  display: inline-block;
+  flex: none;
+}
+
+.cta-link__line--base span:not(:last-child) {
+  margin-right: var(--base-spacing, 0.135em);
 }
 
 .cta-link__line--justified {
   display: flex;
   justify-content: space-between;
   width: 100%;
+  white-space: nowrap;
 }
 
 .cta-link__line--justified span {

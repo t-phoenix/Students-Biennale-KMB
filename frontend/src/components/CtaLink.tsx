@@ -122,7 +122,7 @@ export function CtaLink({
   const label = ariaLabel ?? lines.map(getCtaLineText).join(" ");
   const isLeft = dir === "left";
   const phrase = lines.map(getCtaLineText).join(" ").trim().toUpperCase();
-  const justifiedConfig = !spacing ? JUSTIFIED_LOCKUPS[phrase] : undefined;
+  const justifiedConfig = JUSTIFIED_LOCKUPS[phrase];
 
   const classes = [
     "cta-link",
@@ -156,17 +156,17 @@ export function CtaLink({
 
             if (i === justifiedConfig.baseIndex) {
               const text = getCtaLineText(line).trim();
+              const chars = Array.from(text);
               const baseSpace = justifiedConfig.baseSpacing;
               return (
                 <span
                   key={key}
                   className="cta-link__line cta-link__line--base"
-                  style={{
-                    letterSpacing: baseSpace,
-                    marginRight: `-${baseSpace}`,
-                  }}
+                  style={{ "--base-spacing": baseSpace } as React.CSSProperties}
                 >
-                  {text}
+                  {chars.map((char, charIdx) => (
+                    <span key={charIdx}>{char}</span>
+                  ))}
                 </span>
               );
             }

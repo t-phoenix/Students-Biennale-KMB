@@ -1461,7 +1461,6 @@ export function Home() {
                 className="fig-cta-end"
                 to={`/editions/${yearId}/curators`}
                 lines={["EXPLORE", "EDITION"]}
-                spacing={["0.135em", "0.2em"]}
               />
             </div>
           </div>
