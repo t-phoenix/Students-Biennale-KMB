@@ -134,7 +134,7 @@ a.site-footer__header {
 
 .site-footer__contact-link {
   display: inline-flex !important;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   word-break: break-all;
 }
@@ -142,6 +142,7 @@ a.site-footer__header {
 .site-footer__contact-icon {
   width: 14px;
   height: 14px;
+  margin-top: calc((1.65em - 14px) / 2);
   flex-shrink: 0;
   display: block;
   opacity: 0.85;
@@ -239,6 +240,7 @@ a.site-footer__header {
   .site-footer__contact-icon {
     width: 16px;
     height: 16px;
+    margin-top: calc((1.7em - 16px) / 2);
   }
 
   .site-footer__social {
