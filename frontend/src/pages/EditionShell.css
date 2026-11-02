@@ -98,7 +98,7 @@
 /* ==========================================================================
    Mobile & Responsive Adaptations (<= 899px)
    ========================================================================== */
-@media (max-width: 899px) {
+@media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
   .edition {
     padding-block: 16px 64px;
   }

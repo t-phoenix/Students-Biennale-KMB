@@ -29,6 +29,15 @@ export type CataloguePreview = {
   noteHref?: string;
 };
 
+function isAccordionMode(): boolean {
+  if (typeof window === "undefined") return false;
+  return (
+    window.innerWidth <= 899 ||
+    window.matchMedia("(max-width: 1024px) and (orientation: portrait)").matches ||
+    window.matchMedia("(hover: none) and (pointer: coarse) and (max-width: 1024px)").matches
+  );
+}
+
 function getTruncatedNote(note: string, maxWords = 50): string {
   if (!note) return "";
   const firstPara = note.split(/\n\s*\n/)[0]?.trim() || note;
@@ -167,7 +176,7 @@ export function CatalogueList({
     let rafId: number;
 
     const updateHeight = () => {
-      if (window.innerWidth <= 899) {
+      if (isAccordionMode()) {
         el.style.maxHeight = "none";
         return;
       }
@@ -206,11 +215,30 @@ export function CatalogueList({
     };
   }, [shownId, renderPreview, previewFor]);
 
-  const handleRowClick = (e: React.MouseEvent, rowId: string) => {
-    if (window.innerWidth <= 899) {
-      e.preventDefault();
-      setMobileExpandedId((prev) => (prev === rowId ? null : rowId));
-      setActiveId(rowId);
+  const handleRowClick = (e: React.MouseEvent, row: CatalogueRow) => {
+    if (isAccordionMode()) {
+      const isExpanded = mobileExpandedId === row.id;
+      const target = e.target as HTMLElement;
+      const isMarkClick = Boolean(target.closest(".catalogue__row-mark"));
+
+      if (!isExpanded) {
+        // First click on this article: expand it in-place
+        e.preventDefault();
+        setMobileExpandedId(row.id);
+        setActiveId(row.id);
+      } else {
+        // Row is already expanded:
+        if (isMarkClick) {
+          // Explicit click on the toggle mark collapses it
+          e.preventDefault();
+          setMobileExpandedId(null);
+        } else if (row.href) {
+          // Clicking again on the article opens new page (allow Link navigation)
+        } else {
+          e.preventDefault();
+          setMobileExpandedId(null);
+        }
+      }
     }
   };
 
@@ -250,7 +278,7 @@ export function CatalogueList({
                 <Link
                   className="catalogue__row-link"
                   to={row.href}
-                  onClick={(e) => handleRowClick(e, row.id)}
+                  onClick={(e) => handleRowClick(e, row)}
                   aria-expanded={isMobileExpanded}
                 >
                   {rowContent}
@@ -259,7 +287,7 @@ export function CatalogueList({
                 <button
                   type="button"
                   className="catalogue__row-link catalogue__row-link--button"
-                  onClick={(e) => handleRowClick(e, row.id)}
+                  onClick={(e) => handleRowClick(e, row)}
                   aria-expanded={isMobileExpanded}
                 >
                   {rowContent}

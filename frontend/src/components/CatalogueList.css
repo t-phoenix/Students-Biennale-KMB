@@ -277,6 +277,16 @@
   line-height: 27px;
 }
 
+.curator-panel__person-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.curator-panel__person-link:hover h3 {
+  opacity: 0.75;
+}
+
 .curator-panel__person {
   margin-bottom: 48px;
 }
@@ -355,8 +365,10 @@
   display: none;
 }
 
-/* Tier C — mobile in-place accordion (preview on desktop is hidden). */
-@media (max-width: 899px) {
+/* Tier C — mobile & tablet in-place accordion (preview on desktop is hidden). */
+@media (max-width: 899px),
+       (max-width: 1024px) and (orientation: portrait),
+       (hover: none) and (pointer: coarse) and (max-width: 1024px) {
   .catalogue__rows {
     grid-column: 1 / -1;
   }
@@ -372,6 +384,17 @@
 
   .catalogue__row.is-expanded .catalogue__row-mark::after {
     transform: translate(-50%, -50%) scaleY(0);
+  }
+
+  .catalogue__row-mark {
+    width: 36px;
+    height: 36px;
+    margin-right: -10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
   }
 
   .catalogue__row-link {

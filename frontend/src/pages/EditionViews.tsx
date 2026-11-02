@@ -132,20 +132,25 @@ export function CuratorsView() {
                 <p className="curator-panel__states">{zone.states}</p>
                 {zone.curators.map((c) => (
                   <article key={c.id} className="curator-panel__person">
-                    <div
-                      className={`curator-panel__portrait${
-                        c.image ? "" : " curator-panel__portrait--empty"
-                      }`}
+                    <Link
+                      to={`/editions/${yearId}/curators/${c.id}`}
+                      className="curator-panel__person-link"
                     >
-                      {c.image ? (
-                        <img
-                          src={`${c.image}?v=4`}
-                          alt=""
-                          style={{ objectPosition: c.focus ?? "center bottom" }}
-                        />
-                      ) : null}
-                    </div>
-                    <h3>{c.name}</h3>
+                      <div
+                        className={`curator-panel__portrait${
+                          c.image ? "" : " curator-panel__portrait--empty"
+                        }`}
+                      >
+                        {c.image ? (
+                          <img
+                            src={`${c.image}?v=4`}
+                            alt=""
+                            style={{ objectPosition: c.focus ?? "center bottom" }}
+                          />
+                        ) : null}
+                      </div>
+                      <h3>{c.name}</h3>
+                    </Link>
                     {c.bio ? (
                       <FormattedParagraphs text={c.bio} className="curator-panel__bio" />
                     ) : null}

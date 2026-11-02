@@ -510,9 +510,9 @@
 }
 
 /* ==========================================================================
-   Mobile & Responsive Adaptations (<= 899px)
+   Mobile & Responsive Adaptations (<= 899px, <= 1024px portrait)
    ========================================================================== */
-@media (max-width: 899px) {
+@media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
   .edition-toolbar {
     grid-template-columns: 1fr auto;
     margin-bottom: 24px;
