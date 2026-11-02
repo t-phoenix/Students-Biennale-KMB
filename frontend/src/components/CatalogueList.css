@@ -464,8 +464,7 @@
   }
 
   .catalogue__row-accordion .curator-panel__zone {
-    margin-bottom: 8px;
-    padding-bottom: 8px;
+    display: none;
   }
 
   .catalogue__row-accordion .curator-panel__states {
