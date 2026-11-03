@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { subscribeLenis } from '../lib/lenisSingleton';
+import { getLenisInstance, subscribeLenis } from '../lib/lenisSingleton';
 import './SketchLayer.css';
 
 type SketchMode = 'navigate' | 'nudge' | 'sketch' | 'drawing';
@@ -240,6 +240,14 @@ function findStationaryAnchor(rawEl: Element): Element {
     return stationaryParent;
   }
 
+  // 3. For any text with GSAP SplitText or animated lines, anchor to the parent section/article/container
+  const splitTextContainer = rawEl.closest('[data-split-text], .split-line, .split-word, .split-char');
+  if (splitTextContainer) {
+    const sectionParent =
+      splitTextContainer.closest('section, main, article, .site-layout, [class*="section"]') || document.body;
+    return sectionParent;
+  }
+
   return rawEl;
 }
 
@@ -456,7 +464,6 @@ export function SketchLayer() {
   const brushWidthRef = useRef(DEFAULT_WIDTH);
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
-  const redrawScheduledRef = useRef(false);
   const nudgeCountRef = useRef(0);
   const lastNudgeDismissedAtRef = useRef(0);
   const hasEnteredSketchRef = useRef(false);
@@ -492,8 +499,8 @@ export function SketchLayer() {
   }, []);
 
   // Every stroke's position is re-derived from its anchor element's live
-  // rect, so this is correct no matter when it runs - it only needs to run
-  // often enough to look smooth, not on any particular schedule.
+  // rect, so this is correct no matter when it runs. Redraws synchronously
+  // with scroll so strokes are permanently glued to the content with zero lag.
   const redraw = useCallback(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d');
@@ -523,18 +530,6 @@ export function SketchLayer() {
     }
   }, []);
   redrawRef.current = redraw;
-
-  // rAF-throttled: coalesces bursts of scroll/resize events into at most one
-  // repaint per frame, and costs nothing at all when nothing is happening -
-  // no polling loop running in the background.
-  const scheduleRedraw = useCallback(() => {
-    if (redrawScheduledRef.current) return;
-    redrawScheduledRef.current = true;
-    requestAnimationFrame(() => {
-      redrawScheduledRef.current = false;
-      redraw();
-    });
-  }, [redraw]);
 
   const resizeCanvas = useCallback(() => {
     const canvas = canvasRef.current;
@@ -676,16 +671,21 @@ export function SketchLayer() {
     resizeCanvas();
     startIdleTimer();
 
+    // Redraw synchronously on both Lenis and native scroll so the sketch never skids
+    const onScrollImmediate = () => {
+      redraw();
+    };
+
     window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('scroll', scheduleRedraw, { passive: true });
+    window.addEventListener('scroll', onScrollImmediate, { passive: true });
 
     let unhookLenis: (() => void) | undefined;
     const unsubscribeLenis = subscribeLenis((lenis) => {
       unhookLenis?.();
       unhookLenis = undefined;
       if (!lenis) return;
-      lenis.on('scroll', scheduleRedraw);
-      unhookLenis = () => lenis.off('scroll', scheduleRedraw);
+      lenis.on('scroll', onScrollImmediate);
+      unhookLenis = () => lenis.off('scroll', onScrollImmediate);
     });
 
     const tick = () => {
@@ -693,32 +693,66 @@ export function SketchLayer() {
       if (m === 'navigate') startIdleTimer();
     };
 
-    // On iPad Pro / tablets with Apple Pencil, prevent default touch behavior when the stylus
-    // touches down so the page stays completely stationary where it is, allowing the user to sketch
+    // Halts any active Lenis momentum scrolling immediately when stylus touches down
+    const stopScrollMomentum = () => {
+      const lenis = getLenisInstance();
+      if (lenis) {
+        lenis.stop();
+        lenis.start();
+      }
+    };
+
+    // On iPad Pro / tablets with Apple Pencil, detect stylus touch down:
+    // 1. Immediately stops any residual scroll velocity so page freezes where it is.
+    // 2. Ensures canvas is ready to accept pointerdown with pointer-events: auto.
+    // 3. Prevents default touch behavior so iOS Safari never initiates a page scroll/slide.
+    // 4. For finger touches without stylus, allows page scrolling and button taps.
     const handleTouchStart = (e: TouchEvent) => {
-      const isStylus = Array.from(e.touches).some((t: any) => t.touchType === 'stylus');
-      if (isStylus) {
+      const stylusTouch = Array.from(e.touches).find((t: any) => t.touchType === 'stylus');
+      const canvas = canvasRef.current;
+
+      if (stylusTouch) {
         penActiveRef.current = true;
+        if (canvas) {
+          canvas.style.pointerEvents = 'auto';
+        }
+        stopScrollMomentum();
+
         if (modeRef.current === 'navigate') {
           hasEnteredSketchRef.current = true;
           clearIdleTimer();
           setModeBoth('sketch');
         }
-        const touch = e.touches[0];
-        const { isInteractive, isDisallowed } = getInteractiveOrHero(canvasRef.current, touch.clientX, touch.clientY);
+
+        const { isInteractive, isDisallowed } = getInteractiveOrHero(canvas, stylusTouch.clientX, stylusTouch.clientY);
         if (!isInteractive && !isDisallowed) {
           e.preventDefault();
         }
-      } else if (modeRef.current === 'drawing') {
-        e.preventDefault();
+      } else {
+        // Finger touch (no stylus on screen):
+        // Allow finger to scroll the page naturally by temporarily passing pointer events through canvas
+        if (modeRef.current !== 'drawing' && canvas) {
+          canvas.style.pointerEvents = 'none';
+        }
       }
     };
 
     const handleTouchMove = (e: TouchEvent) => {
       const isStylus = Array.from(e.touches).some((t: any) => t.touchType === 'stylus');
       if (isStylus || modeRef.current === 'drawing') {
-        // Stop iOS Safari from sliding/scrolling the page while sketching with pen
+        // Prevent default touch move so iOS Safari never slides/scrolls the page during pen sketch
         e.preventDefault();
+      }
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      // When all touches leave the screen, restore canvas pointer-events if in sketch mode
+      // so the next pen touch is captured instantaneously without missing the pen
+      if (e.touches.length === 0 && (modeRef.current === 'sketch' || penActiveRef.current)) {
+        const canvas = canvasRef.current;
+        if (canvas) {
+          canvas.style.pointerEvents = 'auto';
+        }
       }
     };
 
@@ -791,6 +825,7 @@ export function SketchLayer() {
       const isPen = e.pointerType === 'pen';
       if (isPen) {
         penActiveRef.current = true;
+        stopScrollMomentum();
         if (modeRef.current === 'navigate') {
           hasEnteredSketchRef.current = true;
           clearIdleTimer();
@@ -944,6 +979,8 @@ export function SketchLayer() {
 
     window.addEventListener('touchstart', handleTouchStart, { passive: false });
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown, { passive: false });
     window.addEventListener('pointerup', handlePointerUp);
@@ -955,11 +992,13 @@ export function SketchLayer() {
     return () => {
       document.documentElement.classList.remove('scribble-cursor-allow-hero');
       window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('scroll', scheduleRedraw);
+      window.removeEventListener('scroll', onScrollImmediate);
       unsubscribeLenis();
       unhookLenis?.();
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
+      window.removeEventListener('touchcancel', handleTouchEnd);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerup', handlePointerUp);
@@ -972,7 +1011,6 @@ export function SketchLayer() {
   }, [
     supported,
     redraw,
-    scheduleRedraw,
     resizeCanvas,
     startIdleTimer,
     clearIdleTimer,
