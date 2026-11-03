@@ -14,8 +14,9 @@
 html {
   margin: 0;
   padding: 0;
-  /* Never reserve a layout gutter for the scrollbar */
-  scrollbar-gutter: auto;
+  /* Maintain vertical scrollbar from the beginning to prevent layout shift / flickering after loader */
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 
 html,
@@ -203,13 +204,6 @@ html::-webkit-scrollbar-thumb:active,
 body::-webkit-scrollbar-thumb:active,
 *::-webkit-scrollbar-thumb:active {
   background-color: rgba(27, 23, 28, 0.9);
-}
-
-/* Prefer classic overlay behaviour where the engine supports it */
-@supports (overflow: overlay) {
-  html {
-    overflow-y: overlay;
-  }
 }
 
 /* Option 2: Editorial Waterfall Scroll Reveal (Zero Blur, Pure GPU Transform) */

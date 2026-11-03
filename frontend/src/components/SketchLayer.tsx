@@ -108,13 +108,15 @@ interface Stroke {
   opacity?: number;
 }
 
-// Desktop, laptop, and iPad only - matches production: width >= 768 AND (fine pointer OR iPad)
+// Desktop, laptop, and iPad/tablet - supports fine pointer, iPad, or any touch device with width >= 600
 function isSketchSupported() {
-  if (typeof window === 'undefined' || window.innerWidth < 768) return false;
-  const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+  if (typeof window === 'undefined') return false;
+  if (window.innerWidth < 600) return false;
+  const hasFinePointer = window.matchMedia('(pointer: fine)').matches || window.matchMedia('(any-pointer: fine)').matches;
   const ua = navigator.userAgent;
   const isIpad = /iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  return hasFinePointer || isIpad;
+  const isTablet = navigator.maxTouchPoints > 0;
+  return hasFinePointer || isIpad || isTablet;
 }
 
 function prefersReducedMotion() {
@@ -126,6 +128,60 @@ function isFormElement(target: EventTarget | null) {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName;
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
+}
+
+function isInteractiveElement(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+
+  const interactiveSelector = [
+    'button',
+    'a',
+    'input',
+    'textarea',
+    'select',
+    'option',
+    'label',
+    'details',
+    'summary',
+    '[role="button"]',
+    '[role="link"]',
+    '[role="tab"]',
+    '[role="menuitem"]',
+    '[role="switch"]',
+    '[role="checkbox"]',
+    '[role="combobox"]',
+    '[role="slider"]',
+    '[contenteditable="true"]',
+    '[tabindex]:not([tabindex="-1"])',
+    '[data-action]',
+    '[data-interactive]',
+    '.interactive',
+    '.cta-button',
+    '.cta-link',
+    '.carousel-dots',
+    '.carousel-nav',
+    '.edition-search__clear',
+    '.edition-view-toggle',
+    '.edition__tabs',
+    '.edition__prev',
+    '.fig-subheading',
+    '.site-header',
+    '.site-footer',
+  ].join(', ');
+
+  if (target.closest(interactiveSelector)) return true;
+
+  let el: Element | null = target;
+  let count = 0;
+  while (el && el !== document.body && count < 3) {
+    if (el instanceof HTMLElement && (el.onclick || el.getAttribute('role') === 'button')) {
+      return true;
+    }
+    el = el.parentElement;
+    count++;
+  }
+
+  return false;
 }
 
 function rectContains(el: Element | null, x: number, y: number) {
@@ -415,6 +471,7 @@ export function SketchLayer() {
   const nudgeCountRef = useRef(0);
   const lastNudgeDismissedAtRef = useRef(0);
   const hasEnteredSketchRef = useRef(false);
+  const penActiveRef = useRef(false);
 
   brushWidthRef.current = brushWidth;
 
@@ -573,6 +630,7 @@ export function SketchLayer() {
     strokesRef.current = [];
     setModeBoth('navigate');
     setCursor((c) => ({ ...c, on: false }));
+    if (canvasRef.current) canvasRef.current.style.pointerEvents = 'none';
     redrawRef.current();
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
@@ -583,12 +641,14 @@ export function SketchLayer() {
     const active = document.activeElement;
     if (active instanceof HTMLElement) active.blur();
     setModeBoth('sketch');
+    if (canvasRef.current) canvasRef.current.style.pointerEvents = 'none';
   }, [clearIdleTimer, setModeBoth]);
 
   // Soft exit: keeps all strokes on the page (P toggle, Esc, wheel scroll)
   const softExit = useCallback(() => {
     currentStrokeRef.current = null;
     setModeBoth('navigate');
+    if (canvasRef.current) canvasRef.current.style.pointerEvents = 'none';
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
 
@@ -607,7 +667,24 @@ export function SketchLayer() {
     };
     update();
     window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
+    window.addEventListener('orientationchange', update);
+
+    // Dynamically activate support on tablets whenever an Apple Pencil or stylus is used
+    const onGlobalPointer = (e: PointerEvent) => {
+      if (e.pointerType === 'pen') {
+        penActiveRef.current = true;
+        setSupported(true);
+      }
+    };
+    window.addEventListener('pointerdown', onGlobalPointer, { passive: true });
+    window.addEventListener('pointermove', onGlobalPointer, { passive: true });
+
+    return () => {
+      window.removeEventListener('resize', update);
+      window.removeEventListener('orientationchange', update);
+      window.removeEventListener('pointerdown', onGlobalPointer);
+      window.removeEventListener('pointermove', onGlobalPointer);
+    };
   }, []);
 
   useEffect(() => {
@@ -647,11 +724,23 @@ export function SketchLayer() {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
+      const isPen = e.pointerType === 'pen';
+      if (isPen) {
+        penActiveRef.current = true;
+        // On iPad Pro / tablet, automatically activate sketch mode on pencil hover / move
+        if (modeRef.current === 'navigate') {
+          hasEnteredSketchRef.current = true;
+          clearIdleTimer();
+          setModeBoth('sketch');
+        }
+      }
+
       const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
       cursorRef.current = { x: e.clientX, y: e.clientY };
       const overHeaderFooter = isOverHeaderOrFooter(e.clientX, e.clientY);
       const overHero = isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY);
-      const disallowed = overHeaderFooter || overHero;
+      const overInteractive = isInteractiveElement(e.target);
+      const disallowed = overHeaderFooter || overHero || overInteractive;
       setCursor({ x: e.clientX, y: e.clientY, on: !disallowed, color: nowColor });
 
       const m = modeRef.current;
@@ -659,11 +748,18 @@ export function SketchLayer() {
 
       if (m === 'sketch' || m === 'drawing') {
         if (overHero && m !== 'drawing') {
-          if (canvas) canvas.style.pointerEvents = 'none';
           document.documentElement.classList.add('scribble-cursor-allow-hero');
         } else {
-          if (canvas) canvas.style.pointerEvents = 'auto';
           document.documentElement.classList.remove('scribble-cursor-allow-hero');
+        }
+        if (m === 'drawing') {
+          if (canvas && canvas.style.pointerEvents !== 'auto') {
+            canvas.style.pointerEvents = 'auto';
+          }
+        } else {
+          if (canvas && canvas.style.pointerEvents !== 'none') {
+            canvas.style.pointerEvents = 'none';
+          }
         }
       }
 
@@ -674,6 +770,7 @@ export function SketchLayer() {
           strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
           currentStrokeRef.current = null;
           setModeBoth('sketch');
+          if (canvas) canvas.style.pointerEvents = 'none';
           redraw();
         }
         return;
@@ -696,7 +793,29 @@ export function SketchLayer() {
     };
 
     const handlePointerDown = (e: PointerEvent) => {
-      if (modeRef.current !== 'sketch' || e.button !== 0 || isFormElement(e.target)) return;
+      const isPen = e.pointerType === 'pen';
+      if (isPen) {
+        penActiveRef.current = true;
+        // Automatically activate sketch mode when Apple Pencil / stylus touches down
+        if (modeRef.current === 'navigate') {
+          hasEnteredSketchRef.current = true;
+          clearIdleTimer();
+          setModeBoth('sketch');
+        }
+      }
+
+      if (modeRef.current !== 'sketch') return;
+
+      // On tablets where Apple Pencil / pen is active, ignore finger touches for drawing
+      // so the user can use their finger to scroll, pan, and tap naturally
+      if (penActiveRef.current && e.pointerType === 'touch') {
+        return;
+      }
+
+      if (e.button !== 0 && !isPen) return;
+
+      // Do not intercept clicks on form elements, buttons, links, or interactive controls
+      if (isFormElement(e.target) || isInteractiveElement(e.target)) return;
 
       if (e.detail >= 2) {
         e.preventDefault();
@@ -725,6 +844,7 @@ export function SketchLayer() {
         opacity: DEFAULT_OPACITY,
       };
       setModeBoth('drawing');
+      canvas.style.pointerEvents = 'auto';
       try {
         canvas.setPointerCapture(e.pointerId);
       } catch {}
@@ -739,6 +859,13 @@ export function SketchLayer() {
       strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
       currentStrokeRef.current = null;
       setModeBoth('sketch');
+      const canvas = canvasRef.current;
+      if (canvas) {
+        canvas.style.pointerEvents = 'none';
+        try {
+          canvas.releasePointerCapture(e.pointerId);
+        } catch {}
+      }
       redraw();
     };
 
@@ -856,7 +983,7 @@ export function SketchLayer() {
 
   return (
     <div
-      className={`scribble-layer ${mode === 'nudge' ? 'is-nudge' : ''} ${isSketchActive ? 'is-sketch' : ''}`}
+      className={`scribble-layer ${mode === 'nudge' ? 'is-nudge' : ''} ${isSketchActive ? 'is-sketch' : ''} ${mode === 'drawing' ? 'is-drawing' : ''}`}
       aria-hidden="true"
     >
       <canvas ref={canvasRef} className="scribble-layer__canvas" />

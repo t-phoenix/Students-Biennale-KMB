@@ -212,12 +212,28 @@ export function SplashScreen() {
 
   useEffect(() => {
     if (!active) return;
-    const html = document.documentElement;
-    const prevOverflow = html.style.overflow;
-    html.style.overflow = "hidden";
+
     window.dispatchEvent(new CustomEvent("spotlight:change", { detail: { open: true } }));
+
+    // Keep scroll locked at top without hiding the scrollbar (prevents layout shift / flickering after loader)
+    const onScroll = () => {
+      if (window.scrollY !== 0 || window.scrollX !== 0) {
+        window.scrollTo(0, 0);
+      }
+    };
+
+    const preventScrollMove = (e: Event) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("wheel", preventScrollMove, { passive: false });
+    window.addEventListener("touchmove", preventScrollMove, { passive: false });
+
     return () => {
-      html.style.overflow = prevOverflow;
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("wheel", preventScrollMove);
+      window.removeEventListener("touchmove", preventScrollMove);
       window.dispatchEvent(new CustomEvent("spotlight:change", { detail: { open: false } }));
     };
   }, [active]);
@@ -236,6 +252,17 @@ export function SplashScreen() {
       if (e.key === "Escape") {
         e.preventDefault();
         setSkipped(true);
+      } else if (
+        e.key === " " ||
+        e.key === "Spacebar" ||
+        e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "PageUp" ||
+        e.key === "PageDown" ||
+        e.key === "Home" ||
+        e.key === "End"
+      ) {
+        e.preventDefault();
       }
     };
     window.addEventListener("keydown", onKey);

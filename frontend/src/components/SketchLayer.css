@@ -15,7 +15,7 @@
   touch-action: none;
 }
 
-.scribble-layer.is-sketch .scribble-layer__canvas {
+.scribble-layer.is-drawing .scribble-layer__canvas {
   pointer-events: auto;
   cursor: none;
 }
@@ -96,6 +96,33 @@
 html.scribble-hide-cursor,
 html.scribble-hide-cursor * {
   cursor: none !important;
+}
+
+/* Allow native pointer cursor over buttons and interactive elements while sketching */
+html.scribble-hide-cursor button,
+html.scribble-hide-cursor a,
+html.scribble-hide-cursor input,
+html.scribble-hide-cursor textarea,
+html.scribble-hide-cursor select,
+html.scribble-hide-cursor label,
+html.scribble-hide-cursor [role="button"],
+html.scribble-hide-cursor [role="tab"],
+html.scribble-hide-cursor [role="link"],
+html.scribble-hide-cursor [role="menuitem"],
+html.scribble-hide-cursor [role="switch"],
+html.scribble-hide-cursor [role="checkbox"],
+html.scribble-hide-cursor [data-interactive],
+html.scribble-hide-cursor .interactive,
+html.scribble-hide-cursor button *,
+html.scribble-hide-cursor a *,
+html.scribble-hide-cursor [role="button"] *,
+html.scribble-hide-cursor [role="tab"] * {
+  cursor: pointer !important;
+}
+
+html.scribble-hide-cursor input,
+html.scribble-hide-cursor textarea {
+  cursor: text !important;
 }
 
 /* Allow native cursor over hero / cover areas where sketching is disallowed */
