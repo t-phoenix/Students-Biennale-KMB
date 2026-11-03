@@ -484,6 +484,13 @@
     margin-bottom: 14px;
   }
 
+  @media (min-width: 600px) {
+    .catalogue__row-accordion .curator-panel__portrait {
+      width: calc((100% * 5 - 4 * var(--grid-gutter, 20px)) / 9);
+      max-width: 100%;
+    }
+  }
+
   .catalogue__row-accordion .curator-panel__person h3 {
     font-size: 16px;
     margin-bottom: 10px;

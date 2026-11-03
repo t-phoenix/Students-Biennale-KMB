@@ -556,7 +556,7 @@
 
   .edition-card.edition-card--curator h3 {
     margin-top: 10px;
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 0.04em;
     line-height: 1.3;
   }
@@ -592,7 +592,7 @@
 
   .edition-grid--art .edition-card h3 {
     margin-top: 10px;
-    font-size: 14px;
+    font-size: 16px;
     letter-spacing: 0.04em;
     line-height: 1.3;
   }
@@ -610,7 +610,7 @@
   }
 
   .edition-card--artist h3 {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.3;
     letter-spacing: 0.04em;
   }
@@ -643,7 +643,7 @@
   }
 
   .edition-venue__copy h3 {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.3;
     letter-spacing: 0.04em;
     margin: 0 0 10px;
