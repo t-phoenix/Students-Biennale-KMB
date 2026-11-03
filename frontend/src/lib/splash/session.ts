@@ -1,13 +1,24 @@
 /** Once-per-session splash gate — sessionStorage + in-memory guards for StrictMode. */
 
-const STORAGE_KEY = "sb-splash-seen-v1";
+const STORAGE_KEY = "sb-splash-seen-v2";
 
 let consumedThisRuntime = false;
 /** Sticky offer decision so StrictMode remounts keep the same answer. */
 let offeredDecision: boolean | null = null;
 let completedThisRuntime = false;
 
+function hasReplayFlag(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return params.has("splash") || params.has("loader") || params.has("preview");
+  } catch {
+    return false;
+  }
+}
+
 export function hasSeenSplashThisSession(): boolean {
+  if (hasReplayFlag()) return false;
   if (consumedThisRuntime) return true;
   if (typeof sessionStorage === "undefined") return false;
   try {
@@ -18,6 +29,7 @@ export function hasSeenSplashThisSession(): boolean {
 }
 
 export function shouldOfferSplash(): boolean {
+  if (hasReplayFlag()) return true;
   return !hasSeenSplashThisSession();
 }
 
@@ -37,6 +49,7 @@ export function markSplashSeen(): void {
  * Sticky for the JS runtime so React StrictMode remounts stay consistent.
  */
 export function resolveInitialSplashOffer(isHome: boolean): boolean {
+  if (hasReplayFlag()) return isHome;
   if (completedThisRuntime) return false;
   if (offeredDecision !== null) return offeredDecision;
   offeredDecision = isHome && shouldOfferSplash();
