@@ -108,11 +108,11 @@ interface Stroke {
   opacity?: number;
 }
 
-// Desktop, laptop, and iPad/tablet - supports fine pointer, iPad, or any touch device with width >= 600
+// Desktop, laptop, and iPad/tablets - supports fine pointer, iPad, or any touch tablet with width >= 600
 function isSketchSupported() {
   if (typeof window === 'undefined') return false;
   if (window.innerWidth < 600) return false;
-  const hasFinePointer = window.matchMedia('(pointer: fine)').matches || window.matchMedia('(any-pointer: fine)').matches;
+  const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
   const ua = navigator.userAgent;
   const isIpad = /iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const isTablet = navigator.maxTouchPoints > 0;
@@ -130,72 +130,29 @@ function isFormElement(target: EventTarget | null) {
   return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
 }
 
-function isInteractiveElement(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return false;
-
-  const interactiveSelector = [
-    'button',
-    'a',
-    'input',
-    'textarea',
-    'select',
-    'option',
-    'label',
-    'details',
-    'summary',
-    '[role="button"]',
-    '[role="link"]',
-    '[role="tab"]',
-    '[role="menuitem"]',
-    '[role="switch"]',
-    '[role="checkbox"]',
-    '[role="combobox"]',
-    '[role="slider"]',
-    '[contenteditable="true"]',
-    '[tabindex]:not([tabindex="-1"])',
-    '[data-action]',
-    '[data-interactive]',
-    '.interactive',
-    '.cta-button',
-    '.cta-link',
-    '.carousel-dots',
-    '.carousel-nav',
-    '.edition-search__clear',
-    '.edition-view-toggle',
-    '.edition__tabs',
-    '.edition__prev',
-    '.fig-subheading',
-    '.site-header',
-    '.site-footer',
-  ].join(', ');
-
-  if (target.closest(interactiveSelector)) return true;
-
-  let el: Element | null = target;
-  let count = 0;
-  while (el && el !== document.body && count < 3) {
-    if (el instanceof HTMLElement && (el.onclick || el.getAttribute('role') === 'button')) {
-      return true;
-    }
-    el = el.parentElement;
-    count++;
-  }
-
-  return false;
-}
-
-function rectContains(el: Element | null, x: number, y: number) {
-  if (!(el instanceof HTMLElement)) return false;
-  const r = el.getBoundingClientRect();
-  return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
-}
-
-function isOverHeaderOrFooter(x: number, y: number) {
-  return (
-    rectContains(document.querySelector('.site-header'), x, y) ||
-    rectContains(document.querySelector('.site-footer'), x, y)
-  );
-}
+const INTERACTIVE_SELECTOR = [
+  'button',
+  'a',
+  'input',
+  'textarea',
+  'select',
+  'option',
+  'label',
+  'summary',
+  '[role="button"]',
+  '[role="tab"]',
+  '[role="link"]',
+  '[role="menuitem"]',
+  '[role="switch"]',
+  '[role="checkbox"]',
+  '.cta-link',
+  '.cta-button',
+  '.edition-search__clear',
+  '.edition-view-toggle',
+  '.carousel-nav',
+  '.carousel-dots',
+  '.gallery-lightbox',
+].join(', ');
 
 const HERO_OR_COVER_SELECTORS = [
   '.home-hero',
@@ -211,8 +168,19 @@ const HERO_OR_COVER_SELECTORS = [
   '[class*="--cover"]',
 ].join(', ');
 
-function isOverHeroOrCover(canvas: HTMLCanvasElement | null, x: number, y: number): boolean {
-  if (typeof document === 'undefined') return false;
+function getInteractiveOrHero(
+  canvas: HTMLCanvasElement | null,
+  x: number,
+  y: number
+): {
+  isInteractive: boolean;
+  isDisallowed: boolean;
+  target: HTMLElement | null;
+} {
+  if (typeof document === 'undefined') {
+    return { isInteractive: false, isDisallowed: false, target: null };
+  }
+
   let el: Element | null = null;
   if (canvas) {
     const prev = canvas.style.pointerEvents;
@@ -222,15 +190,35 @@ function isOverHeroOrCover(canvas: HTMLCanvasElement | null, x: number, y: numbe
   } else {
     el = document.elementFromPoint(x, y);
   }
-  if (!el || el === document.documentElement || el === document.body) return false;
-  if (el.closest('.site-hero-hold')) return false;
-  if (el.closest(HERO_OR_COVER_SELECTORS)) return true;
 
-  const closestHero = el.closest('[class*="hero"]');
-  if (closestHero && !closestHero.classList.contains('site-hero-hold')) {
-    return true;
+  if (!el || el === document.documentElement || el === document.body) {
+    return { isInteractive: false, isDisallowed: false, target: null };
   }
-  return false;
+
+  // Header or Footer are always interactive and disallowed from sketching
+  const headerOrFooter = el.closest('.site-header, .site-footer');
+  if (headerOrFooter) {
+    const clickable = el.closest('button, a, input, textarea, select, [role="button"]') as HTMLElement | null;
+    return { isInteractive: true, isDisallowed: true, target: clickable || (headerOrFooter as HTMLElement) };
+  }
+
+  // Hero / cover areas where sketching is disallowed
+  if (!el.closest('.site-hero-hold')) {
+    if (el.closest(HERO_OR_COVER_SELECTORS) || (el.closest('[class*="hero"]') && !el.closest('.site-hero-hold'))) {
+      const clickable = el.closest(
+        'button, a, input, textarea, select, [role="button"], .cta-link'
+      ) as HTMLElement | null;
+      return { isInteractive: Boolean(clickable), isDisallowed: true, target: clickable };
+    }
+  }
+
+  // Interactive controls: buttons, links, form inputs, tabs, CTAs
+  const interactiveEl = el.closest(INTERACTIVE_SELECTOR) as HTMLElement | null;
+  if (interactiveEl) {
+    return { isInteractive: true, isDisallowed: false, target: interactiveEl };
+  }
+
+  return { isInteractive: false, isDisallowed: false, target: null };
 }
 
 function findStationaryAnchor(rawEl: Element): Element {
@@ -459,6 +447,7 @@ export function SketchLayer() {
 
   const cursorRef = useRef({ x: 0, y: 0 });
   const modeRef = useRef<SketchMode>('navigate');
+  const penActiveRef = useRef(false);
   const strokesRef = useRef<Stroke[]>([]);
   const currentStrokeRef = useRef<Stroke | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -471,7 +460,6 @@ export function SketchLayer() {
   const nudgeCountRef = useRef(0);
   const lastNudgeDismissedAtRef = useRef(0);
   const hasEnteredSketchRef = useRef(false);
-  const penActiveRef = useRef(false);
 
   brushWidthRef.current = brushWidth;
 
@@ -592,10 +580,12 @@ export function SketchLayer() {
 
     idleTimerRef.current = setTimeout(() => {
       if (modeRef.current === 'navigate' && !hasEnteredSketchRef.current) {
-        if (
-          isOverHeaderOrFooter(cursorRef.current.x, cursorRef.current.y) ||
-          isOverHeroOrCover(canvasRef.current, cursorRef.current.x, cursorRef.current.y)
-        ) {
+        const { isInteractive, isDisallowed } = getInteractiveOrHero(
+          canvasRef.current,
+          cursorRef.current.x,
+          cursorRef.current.y
+        );
+        if (isInteractive || isDisallowed) {
           return;
         }
 
@@ -630,7 +620,6 @@ export function SketchLayer() {
     strokesRef.current = [];
     setModeBoth('navigate');
     setCursor((c) => ({ ...c, on: false }));
-    if (canvasRef.current) canvasRef.current.style.pointerEvents = 'none';
     redrawRef.current();
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
@@ -641,14 +630,12 @@ export function SketchLayer() {
     const active = document.activeElement;
     if (active instanceof HTMLElement) active.blur();
     setModeBoth('sketch');
-    if (canvasRef.current) canvasRef.current.style.pointerEvents = 'none';
   }, [clearIdleTimer, setModeBoth]);
 
   // Soft exit: keeps all strokes on the page (P toggle, Esc, wheel scroll)
   const softExit = useCallback(() => {
     currentStrokeRef.current = null;
     setModeBoth('navigate');
-    if (canvasRef.current) canvasRef.current.style.pointerEvents = 'none';
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
 
@@ -667,24 +654,7 @@ export function SketchLayer() {
     };
     update();
     window.addEventListener('resize', update);
-    window.addEventListener('orientationchange', update);
-
-    // Dynamically activate support on tablets whenever an Apple Pencil or stylus is used
-    const onGlobalPointer = (e: PointerEvent) => {
-      if (e.pointerType === 'pen') {
-        penActiveRef.current = true;
-        setSupported(true);
-      }
-    };
-    window.addEventListener('pointerdown', onGlobalPointer, { passive: true });
-    window.addEventListener('pointermove', onGlobalPointer, { passive: true });
-
-    return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('orientationchange', update);
-      window.removeEventListener('pointerdown', onGlobalPointer);
-      window.removeEventListener('pointermove', onGlobalPointer);
-    };
+    return () => window.removeEventListener('resize', update);
   }, []);
 
   useEffect(() => {
@@ -723,11 +693,38 @@ export function SketchLayer() {
       if (m === 'navigate') startIdleTimer();
     };
 
-    const handlePointerMove = (e: PointerEvent) => {
-      const isPen = e.pointerType === 'pen';
-      if (isPen) {
+    // On iPad Pro / tablets with Apple Pencil, prevent default touch behavior when the stylus
+    // touches down so the page stays completely stationary where it is, allowing the user to sketch
+    const handleTouchStart = (e: TouchEvent) => {
+      const isStylus = Array.from(e.touches).some((t: any) => t.touchType === 'stylus');
+      if (isStylus) {
         penActiveRef.current = true;
-        // On iPad Pro / tablet, automatically activate sketch mode on pencil hover / move
+        if (modeRef.current === 'navigate') {
+          hasEnteredSketchRef.current = true;
+          clearIdleTimer();
+          setModeBoth('sketch');
+        }
+        const touch = e.touches[0];
+        const { isInteractive, isDisallowed } = getInteractiveOrHero(canvasRef.current, touch.clientX, touch.clientY);
+        if (!isInteractive && !isDisallowed) {
+          e.preventDefault();
+        }
+      } else if (modeRef.current === 'drawing') {
+        e.preventDefault();
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const isStylus = Array.from(e.touches).some((t: any) => t.touchType === 'stylus');
+      if (isStylus || modeRef.current === 'drawing') {
+        // Stop iOS Safari from sliding/scrolling the page while sketching with pen
+        e.preventDefault();
+      }
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType === 'pen') {
+        penActiveRef.current = true;
         if (modeRef.current === 'navigate') {
           hasEnteredSketchRef.current = true;
           clearIdleTimer();
@@ -737,40 +734,38 @@ export function SketchLayer() {
 
       const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
       cursorRef.current = { x: e.clientX, y: e.clientY };
-      const overHeaderFooter = isOverHeaderOrFooter(e.clientX, e.clientY);
-      const overHero = isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY);
-      const overInteractive = isInteractiveElement(e.target);
-      const disallowed = overHeaderFooter || overHero || overInteractive;
-      setCursor({ x: e.clientX, y: e.clientY, on: !disallowed, color: nowColor });
+
+      const { isInteractive, isDisallowed } = getInteractiveOrHero(canvasRef.current, e.clientX, e.clientY);
+      const shouldPassThrough = isInteractive || isDisallowed;
+
+      // Custom brush follower is visible only when drawing is permitted at this location
+      setCursor({
+        x: e.clientX,
+        y: e.clientY,
+        on: !shouldPassThrough,
+        color: nowColor,
+      });
 
       const m = modeRef.current;
       const canvas = canvasRef.current;
 
-      if (m === 'sketch' || m === 'drawing') {
-        if (overHero && m !== 'drawing') {
+      if (m === 'sketch') {
+        if (shouldPassThrough) {
+          if (canvas) canvas.style.pointerEvents = 'none';
           document.documentElement.classList.add('scribble-cursor-allow-hero');
         } else {
+          if (canvas) canvas.style.pointerEvents = 'auto';
           document.documentElement.classList.remove('scribble-cursor-allow-hero');
-        }
-        if (m === 'drawing') {
-          if (canvas && canvas.style.pointerEvents !== 'auto') {
-            canvas.style.pointerEvents = 'auto';
-          }
-        } else {
-          if (canvas && canvas.style.pointerEvents !== 'none') {
-            canvas.style.pointerEvents = 'none';
-          }
         }
       }
 
-      if ((m === 'nudge' || m === 'sketch' || m === 'drawing') && overHeaderFooter) {
+      if ((m === 'nudge' || m === 'sketch' || m === 'drawing') && isDisallowed) {
         if (m === 'nudge') {
           dismissNudge();
         } else if (m === 'drawing' && currentStrokeRef.current) {
           strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
           currentStrokeRef.current = null;
           setModeBoth('sketch');
-          if (canvas) canvas.style.pointerEvents = 'none';
           redraw();
         }
         return;
@@ -781,7 +776,7 @@ export function SketchLayer() {
       }
 
       if (m === 'drawing' && currentStrokeRef.current) {
-        if (overHero) {
+        if (isDisallowed) {
           return;
         }
         const rect = currentStrokeRef.current.anchor.getBoundingClientRect();
@@ -796,7 +791,6 @@ export function SketchLayer() {
       const isPen = e.pointerType === 'pen';
       if (isPen) {
         penActiveRef.current = true;
-        // Automatically activate sketch mode when Apple Pencil / stylus touches down
         if (modeRef.current === 'navigate') {
           hasEnteredSketchRef.current = true;
           clearIdleTimer();
@@ -804,33 +798,41 @@ export function SketchLayer() {
         }
       }
 
-      if (modeRef.current !== 'sketch') return;
-
-      // On tablets where Apple Pencil / pen is active, ignore finger touches for drawing
+      // On tablets where pen is active, ignore finger touches for drawing
       // so the user can use their finger to scroll, pan, and tap naturally
       if (penActiveRef.current && e.pointerType === 'touch') {
         return;
       }
 
-      if (e.button !== 0 && !isPen) return;
+      if (modeRef.current !== 'sketch') return;
 
-      // Do not intercept clicks on form elements, buttons, links, or interactive controls
-      if (isFormElement(e.target) || isInteractiveElement(e.target)) return;
+      // Mouse requires left button (0); pen touches are always accepted
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+      const canvas = canvasRef.current;
+      const { isInteractive, isDisallowed, target } = getInteractiveOrHero(canvas, e.clientX, e.clientY);
+
+      // If clicked on an interactive element (button, link, CTA, input, tab) or disallowed hero:
+      if (isInteractive || isDisallowed) {
+        if (canvas) canvas.style.pointerEvents = 'none';
+        if (target && e.target === canvas) {
+          // Direct tap intercepted by canvas -> trigger the underlying button/link
+          target.click();
+          target.focus();
+        }
+        return;
+      }
+
+      if (isFormElement(e.target)) return;
 
       if (e.detail >= 2) {
         e.preventDefault();
         return;
       }
-      if (isOverHeaderOrFooter(e.clientX, e.clientY)) {
-        return;
-      }
-      if (isOverHeroOrCover(canvasRef.current, e.clientX, e.clientY)) {
-        return;
-      }
 
-      const canvas = canvasRef.current;
       if (!canvas) return;
 
+      canvas.style.pointerEvents = 'auto';
       const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
       const rawAnchor = elementUnderPoint(canvas, e.clientX, e.clientY);
       const anchor = findStationaryAnchor(rawAnchor);
@@ -844,7 +846,6 @@ export function SketchLayer() {
         opacity: DEFAULT_OPACITY,
       };
       setModeBoth('drawing');
-      canvas.style.pointerEvents = 'auto';
       try {
         canvas.setPointerCapture(e.pointerId);
       } catch {}
@@ -853,17 +854,19 @@ export function SketchLayer() {
     };
 
     const handlePointerUp = (e: PointerEvent) => {
-      if (modeRef.current !== 'drawing' || !currentStrokeRef.current) return;
-      if (e.button !== 0 && e.type !== 'pointercancel') return;
+      if (modeRef.current !== 'drawing') return;
 
-      strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
-      currentStrokeRef.current = null;
+      if (currentStrokeRef.current) {
+        strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
+        currentStrokeRef.current = null;
+      }
       setModeBoth('sketch');
       const canvas = canvasRef.current;
       if (canvas) {
-        canvas.style.pointerEvents = 'none';
         try {
-          canvas.releasePointerCapture(e.pointerId);
+          if (e.pointerId !== undefined && canvas.hasPointerCapture(e.pointerId)) {
+            canvas.releasePointerCapture(e.pointerId);
+          }
         } catch {}
       }
       redraw();
@@ -939,6 +942,8 @@ export function SketchLayer() {
       }
     };
 
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
     window.addEventListener('pointerdown', handlePointerDown, { passive: false });
     window.addEventListener('pointerup', handlePointerUp);
@@ -953,6 +958,8 @@ export function SketchLayer() {
       window.removeEventListener('scroll', scheduleRedraw);
       unsubscribeLenis();
       unhookLenis?.();
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerdown', handlePointerDown);
       window.removeEventListener('pointerup', handlePointerUp);

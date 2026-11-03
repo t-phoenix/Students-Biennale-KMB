@@ -12,12 +12,17 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  touch-action: none;
+  touch-action: pan-y;
+}
+
+.scribble-layer.is-sketch .scribble-layer__canvas {
+  pointer-events: auto;
+  cursor: none;
+  touch-action: pan-y;
 }
 
 .scribble-layer.is-drawing .scribble-layer__canvas {
-  pointer-events: auto;
-  cursor: none;
+  touch-action: none;
 }
 
 /* Cursor follower - single element for both the idle "press P" hint and the
@@ -109,12 +114,14 @@ html.scribble-hide-cursor [role="button"],
 html.scribble-hide-cursor [role="tab"],
 html.scribble-hide-cursor [role="link"],
 html.scribble-hide-cursor [role="menuitem"],
-html.scribble-hide-cursor [role="switch"],
-html.scribble-hide-cursor [role="checkbox"],
-html.scribble-hide-cursor [data-interactive],
-html.scribble-hide-cursor .interactive,
+html.scribble-hide-cursor .cta-link,
+html.scribble-hide-cursor .cta-button,
+html.scribble-hide-cursor .brand-arrow,
 html.scribble-hide-cursor button *,
 html.scribble-hide-cursor a *,
+html.scribble-hide-cursor .cta-link *,
+html.scribble-hide-cursor .cta-button *,
+html.scribble-hide-cursor .brand-arrow *,
 html.scribble-hide-cursor [role="button"] *,
 html.scribble-hide-cursor [role="tab"] * {
   cursor: pointer !important;
