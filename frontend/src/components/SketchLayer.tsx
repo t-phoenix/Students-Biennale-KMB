@@ -233,25 +233,7 @@ function getInteractiveOrHero(
   }
 
   // Interactive controls: buttons, links, form inputs, tabs, CTAs
-  let interactiveEl = el.closest(INTERACTIVE_SELECTOR) as HTMLElement | null;
-  if (!interactiveEl) {
-    // Check computed cursor style or onclick handler up the DOM hierarchy
-    let curr: Element | null = el;
-    while (curr && curr !== document.body && curr !== document.documentElement) {
-      if (curr instanceof HTMLElement) {
-        if (
-          curr.onclick != null ||
-          curr.getAttribute('role') === 'button' ||
-          window.getComputedStyle(curr).cursor === 'pointer'
-        ) {
-          interactiveEl = curr;
-          break;
-        }
-      }
-      curr = curr.parentElement;
-    }
-  }
-
+  const interactiveEl = el.closest(INTERACTIVE_SELECTOR) as HTMLElement | null;
   if (interactiveEl) {
     const directClickable = interactiveEl.closest('button, a, [role="button"], .cta-link') as HTMLElement | null;
     return { isInteractive: true, isDisallowed: false, target: directClickable || interactiveEl };
@@ -670,6 +652,9 @@ export function SketchLayer() {
     const active = document.activeElement;
     if (active instanceof HTMLElement) active.blur();
     setModeBoth('sketch');
+    if (canvasRef.current) {
+      canvasRef.current.style.pointerEvents = 'auto';
+    }
   }, [clearIdleTimer, setModeBoth]);
 
   // Soft exit: keeps all strokes on the page (P toggle, Esc, wheel scroll)
@@ -684,13 +669,15 @@ export function SketchLayer() {
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
 
-  // Ensure canvas pointer events are reset whenever returning to navigate mode
+  // Ensure canvas pointer events are properly synchronized with mode
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     if (mode === 'navigate') {
       canvas.style.pointerEvents = 'none';
       document.documentElement.classList.remove('scribble-cursor-allow-hero');
+    } else if (mode === 'sketch') {
+      canvas.style.pointerEvents = 'auto';
     }
   }, [mode]);
 
@@ -731,16 +718,9 @@ export function SketchLayer() {
     resizeCanvas();
     startIdleTimer();
 
-    // Redraw synchronously on both Lenis and native scroll so the sketch never skids.
-    // Also smoothly soft-exits sketch mode on scroll so CTAs and content are immediately interactive.
+    // Redraw synchronously on both Lenis and native scroll so the sketch never skids
     const onScrollImmediate = () => {
       redraw();
-      const m = modeRef.current;
-      if (m === 'nudge') {
-        dismissNudge();
-      } else if (m === 'sketch') {
-        softExit();
-      }
     };
 
     window.addEventListener('resize', resizeCanvas);
