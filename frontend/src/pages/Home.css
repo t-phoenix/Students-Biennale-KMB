@@ -27,6 +27,16 @@
   z-index: 1;
 }
 
+@media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
+  .home-hero {
+    top: var(--nav-height-mobile, 56px);
+    height: calc(100vh - var(--nav-height-mobile, 56px));
+    height: calc(100svh - var(--nav-height-mobile, 56px));
+    min-height: calc(100vh - var(--nav-height-mobile, 56px));
+    min-height: calc(100svh - var(--nav-height-mobile, 56px));
+  }
+}
+
 .home-hero__slides {
   position: absolute;
   inset: 0;

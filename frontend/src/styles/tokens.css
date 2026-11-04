@@ -79,6 +79,13 @@
   --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
+@media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
+  :root {
+    --nav-height: 56px;
+    --nav-height-mobile: 56px;
+  }
+}
+
 @media (max-width: 899px) {
   :root {
     --type-title-size: clamp(20px, 4.5vw, 24px);
