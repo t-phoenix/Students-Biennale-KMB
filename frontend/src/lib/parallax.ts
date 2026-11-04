@@ -177,18 +177,11 @@ export function useImageParallax(
   useEffect(() => {
     if (prefersReducedMotion()) return;
 
-    let cleanup: (() => void) | undefined;
-
-    // Small raf delay to ensure DOM and images are in place after route mount
-    const rafId = requestAnimationFrame(() => {
-      const root = scopeRef?.current || document.body;
-      cleanup = initImageParallax(root);
-      ScrollTrigger.refresh();
-    });
+    const root = scopeRef?.current || document.body;
+    const cleanup = initImageParallax(root);
 
     return () => {
-      cancelAnimationFrame(rafId);
-      cleanup?.();
+      cleanup();
     };
-  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
+  }, deps);
 }

@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { type CuratorCard, hasActualTourUrl } from "../data/site";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
+import { useImageParallax } from "../lib/parallax";
 import { CatalogueList } from "../components/CatalogueList";
 import { FormattedParagraphs, stripMarkdownLite } from "../components/FormattedText";
 import { useEditionSearch } from "./EditionSearchContext";
@@ -90,6 +91,7 @@ export function CuratorsView() {
   const root = useRef<HTMLDivElement>(null);
 
   useStagger(root, `${view}-${catalogue.editionId}`);
+  useImageParallax(root, [view, catalogue.editionId]);
 
   return (
     <div ref={root} className="edition-view__content">

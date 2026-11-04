@@ -315,6 +315,8 @@
   object-fit: cover;
   object-position: center bottom;
   display: block;
+  transform: scale(1.02);
+  transform-origin: center center;
 }
 
 .curator-panel__person h3 {
