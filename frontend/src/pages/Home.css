@@ -81,7 +81,7 @@
   --peek: 14px;
   --peek-gap: 6px;
   --stack-ease: cubic-bezier(0.16, 1, 0.3, 1);
-  --stack-dur: 350ms;
+  --stack-dur: 200ms;
   --stack-count: 3;
   --stack-h-collapsed: calc(var(--card-h) + (var(--peek) + var(--peek-gap)) * (var(--stack-count) - 1));
   --stack-h-expanded: calc(var(--card-h) * var(--stack-count) + var(--card-gap) * (var(--stack-count) - 1));
@@ -1271,7 +1271,7 @@
     --card-gap: 10px;
     --peek-h: 8px;
     --peek-gap: 5px;
-    --stack-dur: 350ms;
+    --stack-dur: 200ms;
     --stack-ease: cubic-bezier(0.16, 1, 0.3, 1);
 
     position: relative;

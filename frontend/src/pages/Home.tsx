@@ -141,6 +141,39 @@ export function Home() {
       setMobileCardsExpanded(false);
     };
 
+    const checkSwipeOrExit = (clientX: number, clientY: number) => {
+      const dx = clientX - touchStartX;
+      const dy = clientY - touchStartY;
+      const dist = Math.hypot(dx, dy);
+
+      // Check if finger dragged 20% out of that section (.home-hero__stack)
+      const stackEl = document.querySelector<HTMLElement>(".home-hero__stack");
+      if (stackEl) {
+        const rect = stackEl.getBoundingClientRect();
+        const outPadX = rect.width * 0.20;
+        const outPadY = rect.height * 0.20;
+        const isOutOfSection =
+          clientX < rect.left - outPadX ||
+          clientX > rect.right + outPadX ||
+          clientY < rect.top - outPadY ||
+          clientY > rect.bottom + outPadY;
+
+        if (isOutOfSection) {
+          collapse();
+          return;
+        }
+
+        // Swipe threshold: 20% of section/card height or > 15px gesture
+        const swipeThreshold = Math.min(24, Math.max(14, rect.height * 0.15));
+        if (dist > swipeThreshold) {
+          collapse();
+          return;
+        }
+      } else if (dist > 15) {
+        collapse();
+      }
+    };
+
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length === 1) {
         touchStartX = e.touches[0].clientX;
@@ -150,12 +183,7 @@ export function Home() {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length === 1) {
-        const dx = e.touches[0].clientX - touchStartX;
-        const dy = e.touches[0].clientY - touchStartY;
-        // Collapse on intentional swipe / scroll gesture (> 20px movement)
-        if (Math.hypot(dx, dy) > 20) {
-          collapse();
-        }
+        checkSwipeOrExit(e.touches[0].clientX, e.touches[0].clientY);
       }
     };
 
@@ -166,11 +194,7 @@ export function Home() {
 
     const handlePointerMove = (e: PointerEvent) => {
       if (e.buttons > 0) {
-        const dx = e.clientX - touchStartX;
-        const dy = e.clientY - touchStartY;
-        if (Math.hypot(dx, dy) > 20) {
-          collapse();
-        }
+        checkSwipeOrExit(e.clientX, e.clientY);
       }
     };
 
