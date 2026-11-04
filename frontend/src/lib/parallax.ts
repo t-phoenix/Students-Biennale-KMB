@@ -108,10 +108,19 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
       img.dataset.parallax === "hero" ||
       (container.offsetWidth > window.innerWidth * 0.8 && container.offsetHeight > 500);
 
+    const isCurator =
+      container.classList.contains("edition-card__frame") ||
+      container.classList.contains("curator-panel__portrait") ||
+      container.classList.contains("detail__portrait") ||
+      Boolean(container.closest(".edition-card--curator, .curator-panel, .detail__portrait")) ||
+      img.src.includes("/curators/");
+
     const isMobile = window.innerWidth < 768;
     // Calibrated travel & scale: subtle & rock-solid on mobile to prevent clipping/stutter, editorial on desktop
     const travelPercent = isHero ? (isMobile ? 8 : 10) : (isMobile ? 6 : 8);
-    const scaleFactor = isHero ? (isMobile ? 1.14 : 1.18) : (isMobile ? 1.12 : 1.14);
+    // Curator images scaled up by 5% (All Devices) to absorb vertical parallax travel without ever exposing grey container borders
+    const baseScaleFactor = isHero ? (isMobile ? 1.14 : 1.18) : (isMobile ? 1.12 : 1.14);
+    const scaleFactor = isCurator ? baseScaleFactor + 0.05 : baseScaleFactor;
     const scrubVal = isMobile ? 0.4 : 0.6; // Snappier finger tracking on touch devices
 
     // Ensure container hides overflow
