@@ -74,8 +74,6 @@ const DEFAULT_OPACITY = 0.65;
 const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
 const IDLE_MS = 3000;
-const BURST_MAX = 2; // Up to 2 nudges before quiet period
-const RESET_COOLDOWN_MS = 30000; // 30 seconds quiet window after 2 nudges, then resets count
 
 function clampWidth(w: number) {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, w));
@@ -102,6 +100,7 @@ interface ResolvedPoint {
 interface Stroke {
   anchor: Element;
   anchorWidth: number; // anchor's rect.width at draw time, for proportional width scaling
+  anchorRect?: DOMRect; // Cached for live drawing performance
   points: AnchoredPoint[];
   color: string;
   width: number;
@@ -430,7 +429,7 @@ function drawResolvedStroke(
 
 function resolveStrokePoints(stroke: Stroke): { points: ResolvedPoint[]; width: number } | null {
   if (!stroke.anchor.isConnected) return null;
-  const rect = stroke.anchor.getBoundingClientRect();
+  const rect = stroke.anchorRect || stroke.anchor.getBoundingClientRect();
   if (rect.width === 0 || rect.height === 0) return null;
   // One uniform scale for both axes (and for line width) - so the stroke
   // resizes with its anchor like a sticker, never warped independently.
@@ -485,10 +484,9 @@ export function SketchLayer() {
   const brushWidthRef = useRef(DEFAULT_WIDTH);
   const redrawRef = useRef<() => void>(() => {});
   const prevPathRef = useRef(pathname);
-  const nudgeCountRef = useRef(0);
-  const lastNudgeDismissedAtRef = useRef(0);
-  const hasEnteredSketchRef = useRef(false);
   const pendingTargetClickRef = useRef<{ target: HTMLElement; x: number; y: number } | null>(null);
+  const brushRef = useRef<HTMLDivElement>(null);
+  const cursorOnRef = useRef(false);
 
   brushWidthRef.current = brushWidth;
 
@@ -574,29 +572,9 @@ export function SketchLayer() {
   const startIdleTimer = useCallback(() => {
     clearIdleTimer();
     if (reducedMotionRef.current || modeRef.current !== 'navigate') return;
-    if (hasEnteredSketchRef.current) return;
-
-    const now = Date.now();
-    const elapsedSinceDismiss = now - lastNudgeDismissedAtRef.current;
-
-    // Reset burst count if 30s has passed since last dismiss
-    if (elapsedSinceDismiss >= RESET_COOLDOWN_MS) {
-      nudgeCountRef.current = 0;
-    }
-
-    // If burst limit reached, wait for the remaining 30s quiet window
-    let delay = IDLE_MS;
-    if (nudgeCountRef.current >= BURST_MAX) {
-      const remainingCooldown = RESET_COOLDOWN_MS - elapsedSinceDismiss;
-      if (remainingCooldown > 0) {
-        delay = Math.max(IDLE_MS, remainingCooldown);
-      } else {
-        nudgeCountRef.current = 0;
-      }
-    }
 
     idleTimerRef.current = setTimeout(() => {
-      if (modeRef.current === 'navigate' && !hasEnteredSketchRef.current) {
+      if (modeRef.current === 'navigate') {
         const { isInteractive, isDisallowed } = getInteractiveOrHero(
           canvasRef.current,
           cursorRef.current.x,
@@ -606,21 +584,25 @@ export function SketchLayer() {
           return;
         }
 
-        const currentNow = Date.now();
-        if (currentNow - lastNudgeDismissedAtRef.current >= RESET_COOLDOWN_MS) {
-          nudgeCountRef.current = 0;
+        const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
+        cursorOnRef.current = true;
+        setCursor({
+          x: cursorRef.current.x,
+          y: cursorRef.current.y,
+          on: true,
+          color: nowColor,
+        });
+        if (brushRef.current) {
+          brushRef.current.style.left = `${cursorRef.current.x}px`;
+          brushRef.current.style.top = `${cursorRef.current.y}px`;
         }
-        if (nudgeCountRef.current < BURST_MAX) {
-          nudgeCountRef.current += 1;
-          setModeBoth('nudge');
-        }
+        setModeBoth('nudge');
       }
-    }, delay);
+    }, IDLE_MS);
   }, [clearIdleTimer, setModeBoth]);
 
   const dismissNudge = useCallback(() => {
     if (modeRef.current === 'nudge') {
-      lastNudgeDismissedAtRef.current = Date.now();
       const pt = { x: cursorRef.current.x, y: cursorRef.current.y };
       setNudgeDismissing(pt);
       setTimeout(() => {
@@ -641,19 +623,44 @@ export function SketchLayer() {
     }
     document.documentElement.classList.remove('scribble-cursor-allow-hero');
     setModeBoth('navigate');
+    cursorOnRef.current = false;
     setCursor((c) => ({ ...c, on: false }));
     redrawRef.current();
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
 
   const enterSketch = useCallback(() => {
-    hasEnteredSketchRef.current = true;
     clearIdleTimer();
     const active = document.activeElement;
-    if (active instanceof HTMLElement) active.blur();
+    if (active instanceof HTMLElement && !isFormElement(active)) active.blur();
     setModeBoth('sketch');
     if (canvasRef.current) {
       canvasRef.current.style.pointerEvents = 'auto';
+    }
+    // If cursor coordinates are unset (e.g. key pressed before any pointermove), default to viewport center
+    if (cursorRef.current.x === 0 && cursorRef.current.y === 0 && typeof window !== 'undefined') {
+      cursorRef.current = { x: Math.floor(window.innerWidth / 2), y: Math.floor(window.innerHeight / 2) };
+    }
+    const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
+    const { isInteractive, isDisallowed } = getInteractiveOrHero(
+      canvasRef.current,
+      cursorRef.current.x,
+      cursorRef.current.y
+    );
+    const shouldPassThrough = isInteractive || isDisallowed;
+    if (canvasRef.current) {
+      canvasRef.current.style.pointerEvents = shouldPassThrough ? 'none' : 'auto';
+    }
+    cursorOnRef.current = !shouldPassThrough;
+    setCursor({
+      x: cursorRef.current.x,
+      y: cursorRef.current.y,
+      on: !shouldPassThrough,
+      color: nowColor,
+    });
+    if (brushRef.current) {
+      brushRef.current.style.left = `${cursorRef.current.x}px`;
+      brushRef.current.style.top = `${cursorRef.current.y}px`;
     }
   }, [clearIdleTimer, setModeBoth]);
 
@@ -666,6 +673,8 @@ export function SketchLayer() {
     }
     document.documentElement.classList.remove('scribble-cursor-allow-hero');
     setModeBoth('navigate');
+    cursorOnRef.current = false;
+    setCursor((c) => ({ ...c, on: false }));
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
 
@@ -763,7 +772,6 @@ export function SketchLayer() {
         stopScrollMomentum();
 
         if (modeRef.current === 'navigate') {
-          hasEnteredSketchRef.current = true;
           clearIdleTimer();
           setModeBoth('sketch');
         }
@@ -800,28 +808,37 @@ export function SketchLayer() {
     };
 
     const handlePointerMove = (e: PointerEvent) => {
+      cursorRef.current = { x: e.clientX, y: e.clientY };
+
+      if (brushRef.current) {
+        brushRef.current.style.left = `${e.clientX}px`;
+        brushRef.current.style.top = `${e.clientY}px`;
+      }
+
       if (e.pointerType === 'pen') {
         penActiveRef.current = true;
         if (modeRef.current === 'navigate') {
-          hasEnteredSketchRef.current = true;
           clearIdleTimer();
           setModeBoth('sketch');
         }
       }
 
       const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
-      cursorRef.current = { x: e.clientX, y: e.clientY };
-
       const { isInteractive, isDisallowed } = getInteractiveOrHero(canvasRef.current, e.clientX, e.clientY);
       const shouldPassThrough = isInteractive || isDisallowed;
+      const isVisible = !shouldPassThrough;
 
-      // Custom brush follower is visible only when drawing is permitted at this location
-      setCursor({
-        x: e.clientX,
-        y: e.clientY,
-        on: !shouldPassThrough,
-        color: nowColor,
-      });
+      // Only update React state when visibility changes (entering/leaving an interactive element)
+      if (cursorOnRef.current !== isVisible) {
+        cursorOnRef.current = isVisible;
+        setCursor((prev) => ({
+          ...prev,
+          x: e.clientX,
+          y: e.clientY,
+          on: isVisible,
+          color: nowColor,
+        }));
+      }
 
       const m = modeRef.current;
       const canvas = canvasRef.current;
@@ -844,6 +861,7 @@ export function SketchLayer() {
         if (m === 'nudge') {
           dismissNudge();
         } else if (m === 'drawing' && currentStrokeRef.current) {
+          delete currentStrokeRef.current.anchorRect;
           strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
           currentStrokeRef.current = null;
           setModeBoth('sketch');
@@ -860,8 +878,9 @@ export function SketchLayer() {
         if (isDisallowed) {
           return;
         }
-        const rect = currentStrokeRef.current.anchor.getBoundingClientRect();
-        currentStrokeRef.current.points.push(toAnchoredPoint(rect, e.clientX, e.clientY, nowColor));
+        const stroke = currentStrokeRef.current;
+        const rect = stroke.anchorRect || stroke.anchor.getBoundingClientRect();
+        stroke.points.push(toAnchoredPoint(rect, e.clientX, e.clientY, nowColor));
         redraw();
         return;
       }
@@ -874,7 +893,6 @@ export function SketchLayer() {
         penActiveRef.current = true;
         stopScrollMomentum();
         if (modeRef.current === 'navigate') {
-          hasEnteredSketchRef.current = true;
           clearIdleTimer();
           setModeBoth('sketch');
         }
@@ -924,6 +942,7 @@ export function SketchLayer() {
       currentStrokeRef.current = {
         anchor,
         anchorWidth: rect.width,
+        anchorRect: rect,
         points: [toAnchoredPoint(rect, e.clientX, e.clientY, nowColor)],
         color: nowColor,
         width: brushWidthRef.current,
@@ -954,6 +973,7 @@ export function SketchLayer() {
       if (modeRef.current !== 'drawing') return;
 
       if (currentStrokeRef.current) {
+        delete currentStrokeRef.current.anchorRect;
         strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
         currentStrokeRef.current = null;
       }
@@ -971,6 +991,7 @@ export function SketchLayer() {
         if (isInteractive || isDisallowed) {
           canvas.style.pointerEvents = 'none';
           document.documentElement.classList.add('scribble-cursor-allow-hero');
+          cursorOnRef.current = false;
           setCursor((c) => ({ ...c, on: false }));
         } else {
           canvas.style.pointerEvents = 'auto';
@@ -1124,6 +1145,7 @@ export function SketchLayer() {
 
       {showBrush && (
         <div
+          ref={brushRef}
           className={`scribble-brush ${mode === 'nudge' ? 'is-nudge' : 'is-sketch'}`}
           style={{ left: cursor.x, top: cursor.y }}
         >

@@ -98,8 +98,7 @@
 }
 
 /* Hide native cursor globally when sketching or showing the idle hint */
-html.scribble-hide-cursor,
-html.scribble-hide-cursor * {
+html.scribble-hide-cursor {
   cursor: none !important;
 }
 
@@ -142,7 +141,6 @@ html.scribble-hide-cursor textarea {
 }
 
 /* Allow native cursor over hero / cover areas where sketching is disallowed */
-html.scribble-cursor-allow-hero,
-html.scribble-cursor-allow-hero * {
+html.scribble-cursor-allow-hero {
   cursor: auto !important;
 }
