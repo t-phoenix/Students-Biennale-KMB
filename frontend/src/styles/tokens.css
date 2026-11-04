@@ -70,6 +70,7 @@
   --nav-height-mobile: 56px;
   --header-h: 60px;
   --overlay-bottom-inset: 40px;
+  --view-toggle-width: 74px;
 
   /* Motion & Craft Easings */
   --ease-craft: cubic-bezier(0.25, 1, 0.35, 1);
@@ -83,6 +84,7 @@
   :root {
     --nav-height: 56px;
     --nav-height-mobile: 56px;
+    --view-toggle-width: 66px;
   }
 }
 
