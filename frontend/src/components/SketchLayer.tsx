@@ -145,13 +145,33 @@ const INTERACTIVE_SELECTOR = [
   '[role="menuitem"]',
   '[role="switch"]',
   '[role="checkbox"]',
+  '[tabindex]:not([tabindex="-1"])',
   '.cta-link',
   '.cta-button',
+  '.brand-arrow',
+  '.home-text-btn',
+  '.fig-subheading',
   '.edition-search__clear',
   '.edition-view-toggle',
+  '.edition-view-toggle__btn',
+  '.edition-shell__archive-toggle',
   '.carousel-nav',
+  '.carousel-nav__arrow',
   '.carousel-dots',
   '.gallery-lightbox',
+  '.home-hero__card',
+  '.home-hero__stack',
+  '.home-hero__card-close',
+  '.press__accordion-header',
+  '.programmes__award',
+  '.programmes__scholar-card',
+  '.detail__back',
+  '.press__back',
+  '.residencies__back',
+  '.past-workshop-detail__back',
+  '.catalogue__preview-cta',
+  '.catalogue-list__row',
+  '[data-interactive="true"]',
 ].join(', ');
 
 const HERO_OR_COVER_SELECTORS = [
@@ -206,16 +226,35 @@ function getInteractiveOrHero(
   if (!el.closest('.site-hero-hold')) {
     if (el.closest(HERO_OR_COVER_SELECTORS) || (el.closest('[class*="hero"]') && !el.closest('.site-hero-hold'))) {
       const clickable = el.closest(
-        'button, a, input, textarea, select, [role="button"], .cta-link'
+        'button, a, input, textarea, select, [role="button"], .cta-link, .carousel-nav__arrow, .carousel-dots button, .home-hero__card'
       ) as HTMLElement | null;
       return { isInteractive: Boolean(clickable), isDisallowed: true, target: clickable };
     }
   }
 
   // Interactive controls: buttons, links, form inputs, tabs, CTAs
-  const interactiveEl = el.closest(INTERACTIVE_SELECTOR) as HTMLElement | null;
+  let interactiveEl = el.closest(INTERACTIVE_SELECTOR) as HTMLElement | null;
+  if (!interactiveEl) {
+    // Check computed cursor style or onclick handler up the DOM hierarchy
+    let curr: Element | null = el;
+    while (curr && curr !== document.body && curr !== document.documentElement) {
+      if (curr instanceof HTMLElement) {
+        if (
+          curr.onclick != null ||
+          curr.getAttribute('role') === 'button' ||
+          window.getComputedStyle(curr).cursor === 'pointer'
+        ) {
+          interactiveEl = curr;
+          break;
+        }
+      }
+      curr = curr.parentElement;
+    }
+  }
+
   if (interactiveEl) {
-    return { isInteractive: true, isDisallowed: false, target: interactiveEl };
+    const directClickable = interactiveEl.closest('button, a, [role="button"], .cta-link') as HTMLElement | null;
+    return { isInteractive: true, isDisallowed: false, target: directClickable || interactiveEl };
   }
 
   return { isInteractive: false, isDisallowed: false, target: null };
@@ -467,6 +506,7 @@ export function SketchLayer() {
   const nudgeCountRef = useRef(0);
   const lastNudgeDismissedAtRef = useRef(0);
   const hasEnteredSketchRef = useRef(false);
+  const pendingTargetClickRef = useRef<{ target: HTMLElement; x: number; y: number } | null>(null);
 
   brushWidthRef.current = brushWidth;
 
@@ -612,7 +652,12 @@ export function SketchLayer() {
   // Hard exit: clears all strokes only on route change or explicit reset
   const hardExit = useCallback(() => {
     currentStrokeRef.current = null;
+    pendingTargetClickRef.current = null;
     strokesRef.current = [];
+    if (canvasRef.current) {
+      canvasRef.current.style.pointerEvents = 'none';
+    }
+    document.documentElement.classList.remove('scribble-cursor-allow-hero');
     setModeBoth('navigate');
     setCursor((c) => ({ ...c, on: false }));
     redrawRef.current();
@@ -630,9 +675,24 @@ export function SketchLayer() {
   // Soft exit: keeps all strokes on the page (P toggle, Esc, wheel scroll)
   const softExit = useCallback(() => {
     currentStrokeRef.current = null;
+    pendingTargetClickRef.current = null;
+    if (canvasRef.current) {
+      canvasRef.current.style.pointerEvents = 'none';
+    }
+    document.documentElement.classList.remove('scribble-cursor-allow-hero');
     setModeBoth('navigate');
     startIdleTimer();
   }, [setModeBoth, startIdleTimer]);
+
+  // Ensure canvas pointer events are reset whenever returning to navigate mode
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (mode === 'navigate') {
+      canvas.style.pointerEvents = 'none';
+      document.documentElement.classList.remove('scribble-cursor-allow-hero');
+    }
+  }, [mode]);
 
   // Route change -> clear sketches (sketches persist while staying on the page)
   useEffect(() => {
@@ -671,9 +731,16 @@ export function SketchLayer() {
     resizeCanvas();
     startIdleTimer();
 
-    // Redraw synchronously on both Lenis and native scroll so the sketch never skids
+    // Redraw synchronously on both Lenis and native scroll so the sketch never skids.
+    // Also smoothly soft-exits sketch mode on scroll so CTAs and content are immediately interactive.
     const onScrollImmediate = () => {
       redraw();
+      const m = modeRef.current;
+      if (m === 'nudge') {
+        dismissNudge();
+      } else if (m === 'sketch') {
+        softExit();
+      }
     };
 
     window.addEventListener('resize', resizeCanvas);
@@ -713,9 +780,6 @@ export function SketchLayer() {
 
       if (stylusTouch) {
         penActiveRef.current = true;
-        if (canvas) {
-          canvas.style.pointerEvents = 'auto';
-        }
         stopScrollMomentum();
 
         if (modeRef.current === 'navigate') {
@@ -725,12 +789,15 @@ export function SketchLayer() {
         }
 
         const { isInteractive, isDisallowed } = getInteractiveOrHero(canvas, stylusTouch.clientX, stylusTouch.clientY);
-        if (!isInteractive && !isDisallowed) {
+        if (isInteractive || isDisallowed) {
+          if (canvas) canvas.style.pointerEvents = 'none';
+        } else {
+          if (canvas) canvas.style.pointerEvents = 'auto';
           e.preventDefault();
         }
       } else {
         // Finger touch (no stylus on screen):
-        // Allow finger to scroll the page naturally by temporarily passing pointer events through canvas
+        // Allow finger to scroll the page naturally and tap buttons freely
         if (modeRef.current !== 'drawing' && canvas) {
           canvas.style.pointerEvents = 'none';
         }
@@ -746,13 +813,9 @@ export function SketchLayer() {
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      // When all touches leave the screen, restore canvas pointer-events if in sketch mode
-      // so the next pen touch is captured instantaneously without missing the pen
-      if (e.touches.length === 0 && (modeRef.current === 'sketch' || penActiveRef.current)) {
-        const canvas = canvasRef.current;
-        if (canvas) {
-          canvas.style.pointerEvents = 'auto';
-        }
+      const canvas = canvasRef.current;
+      if (e.touches.length === 0 && modeRef.current === 'navigate' && canvas) {
+        canvas.style.pointerEvents = 'none';
       }
     };
 
@@ -783,7 +846,11 @@ export function SketchLayer() {
       const m = modeRef.current;
       const canvas = canvasRef.current;
 
-      if (m === 'sketch') {
+      if (m === 'navigate') {
+        if (canvas && canvas.style.pointerEvents !== 'none') {
+          canvas.style.pointerEvents = 'none';
+        }
+      } else if (m === 'sketch') {
         if (shouldPassThrough) {
           if (canvas) canvas.style.pointerEvents = 'none';
           document.documentElement.classList.add('scribble-cursor-allow-hero');
@@ -851,13 +918,15 @@ export function SketchLayer() {
       if (isInteractive || isDisallowed) {
         if (canvas) canvas.style.pointerEvents = 'none';
         if (target && e.target === canvas) {
-          // Direct tap intercepted by canvas -> trigger the underlying button/link
-          target.click();
-          target.focus();
+          // Direct tap intercepted by canvas -> record pending target to trigger cleanly on pointerup
+          pendingTargetClickRef.current = { target, x: e.clientX, y: e.clientY };
+        } else {
+          pendingTargetClickRef.current = null;
         }
         return;
       }
 
+      pendingTargetClickRef.current = null;
       if (isFormElement(e.target)) return;
 
       if (e.detail >= 2) {
@@ -889,6 +958,19 @@ export function SketchLayer() {
     };
 
     const handlePointerUp = (e: PointerEvent) => {
+      // 1. If a tap on canvas over an interactive element was caught during pointerdown:
+      if (pendingTargetClickRef.current) {
+        const { target, x, y } = pendingTargetClickRef.current;
+        pendingTargetClickRef.current = null;
+        const dist = Math.hypot(e.clientX - x, e.clientY - y);
+        if (dist < 8) {
+          try {
+            target.focus();
+            target.click();
+          } catch {}
+        }
+      }
+
       if (modeRef.current !== 'drawing') return;
 
       if (currentStrokeRef.current) {
@@ -903,6 +985,17 @@ export function SketchLayer() {
             canvas.releasePointerCapture(e.pointerId);
           }
         } catch {}
+
+        // Immediately reconcile pointerEvents and cursor after stroke completion
+        const { isInteractive, isDisallowed } = getInteractiveOrHero(canvas, e.clientX, e.clientY);
+        if (isInteractive || isDisallowed) {
+          canvas.style.pointerEvents = 'none';
+          document.documentElement.classList.add('scribble-cursor-allow-hero');
+          setCursor((c) => ({ ...c, on: false }));
+        } else {
+          canvas.style.pointerEvents = 'auto';
+          document.documentElement.classList.remove('scribble-cursor-allow-hero');
+        }
       }
       redraw();
     };
