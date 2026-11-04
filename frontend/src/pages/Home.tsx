@@ -142,7 +142,6 @@ export function Home() {
     };
 
     const handleTouchStart = (e: TouchEvent) => {
-      if ((e.target as HTMLElement)?.closest(".home-hero__stack")) return;
       if (e.touches.length === 1) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
@@ -153,8 +152,23 @@ export function Home() {
       if (e.touches.length === 1) {
         const dx = e.touches[0].clientX - touchStartX;
         const dy = e.touches[0].clientY - touchStartY;
-        // Only collapse on intentional swipe / scroll gesture (> 25px movement outside stack)
-        if (Math.hypot(dx, dy) > 25) {
+        // Collapse on intentional swipe / scroll gesture (> 20px movement)
+        if (Math.hypot(dx, dy) > 20) {
+          collapse();
+        }
+      }
+    };
+
+    const handlePointerDown = (e: PointerEvent) => {
+      touchStartX = e.clientX;
+      touchStartY = e.clientY;
+    };
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.buttons > 0) {
+        const dx = e.clientX - touchStartX;
+        const dy = e.clientY - touchStartY;
+        if (Math.hypot(dx, dy) > 20) {
           collapse();
         }
       }
@@ -163,6 +177,8 @@ export function Home() {
     window.addEventListener("scroll", collapse, { passive: true });
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
+    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
     window.addEventListener("wheel", collapse, { passive: true });
     document.addEventListener("scroll", collapse, { passive: true });
 
@@ -181,6 +197,8 @@ export function Home() {
       window.removeEventListener("scroll", collapse);
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("wheel", collapse);
       document.removeEventListener("scroll", collapse);
       if (unLenis) unLenis();
@@ -1277,7 +1295,7 @@ export function Home() {
                     tabIndex={0}
                     aria-label="Edition updates. Tap to expand or collapse."
                     onClick={() => {
-                      if (window.innerWidth <= 899 && !mobileCardsExpanded) {
+                      if (!mobileCardsExpanded) {
                         setMobileCardsExpanded(true);
                       }
                     }}
@@ -1292,7 +1310,12 @@ export function Home() {
                       tabIndex={0}
                       aria-label={`${item.heading}. Open update.`}
                       onClick={(e) => {
-                        if (window.innerWidth <= 899) {
+                        const isTouchOrTablet =
+                          typeof window !== "undefined" &&
+                          (window.innerWidth <= 1024 ||
+                            window.matchMedia("(hover: none), (pointer: coarse)").matches);
+
+                        if (isTouchOrTablet) {
                           e.stopPropagation();
                           if (!mobileCardsExpanded) {
                             setMobileCardsExpanded(true);
@@ -1306,7 +1329,12 @@ export function Home() {
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
-                          if (window.innerWidth <= 899) {
+                          const isTouchOrTablet =
+                            typeof window !== "undefined" &&
+                            (window.innerWidth <= 1024 ||
+                              window.matchMedia("(hover: none), (pointer: coarse)").matches);
+
+                          if (isTouchOrTablet) {
                             if (!mobileCardsExpanded) {
                               setMobileCardsExpanded(true);
                             } else {

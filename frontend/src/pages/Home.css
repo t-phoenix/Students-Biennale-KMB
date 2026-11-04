@@ -119,6 +119,14 @@
   outline-offset: 4px;
 }
 
+.home-hero__stack-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: auto;
+  cursor: default;
+}
+
 .home-hero__card {
   position: absolute;
   left: 0;
@@ -262,14 +270,18 @@
   opacity: 0;
 }
 
-/* Expanded — grow upward (Desktop hover only) */
-@media (min-width: 900px) and (hover: hover) {
+/* Expanded — grow upward (Desktop hover & Tablet/Touch tap expand) */
+@media (min-width: 900px) {
+  .home-hero__stack.is-mobile-expanded,
+  .home-hero__stack[data-expanded="true"],
   .home-hero__stack:hover,
   .home-hero__stack:focus-within {
     height: var(--stack-h-expanded);
     cursor: default;
   }
 
+  .home-hero__stack.is-mobile-expanded .home-hero__card,
+  .home-hero__stack[data-expanded="true"] .home-hero__card,
   .home-hero__stack:hover .home-hero__card,
   .home-hero__stack:focus-within .home-hero__card {
     left: 0;
@@ -280,21 +292,29 @@
     pointer-events: auto;
   }
 
+  .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="0"],
+  .home-hero__stack[data-expanded="true"] .home-hero__card[data-offset="0"],
   .home-hero__stack:hover .home-hero__card[data-offset="0"],
   .home-hero__stack:focus-within .home-hero__card[data-offset="0"] {
     top: 0;
   }
 
+  .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="1"],
+  .home-hero__stack[data-expanded="true"] .home-hero__card[data-offset="1"],
   .home-hero__stack:hover .home-hero__card[data-offset="1"],
   .home-hero__stack:focus-within .home-hero__card[data-offset="1"] {
     top: calc(var(--card-h) + var(--card-gap));
   }
 
+  .home-hero__stack.is-mobile-expanded .home-hero__card[data-offset="2"],
+  .home-hero__stack[data-expanded="true"] .home-hero__card[data-offset="2"],
   .home-hero__stack:hover .home-hero__card[data-offset="2"],
   .home-hero__stack:focus-within .home-hero__card[data-offset="2"] {
     top: calc(var(--card-h) * 2 + var(--card-gap) * 2);
   }
 
+  .home-hero__stack.is-mobile-expanded .home-hero__card .home-hero__card-inner,
+  .home-hero__stack[data-expanded="true"] .home-hero__card .home-hero__card-inner,
   .home-hero__stack:hover .home-hero__card .home-hero__card-inner,
   .home-hero__stack:focus-within .home-hero__card .home-hero__card-inner {
     opacity: 1;
