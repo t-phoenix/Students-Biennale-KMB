@@ -29,24 +29,6 @@ function useStagger(ref: RefObject<HTMLElement | null>, dep: string) {
         },
         0
       );
-
-      const images = ref.current.querySelectorAll(
-        ".edition-card__frame img, .edition-card__media img"
-      );
-      if (images.length) {
-        tl.fromTo(
-          images,
-          { scale: 1.03 },
-          {
-            scale: 1,
-            duration: 1.05,
-            stagger: { amount: 0.35, ease: "power2.out" },
-            ease: "power3.out",
-            overwrite: "auto",
-          },
-          0
-        );
-      }
     },
     { scope: ref, dependencies: [dep] },
   );
