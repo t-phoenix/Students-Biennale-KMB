@@ -94,6 +94,19 @@
   transform: translate(-50%, -50%) scaleY(0);
 }
 
+@media (hover: none) and (pointer: coarse) {
+  .catalogue__row-mark {
+    width: 32px;
+    height: 32px;
+    margin-right: -8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+}
+
 .catalogue__row-link--static {
   cursor: default;
 }
@@ -132,6 +145,8 @@
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.3) transparent;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 
 /* Very thin 2px single-line scrollbar */

@@ -38,6 +38,19 @@ function isAccordionMode(): boolean {
   );
 }
 
+function isTouchInteraction(e: React.MouseEvent): boolean {
+  if (typeof window === "undefined") return false;
+  const pe = e.nativeEvent as PointerEvent | undefined;
+  if (pe && (pe.pointerType === "touch" || pe.pointerType === "pen")) {
+    return true;
+  }
+  const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+  if (isCoarse && pe?.pointerType !== "mouse") {
+    return true;
+  }
+  return false;
+}
+
 function getTruncatedNote(note: string, maxWords = 50): string {
   if (!note) return "";
   const firstPara = note.split(/\n\s*\n/)[0]?.trim() || note;
@@ -154,6 +167,7 @@ export function CatalogueList({
 }: CatalogueListProps) {
   const [activeId, setActiveId] = useState(rows[0]?.id ?? "");
   const [mobileExpandedId, setMobileExpandedId] = useState<string | null>(null);
+  const [touchActivatedId, setTouchActivatedId] = useState<string | null>(null);
   const [shown, setShown] = useState(pageSize);
   const previewRef = useRef<HTMLElement>(null);
 
@@ -239,6 +253,32 @@ export function CatalogueList({
           setMobileExpandedId(null);
         }
       }
+      return;
+    }
+
+    // Touch devices in side-preview mode (e.g. Surface Pro, iPad in landscape, touchscreen laptops)
+    if (isTouchInteraction(e)) {
+      const target = e.target as HTMLElement;
+      const isMarkClick = Boolean(target.closest(".catalogue__row-mark"));
+      const isAlreadyTapped = touchActivatedId === row.id && activeId === row.id;
+
+      if (isMarkClick) {
+        // Explicit tap on the + / - toggle mark selects/expands without navigating to full page
+        e.preventDefault();
+        setActiveId(row.id);
+        setTouchActivatedId(row.id);
+        return;
+      }
+
+      if (!isAlreadyTapped) {
+        // 1st tap on the row expands / previews it first, preventing immediate navigation
+        e.preventDefault();
+        setActiveId(row.id);
+        setTouchActivatedId(row.id);
+        return;
+      }
+
+      // If already active and tapped by user, clicking row body again allows navigation
     }
   };
 
