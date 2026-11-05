@@ -384,217 +384,228 @@ export function Home() {
   );
 
   // Sensing Grounds image strip —
-  // Desktop (> 899px): continuous right-to-left auto-scroll with smooth hover slowdown.
-  // Mobile (<= 899px): interactive swipe left & right with momentum deceleration, dwell pause, and auto-resume.
+  // Unified high-performance ticker loop across Mobile, Tab, and Desktop:
+  // - Auto-cruise right-to-left marquee (-50% in 28s)
+  // - Desktop mouse hover slowdown (to 0.25x on mouse enter, 1x on leave)
+  // - Interactive touch & swipe on Tab, Mobile, and Desktop: real-time dragging,
+  //   flick momentum deceleration, 1.2s dwell pause, smooth acceleration back to cruise,
+  //   and vertical scroll intent detection so vertical page scroll is never hijacked.
   useGSAP(
     () => {
       const track = sensingTrackRef.current;
       if (!track || prefersReducedMotion() || sensingStripImages.length === 0) return;
 
-      const mm = gsap.matchMedia();
+      const wrap = gsap.utils.wrap(-50, 0);
+      let currentXPercent = wrap(Number(gsap.getProperty(track, "xPercent")) || 0);
+      let isDragging = false;
+      let isGesturing = false;
+      let startX = 0;
+      let startY = 0;
+      let lastX = 0;
+      let lastTime = 0;
+      let velocityX = 0; // px / ms
+      let momentumTween: gsap.core.Tween | null = null;
+      let resumeTween: gsap.core.Tween | null = null;
+      let resumeTimeout: ReturnType<typeof setTimeout> | null = null;
+      let hoverTween: gsap.core.Tween | null = null;
 
-      // DESKTOP (> 899px): continuous marquee with hover slowdown
-      mm.add("(min-width: 900px)", () => {
-        const tween = gsap.to(track, {
-          xPercent: -50,
-          duration: 28,
-          ease: "none",
-          repeat: -1,
+      // Base cruise speed: -50% in 28 seconds => ~-1.785% per second
+      const BASE_CRUISE_SPEED = -50 / 28;
+      let currentSpeed = BASE_CRUISE_SPEED;
+      let hoverMultiplier = 1;
+      let isAutoScrolling = true;
+
+      const updatePosition = (pct: number) => {
+        currentXPercent = wrap(pct);
+        gsap.set(track, { xPercent: currentXPercent });
+      };
+
+      const stopAllMotion = () => {
+        isAutoScrolling = false;
+        if (resumeTimeout) {
+          clearTimeout(resumeTimeout);
+          resumeTimeout = null;
+        }
+        if (momentumTween) {
+          momentumTween.kill();
+          momentumTween = null;
+        }
+        if (resumeTween) {
+          resumeTween.kill();
+          resumeTween = null;
+        }
+      };
+
+      const scheduleAutoResume = () => {
+        if (resumeTimeout) clearTimeout(resumeTimeout);
+        // Dwell in stopped position for 1.2s so user can view where they scrolled to
+        resumeTimeout = setTimeout(() => {
+          currentSpeed = 0;
+          isAutoScrolling = true;
+          // Smoothly accelerate speed back to cruise speed over 1.2s
+          const speedObj = { speed: 0 };
+          resumeTween = gsap.to(speedObj, {
+            speed: BASE_CRUISE_SPEED,
+            duration: 1.2,
+            ease: "power2.inOut",
+            onUpdate: () => {
+              currentSpeed = speedObj.speed;
+            },
+            onComplete: () => {
+              resumeTween = null;
+            },
+          });
+        }, 1200);
+      };
+
+      const tickerCallback = (_time: number, deltaTime: number) => {
+        if (isDragging || !isAutoScrolling) return;
+        const dt = deltaTime / 1000;
+        updatePosition(currentXPercent + currentSpeed * hoverMultiplier * dt);
+      };
+
+      gsap.ticker.add(tickerCallback);
+
+      // Desktop Hover slowdown (only on mouse pointer, never on touch tap)
+      const container = track.parentElement;
+      const onPointerEnter = (e: PointerEvent) => {
+        if (e.pointerType !== "mouse") return;
+        hoverTween?.kill();
+        const obj = { mult: hoverMultiplier };
+        hoverTween = gsap.to(obj, {
+          mult: 0.25,
+          duration: 0.8,
+          ease: "power2.out",
+          onUpdate: () => {
+            hoverMultiplier = obj.mult;
+          },
         });
+      };
 
-        const container = track.parentElement;
-        const slowDown = () => gsap.to(tween, { timeScale: 0.25, duration: 0.8, ease: "power2.out" });
-        const speedUp = () => gsap.to(tween, { timeScale: 1, duration: 0.8, ease: "power2.out" });
+      const onPointerLeave = (e: PointerEvent) => {
+        if (e.pointerType !== "mouse") return;
+        hoverTween?.kill();
+        const obj = { mult: hoverMultiplier };
+        hoverTween = gsap.to(obj, {
+          mult: 1,
+          duration: 0.8,
+          ease: "power2.out",
+          onUpdate: () => {
+            hoverMultiplier = obj.mult;
+          },
+        });
+      };
 
-        container?.addEventListener("pointerenter", slowDown);
-        container?.addEventListener("pointerleave", speedUp);
+      container?.addEventListener("pointerenter", onPointerEnter);
+      container?.addEventListener("pointerleave", onPointerLeave);
 
-        return () => {
-          container?.removeEventListener("pointerenter", slowDown);
-          container?.removeEventListener("pointerleave", speedUp);
-          tween.kill();
-        };
-      });
+      // Touch & Pointer drag handlers (active on Mobile, Tab, and Desktop)
+      const onPointerDown = (e: PointerEvent) => {
+        stopAllMotion();
+        isDragging = true;
+        isGesturing = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        lastX = e.clientX;
+        lastTime = performance.now();
+        velocityX = 0;
+        try {
+          track.setPointerCapture(e.pointerId);
+        } catch {}
+      };
 
-      // MOBILE (<= 899px): interactive swipe with momentum deceleration & auto-resume
-      mm.add("(max-width: 899px)", () => {
-        const wrap = gsap.utils.wrap(-50, 0);
-        let currentXPercent = wrap(Number(gsap.getProperty(track, "xPercent")) || 0);
-        let isDragging = false;
-        let isGesturing = false;
-        let startX = 0;
-        let startY = 0;
-        let lastX = 0;
-        let lastTime = 0;
-        let velocityX = 0; // px / ms
-        let momentumTween: gsap.core.Tween | null = null;
-        let resumeTween: gsap.core.Tween | null = null;
-        let resumeTimeout: ReturnType<typeof setTimeout> | null = null;
+      const onPointerMove = (e: PointerEvent) => {
+        if (!isDragging) return;
 
-        // Auto-scroll speed: -50% in 28 seconds => ~-1.785% per second
-        const BASE_CRUISE_SPEED = -50 / 28;
-        let currentSpeed = BASE_CRUISE_SPEED;
-        let isAutoScrolling = true;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
 
-        const updatePosition = (pct: number) => {
-          currentXPercent = wrap(pct);
-          gsap.set(track, { xPercent: currentXPercent });
-        };
-
-        const stopAllMotion = () => {
-          isAutoScrolling = false;
-          if (resumeTimeout) {
-            clearTimeout(resumeTimeout);
-            resumeTimeout = null;
-          }
-          if (momentumTween) {
-            momentumTween.kill();
-            momentumTween = null;
-          }
-          if (resumeTween) {
-            resumeTween.kill();
-            resumeTween = null;
-          }
-        };
-
-        const scheduleAutoResume = () => {
-          if (resumeTimeout) clearTimeout(resumeTimeout);
-          // Dwell in stopped position for 1.2s so user can view where they scrolled to
-          resumeTimeout = setTimeout(() => {
-            currentSpeed = 0;
-            isAutoScrolling = true;
-            // Smoothly accelerate speed back to cruise speed over 1.2s ("stopping can be accelerated down / then animate again")
-            const speedObj = { speed: 0 };
-            resumeTween = gsap.to(speedObj, {
-              speed: BASE_CRUISE_SPEED,
-              duration: 1.2,
-              ease: "power2.inOut",
-              onUpdate: () => {
-                currentSpeed = speedObj.speed;
-              },
-              onComplete: () => {
-                resumeTween = null;
-              },
-            });
-          }, 1200);
-        };
-
-        const tickerCallback = (_time: number, deltaTime: number) => {
-          if (isDragging || !isAutoScrolling) return;
-          const dt = deltaTime / 1000;
-          updatePosition(currentXPercent + currentSpeed * dt);
-        };
-
-        gsap.ticker.add(tickerCallback);
-
-        const onPointerDown = (e: PointerEvent) => {
-          stopAllMotion();
-          isDragging = true;
-          isGesturing = false;
-          startX = e.clientX;
-          startY = e.clientY;
-          lastX = e.clientX;
-          lastTime = performance.now();
-          velocityX = 0;
-          try {
-            track.setPointerCapture(e.pointerId);
-          } catch {}
-        };
-
-        const onPointerMove = (e: PointerEvent) => {
-          if (!isDragging) return;
-
-          const dx = e.clientX - startX;
-          const dy = e.clientY - startY;
-
-          // Check if user is scrolling vertically vs swiping the strip
-          if (!isGesturing) {
-            if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) {
-              // Vertical scroll intent: release capture and don't hijack scroll
-              isDragging = false;
-              try {
-                track.releasePointerCapture(e.pointerId);
-              } catch {}
-              scheduleAutoResume();
-              return;
-            }
-            if (Math.abs(dx) > 6) {
-              isGesturing = true;
-              lastX = e.clientX;
-              lastTime = performance.now();
-            }
-          }
-
-          if (isGesturing) {
-            const now = performance.now();
-            const dt = Math.max(now - lastTime, 8);
-            const stepDx = e.clientX - lastX;
-            // Smooth velocity calculation (px / ms)
-            velocityX = 0.65 * (stepDx / dt) + 0.35 * velocityX;
-            lastX = e.clientX;
-            lastTime = now;
-
-            const trackWidth = track.offsetWidth || 1;
-            const deltaPercent = (stepDx / trackWidth) * 100;
-            updatePosition(currentXPercent + deltaPercent);
-          }
-        };
-
-        const onPointerEnd = (e: PointerEvent) => {
-          if (!isDragging && !isGesturing) return;
-          isDragging = false;
-          try {
-            track.releasePointerCapture(e.pointerId);
-          } catch {}
-
-          if (!isGesturing) {
+        // Check if user is scrolling vertically vs swiping the strip
+        if (!isGesturing) {
+          if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) {
+            // Vertical scroll intent: release capture and don't hijack scroll
+            isDragging = false;
+            try {
+              track.releasePointerCapture(e.pointerId);
+            } catch {}
             scheduleAutoResume();
             return;
           }
-
-          // If flicked with velocity, apply decelerating momentum ("stopping can be accelerated down")
-          const trackWidth = track.offsetWidth || 1;
-          const velocityPercentPerSec = ((velocityX * 1000) / trackWidth) * 100;
-
-          if (Math.abs(velocityPercentPerSec) > 3) {
-            const coastDistance = gsap.utils.clamp(-35, 35, velocityPercentPerSec * 0.45);
-            const coastDuration = gsap.utils.clamp(0.6, 1.3, Math.abs(coastDistance) / 20 + 0.45);
-            const state = { pct: currentXPercent };
-
-            momentumTween = gsap.to(state, {
-              pct: currentXPercent + coastDistance,
-              duration: coastDuration,
-              ease: "power2.out", // smooth deceleration down to zero
-              onUpdate: () => {
-                updatePosition(state.pct);
-              },
-              onComplete: () => {
-                momentumTween = null;
-                scheduleAutoResume();
-              },
-            });
-          } else {
-            scheduleAutoResume();
+          if (Math.abs(dx) > 6) {
+            isGesturing = true;
+            lastX = e.clientX;
+            lastTime = performance.now();
           }
-        };
+        }
 
-        track.addEventListener("pointerdown", onPointerDown);
-        track.addEventListener("pointermove", onPointerMove);
-        track.addEventListener("pointerup", onPointerEnd);
-        track.addEventListener("pointercancel", onPointerEnd);
+        if (isGesturing) {
+          const now = performance.now();
+          const dt = Math.max(now - lastTime, 8);
+          const stepDx = e.clientX - lastX;
+          // Smooth velocity calculation (px / ms)
+          velocityX = 0.65 * (stepDx / dt) + 0.35 * velocityX;
+          lastX = e.clientX;
+          lastTime = now;
 
-        return () => {
-          stopAllMotion();
-          gsap.ticker.remove(tickerCallback);
-          track.removeEventListener("pointerdown", onPointerDown);
-          track.removeEventListener("pointermove", onPointerMove);
-          track.removeEventListener("pointerup", onPointerEnd);
-          track.removeEventListener("pointercancel", onPointerEnd);
-        };
-      });
+          const trackWidth = track.offsetWidth || 1;
+          const deltaPercent = (stepDx / trackWidth) * 100;
+          updatePosition(currentXPercent + deltaPercent);
+        }
+      };
+
+      const onPointerEnd = (e: PointerEvent) => {
+        if (!isDragging && !isGesturing) return;
+        isDragging = false;
+        try {
+          track.releasePointerCapture(e.pointerId);
+        } catch {}
+
+        if (!isGesturing) {
+          scheduleAutoResume();
+          return;
+        }
+
+        // If flicked with velocity, apply decelerating momentum
+        const trackWidth = track.offsetWidth || 1;
+        const velocityPercentPerSec = ((velocityX * 1000) / trackWidth) * 100;
+
+        if (Math.abs(velocityPercentPerSec) > 3) {
+          const coastDistance = gsap.utils.clamp(-35, 35, velocityPercentPerSec * 0.45);
+          const coastDuration = gsap.utils.clamp(0.6, 1.3, Math.abs(coastDistance) / 20 + 0.45);
+          const state = { pct: currentXPercent };
+
+          momentumTween = gsap.to(state, {
+            pct: currentXPercent + coastDistance,
+            duration: coastDuration,
+            ease: "power2.out",
+            onUpdate: () => {
+              updatePosition(state.pct);
+            },
+            onComplete: () => {
+              momentumTween = null;
+              scheduleAutoResume();
+            },
+          });
+        } else {
+          scheduleAutoResume();
+        }
+      };
+
+      track.addEventListener("pointerdown", onPointerDown);
+      track.addEventListener("pointermove", onPointerMove);
+      track.addEventListener("pointerup", onPointerEnd);
+      track.addEventListener("pointercancel", onPointerEnd);
 
       return () => {
-        mm.revert();
+        stopAllMotion();
+        hoverTween?.kill();
+        gsap.ticker.remove(tickerCallback);
+        container?.removeEventListener("pointerenter", onPointerEnter);
+        container?.removeEventListener("pointerleave", onPointerLeave);
+        track.removeEventListener("pointerdown", onPointerDown);
+        track.removeEventListener("pointermove", onPointerMove);
+        track.removeEventListener("pointerup", onPointerEnd);
+        track.removeEventListener("pointercancel", onPointerEnd);
       };
     },
     { scope: rootRef, dependencies: [sensingStripImages.join("|")] }
