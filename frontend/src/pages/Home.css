@@ -1278,6 +1278,7 @@
     width: 100%;
     max-width: 380px;
     margin: 0;
+    align-self: flex-start;
     z-index: 5;
     pointer-events: auto;
     outline: none;
