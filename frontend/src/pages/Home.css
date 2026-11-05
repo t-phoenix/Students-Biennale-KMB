@@ -1522,6 +1522,51 @@
     }
   }
 
+  /* Tablet / iPad Mini (600px – 899px):
+     Matches iPad Pro layout — card docked on bottom-left, artwork credits
+     right-aligned on bottom-right, side carousel arrows visible, centered dots. */
+  @media (min-width: 600px) {
+    .home-hero__grid {
+      display: grid !important;
+      grid-template-columns: repeat(var(--grid-cols, 6), minmax(0, 1fr)) !important;
+      column-gap: var(--grid-gutter, 16px) !important;
+      padding-inline: var(--grid-margin, 32px) !important;
+      padding-bottom: var(--overlay-bottom-inset, 40px) !important;
+      align-items: end !important;
+      flex-direction: unset !important;
+    }
+
+    .home-hero__mobile-group {
+      display: contents !important;
+    }
+
+    .home-hero__mobile-meta {
+      display: none !important;
+    }
+
+    .home-hero__stack {
+      grid-column: 1 / span 4 !important;
+      max-width: 380px !important;
+      width: 100% !important;
+      align-self: end !important;
+    }
+
+    .home-hero__meta {
+      display: flex !important;
+      grid-column: 4 / -1 !important;
+      justify-self: end !important;
+      align-self: end !important;
+      flex-direction: column !important;
+      align-items: flex-end !important;
+      text-align: right !important;
+      margin: 0 !important;
+    }
+
+    .home-hero .carousel-nav {
+      display: grid !important;
+    }
+  }
+
   /* Edition Intro */
   .home-edition {
     padding-bottom: 40px;
