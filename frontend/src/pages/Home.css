@@ -1528,7 +1528,7 @@
   @media (min-width: 600px) {
     .home-hero__grid {
       display: grid !important;
-      grid-template-columns: repeat(var(--grid-cols, 6), minmax(0, 1fr)) !important;
+      grid-template-columns: minmax(0, 380px) 1fr !important;
       column-gap: var(--grid-gutter, 16px) !important;
       padding-inline: var(--grid-margin, 32px) !important;
       padding-bottom: var(--overlay-bottom-inset, 40px) !important;
@@ -1545,7 +1545,8 @@
     }
 
     .home-hero__stack {
-      grid-column: 1 / span 4 !important;
+      grid-column: 1 !important;
+      grid-row: 1 !important;
       max-width: 380px !important;
       width: 100% !important;
       align-self: end !important;
@@ -1553,7 +1554,8 @@
 
     .home-hero__meta {
       display: flex !important;
-      grid-column: 4 / -1 !important;
+      grid-column: 2 !important;
+      grid-row: 1 !important;
       justify-self: end !important;
       align-self: end !important;
       flex-direction: column !important;
