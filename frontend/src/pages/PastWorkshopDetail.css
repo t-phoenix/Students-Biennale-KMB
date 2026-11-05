@@ -197,16 +197,23 @@
     gap: 12px;
   }
 
-  .past-workshop-detail__nav {
+  .past-workshop-detail__nav.fig-grid {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding-top: 40px;
     width: 100%;
   }
 
-  .past-workshop-detail__next {
+  .past-workshop-detail__nav .past-workshop-detail__back,
+  .past-workshop-detail__nav .past-workshop-detail__next {
     grid-column: auto;
+    flex: 0 0 auto;
+  }
+
+  .past-workshop-detail__next {
     justify-self: auto;
+    margin-left: auto;
   }
 }

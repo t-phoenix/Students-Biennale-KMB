@@ -553,16 +553,23 @@ button.edition-overview__slot:hover img {
     gap: 12px;
   }
 
-  .edition-overview__nav {
+  .edition-overview__nav.fig-grid {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding-top: 48px;
     width: 100%;
   }
 
-  .edition-overview__next {
+  .edition-overview__nav .detail__back,
+  .edition-overview__nav .edition-overview__next {
     grid-column: auto;
+    flex: 0 0 auto;
+  }
+
+  .edition-overview__next {
     justify-self: auto;
+    margin-left: auto;
   }
 }

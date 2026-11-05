@@ -230,17 +230,24 @@
     padding-top: 40px;
   }
 
-  .residencies__nav {
+  .residencies__nav.fig-grid {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding-top: 40px;
     width: 100%;
   }
 
-  .residencies__next {
+  .residencies__nav .residencies__back,
+  .residencies__nav .residencies__next {
     grid-column: auto;
+    flex: 0 0 auto;
+  }
+
+  .residencies__next {
     justify-self: auto;
+    margin-left: auto;
   }
 
   .residencies__teaser-media,

@@ -226,18 +226,25 @@
     padding: 32px var(--page-pad);
   }
 
-  .canvas-expand__nav {
+  .canvas-expand__nav.fig-grid {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
     padding-top: 48px;
     padding-bottom: 64px;
-    row-gap: 24px;
+    row-gap: 0;
   }
 
   .canvas-expand__bottom-back {
-    grid-column: 1 / -1;
+    grid-column: auto;
+    flex: 0 0 auto;
   }
 
   .canvas-expand__next-wrap {
-    grid-column: 1 / -1;
-    justify-self: start;
+    grid-column: auto;
+    flex: 0 0 auto;
+    margin-left: auto;
+    justify-self: auto;
   }
 }

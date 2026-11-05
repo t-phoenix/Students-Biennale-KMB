@@ -676,17 +676,24 @@
     margin-bottom: 48px;
   }
 
-  .detail__nav {
+  .detail__nav.fig-grid {
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
     padding-top: 40px;
     width: 100%;
   }
 
-  .detail__next {
+  .detail__nav .detail__back,
+  .detail__nav .detail__next {
     grid-column: auto;
+    flex: 0 0 auto;
+  }
+
+  .detail__next {
     justify-self: auto;
+    margin-left: auto;
   }
 
   /* Curator page artwork cards mobile rhythm (matches Programmes awards) */

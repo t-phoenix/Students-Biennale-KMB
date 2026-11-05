@@ -56,3 +56,25 @@
     transition: none !important;
   }
 }
+
+@media (max-width: 899px) {
+  .scholar-spotlight__nav.fig-grid {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 40px;
+    width: 100%;
+  }
+
+  .scholar-spotlight__nav .detail__back,
+  .scholar-spotlight__nav .scholar-spotlight__next-btn {
+    grid-column: auto;
+    flex: 0 0 auto;
+  }
+
+  .scholar-spotlight__next-btn {
+    justify-self: auto;
+    margin-left: auto;
+  }
+}
