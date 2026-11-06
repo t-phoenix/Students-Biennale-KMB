@@ -1,4 +1,4 @@
-import { gsap, SplitText, prefersReducedMotion } from "./motion";
+import { gsap, SplitText, ScrollTrigger, prefersReducedMotion } from "./motion";
 
 export interface SplitLinesScrollOptions {
   trigger?: Element | string;
@@ -154,6 +154,10 @@ export function splitLinesOnScroll(
           console.warn("splitLinesOnScroll error:", err);
         }
       });
+    }
+
+    if (triggers.length > 0) {
+      ScrollTrigger.refresh();
     }
   };
 

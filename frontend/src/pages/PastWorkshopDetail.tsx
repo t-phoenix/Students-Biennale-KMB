@@ -17,13 +17,18 @@ export function PastWorkshopDetail() {
   useGSAP(
     () => {
       if (prefersReducedMotion()) return;
-      gsap.from(".workshop-reveal", {
-        autoAlpha: 0,
-        duration: 0.95,
-        delay: 0.12,
-        stagger: 0.08,
-        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-      });
+      gsap.fromTo(
+        ".workshop-reveal",
+        { autoAlpha: 0 },
+        {
+          autoAlpha: 1,
+          duration: 0.95,
+          delay: 0.12,
+          stagger: 0.08,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+          clearProps: "opacity,visibility,transform",
+        }
+      );
     },
     { scope: root, dependencies: [id, workshop?.id] }
   );

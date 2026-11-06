@@ -14,6 +14,16 @@ type ExpandState = {
 };
 
 export function DiscoverArtworks() {
+  useEffect(() => {
+    const prevHtml = document.documentElement.style.overscrollBehavior;
+    const prevBody = document.body.style.overscrollBehavior;
+    document.documentElement.style.overscrollBehavior = "none";
+    document.body.style.overscrollBehavior = "none";
+    return () => {
+      document.documentElement.style.overscrollBehavior = prevHtml;
+      document.body.style.overscrollBehavior = prevBody;
+    };
+  }, []);
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [expand, setExpand] = useState<ExpandState | null>(null);

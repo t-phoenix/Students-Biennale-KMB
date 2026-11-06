@@ -37,6 +37,7 @@
 
 /* Discover Artworks — full device width + height under the header */
 .site-layout--discover {
+  overscroll-behavior: none;
   width: 100%;
   max-width: none;
   height: 100dvh;

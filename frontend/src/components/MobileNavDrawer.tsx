@@ -69,6 +69,9 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
 
   const handleNavClick = useCallback(
     (to: string) => {
+      document.body.style.overflow = "";
+      const lenis = getLenisInstance();
+      lenis?.start();
       onClose();
       if (to.startsWith("/#")) {
         const hash = to.replace("/#", "");

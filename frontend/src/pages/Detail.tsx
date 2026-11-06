@@ -71,17 +71,27 @@ export function Detail() {
       const cleanups: (() => void)[] = [];
 
       // Hero top element animation
-      gsap.from(".detail__hero img, .detail__hero .image-crossfade, .detail__venue-hero", {
-        autoAlpha: 0,
-        scale: 1.03,
-        duration: 0.95,
-        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-      });
-      gsap.from(".detail__portrait img", {
-        autoAlpha: 0,
-        duration: 0.95,
-        ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-      });
+      gsap.fromTo(
+        ".detail__hero img, .detail__hero .image-crossfade, .detail__venue-hero",
+        { autoAlpha: 0, scale: 1.03 },
+        {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.95,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+          clearProps: "opacity,visibility,transform",
+        }
+      );
+      gsap.fromTo(
+        ".detail__portrait img",
+        { autoAlpha: 0 },
+        {
+          autoAlpha: 1,
+          duration: 0.95,
+          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
+          clearProps: "opacity,visibility,transform",
+        }
+      );
 
       // Scroll-triggered reveals for all sections along the scroll
       const sections = root.current?.querySelectorAll<HTMLElement>(".detail__section, .detail__section--tight");

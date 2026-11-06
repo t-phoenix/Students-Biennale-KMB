@@ -1,4 +1,5 @@
 .infinite-canvas {
+  overscroll-behavior: none;
   position: absolute;
   inset: 0;
   width: 100%;

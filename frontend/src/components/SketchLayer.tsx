@@ -1115,7 +1115,7 @@ export function SketchLayer() {
     jumpToColor,
   ]);
 
-  if (!supported) return null;
+  if (!supported || pathname === "/artworks") return null;
 
   const isSketchActive = mode === 'sketch' || mode === 'drawing';
   const showBrush = (mode === 'nudge' || isSketchActive) && cursor.on;

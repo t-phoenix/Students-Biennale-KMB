@@ -489,7 +489,10 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
-    root.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("wheel", onWheel, { passive: false });
+    const onGesture = (e: Event) => e.preventDefault();
+    window.addEventListener("gesturestart", onGesture, { passive: false } as any);
+    window.addEventListener("gesturechange", onGesture, { passive: false } as any);
     root.addEventListener("dblclick", onDblClick);
     root.addEventListener("touchstart", onTouchStart, { passive: true });
     root.addEventListener("touchmove", onTouchMove, { passive: false });
@@ -501,7 +504,9 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
-      root.removeEventListener("wheel", onWheel);
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("gesturestart", onGesture as any);
+      window.removeEventListener("gesturechange", onGesture as any);
       root.removeEventListener("dblclick", onDblClick);
       root.removeEventListener("touchstart", onTouchStart);
       root.removeEventListener("touchmove", onTouchMove);

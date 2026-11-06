@@ -25,25 +25,34 @@ function useHoldUntilHomeHeroReady(pathname: string) {
       setHold(false);
       return;
     }
-    if (!first) {
-      if (status === "ready") {
-        shown.current = true;
-        setHold(false);
-      }
-      return;
-    }
+
     let cancelled = false;
+    // Release safety timeout: never block mobile view for more than 2.5 seconds
     const release = window.setTimeout(() => {
       if (cancelled) return;
       shown.current = true;
       setHold(false);
-    }, 8000);
+    }, 2500);
+
+    if (!first) {
+      if (status === "ready") {
+        shown.current = true;
+        setHold(false);
+        window.clearTimeout(release);
+      }
+      return () => {
+        cancelled = true;
+        window.clearTimeout(release);
+      };
+    }
+
     void preloadUrl(first, "high").finally(() => {
       window.clearTimeout(release);
       if (cancelled) return;
       shown.current = true;
       setHold(false);
     });
+
     return () => {
       cancelled = true;
       window.clearTimeout(release);
@@ -189,13 +198,30 @@ export function Layout() {
     const rafId = requestAnimationFrame(() => {
       ScrollTrigger.refresh();
     });
-    const timerId = window.setTimeout(() => {
+    // Multi-stage refresh to account for lazy-loaded route chunks mounting on mobile
+    const t1 = window.setTimeout(() => {
       ScrollTrigger.refresh();
+      lenisRef.current?.resize();
     }, 150);
+    const t2 = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+      lenisRef.current?.resize();
+    }, 450);
+    const t3 = window.setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 900);
+
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        ScrollTrigger.refresh();
+      }).catch(() => {});
+    }
 
     return () => {
       cancelAnimationFrame(rafId);
-      window.clearTimeout(timerId);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      window.clearTimeout(t3);
     };
   }, [location.pathname, location.key]);
 
@@ -261,7 +287,7 @@ export function Layout() {
         </Suspense>
       </div>
       {isDiscover ? null : <Footer />}
-      <SketchLayer />
+      {isDiscover ? null : <SketchLayer />}
       {holdForHero ? <div className="site-hero-hold" aria-hidden /> : null}
     </div>
   );
