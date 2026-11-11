@@ -85,7 +85,7 @@ export const DUR = {
   page: 0.9,
   cinematic: 1.2,
   /** Scroll reveals: long enough to read as a graceful arrival, never a pop. */
-  reveal: 1.3,
+  reveal: 1.0,
 } as const;
 
 export const STAGGER = {

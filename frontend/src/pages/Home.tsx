@@ -42,10 +42,10 @@ import "./Home.css";
  *  section scrolls in, so the page feels responsive rather than slow to arrive. Same easing,
  *  same order. Phone paragraph timing is already tuned in splitLinesOnScroll and is kept. */
 const HOME_REVEAL = {
-  duration: 0.8,
+  duration: 1.0,
   stagger: 0.035,
   start: "top 88%",
-  lines: () => (window.innerWidth <= 899 ? {} : { start: "top 88%", duration: 0.8, stagger: 0.06, delay: 0 }),
+  lines: () => (window.innerWidth <= 899 ? {} : { start: "top 88%", duration: 1.0, stagger: 0.06, delay: 0 }),
 };
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
