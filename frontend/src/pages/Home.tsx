@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion, withMotionPreference, DISTANCE, DUR, EASE, EXIT, REVEAL, STAGGER } from "../lib/motion";
+import { gsap, useGSAP, prefersReducedMotion, withMotionPreference, DISTANCE, DUR, EASE, EXIT, REVEAL } from "../lib/motion";
 import { onAccordionKeyDown, rowClickOpensArticle, useAccordionHover, useEqualDrawerHeights } from "../lib/accordionScroll";
 import { splitLinesOnScroll } from "../lib/splitTextScroll";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
@@ -37,6 +37,16 @@ import { usePressItems } from "../lib/pressCms";
 import { useSplash } from "../lib/splash";
 import { subscribeLenis, getLenisInstance } from "../lib/lenisSingleton";
 import "./Home.css";
+
+/** Home page entrances: quicker than the site-wide reveal, and they start a little sooner as a
+ *  section scrolls in, so the page feels responsive rather than slow to arrive. Same easing,
+ *  same order. Phone paragraph timing is already tuned in splitLinesOnScroll and is kept. */
+const HOME_REVEAL = {
+  duration: 0.8,
+  stagger: 0.035,
+  start: "top 88%",
+  lines: () => (window.innerWidth <= 899 ? {} : { start: "top 88%", duration: 0.8, stagger: 0.06, delay: 0 }),
+};
 
 function normalizeCardMode(value: string | undefined | null): UpdateCardMode {
   if (value === "internal" || value === "external" || value === "content") return value;
@@ -736,7 +746,7 @@ export function Home() {
           const edition = document.querySelector<HTMLElement>(".home-edition");
           if (edition) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: edition, start: "top 76%", once: true },
+              scrollTrigger: { trigger: edition, start: HOME_REVEAL.start, once: true },
             });
             const label = edition.querySelector(".fig-label");
             // A large title has its own masked reveal; a second fade would make it flicker.
@@ -744,7 +754,7 @@ export function Home() {
               tl.fromTo(
                 label,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.08
               );
             }
@@ -752,7 +762,7 @@ export function Home() {
             const bodies = edition.querySelectorAll(".home-edition__body > .fig-body");
             if (bodies.length > 0) {
               cleanups.push(
-                splitLinesOnScroll(bodies, { trigger: edition })
+                splitLinesOnScroll(bodies, { trigger: edition, ...HOME_REVEAL.lines() })
               );
             }
             const btn = edition.querySelector(".home-text-btn");
@@ -760,7 +770,7 @@ export function Home() {
               tl.fromTo(
                 btn,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.32
               );
             }
@@ -770,14 +780,14 @@ export function Home() {
           const sensing = document.querySelector<HTMLElement>(".home-sensing");
           if (sensing) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: sensing, start: "top 76%", once: true },
+              scrollTrigger: { trigger: sensing, start: HOME_REVEAL.start, once: true },
             });
             const links = sensing.querySelectorAll(".home-sensing__links .fig-subheading");
             if (links.length > 0) {
               tl.fromTo(
                 links,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger, ease: EASE.reveal },
                 0.08
               );
             }
@@ -786,7 +796,7 @@ export function Home() {
               tl.fromTo(
                 scroll,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.18
               );
             }
@@ -795,7 +805,7 @@ export function Home() {
               tl.fromTo(
                 cta,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.28
               );
             }
@@ -805,14 +815,14 @@ export function Home() {
           const programmes = document.querySelector<HTMLElement>(".home-programmes");
           if (programmes) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: programmes, start: "top 76%", once: true },
+              scrollTrigger: { trigger: programmes, start: HOME_REVEAL.start, once: true },
             });
             const topLabel = programmes.querySelector(".home-programmes__top .fig-label");
             if (topLabel) {
               tl.fromTo(
                 topLabel,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.08
               );
             }
@@ -821,7 +831,7 @@ export function Home() {
               tl.fromTo(
                 banner,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.16
               );
             }
@@ -830,7 +840,7 @@ export function Home() {
               tl.fromTo(
                 railLinks,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger, ease: EASE.reveal },
                 0.2
               );
             }
@@ -839,7 +849,7 @@ export function Home() {
               tl.fromTo(
                 thumbs,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger, ease: EASE.reveal },
                 0.24
               );
             }
@@ -848,7 +858,7 @@ export function Home() {
               tl.fromTo(
                 mobileCards,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger, ease: EASE.reveal },
                 0.22
               );
             }
@@ -858,14 +868,14 @@ export function Home() {
           const press = document.querySelector<HTMLElement>(".home-press");
           if (press) {
             const tl = gsap.timeline({
-              scrollTrigger: { trigger: press, start: "top 76%", once: true },
+              scrollTrigger: { trigger: press, start: HOME_REVEAL.start, once: true },
             });
             const pressLabel = press.querySelector(".fig-label");
             if (pressLabel) {
               tl.fromTo(
                 pressLabel,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.08
               );
             }
@@ -874,7 +884,7 @@ export function Home() {
               tl.fromTo(
                 pressItemsEls,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger, ease: EASE.reveal },
                 0.16
               );
             }
@@ -883,7 +893,7 @@ export function Home() {
               tl.fromTo(
                 pressMore,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0.26
               );
             }
@@ -896,12 +906,12 @@ export function Home() {
             const introLabel = about.querySelector(".home-about__intro .fig-label");
             if (introLabel) {
               const tlAbout = gsap.timeline({
-                scrollTrigger: { trigger: about, start: "top 76%", once: true },
+                scrollTrigger: { trigger: about, start: HOME_REVEAL.start, once: true },
               });
               tlAbout.fromTo(
                 introLabel,
                 { autoAlpha: 0, y: DISTANCE.rise },
-                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                 0
               );
             }
@@ -910,21 +920,21 @@ export function Home() {
             const kbfBlock = about.querySelector<HTMLElement>("#about-kbf");
             if (kbfBlock) {
               const tlKbf = gsap.timeline({
-                scrollTrigger: { trigger: kbfBlock, start: "top 76%", once: true },
+                scrollTrigger: { trigger: kbfBlock, start: HOME_REVEAL.start, once: true },
               });
               const kbfLogo = kbfBlock.querySelector(".home-about__logo-wrap");
               if (kbfLogo) {
                 tlKbf.fromTo(
                   kbfLogo,
                   { autoAlpha: 0, y: DISTANCE.rise },
-                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                   0
                 );
               }
               const kbfP = kbfBlock.querySelectorAll("p");
               if (kbfP.length > 0) {
                 cleanups.push(
-                  splitLinesOnScroll(kbfP, { trigger: kbfBlock })
+                  splitLinesOnScroll(kbfP, { trigger: kbfBlock, ...HOME_REVEAL.lines() })
                 );
               }
             }
@@ -933,21 +943,21 @@ export function Home() {
             const sbBlock = about.querySelector<HTMLElement>("#about-sb");
             if (sbBlock) {
               const tlSb = gsap.timeline({
-                scrollTrigger: { trigger: sbBlock, start: "top 76%", once: true },
+                scrollTrigger: { trigger: sbBlock, start: HOME_REVEAL.start, once: true },
               });
               const sbLogo = sbBlock.querySelector(".home-about__logo-wrap");
               if (sbLogo) {
                 tlSb.fromTo(
                   sbLogo,
                   { autoAlpha: 0, y: DISTANCE.rise },
-                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                   0
                 );
               }
               const sbPs = sbBlock.querySelectorAll(".home-about__sb-copy p");
               if (sbPs.length > 0) {
                 cleanups.push(
-                  splitLinesOnScroll(sbPs, { trigger: sbBlock })
+                  splitLinesOnScroll(sbPs, { trigger: sbBlock, ...HOME_REVEAL.lines() })
                 );
               }
             }
@@ -956,14 +966,14 @@ export function Home() {
             const team = about.querySelector<HTMLElement>("#about-team");
             if (team) {
               const tlTeam = gsap.timeline({
-                scrollTrigger: { trigger: team, start: "top 76%", once: true },
+                scrollTrigger: { trigger: team, start: HOME_REVEAL.start, once: true },
               });
               const teamLabel = team.querySelector(".fig-label");
               if (teamLabel) {
                 tlTeam.fromTo(
                   teamLabel,
                   { autoAlpha: 0, y: DISTANCE.rise },
-                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                   0
                 );
               }
@@ -972,7 +982,7 @@ export function Home() {
                 tlTeam.fromTo(
                   teamCols,
                   { autoAlpha: 0, y: DISTANCE.rise },
-                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger, ease: EASE.reveal },
                   0.1
                 );
               }
@@ -982,14 +992,14 @@ export function Home() {
             const sponsors = about.querySelector<HTMLElement>("#about-sponsors");
             if (sponsors) {
               const tlSponsors = gsap.timeline({
-                scrollTrigger: { trigger: sponsors, start: "top 76%", once: true },
+                scrollTrigger: { trigger: sponsors, start: HOME_REVEAL.start, once: true },
               });
               const sponsorsLabel = sponsors.querySelector(".fig-label");
               if (sponsorsLabel) {
                 tlSponsors.fromTo(
                   sponsorsLabel,
                   { autoAlpha: 0, y: DISTANCE.rise },
-                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, ease: EASE.reveal },
                   0
                 );
               }
@@ -998,7 +1008,7 @@ export function Home() {
                 tlSponsors.fromTo(
                   sponsorItems,
                   { autoAlpha: 0, y: DISTANCE.rise },
-                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger, ease: EASE.reveal },
                   0.1
                 );
               }
@@ -1088,24 +1098,24 @@ export function Home() {
               {
                 autoAlpha: 1,
                 y: 0,
-                stagger: STAGGER.step * 2,
-                duration: DUR.reveal,
+                stagger: HOME_REVEAL.stagger * 2,
+                duration: HOME_REVEAL.duration,
                 ease: EASE.reveal,
                 clearProps: "transform",
               },
-              0.15
+              0.1
             )
             .fromTo(
               ".home-hero__credit p, .home-hero__mobile-meta",
               { autoAlpha: 0, y: 14 },
-              { autoAlpha: 1, y: 0, duration: DUR.reveal, stagger: STAGGER.step * 2, ease: EASE.reveal },
-              0.25
+              { autoAlpha: 1, y: 0, duration: HOME_REVEAL.duration, stagger: HOME_REVEAL.stagger * 2, ease: EASE.reveal },
+              0.16
             )
             .fromTo(
               ".home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
               { autoAlpha: 0 },
-              { autoAlpha: 1, duration: DUR.reveal, ease: EASE.reveal },
-              0.4
+              { autoAlpha: 1, duration: HOME_REVEAL.duration, ease: EASE.reveal },
+              0.26
             );
 
           // 2. Setup Slideshow Auto-Slide Timeline
