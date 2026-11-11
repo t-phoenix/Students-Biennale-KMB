@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { gsap, useGSAP, prefersReducedMotion, DUR, EASE, STAGGER, DISTANCE } from "../lib/motion";
+import { useSlideGesture } from "../lib/gesture";
 import { splitLinesOnScroll } from "../lib/splitTextScroll";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
@@ -30,6 +31,9 @@ export function Detail() {
   const { catalogue } = useEditionCatalogue(yearId);
   const root = useRef<HTMLDivElement>(null);
   const [heroIndex, setHeroIndex] = useState(0);
+  const venueHeroRef = useRef<HTMLDivElement>(null);
+  const venueTlRef = useRef<gsap.core.Timeline | null>(null);
+  const venueDraggingRef = useRef(false);
 
   useEffect(() => {
     setHeroIndex(0);
@@ -70,26 +74,16 @@ export function Detail() {
       if (prefersReducedMotion()) return;
       const cleanups: (() => void)[] = [];
 
-      // Hero top element animation
+      // Main image fades in where it sits, together with its frame, so the grey
+      // placeholder behind it is never seen on its own.
       gsap.fromTo(
-        ".detail__hero img, .detail__hero .image-crossfade, .detail__venue-hero",
-        { autoAlpha: 0, scale: 1.03 },
-        {
-          autoAlpha: 1,
-          scale: 1,
-          duration: 0.95,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          clearProps: "opacity,visibility,transform",
-        }
-      );
-      gsap.fromTo(
-        ".detail__portrait img",
+        ".detail__hero, .detail__venue-hero, .detail__portrait",
         { autoAlpha: 0 },
         {
           autoAlpha: 1,
-          duration: 0.95,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          clearProps: "opacity,visibility,transform",
+          duration: DUR.emphasis,
+          ease: EASE.enter,
+          clearProps: "opacity,visibility",
         }
       );
 
@@ -103,7 +97,8 @@ export function Detail() {
               ? undefined
               : {
                   trigger: sec,
-                  start: "top 78%",
+                  // Phones: as soon as it enters, so labels arrive with the pictures beside them.
+                  start: window.innerWidth <= 899 ? "top 98%" : "top 78%",
                   once: true,
                 },
             delay: isFirst ? 0.12 : 0.08,
@@ -111,13 +106,13 @@ export function Detail() {
 
           // Headings, labels, and metadata: pure opacity fade without down-to-up movement
           const labelsAndHeadings = sec.querySelectorAll(
-            ".detail__label, .detail__title, .detail__meta, .detail__curated-by, .detail__zone, .detail__artists > div, .detail__cards"
+            ".detail__label, .detail__meta, .detail__curated-by, .detail__zone, .detail__artists > div, .detail__cards"
           );
           if (labelsAndHeadings.length > 0) {
             tl.fromTo(
               labelsAndHeadings,
-              { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.95, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 0, y: DISTANCE.rise },
+              { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
               0
             );
           }
@@ -149,7 +144,9 @@ export function Detail() {
       const venueHero = root.current?.querySelector<HTMLElement>(".detail__venue-hero");
       if (!venueHero || slides.length <= 1 || prefersReducedMotion()) return;
       const tl = gsap.timeline({ repeat: -1 });
+      venueTlRef.current = tl;
       tl.to({}, { duration: 4 }).call(() => {
+        if (venueDraggingRef.current) return;
         setHeroIndex((cur) => (cur + 1) % slides.length);
       });
       const pause = () => tl.pause();
@@ -211,6 +208,30 @@ export function Detail() {
     const qs = viewParam ? `?view=${viewParam}` : "";
     return `/editions/${yearId}/${kindSeg}${qs}`;
   }, [kindSeg, yearId, artworkNav, searchParams, fromAwards]);
+
+  // Drag, flick or trackpad swipe between venue images on every device.
+  const venueSlides = data.kind === "venue" && data.item ? venueImages(data.item) : [];
+  const venueGesture = useSlideGesture(
+    venueHeroRef,
+    {
+      count: venueSlides.length,
+      getIndex: () => heroIndex,
+      getSlides: () =>
+        Array.from(
+          venueHeroRef.current?.querySelectorAll<HTMLElement>(".image-crossfade__slide") ?? [],
+        ),
+      onGrab: () => {
+        venueDraggingRef.current = true;
+      },
+      onCommit: setHeroIndex,
+      onSettle: () => {
+        venueDraggingRef.current = false;
+        venueTlRef.current?.restart();
+      },
+    },
+    venueSlides.length > 1,
+    id,
+  );
 
   if (!data.item) {
     return (
@@ -461,7 +482,7 @@ export function Detail() {
     return (
       <div ref={root} className="detail" key={v.id}>
         <div className="fig-grid detail__section">
-          <div className="detail__venue-hero fig-c1-7 detail-reveal">
+          <div ref={venueHeroRef} className="detail__venue-hero fig-c1-7 detail-reveal">
             {slides.length ? (
               <>
                 <ImageCrossfadeStack
@@ -472,8 +493,8 @@ export function Detail() {
                 {slides.length > 1 ? (
                   <CarouselNavArrows
                     slideSrc={slides[heroIndex] ?? ""}
-                    onPrev={() => setHeroIndex((i) => (i - 1 + slides.length) % slides.length)}
-                    onNext={() => setHeroIndex((i) => (i + 1) % slides.length)}
+                    onPrev={() => venueGesture.step(-1)}
+                    onNext={() => venueGesture.step(1)}
                   />
                 ) : null}
               </>
@@ -487,7 +508,7 @@ export function Detail() {
                     role="tab"
                     aria-selected={i === heroIndex}
                     className={i === heroIndex ? "is-active" : undefined}
-                    onClick={() => setHeroIndex(i)}
+                    onClick={() => venueGesture.goTo(i)}
                   />
                 ))}
               </div>

@@ -14,7 +14,7 @@
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  animation: mobileDrawerFadeIn 0.3s ease;
+  animation: mobileDrawerFadeIn var(--motion-duration-slow) var(--motion-ease-enter);
 }
 
 .mobile-drawer__content {
@@ -29,7 +29,7 @@
   padding: calc(var(--nav-height-mobile, 56px) + 20px) var(--grid-margin, 24px) 32px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  animation: mobileDrawerSlideDown 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: mobileDrawerSlideDown var(--motion-duration-slow) var(--motion-ease-enter-soft);
 }
 
 .mobile-drawer__top {
@@ -51,10 +51,12 @@
   text-transform: uppercase;
   text-align: center;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .mobile-drawer__discover:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.9;
 }
 
@@ -97,10 +99,12 @@
   line-height: 1;
   font-weight: 300;
   color: var(--color-text-secondary);
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
 .mobile-drawer__group.is-expanded .mobile-drawer__arrow {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   transform: rotate(180deg);
 }
 
@@ -108,29 +112,51 @@
 .mobile-drawer__submenu {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  /* Downward reveal: the links sit still and the section's lower edge lowers over them. */
+  overflow: hidden;
+  visibility: hidden;
+  transition: grid-template-rows var(--reveal-duration-close) var(--reveal-ease-close),
+    visibility 0s linear 0s; /* closing: content gone at once */
   padding-left: 12px;
 }
 
 .mobile-drawer__group.is-expanded .mobile-drawer__submenu {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows var(--reveal-duration-open) var(--reveal-ease-open),
+    visibility 0s linear 0s;
 }
 
 .mobile-drawer__submenu-inner {
   overflow: hidden;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding-bottom: 0;
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), padding-bottom 0.35s ease;
+  transition: padding-bottom var(--reveal-duration-close) var(--reveal-ease-close);
 }
 
 .mobile-drawer__group.is-expanded .mobile-drawer__submenu-inner {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   padding-bottom: 16px;
+  transition: padding-bottom var(--reveal-duration-open) var(--reveal-ease-open);
+}
+
+/* The links fade in where they sit while the section opens (never uncovered top-down). */
+.mobile-drawer__submenu-inner > * {
+  opacity: 0;
+  transition: opacity 0s linear 0s;
+}
+
+.mobile-drawer__group.is-expanded .mobile-drawer__submenu-inner > * {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 1;
-  transform: translateY(0);
+  transition: opacity var(--reveal-fade-duration) var(--reveal-fade-ease) var(--reveal-fade-delay);
 }
 
 .mobile-drawer__sublink {
@@ -143,11 +169,13 @@
   color: var(--color-text-secondary);
   text-align: left;
   cursor: pointer;
-  transition: color 0.18s ease;
+  transition: color calc(var(--hover, 0) * var(--motion-duration-fast) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .mobile-drawer__sublink.is-current,
 .mobile-drawer__sublink:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
   font-weight: 500;
 }
@@ -173,12 +201,16 @@
   height: 44px;
   background: var(--color-neutral-bg-light);
   border-radius: 50%;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-.mobile-drawer__social-link:hover {
-  opacity: 0.75;
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .mobile-drawer__social-link:hover {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    opacity: 0.75;
+    transform: translateY(-2px);
+  }
 }
 
 @keyframes mobileDrawerFadeIn {
@@ -213,10 +245,43 @@
 }
 
 .mobile-drawer__group {
-  animation: mobileDrawerItemFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: mobileDrawerItemFade var(--motion-duration-emphasis) var(--motion-ease-enter-soft) both;
 }
 
-.mobile-drawer__group:nth-child(1) { animation-delay: 0.06s; }
-.mobile-drawer__group:nth-child(2) { animation-delay: 0.11s; }
-.mobile-drawer__group:nth-child(3) { animation-delay: 0.16s; }
-.mobile-drawer__group:nth-child(4) { animation-delay: 0.21s; }
+.mobile-drawer__group:nth-child(1) { animation-delay: calc(var(--sequence-step) * 1); }
+.mobile-drawer__group:nth-child(2) { animation-delay: calc(var(--sequence-step) * 2); }
+.mobile-drawer__group:nth-child(3) { animation-delay: calc(var(--sequence-step) * 3); }
+.mobile-drawer__group:nth-child(4) { animation-delay: calc(var(--sequence-step) * 4); }
+
+/* Exit: quick reverse of the entrance. Runs on the next shorter duration step. */
+@keyframes mobileDrawerFadeOut {
+  from {
+    opacity: var(--drawer-exit-from-opacity, 1);
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes mobileDrawerSlideUp {
+  from {
+    opacity: 1;
+    transform: translateY(var(--drawer-exit-from-y, 0px));
+  }
+  to {
+    opacity: 0;
+    transform: translateY(calc(var(--drawer-exit-from-y, 0px) - 16px));
+  }
+}
+
+.mobile-drawer.is-closing {
+  pointer-events: none;
+}
+
+.mobile-drawer.is-closing .mobile-drawer__backdrop {
+  animation: mobileDrawerFadeOut var(--exit-duration) var(--exit-ease) forwards;
+}
+
+.mobile-drawer.is-closing .mobile-drawer__content {
+  animation: mobileDrawerSlideUp var(--exit-duration) var(--exit-ease) forwards;
+}

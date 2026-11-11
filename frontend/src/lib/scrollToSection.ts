@@ -1,5 +1,5 @@
-import { syncScrollTrigger } from "./motion";
-import { getLenisInstance } from "./lenisSingleton";
+import { prefersReducedMotion, syncScrollTrigger } from "./motion";
+import { getLenisInstance, glideTo } from "./lenisSingleton";
 
 export type HomeSectionId =
   | "editions"
@@ -124,24 +124,19 @@ export function scrollToId(id: string, options: ScrollToOptions = {}): boolean {
       syncScrollTrigger();
     };
 
-    lenis.scrollTo(targetTop, {
-      immediate: options.immediate,
-      duration: options.immediate ? 0 : 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      lock: false,
-      onComplete: cleanup,
-    });
-
     if (options.immediate) {
+      lenis.scrollTo(targetTop, { immediate: true, lock: false });
       cleanup();
-    } else {
-      window.setTimeout(cleanup, 1400);
+      return true;
     }
+    // Same calm cut-and-glide as going back to the top.
+    glideTo(targetTop, { reduced: prefersReducedMotion(), duration: 0.9, onComplete: cleanup });
+    window.setTimeout(cleanup, 1200);
     return true;
   }
 
-  const behavior = options.immediate ? "auto" : "smooth";
-  window.scrollTo({ top: targetTop, behavior });
+  if (options.immediate) window.scrollTo(0, targetTop);
+  else glideTo(targetTop, { reduced: prefersReducedMotion() });
   return true;
 }
 

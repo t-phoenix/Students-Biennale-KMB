@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useReadingOrderReveal } from "../lib/sequence";
 import "./Footer.css";
 
 const KMB_URL = "https://kochimuzirisbiennale.org/";
@@ -25,8 +27,18 @@ const SOCIAL = [
 ] as const;
 
 export function Footer() {
+  const footerRef = useRef<HTMLElement>(null);
+  // Links and logos arrive in reading order as the footer comes into view. It arms once the
+  // page has had a moment to load (an empty page briefly shows the footer), and only for the
+  // parts still below the screen then, so nothing already seen is hidden again.
+  const [armed, setArmed] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setArmed(true), 1500);
+    return () => window.clearTimeout(t);
+  }, []);
+  useReadingOrderReveal(footerRef, { duration: 0.9, enabled: armed, belowFoldOnly: true });
   return (
-    <footer className="site-footer">
+    <footer ref={footerRef} className="site-footer">
       <div className="site-footer__brand">
         <a
           className="site-footer__logo"

@@ -76,6 +76,8 @@
 
 .site-footer__brand-info a:hover,
 .site-footer__legal a:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -124,10 +126,12 @@ a.site-footer__header {
   font-weight: 400;
   color: #4a4a4a;
   text-decoration: none;
-  transition: color 0.15s ease, opacity 0.15s ease;
+  transition: color calc(var(--hover, 0) * var(--motion-duration-fast) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), opacity calc(var(--hover, 0) * var(--motion-duration-fast) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .site-footer__col a:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
   opacity: 0.7;
 }
@@ -163,12 +167,16 @@ a.site-footer__header {
   height: 20px;
   flex-shrink: 0;
   opacity: 0.85;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-fast) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), transform calc(var(--hover, 0) * var(--motion-duration-fast) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-.site-footer__social a:hover {
-  opacity: 1;
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .site-footer__social a:hover {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    opacity: 1;
+    transform: translateY(-1px);
+  }
 }
 
 .site-footer__social img {

@@ -8,7 +8,9 @@
 .canvas-expand__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  /* No dark overlay: the other tiles fade to 1% over the page's own white instead. The backdrop
+     stays as an invisible click-to-close surface. */
+  background: transparent;
   border: 0;
   cursor: pointer;
   pointer-events: auto;
@@ -26,7 +28,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   pointer-events: auto;
-  will-change: transform, opacity;
   scrollbar-width: thin;
 }
 
@@ -51,13 +52,17 @@
   height: 44px;
   display: grid;
   place-items: center;
-  transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  transition: background calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease)), border-color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
-.canvas-expand__close:hover {
-  background: rgba(0, 0, 0, 0.75);
-  border-color: rgba(255, 255, 255, 0.85);
-  transform: scale(1.06);
+@media (hover: hover) and (pointer: fine) {
+  .canvas-expand__close:hover {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    background: rgba(0, 0, 0, 0.75);
+    border-color: rgba(255, 255, 255, 0.85);
+    transform: scale(1.06);
+  }
 }
 
 @media (max-width: 899px) {
@@ -169,25 +174,33 @@
   padding: 0;
   font-family: inherit;
   font-weight: 500;
-  transition: opacity 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .canvas-expand__bottom-back:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.7;
 }
 
 .canvas-expand__bottom-back .brand-arrow {
   width: 44px;
   height: 44px;
-  transition: transform 0.25s var(--ease-craft, ease);
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-.canvas-expand__bottom-back:hover .brand-arrow {
-  transform: translateX(-4px);
+@media (hover: hover) and (pointer: fine) {
+  .canvas-expand__bottom-back:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transform: translateX(-4px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .canvas-expand__bottom-back:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: none;
   }
 }

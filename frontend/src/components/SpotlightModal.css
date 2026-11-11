@@ -7,6 +7,10 @@
   justify-content: center;
   padding: clamp(16px, 3vh, 40px) clamp(16px, 3vw, 48px);
   box-sizing: border-box;
+  /* Tallest a window may be: it stays centred on the screen with the same space above and
+     below, and that space always clears the fixed header (a tall window used to slide under
+     it). Short windows are unaffected. */
+  --spotlight-max-h: min(840px, 90vh, calc(100dvh - 2 * (var(--nav-height) + clamp(16px, 3vh, 40px))));
 }
 
 .spotlight__scrim {
@@ -28,7 +32,7 @@
   width: 100%;
   max-width: 1440px;
   height: auto;
-  max-height: min(840px, 90vh);
+  max-height: var(--spotlight-max-h);
   background: var(--color-neutral-white);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28), 0 4px 16px rgba(0, 0, 0, 0.12);
   display: flex;
@@ -52,19 +56,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease)), opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
-.spotlight__close:hover {
-  opacity: 0.7;
-  transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+  .spotlight__close:hover {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 .spotlight__layout {
   padding-block: 44px;
   padding-inline: var(--grid-margin);
   width: 100%;
-  max-height: min(840px, 90vh);
+  max-height: var(--spotlight-max-h);
   box-sizing: border-box;
   overflow-y: auto;
   align-content: start;

@@ -1,4 +1,4 @@
-import { gsap, SplitText, ScrollTrigger, prefersReducedMotion } from "./motion";
+import { DISTANCE, EASE, gsap, SplitText, ScrollTrigger, prefersReducedMotion } from "./motion";
 
 export interface SplitLinesScrollOptions {
   trigger?: Element | string;
@@ -21,15 +21,15 @@ export interface SplitLinesScrollOptions {
  *    - Never pauses halfway when scrolling stops. Never reverses on scroll-up.
  * 2. NATURAL TOP-TO-BOTTOM WATERFALL:
  *    - When no global trigger is passed, each element triggers in scroll order as it
- *      reaches the active reading zone (`top 82%` desktop / `top 78%` mobile).
+ *      reaches the active reading zone (`top 82%` desktop / as soon as it enters on mobile).
  *    - Eliminates coarse section-level stop-and-go chunks.
  * 3. ZERO BLUR, PURE GPU TRANSFORM:
  *    - Pure `opacity` and micro `translateY` (6px desktop / 4px mobile).
  *    - No `filter: blur()`: preserves vector font crispness, prevents GPU rasterization load,
  *      and guarantees locked 60/120fps performance on mobile and desktop.
  * 4. MOBILE COMFORT:
- *    - Calibrated start line (`top 78%`) with a comfortable 0.12s settling delay and
- *      higher base opacity (0.35) so text is immediately legible as the thumb scrolls.
+ *    - Starts as soon as the text enters the screen (`top 98%`), with no settling delay and a
+ *      shorter rise, so it keeps pace with the images beside it as the thumb scrolls.
  */
 export function splitLinesOnScroll(
   targets: gsap.DOMTarget,
@@ -58,13 +58,18 @@ export function splitLinesOnScroll(
     if (!validElements.length) return;
 
     const isMobile = window.innerWidth <= 899;
-    const baseOpacity = isMobile ? 0.35 : (options.baseOpacity ?? 0.2);
-    const baseOffset = isMobile ? 4 : (options.baseOffset ?? 6);
-    const duration = isMobile ? 0.42 : (options.duration ?? 0.58);
-    const stagger = isMobile ? 0.025 : (options.stagger ?? 0.035);
-    const delay = isMobile ? (options.delay ?? 0.12) : (options.delay ?? 0.05);
-    const ease = options.ease ?? "power3.out";
-    const start = options.start ?? (isMobile ? "top 78%" : "top 82%");
+    // Lines arrive from nothing, rising gently and one after another. A long paragraph
+    // spreads its stagger over a fixed total so the last line is never far behind.
+    const baseOpacity = options.baseOpacity ?? 0;
+    const baseOffset = options.baseOffset ?? (isMobile ? 14 : DISTANCE.rise - 2);
+    // Phones: text starts the moment it enters the screen, with no wait, so it arrives together
+    // with the images beside it instead of lagging behind them as the reader scrolls.
+    const duration = options.duration ?? (isMobile ? 0.85 : 1.2);
+    const stagger = options.stagger ?? (isMobile ? 0.05 : 0.09);
+    const delay = isMobile ? 0 : (options.delay ?? 0.05);
+    const ease = options.ease ?? EASE.reveal;
+    const staggerFor = (lines: number) => Math.min(stagger, (isMobile ? 0.5 : 0.9) / Math.max(lines - 1, 1));
+    const start = options.start ?? (isMobile ? "top 98%" : "top 82%");
 
     // If an explicit trigger is provided, animate all elements together under that trigger.
     // Otherwise, each element triggers individually in natural top-to-bottom scroll order!
@@ -97,7 +102,7 @@ export function splitLinesOnScroll(
                 opacity: 1,
                 y: 0,
                 duration,
-                stagger,
+                stagger: staggerFor(self.lines.length),
                 delay,
                 ease,
               }
@@ -138,7 +143,7 @@ export function splitLinesOnScroll(
                   opacity: 1,
                   y: 0,
                   duration,
-                  stagger,
+                  stagger: staggerFor(self.lines.length),
                   delay,
                   ease,
                 }
@@ -236,12 +241,12 @@ export function cascadeCardsOnScroll(
     if (heading) {
       tl.fromTo(
         heading,
-        { opacity: 0.2, y: isMobile ? 3 : 5 },
+        { opacity: 0, y: isMobile ? 14 : DISTANCE.rise },
         {
           opacity: 1,
           y: 0,
-          duration: isMobile ? 0.38 : 0.5,
-          ease: "power3.out",
+          duration: isMobile ? 1.05 : 1.2,
+          ease: EASE.reveal,
         },
         0
       );

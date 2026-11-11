@@ -1,0 +1,97 @@
+/* Press feedback for buttons and button-like controls.
+   Uses the independent `scale` property so it composes with any existing
+   transform (for example translateY(-50%) on carousel arrows). Text links are
+   left out on purpose: they use colour and underline only. */
+
+.cta-link,
+.site-header__menu-btn,
+.carousel-nav-arrow,
+.spotlight__close,
+.canvas-expand__close,
+.detail__hero-expand,
+.home-text-btn,
+.edition__mobile-tab,
+.edition__archive-toggle,
+.update-card-dialog__confirm,
+.update-card-dialog__cancel,
+.update-card-dialog__close,
+.detail__back,
+.canvas-expand__bottom-back {
+  transition:
+    color var(--motion-duration-fast) var(--motion-ease-enter),
+    background-color var(--motion-duration-fast) var(--motion-ease-enter),
+    border-color var(--motion-duration-fast) var(--motion-ease-enter),
+    box-shadow var(--motion-duration-fast) var(--motion-ease-enter),
+    transform var(--motion-duration-fast) var(--motion-ease-enter),
+    scale var(--motion-duration-fast) var(--motion-ease-enter);
+}
+
+.mobile-drawer__discover,
+.mobile-drawer__social-link,
+.discover__clear,
+.home-hero__card-close {
+  transition:
+    color var(--motion-duration-fast) var(--motion-ease-enter),
+    background-color var(--motion-duration-fast) var(--motion-ease-enter),
+    opacity var(--motion-duration-fast) var(--motion-ease-enter),
+    transform var(--motion-duration-fast) var(--motion-ease-enter),
+    scale var(--motion-duration-fast) var(--motion-ease-enter);
+}
+
+.cta-link:active,
+.site-header__menu-btn:active,
+.carousel-nav-arrow:active,
+.spotlight__close:active,
+.canvas-expand__close:active,
+.detail__hero-expand:active,
+.home-text-btn:active,
+.edition__mobile-tab:active,
+.edition__archive-toggle:active,
+.update-card-dialog__confirm:active,
+.update-card-dialog__cancel:active,
+.update-card-dialog__close:active,
+.detail__back:active,
+.canvas-expand__bottom-back:active,
+.mobile-drawer__discover:active,
+.mobile-drawer__social-link:active,
+.discover__clear:active,
+.home-hero__card-close:active {
+  scale: var(--motion-scale-press);
+  transition-duration: var(--motion-duration-instant);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-link:active,
+  .site-header__menu-btn:active,
+  .carousel-nav-arrow:active,
+  .spotlight__close:active,
+  .canvas-expand__close:active,
+  .detail__hero-expand:active,
+  .home-text-btn:active,
+  .edition__mobile-tab:active,
+  .edition__archive-toggle:active,
+  .update-card-dialog__confirm:active,
+  .update-card-dialog__cancel:active,
+  .update-card-dialog__close:active,
+  .detail__back:active,
+  .canvas-expand__bottom-back:active,
+  .mobile-drawer__discover:active,
+  .mobile-drawer__social-link:active,
+  .discover__clear:active,
+  .home-hero__card-close:active {
+    scale: none;
+  }
+}
+
+/* Only while something is being dragged with a mouse. */
+html.is-gesture-dragging,
+html.is-gesture-dragging * {
+  cursor: grabbing !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+/* Waiting for a reveal or a landing image: holds its space, never paints early. */
+[data-headline-pending] {
+  visibility: hidden !important;
+}

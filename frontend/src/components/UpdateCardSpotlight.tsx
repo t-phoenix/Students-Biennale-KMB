@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef } from "react";
+import { useId, useRef } from "react";
 import { createPortal } from "react-dom";
-import { gsap, prefersReducedMotion } from "../lib/motion";
+import { useModalMotion } from "../lib/useModalMotion";
 import { useModalPortal } from "../lib/useModalPortal";
 import type { UpdateCardMode } from "../lib/homeCms/updateCardLinks";
 import { defaultCtaLabel } from "../lib/homeCms/updateCardLinks";
@@ -50,31 +50,21 @@ function CompactLinkModal({
   const mode = card.mode;
   const cta = (card.ctaLabel || defaultCtaLabel(mode)).trim() || defaultCtaLabel(mode);
 
-  useModalPortal({ open: true, onClose, panelRef, initialFocusRef: closeRef });
+  const scrimRef = useRef<HTMLButtonElement>(null);
+  const requestClose = useModalMotion({ open: true, onClose, panelRef, scrimRef });
 
-  useEffect(() => {
-    const panel = panelRef.current;
-    const reduce = prefersReducedMotion();
-    if (panel && !reduce) {
-      gsap.fromTo(
-        panel,
-        { autoAlpha: 0, scale: 0.96, y: 10 },
-        { autoAlpha: 1, scale: 1, y: 0, duration: 0.22, ease: "power2.out" },
-      );
-    } else if (panel) {
-      gsap.set(panel, { autoAlpha: 1, scale: 1, y: 0 });
-    }
-  }, []);
+  useModalPortal({ open: true, onClose: requestClose, panelRef, initialFocusRef: closeRef });
 
   if (typeof document === "undefined") return null;
 
   return createPortal(
     <div className="update-card-dialog" role="presentation" data-lenis-prevent>
       <button
+        ref={scrimRef}
         type="button"
         className="update-card-dialog__scrim"
         aria-label="Close dialog"
-        onClick={onClose}
+        onClick={requestClose}
       />
       <div
         ref={panelRef}
@@ -88,7 +78,7 @@ function CompactLinkModal({
           type="button"
           className="update-card-dialog__close"
           aria-label="Close"
-          onClick={onClose}
+          onClick={requestClose}
         >
           ×
         </button>
@@ -103,7 +93,7 @@ function CompactLinkModal({
         ) : null}
         {card.href ? (
           <div className="update-card-dialog__actions">
-            <button type="button" className="update-card-dialog__cancel" onClick={onClose}>
+            <button type="button" className="update-card-dialog__cancel" onClick={requestClose}>
               Cancel
             </button>
             <button

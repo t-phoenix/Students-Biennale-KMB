@@ -15,6 +15,22 @@
   touch-action: pan-y;
 }
 
+/* The strokes. Placed in the page (not fixed to the screen) so they scroll with the content
+   natively; a zero-size box with visible overflow paints anywhere without changing the page size. */
+.scribble-layer__ink {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  z-index: 400;
+  pointer-events: none;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .scribble-layer.is-sketch .scribble-layer__canvas {
   pointer-events: auto;
   cursor: none;
@@ -62,11 +78,11 @@
 }
 
 .scribble-brush.is-nudge {
-  animation: scribbleNudgeFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: scribbleNudgeFadeIn var(--motion-duration-base) var(--motion-ease-enter-soft) forwards;
 }
 
 .scribble-brush.is-nudge.is-dismissing {
-  animation: scribbleNudgeFadeOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: scribbleNudgeFadeOut var(--motion-duration-base) var(--motion-ease-enter-soft) forwards;
   pointer-events: none;
 }
 

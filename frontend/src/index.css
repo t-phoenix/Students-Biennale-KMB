@@ -3,6 +3,7 @@
 @import "./styles/layout.css";
 @import "./styles/meta-grid.css";
 @import "./styles/parallax.css";
+@import "./styles/motion-states.css";
 
 *,
 *::before,
@@ -137,7 +138,7 @@ figcaption,
   [role="button"]:active,
   a:active {
     opacity: 0.72;
-    transition: opacity 0.08s ease;
+    transition: opacity var(--motion-duration-instant) var(--hover-ease, var(--exit-ease));
   }
 }
 
@@ -196,6 +197,8 @@ body::-webkit-scrollbar-thumb,
 html::-webkit-scrollbar-thumb:hover,
 body::-webkit-scrollbar-thumb:hover,
 *::-webkit-scrollbar-thumb:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background-color: rgba(27, 23, 28, 0.7);
 }
 
@@ -209,6 +212,7 @@ body::-webkit-scrollbar-thumb:active,
 /* Option 2: Editorial Waterfall Scroll Reveal (Zero Blur, Pure GPU Transform) */
 .scroll-reveal-line {
   display: block;
+  /* Kept deliberately: removing the layer changes how the text is antialiased at rest. */
   will-change: transform, opacity;
 }
 

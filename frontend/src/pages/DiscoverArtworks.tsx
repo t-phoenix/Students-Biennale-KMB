@@ -4,13 +4,15 @@ import { InfiniteCanvas } from "../components/canvas/InfiniteCanvas";
 import { CanvasExpand } from "../components/canvas/CanvasExpand";
 import { useAllArtworks } from "../lib/catalogue";
 import { markDiscoverMount } from "../lib/discoverPerf";
-import { gsap, prefersReducedMotion, useGSAP } from "../lib/motion";
+import { gsap, prefersReducedMotion, useGSAP, DUR, EASE, EXIT } from "../lib/motion";
 import { prefetchDiscoverViewport } from "../lib/predictivePrefetch";
 import "./DiscoverArtworks.css";
 
 type ExpandState = {
   item: CanvasItem;
   origin: DOMRect;
+  /** The tile that was clicked, so the picture can return to where it is now (the canvas drifts). */
+  originEl: HTMLElement;
 };
 
 export function DiscoverArtworks() {
@@ -27,6 +29,13 @@ export function DiscoverArtworks() {
   const [query, setQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const [expand, setExpand] = useState<ExpandState | null>(null);
+  // True from the moment an open artwork starts closing: the search bar is back in place at
+  // once, behind the closing sheet, so nothing pops in once it has gone.
+  const [expandClosing, setExpandClosing] = useState(false);
+  // While an artwork opens, the search bar stays in place and the artwork grows over it; it is
+  // put away only once the open artwork covers it, so nothing vanishes first.
+  const [expandOpened, setExpandOpened] = useState(false);
+  const searchHidden = Boolean(expand) && expandOpened && !expandClosing;
   const [isTucked, setIsTucked] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -36,12 +45,25 @@ export function DiscoverArtworks() {
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isActive = isFocused || Boolean(query);
-  const { artworks, catalogues } = useAllArtworks();
-  const sourceKey =
+  const { artworks: liveArtworks, catalogues, status } = useAllArtworks();
+  const liveSourceKey =
     catalogues.map((row) => `${row.years}:${row.generatedAt}`).join("|") || "static";
+  // The field is built once, from the real artworks. Building it from placeholder photos
+  // first and rebuilding when the data arrives re-lays out every tile, which is what made
+  // tiles appear at random. A later background refresh must not rebuild it either.
+  const [fieldSource, setFieldSource] = useState<{ artworks: ArtworkCard[]; sourceKey: string } | null>(null);
+  useEffect(() => {
+    if (fieldSource || status === "loading") return;
+    setFieldSource({ artworks: liveArtworks, sourceKey: liveSourceKey });
+  }, [fieldSource, status, liveArtworks, liveSourceKey]);
+  const artworks = fieldSource?.artworks;
+  const sourceKey = fieldSource?.sourceKey ?? "static";
 
   useEffect(() => {
     markDiscoverMount();
+    // Until the real artworks are in, there is nothing worth fetching (the alternative is
+    // the placeholder photos, which the field never shows).
+    if (!artworks) return;
     const stage = stageRef.current;
     const rect = stage?.getBoundingClientRect();
     const w = rect?.width || window.innerWidth;
@@ -52,8 +74,13 @@ export function DiscoverArtworks() {
   const expandRef = useRef(false);
   expandRef.current = Boolean(expand);
 
+  const isTuckedRef = useRef(false);
+  isTuckedRef.current = isTucked;
   const tuckHeader = useCallback(() => {
     if (isSearchFocusedRef.current || expandRef.current) return;
+    // Already tucked: asking again would only restart the header's slide while the canvas moves.
+    if (isTuckedRef.current) return;
+    isTuckedRef.current = true;
     setIsTucked(true);
     window.dispatchEvent(new CustomEvent("canvas:tuck-header", { detail: { tucked: true } }));
   }, []);
@@ -117,10 +144,11 @@ export function DiscoverArtworks() {
         return;
       }
 
+      // Moves in lockstep with the header: tucking away is an exit (quick), coming back an entrance.
       gsap.to(el, {
         y: isTucked ? -navHeight : 0,
-        duration: 0.38,
-        ease: isTucked ? "power3.inOut" : "power3.out",
+        duration: isTucked ? EXIT.duration : DUR.emphasis,
+        ease: isTucked ? EXIT.ease : EASE.enterSoft,
         overwrite: "auto",
       });
     },
@@ -143,7 +171,9 @@ export function DiscoverArtworks() {
   const onSelect = useCallback(
     (item: CanvasItem, el: HTMLButtonElement) => {
       untuckHeader(true);
-      setExpand({ item, origin: el.getBoundingClientRect() });
+      setExpandClosing(false);
+      setExpandOpened(false);
+      setExpand({ item, origin: el.getBoundingClientRect(), originEl: el });
     },
     [untuckHeader]
   );
@@ -159,7 +189,7 @@ export function DiscoverArtworks() {
         image: nextArtwork.image || "",
         meta: nextArtwork.artists.map((a) => a.name).join(", "),
       };
-      return { item: nextItem, origin: prev.origin };
+      return { ...prev, item: nextItem };
     });
   }, []);
 
@@ -167,9 +197,9 @@ export function DiscoverArtworks() {
     <div ref={rootRef} className="discover">
       <div
         ref={searchBarRef}
-        className={`discover__search${expand ? " is-hidden" : ""}`}
+        className={`discover__search${searchHidden ? " is-hidden" : ""}${expandClosing || expandOpened ? " is-restored" : ""}`}
         onPointerEnter={() => untuckHeader()}
-        aria-hidden={Boolean(expand)}
+        aria-hidden={searchHidden}
       >
         <div className={`discover__search-field${isActive ? " is-active" : ""}`}>
           <label htmlFor="discover-search-input" className="discover__search-label">
@@ -207,19 +237,34 @@ export function DiscoverArtworks() {
         </div>
       </div>
       <div ref={stageRef} className="discover__stage">
-        <InfiniteCanvas
-          query={query}
-          onSelect={onSelect}
-          paused={Boolean(expand)}
-          artworks={artworks}
-          sourceKey={sourceKey}
-        />
+        {fieldSource ? (
+          <InfiniteCanvas
+            query={query}
+            onSelect={onSelect}
+            paused={Boolean(expand)}
+            artworks={artworks}
+            sourceKey={sourceKey}
+          />
+        ) : (
+          <div className="infinite-canvas is-loading" aria-busy="true">
+            <div className="infinite-canvas__loading" aria-hidden>
+              <img src="/logo-sb-mark.svg" alt="" />
+            </div>
+          </div>
+        )}
       </div>
       {expand ? (
         <CanvasExpand
           item={expand.item}
           origin={expand.origin}
-          onClose={() => setExpand(null)}
+          originEl={expand.originEl}
+          onCloseStart={() => setExpandClosing(true)}
+          onOpened={() => setExpandOpened(true)}
+          onClose={() => {
+            setExpand(null);
+            setExpandClosing(false);
+            setExpandOpened(false);
+          }}
           onNext={onNext}
         />
       ) : null}

@@ -1,83 +1,32 @@
-import { useState, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useReadingOrderReveal } from "../lib/sequence";
+import { onAccordionKeyDown, rowClickOpensArticle, useAccordionHover, useEqualDrawerHeights } from "../lib/accordionScroll";
 import { useProgrammes } from "../lib/programmes";
 import { SectionEmpty } from "../components/SectionEmpty";
 import "./PastWorkshops.css";
 
 export function PastWorkshops() {
   const root = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
   const { pastWorkshops } = useProgrammes();
-  const [clickedWorkshopId, setClickedWorkshopId] = useState<string>("");
-  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
-  const workshopHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // One workshop open at a time. null until the first click or hover: the first one starts open.
+  const [openWorkshopId, setOpenWorkshopId] = useState<string | null>(null);
+  const workshopHover = useAccordionHover(setOpenWorkshopId);
+  const listRef = useRef<HTMLDivElement>(null);
+  // Every workshop opens to the same height, so the section never changes height.
+  useEqualDrawerHeights(listRef, ".past-workshops__drawer-content", pastWorkshops.length);
+  const activeWorkshopId = openWorkshopId ?? pastWorkshops[0]?.id ?? "";
 
-  const isDesktopHover = useCallback(
-    () =>
-      typeof window !== "undefined" &&
-      window.innerWidth > 899 &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
-    [],
-  );
-
-  const handleWorkshopPointerEnter = useCallback(
-    (e: React.PointerEvent, id: string) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-      workshopHoverTimerRef.current = setTimeout(() => {
-        setHoveredWorkshopId(id);
-      }, 35);
-    },
-    [isDesktopHover],
-  );
-
-  const handleWorkshopPointerLeave = useCallback(
-    (e: React.PointerEvent) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-      workshopHoverTimerRef.current = setTimeout(() => {
-        setHoveredWorkshopId("");
-      }, 80);
-    },
-    [isDesktopHover],
-  );
-
-  const handleToggleWorkshop = useCallback((id: string) => {
-    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-    setHoveredWorkshopId("");
-    setClickedWorkshopId((prev) => (prev === id ? "" : id));
-  }, []);
-
-  const activeWorkshopId = clickedWorkshopId || hoveredWorkshopId;
-
-  useGSAP(
-    () => {
-      if (prefersReducedMotion()) return;
-      gsap.fromTo(
-        ".past-workshops-reveal",
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 0.95,
-          delay: 0.12,
-          stagger: 0.08,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          clearProps: "opacity,visibility,transform",
-        }
-      );
-    },
-    { scope: root, dependencies: [pastWorkshops.map((item) => item.id).join("|")] }
-  );
+  // Rows arrive one by one in reading order.
+  useReadingOrderReveal(root, { key: pastWorkshops.map((item) => item.id).join("|"), delay: 0.12 });
 
   return (
     <div ref={root} className="past-workshops">
       <div className="fig-grid past-workshops__section past-workshops-reveal">
         <h1 className="fig-label fig-subheading">PAST WORKSHOPS</h1>
         {pastWorkshops.length ? (
-          <div
-            className="past-workshops__items fig-c4-12"
-            onPointerLeave={handleWorkshopPointerLeave}
-          >
+          <div ref={listRef} className="past-workshops__items fig-c4-12">
             {pastWorkshops.map((item) => {
               const isExpanded = activeWorkshopId === item.id;
               return (
@@ -85,14 +34,21 @@ export function PastWorkshops() {
                   key={item.id}
                   data-id={item.id}
                   className={`past-workshops__item${isExpanded ? " is-expanded" : ""}`}
-                  onPointerEnter={(e) => handleWorkshopPointerEnter(e, item.id)}
+                  onPointerMove={(e) => workshopHover.onRowPointerMove(e, item.id, isExpanded)}
+                  onPointerLeave={() => workshopHover.onRowPointerLeave(item.id)}
                 >
                   <button
                     type="button"
                     className="past-workshops__header"
                     aria-expanded={isExpanded}
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleToggleWorkshop(item.id)}
+                    onKeyDown={onAccordionKeyDown}
+                    onClick={(e) => {
+                      workshopHover.onRowClick(item.id);
+                      // Hover expands; a click opens the full workshop (touch: first tap expands).
+                      if (rowClickOpensArticle(e, isExpanded)) navigate(`/programmes/past-workshops/${item.id}`);
+                      else setOpenWorkshopId(item.id);
+                    }}
                   >
                     <span className="past-workshops__title">{item.title}</span>
                     <time className="past-workshops__date">{item.year}</time>

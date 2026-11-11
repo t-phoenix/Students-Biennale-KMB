@@ -1,12 +1,14 @@
-import { useEffect, useRef, useState, Suspense } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, Suspense } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Lenis from "lenis";
-import { gsap, ScrollTrigger, syncScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { DUR, EASE, gsap, ScrollTrigger, syncScrollTrigger, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { SketchLayer } from "./SketchLayer";
+import { observeImageSettle } from "../lib/imageMotion";
 import { parseHomeHash, parseProgrammeHash, scrollToId } from "../lib/scrollToSection";
-import { setLenisInstance } from "../lib/lenisSingleton";
+import { glideToTop, setLenisInstance } from "../lib/lenisSingleton";
+import { observeHeadlines } from "../lib/headlineReveal";
 import { useImageParallax } from "../lib/parallax";
 import { useSplash } from "../lib/splash";
 import { useHomeCms } from "../lib/homeCms";
@@ -85,7 +87,7 @@ export function Layout() {
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
+      smoothWheel: !prefersReducedMotion(),
       wheelMultiplier: 0.9,
       touchMultiplier: 1.0,
       infinite: false,
@@ -94,12 +96,14 @@ export function Layout() {
     setLenisInstance(lenis);
 
     // Synchronize Lenis with GSAP ticker for locked frame rate
-    const updateTicker = (time: number) => {
-      lenis.raf(time * 1000);
+    // Real time, not GSAP's lag-smoothed time: a slow frame must not make scrolling uneven.
+    const updateTicker = () => {
+      lenis.raf(performance.now());
     };
     gsap.ticker.add(updateTicker);
-    // Smooth lag spikes without abrupt position popping
-    gsap.ticker.lagSmoothing(500, 33);
+    // A busy frame, like the first frame of a new page, must not swallow the start of an
+    // animation: anything over 100ms counts as one normal frame, so motion never jumps ahead.
+    gsap.ticker.lagSmoothing(100, 33);
 
     const onScroll = () => {
       syncScrollTrigger();
@@ -157,8 +161,8 @@ export function Layout() {
         {
           opacity: 1,
           y: 0,
-          duration: 0.45,
-          ease: "power3.out",
+          duration: DUR.page,
+          ease: EASE.reveal,
           overwrite: "auto",
           clearProps: "opacity,transform",
         }
@@ -170,8 +174,23 @@ export function Layout() {
     }
   );
 
+  // Large titles rise from behind a mask as they reach the viewport.
+  useLayoutEffect(() => {
+    const main = mainRef.current;
+    if (!main || isDiscover) return;
+    return observeHeadlines(main);
+  }, [isDiscover]);
+
   // Apply parallax to all content images across every page
   useImageParallax(mainRef, [location.pathname, location.key]);
+
+  // Pictures settle gently into their frames as they arrive. Not on Discover, which has its own
+  // canvas motion.
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main || isDiscover) return;
+    return observeImageSettle(main);
+  }, [isDiscover]);
 
   // Land at the top of every new page, keyed on location.key (not pathname)
   // so this also fires when navigating to the same path — e.g. clicking the
@@ -183,6 +202,24 @@ export function Layout() {
     if (location.pathname === "/programmes" && parseProgrammeHash(location.hash)) return;
     const samePage = prevPathRef.current === location.pathname;
     prevPathRef.current = location.pathname;
+
+    // Same page, scrolled down (e.g. the logo tapped on Home): glide to the top, then
+    // re-measure once at rest. Re-measuring during the glide resets every scroll-linked
+    // animation mid-movement and stalls the frame, which shows as the hero shaking.
+    if (samePage && lenisRef.current && window.scrollY > 2) {
+      let cancelled = false;
+      glideToTop({
+        reduced: prefersReducedMotion(),
+        onComplete: () => {
+          if (cancelled) return;
+          ScrollTrigger.refresh();
+          lenisRef.current?.resize();
+        },
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
 
     if (samePage && lenisRef.current) {
       lenisRef.current.scrollTo(0);

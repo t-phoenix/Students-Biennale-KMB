@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { gsap, prefersReducedMotion } from "../lib/motion";
+import { useModalMotion } from "../lib/useModalMotion";
 import { useModalPortal } from "../lib/useModalPortal";
 import { ArtworkDetailBody } from "./ArtworkDetailBody";
 import { CtaLink } from "./CtaLink";
@@ -63,7 +63,9 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
 
   const open = scholarId !== null;
   const catalogueArtworkId = activeId ? RAZA_CATALOGUE_ARTWORK_IDS[activeId] : undefined;
-  useModalPortal({ open, onClose, panelRef, initialFocusRef: closeRef });
+  const scrimRef = useRef<HTMLButtonElement>(null);
+  const requestClose = useModalMotion({ open, onClose, panelRef, scrimRef });
+  useModalPortal({ open, onClose: requestClose, panelRef, initialFocusRef: closeRef });
 
   useEffect(() => {
     if (!open || !catalogueArtworkId) return;
@@ -72,20 +74,6 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
     onClose();
     navigate(`/editions/${LATEST_EDITION.id}/artworks/${catalogueArtworkId}?from=awards`);
   }, [open, catalogueArtworkId, navigate, onClose]);
-
-  useEffect(() => {
-    if (!open) return;
-    const panel = panelRef.current;
-    if (panel && !prefersReducedMotion()) {
-      gsap.fromTo(
-        panel,
-        { autoAlpha: 0, scale: 0.97, y: 12 },
-        { autoAlpha: 1, scale: 1, y: 0, duration: 0.28, ease: "power2.out" }
-      );
-    } else if (panel) {
-      gsap.set(panel, { autoAlpha: 1, scale: 1, y: 0 });
-    }
-  }, [open]);
 
   if (!open || catalogueArtworkId || typeof document === "undefined") return null;
 
@@ -99,10 +87,11 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
   return createPortal(
     <div className="scholar-spotlight" role="presentation" data-lenis-prevent>
       <button
+        ref={scrimRef}
         type="button"
         className="scholar-spotlight__scrim"
         aria-label="Close dialog"
-        onClick={onClose}
+        onClick={requestClose}
       />
       <div
         ref={panelRef}
@@ -117,7 +106,7 @@ export function ScholarSpotlight({ scholarId, scholars = RAZA_SCHOLARS, onClose 
           <button
             type="button"
             className="fig-c1-3 detail__back scholar-spotlight__back-btn"
-            onClick={onClose}
+            onClick={requestClose}
           >
             <BrandArrow direction="left" />
             <span>BACK</span>

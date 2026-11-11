@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { gsap, prefersReducedMotion } from "../lib/motion";
+import { useModalMotion } from "../lib/useModalMotion";
 import { useModalPortal } from "../lib/useModalPortal";
 import "./SpotlightModal.css";
 
@@ -19,32 +19,21 @@ export function SpotlightModal({ open, title, attribution, onClose, children, la
   const titleId = useId();
   const labelId = labelledById ?? titleId;
 
-  useModalPortal({ open, onClose, panelRef, initialFocusRef: closeRef });
+  const scrimRef = useRef<HTMLButtonElement>(null);
+  const requestClose = useModalMotion({ open, onClose, panelRef, scrimRef });
 
-  useEffect(() => {
-    if (!open) return;
-    const panel = panelRef.current;
-    const reduce = prefersReducedMotion();
-    if (panel && !reduce) {
-      gsap.fromTo(
-        panel,
-        { autoAlpha: 0, scale: 0.97, y: 12 },
-        { autoAlpha: 1, scale: 1, y: 0, duration: 0.28, ease: "power2.out" }
-      );
-    } else if (panel) {
-      gsap.set(panel, { autoAlpha: 1, scale: 1, y: 0 });
-    }
-  }, [open]);
+  useModalPortal({ open, onClose: requestClose, panelRef, initialFocusRef: closeRef });
 
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
     <div className="spotlight" role="presentation" data-lenis-prevent>
       <button
+        ref={scrimRef}
         type="button"
         className="spotlight__scrim"
         aria-label="Close dialog"
-        onClick={onClose}
+        onClick={requestClose}
       />
       <div
         ref={panelRef}
@@ -58,7 +47,7 @@ export function SpotlightModal({ open, title, attribution, onClose, children, la
           type="button"
           className="spotlight__close"
           aria-label="Close"
-          onClick={onClose}
+          onClick={requestClose}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.67" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M18 6L6 18M6 6l12 12" />

@@ -1,6 +1,5 @@
-import { useRef, type RefObject } from "react";
+import { useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { type CuratorCard, hasActualTourUrl } from "../data/site";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { useImageParallax } from "../lib/parallax";
@@ -9,31 +8,7 @@ import { FormattedParagraphs, stripMarkdownLite } from "../components/FormattedT
 import { useEditionSearch } from "./EditionSearchContext";
 import "./EditionViews.css";
 
-function useStagger(ref: RefObject<HTMLElement | null>, dep: string) {
-  useGSAP(
-    () => {
-      if (prefersReducedMotion() || !ref.current) return;
-      const targets = ref.current.querySelectorAll(".edition-card, .edition-venue");
-      if (!targets.length) return;
-
-      const tl = gsap.timeline();
-      tl.fromTo(
-        targets,
-        { autoAlpha: 0, y: 14 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.85,
-          stagger: { amount: 0.35, ease: "power2.out" },
-          ease: "power3.out",
-          overwrite: "auto",
-        },
-        0
-      );
-    },
-    { scope: ref, dependencies: [dep] },
-  );
-}
+// Cards, rows and text arrive in reading order through useReadingOrderReveal in EditionShell.
 
 function Forthcoming({
   catalogue,
@@ -90,7 +65,6 @@ export function CuratorsView() {
   const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
 
-  useStagger(root, `${view}-${catalogue.editionId}`);
   useImageParallax(root, [view, catalogue.editionId]);
 
   return (
@@ -177,7 +151,6 @@ export function ArtworksView() {
   const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
 
-  useStagger(root, `${view}-${catalogue.editionId}`);
 
   return (
     <div ref={root} className="edition-view__content">
@@ -238,7 +211,6 @@ export function ArtistsView() {
   const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
 
-  useStagger(root, `${view}-${catalogue.editionId}`);
 
   const workForArtist = (a: { name: string }) =>
     catalogue.artworks.find((w) =>
@@ -320,7 +292,6 @@ export function VenueView() {
   const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
 
-  useStagger(root, `${view}-${catalogue.editionId}`);
 
   return (
     <div ref={root} className="edition-view__content">

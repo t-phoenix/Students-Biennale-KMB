@@ -1,7 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { gsap, useGSAP, prefersReducedMotion, DUR, EASE } from "../lib/motion";
+import { onAccordionKeyDown, rowClickOpensArticle, useAccordionHover, useEqualDrawerHeights } from "../lib/accordionScroll";
+import { useReadingOrderReveal } from "../lib/sequence";
 import { buildAutoSlideTimeline, jumpToSlide, initSlideStack } from "../lib/imageSlider";
+import { useSlideGesture } from "../lib/gesture";
+import { preloadUrl } from "../lib/preloadImages";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
@@ -27,55 +31,65 @@ export function Programmes() {
   const root = useRef<HTMLDivElement>(null);
   const heroTlRef = useRef<gsap.core.Timeline | null>(null);
   const slidesRef = useRef<HTMLElement[]>([]);
+  const heroSectionRef = useRef<HTMLElement>(null);
+  const [contentWaitOver, setContentWaitOver] = useState(false);
   const slideIndexRef = useRef(0);
   const [heroSlide, setHeroSlide] = useState(0);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
-  const [clickedWorkshopId, setClickedWorkshopId] = useState<string>("");
-  const [hoveredWorkshopId, setHoveredWorkshopId] = useState<string>("");
-  const workshopHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isDesktopHover = useCallback(
-    () =>
-      typeof window !== "undefined" &&
-      window.innerWidth > 899 &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
-    [],
-  );
-
-  const handleWorkshopPointerEnter = useCallback(
-    (e: React.PointerEvent, id: string) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-      workshopHoverTimerRef.current = setTimeout(() => {
-        setHoveredWorkshopId(id);
-      }, 35);
-    },
-    [isDesktopHover],
-  );
-
-  const handleWorkshopPointerLeave = useCallback(
-    (e: React.PointerEvent) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-      workshopHoverTimerRef.current = setTimeout(() => {
-        setHoveredWorkshopId("");
-      }, 80);
-    },
-    [isDesktopHover],
-  );
-
-  const handleToggleWorkshop = useCallback((id: string) => {
-    if (workshopHoverTimerRef.current) clearTimeout(workshopHoverTimerRef.current);
-    setHoveredWorkshopId("");
-    setClickedWorkshopId((prev) => (prev === id ? "" : id));
-  }, []);
-  const { heroCovers } = useProgrammesCovers();
+  // One workshop open at a time. null until the first click or hover: the first one starts open.
+  const [openWorkshopId, setOpenWorkshopId] = useState<string | null>(null);
+  const workshopHover = useAccordionHover(setOpenWorkshopId);
+  const pastListRef = useRef<HTMLDivElement>(null);
+  const { heroCovers, status: coversStatus } = useProgrammesCovers();
   const currentHeroSrc = heroCovers[heroSlide]?.image_url ?? heroCovers[0]?.image_url ?? "";
   const dotsTone = useCarouselDotsTone(currentHeroSrc, "center");
-  const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies } =
+  const { upcomingWorkshops, pastWorkshops, awardsInternational, awardsNational, raza, residencies, status: programmesStatus } =
     useProgrammes();
-  const activePastWorkshopId = clickedWorkshopId || hoveredWorkshopId;
+  // The hero banner arrives separately and pushes everything down, so wait for both.
+  const firstCover = heroCovers[0]?.image_url ?? "";
+  const [loadedCover, setLoadedCover] = useState("");
+  useEffect(() => {
+    if (!firstCover) return;
+    let cancelled = false;
+    const done = () => {
+      if (!cancelled) setLoadedCover(firstCover);
+    };
+    void preloadUrl(firstCover, "high").then(done, done);
+    return () => {
+      cancelled = true;
+    };
+  }, [firstCover]);
+  // The banner has no height until its image loads, so the page waits for it too.
+  const holdForContent =
+    (programmesStatus === "loading" ||
+      coversStatus === "loading" ||
+      (firstCover !== "" && loadedCover !== firstCover)) &&
+    !contentWaitOver;
+  const wasHeldRef = useRef(false);
+  // Before paint, so the content never shows for a frame before fading in.
+  useLayoutEffect(() => {
+    if (holdForContent) {
+      wasHeldRef.current = true;
+      return;
+    }
+    // Content that waited fades in rather than appearing all at once.
+    if (wasHeldRef.current && root.current && !prefersReducedMotion()) {
+      wasHeldRef.current = false;
+      gsap.fromTo(
+        root.current,
+        { opacity: 0 },
+        { opacity: 1, duration: DUR.emphasis, ease: EASE.enter, clearProps: "opacity" },
+      );
+    }
+  }, [holdForContent]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setContentWaitOver(true), 1500);
+    return () => window.clearTimeout(timer);
+  }, []);
+  const activePastWorkshopId = openWorkshopId ?? pastWorkshops[0]?.id ?? "";
+  // Every workshop opens to the same height, so the section never changes height.
+  useEqualDrawerHeights(pastListRef, ".programmes__past-drawer-content", pastWorkshops.length);
   const razaIds = useMemo(() => new Set(["kaki-weiss", "nina-durel", "rutuja-sonawane", "mohammad-riyaz"]), []);
   const standardIntlAwards = useMemo(
     () => awardsInternational.filter((a) => !razaIds.has(a.artworkId)),
@@ -130,6 +144,41 @@ export function Programmes() {
     setHeroSlide(index);
   }, []);
 
+  // Drag, flick or trackpad swipe between slides on every device.
+  useSlideGesture(
+    heroSectionRef,
+    {
+      count: heroCovers.length,
+      getIndex: () => slideIndexRef.current,
+      getSlides: () => {
+        const slides = Array.from(
+          heroSectionRef.current?.querySelectorAll<HTMLElement>(".programmes__hero-slide") ?? [],
+        );
+        slidesRef.current = slides;
+        return slides;
+      },
+      onGrab: () => {
+        heroTlRef.current?.kill();
+        heroTlRef.current = null;
+      },
+      onTargetChange: setHeroSlide,
+      onCommit: goToSlide,
+      onSettle: (index) => {
+        if (prefersReducedMotion()) return;
+        buildAutoSlideTimeline(
+          slidesRef.current,
+          index,
+          (next) => {
+            slideIndexRef.current = next;
+            setHeroSlide(next);
+          },
+          heroTlRef,
+        );
+      },
+    },
+    heroCovers.length > 1,
+  );
+
   // Deep-link #raza opens the spotlight modal
   useEffect(() => {
     const applyHash = () => {
@@ -149,31 +198,18 @@ export function Programmes() {
     }
   }, [razaModalOpen, openScholarId]);
 
+  // Once the content has arrived (so positions are real), every section's paragraphs, rows,
+  // cards and images arrive one by one in reading order as they reach the screen, once.
+  // The hero slider and the residencies band keep their own motion.
+  useReadingOrderReveal(root, {
+    enabled: !holdForContent,
+    skip: ".residencies-band",
+    delay: 0.1,
+  });
+
   useGSAP(
     () => {
       const reduced = prefersReducedMotion();
-      if (!reduced) {
-        const sections = root.current?.querySelectorAll<HTMLElement>(".prog-reveal");
-        sections?.forEach((sec) => {
-          gsap.fromTo(
-            sec,
-            { autoAlpha: 0 },
-            {
-              autoAlpha: 1,
-              duration: 0.95,
-              delay: 0.1,
-              ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-              scrollTrigger: {
-                trigger: sec,
-                start: "top 76%",
-                once: true,
-              },
-              clearProps: "opacity,visibility,transform",
-            }
-          );
-        });
-      }
-
       let cleanupHero: (() => void) | undefined;
       const slides = gsap.utils.toArray<HTMLElement>(".programmes__hero-slide");
       slidesRef.current = slides;
@@ -185,12 +221,12 @@ export function Programmes() {
 
       if (slides.length > 1) {
         slideIndexRef.current = 0;
-        const tl = buildAutoSlideTimeline(slides, 0, (index) => {
+        buildAutoSlideTimeline(slides, 0, (index) => {
           slideIndexRef.current = index;
           setHeroSlide(index);
         }, heroTlRef);
         const hero = root.current?.querySelector<HTMLElement>(".programmes__hero");
-        const pause = () => tl.pause();
+        const pause = () => heroTlRef.current?.pause();
         const play = () => {
           buildAutoSlideTimeline(
             slidesRef.current,
@@ -228,9 +264,14 @@ export function Programmes() {
   );
 
   return (
-    <div ref={root} className="programmes">
+    <div
+      ref={root}
+      className="programmes"
+      // Sections would jump down the page as their content arrives, so they wait for it.
+      style={holdForContent ? { opacity: 0, pointerEvents: "none" } : undefined}
+    >
       {heroCovers.length > 0 ? (
-      <section className="programmes__hero prog-reveal" aria-label="Programmes hero" data-no-parallax="true">
+      <section ref={heroSectionRef} className="programmes__hero prog-reveal" aria-label="Programmes hero" data-no-parallax="true">
         <div className="programmes__hero-slides" aria-hidden={heroCovers.length > 1} data-no-parallax="true">
           {heroCovers.map((cover) => (
             <img
@@ -329,10 +370,7 @@ export function Programmes() {
       <section id="past-workshops" className="programmes__block fig-grid prog-reveal">
         <h2 className="fig-label fig-subheading">PAST WORKSHOPS</h2>
         {pastWorkshops.length ? (
-          <div
-            className="programmes__past-items fig-c4-12"
-            onPointerLeave={handleWorkshopPointerLeave}
-          >
+          <div ref={pastListRef} className="programmes__past-items fig-c4-12">
             {pastWorkshops.map((item) => {
               const isExpanded = activePastWorkshopId === item.id;
               return (
@@ -340,14 +378,21 @@ export function Programmes() {
                   key={item.id}
                   data-id={item.id}
                   className={`programmes__past-item${isExpanded ? " is-expanded" : ""}`}
-                  onPointerEnter={(e) => handleWorkshopPointerEnter(e, item.id)}
+                  onPointerMove={(e) => workshopHover.onRowPointerMove(e, item.id, isExpanded)}
+                  onPointerLeave={() => workshopHover.onRowPointerLeave(item.id)}
                 >
                   <button
                     type="button"
                     className="programmes__past-header"
                     aria-expanded={isExpanded}
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleToggleWorkshop(item.id)}
+                    onKeyDown={onAccordionKeyDown}
+                    onClick={(e) => {
+                      workshopHover.onRowClick(item.id);
+                      // Hover expands; a click opens the full workshop (touch: first tap expands).
+                      if (rowClickOpensArticle(e, isExpanded)) navigate(`/programmes/past-workshops/${item.id}`);
+                      else setOpenWorkshopId(item.id);
+                    }}
                   >
                     <span className="programmes__past-title">{item.title}</span>
                     <time className="programmes__past-date">{item.year}</time>
@@ -405,7 +450,7 @@ export function Programmes() {
             })}
           </div>
         ) : (
-          <SectionEmpty>No past workshops published yet.</SectionEmpty>
+          <SectionEmpty hidden={programmesStatus === "loading"}>No past workshops published yet.</SectionEmpty>
         )}
       </section>
 
@@ -443,7 +488,7 @@ export function Programmes() {
               ))}
             </div>
           ) : (
-            <SectionEmpty>No international awards published yet.</SectionEmpty>
+            <SectionEmpty hidden={programmesStatus === "loading"}>No international awards published yet.</SectionEmpty>
           )}
         </section>
 
@@ -478,7 +523,7 @@ export function Programmes() {
               ))}
             </div>
           ) : (
-            <SectionEmpty>No national awards published yet.</SectionEmpty>
+            <SectionEmpty hidden={programmesStatus === "loading"}>No national awards published yet.</SectionEmpty>
           )}
         </section>
       </div>
@@ -535,7 +580,7 @@ export function Programmes() {
             })}
           </div>
         ) : (
-          <SectionEmpty>No exchange awards published yet.</SectionEmpty>
+          <SectionEmpty hidden={programmesStatus === "loading"}>No exchange awards published yet.</SectionEmpty>
         )}
       </section>
 

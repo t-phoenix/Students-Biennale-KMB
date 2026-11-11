@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { useReadingOrderReveal } from "../lib/sequence";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { GalleryLightbox } from "../components/GalleryLightbox";
@@ -14,24 +14,8 @@ export function PastWorkshopDetail() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const { workshop, next, status } = usePastWorkshop(id);
 
-  useGSAP(
-    () => {
-      if (prefersReducedMotion()) return;
-      gsap.fromTo(
-        ".workshop-reveal",
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 0.95,
-          delay: 0.12,
-          stagger: 0.08,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          clearProps: "opacity,visibility,transform",
-        }
-      );
-    },
-    { scope: root, dependencies: [id, workshop?.id] }
-  );
+  // Paragraphs, images and links arrive one by one in reading order.
+  useReadingOrderReveal(root, { key: `${id}-${workshop?.id ?? ""}`, delay: 0.12 });
 
   if (status === "loading") {
     return (

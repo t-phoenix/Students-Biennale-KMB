@@ -95,10 +95,12 @@
   cursor: pointer;
   width: fit-content;
   color: var(--color-text-secondary);
-  transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
+  transition: color calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), opacity calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .residencies-band__more:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -132,6 +134,8 @@
 }
 
 .residencies-band__dots button.is-active {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: var(--color-neutral-white);
 }
 

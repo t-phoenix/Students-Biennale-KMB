@@ -58,11 +58,13 @@
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  transition: opacity 0.25s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 @media (hover: hover) and (pointer: fine) {
   .past-workshops__header:hover {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     opacity: 0.7;
   }
 }
@@ -101,22 +103,47 @@
 .past-workshops__drawer-wrap {
   display: grid;
   grid-template-rows: 0fr;
-  opacity: 0;
+  /* The 24px below each row sits outside the animated track (it used to be padding inside it),
+     so a closing row shrinks all the way while the next grows: the two always add up and the
+     section height never changes. Same space as before, open or closed. */
+  padding-bottom: 24px;
+  /* The clip edge is the curtain: the content sits still and is revealed from the top down. */
+  overflow: hidden;
+  visibility: hidden;
   pointer-events: none;
-  transition: grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.28s ease;
+  transition: grid-template-rows var(--reveal-duration-close) var(--reveal-ease-close),
+              visibility 0s linear 0s; /* closing: content gone at once */
 }
 
 .past-workshops__item.is-expanded .past-workshops__drawer-wrap {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   grid-template-rows: 1fr;
-  opacity: 1;
+  visibility: visible;
   pointer-events: auto;
+  transition: grid-template-rows var(--reveal-duration-open) var(--reveal-ease-open),
+              visibility 0s linear 0s;
+}
+
+/* The content fades in where it sits while the space opens (never uncovered top-down). */
+.past-workshops__drawer-content {
+  opacity: 0;
+  transition: opacity 0s linear 0s;
+  /* Same height for every article in the list (set by useEqualDrawerHeights), so opening
+     a different one never changes the height of the section. */
+  min-height: var(--accordion-content-h, 0px);
+}
+
+.past-workshops__item.is-expanded .past-workshops__drawer-content {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
+  opacity: 1;
+  transition: opacity var(--reveal-fade-duration) var(--reveal-fade-ease) var(--reveal-fade-delay);
 }
 
 .past-workshops__drawer-inner {
   min-height: 0;
   overflow: hidden;
-  padding-bottom: 24px;
 }
 
 .past-workshops__drawer-content {
@@ -124,17 +151,6 @@
   grid-template-columns: repeat(9, minmax(0, 1fr));
   column-gap: var(--grid-gutter);
   align-items: start;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 0.25s ease,
-              transform 0.25s ease;
-}
-
-.past-workshops__item.is-expanded .past-workshops__drawer-content {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.32s ease 0.06s,
-              transform 0.38s cubic-bezier(0.16, 1, 0.3, 1) 0.06s;
 }
 
 .past-workshops__drawer-media {
@@ -154,11 +170,15 @@
   object-fit: cover;
   display: block;
   margin-bottom: 0;
-  transition: transform 0.4s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-emphasis) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-.past-workshops__drawer-media:hover .past-workshops__drawer-img {
-  transform: scale(1.04);
+@media (hover: hover) and (pointer: fine) {
+  .past-workshops__drawer-media:hover .past-workshops__drawer-img {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transform: scale(1.03);
+  }
 }
 
 .past-workshops__drawer-placeholder {
@@ -205,10 +225,12 @@
   display: inline-block;
   text-decoration: none;
   cursor: pointer;
-  transition: color 0.35s var(--ease-craft), opacity 0.35s var(--ease-craft);
+  transition: color calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), opacity calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .past-workshops__more-btn:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
   opacity: 0.7;
 }
@@ -271,5 +293,24 @@
     flex-direction: row !important;
     align-items: flex-start !important;
     gap: 12px !important;
+  }
+}
+
+/* Micro-motion: on hover the title eases 3px along, the date stays put; back at once on leave. */
+.past-workshops__title {
+  transition: translate calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .past-workshops__header:hover .past-workshops__title {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    translate: 3px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .past-workshops__title {
+    transition: none;
   }
 }

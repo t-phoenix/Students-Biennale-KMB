@@ -138,20 +138,26 @@
   text-transform: uppercase;
   cursor: pointer;
   opacity: 0;
-  transition: color 0.2s ease, opacity 0.25s var(--ease-out-expo);
+  transition: color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .splash__skip:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-primary-dark);
 }
 
 .splash__skip:focus-visible {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   outline: 2px solid var(--color-primary-teal);
   outline-offset: 4px;
   color: var(--color-primary-dark);
 }
 
 .splash__skip.is-visible {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 1;
 }
 

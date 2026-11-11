@@ -70,6 +70,8 @@
 }
 
 .update-card-dialog__close:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.55;
 }
 
@@ -119,6 +121,8 @@
 }
 
 .update-card-dialog__cancel:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -138,6 +142,8 @@
 }
 
 .update-card-dialog__confirm:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: var(--color-primary-dark);
 }
 

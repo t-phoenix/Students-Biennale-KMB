@@ -51,7 +51,7 @@
   place-items: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, color 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
   z-index: 2;
 }
 
@@ -62,11 +62,15 @@
 }
 
 .discover__clear.is-visible {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 1;
   pointer-events: auto;
 }
 
 .discover__clear:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.7;
 }
 

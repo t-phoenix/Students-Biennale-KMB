@@ -1,5 +1,21 @@
 /* Figma Designs (Tokenized) — local variables from file yiuNRibnTKzqEZVR0XpTRc */
 
+/* Enter slow, exit fast, for every CSS state change. A transition takes its timing from the
+   state being entered, so each transition reads --hover: rules for a state being entered
+   (hover, focus, is-active, is-open...) set it to 1 and get the entrance timing; returning to
+   rest finds 0 and uses the quick exit tokens. Not inherited, so a hovered or open parent never
+   slows down the exits of what is inside it. */
+@property --hover {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+@property --hover-ease {
+  syntax: "*";
+  inherits: false;
+}
+
 :root {
   /* Color — text */
   --color-text-primary: #000000;
@@ -72,12 +88,85 @@
   --overlay-bottom-inset: 40px;
   --view-toggle-width: 74px;
 
-  /* Motion & Craft Easings */
-  --ease-craft: cubic-bezier(0.25, 1, 0.35, 1);
-  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-out-cubic: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  /* Motion tokens — mirrored for JS in lib/motion.ts. Raw values live only here. */
+  /* Only press feedback is quick (instant, fast). Everything a person watches change (hover
+     fades, drawers, previews, panels) takes long enough to read as a graceful move. */
+  --motion-duration-instant: 80ms;   /* press feedback */
+  --motion-duration-fast: 120ms;     /* press release, focus ring */
+  --motion-duration-base: 320ms;     /* hover fades, small controls, exits of larger things */
+  --motion-duration-slow: 480ms;     /* modals, drawers, accordions */
+  --motion-duration-emphasis: 680ms; /* large transitions, image zoom */
+  --motion-duration-page: 900ms;     /* long, rare moves */
+  --motion-duration-cinematic: 1200ms; /* hero, crossfades */
+
+  /* Site motion rules, after Apple's own (Human Interface Guidelines and apple.com):
+     - Entrances are calm and physical: a spring with no bounce, never a generic browser curve.
+     - Movement is small: content fades and rises a few pixels, nothing sweeps or wipes.
+     - Exits are much quicker than entrances: what leaves gets out of the way at once.
+     - Content arrives in reading order, a beat apart (see --sequence-*).
+     JS mirrors: EASE, EXIT and SEQUENCE in lib/motion.ts. */
+  --enter-ease: cubic-bezier(0.32, 0.72, 0, 1);         /* spring, no bounce: moves, grows, reveals */
+  --enter-ease-fade: cubic-bezier(0.28, 0.11, 0.32, 1); /* soft in-and-out: fades and crossfades */
+  --exit-duration: 200ms;        /* panels, modals, drawers, cards, a tab leaving */
+  --exit-duration-micro: 120ms;  /* hover-out, dropdowns, text swaps */
+  --exit-duration-travel: 280ms; /* an image flying back to its place */
+  --exit-ease: cubic-bezier(0, 0, 0.2, 1); /* drops away at once */
+  --sequence-step: 70ms;          /* between one piece of content and the next */
+  --sequence-max: 700ms;          /* a whole group never takes longer than this to start */
+  --sequence-row-tolerance: 12px; /* tops this close count as one row, read left to right */
+
+  --motion-ease-enter-soft: var(--enter-ease); /* expressive entrances */
+  --motion-ease-exit-soft: var(--exit-ease);   /* expressive exits */
+  --motion-ease-enter: var(--enter-ease);      /* everyday entrances, hover */
+  --motion-ease-exit: var(--exit-ease);        /* everyday exits */
+  --motion-ease-standard: var(--enter-ease);   /* on-screen move or resize */
+
+  /* Accordions and drawers keep their own timing, so changing the general motion tokens above
+     never changes how a drawer opens: quick to start, then a long, gentle settle. */
+  --accordion-duration-open: 320ms;
+  --accordion-duration-fade: 280ms;
+  --accordion-duration-quick: 200ms;
+  --accordion-ease-open: var(--enter-ease);
+  --accordion-ease-fade: var(--enter-ease-fade);
+
+  /* Accordions and expanders. Opening: the space glides open on a long, soft deceleration while
+     the content (image and text) fades in where it sits, starting just after the space begins
+     to open, so nothing is ever uncovered top-down. Closing: the content is gone at once and
+     the empty space folds away quickly. Same numbers in REVEAL, lib/motion.ts. */
+  --reveal-duration-open: 480ms;
+  --reveal-ease-open: var(--enter-ease);
+  --reveal-fade-duration: 420ms;
+  --reveal-fade-delay: 120ms;
+  --reveal-fade-ease: var(--enter-ease-fade);
+  /* Accordion lists: the space of the article closing shrinks on exactly the curve the next one
+     grows on, so the two always add up and the section never changes height. Its content is still
+     gone at once (each list hides it on the first frame of closing). */
+  --reveal-duration-close: var(--reveal-duration-open);
+  --reveal-ease-close: var(--reveal-ease-open);
+
+  --motion-scale-press: 0.97;
+
+  /* Legacy easing names, kept as aliases of the tokens above */
+  --ease-craft: var(--motion-ease-enter-soft);
+  --ease-out-expo: var(--motion-ease-enter-soft);
+  --ease-out-cubic: var(--motion-ease-enter-soft);
+  --ease-in-out-cubic: var(--motion-ease-standard);
+  --ease-in-out-quart: var(--motion-ease-standard);
+}
+
+/* Global reduced motion: no movement, zoom or autoplaying CSS motion.
+   JS-driven motion checks prefersReducedMotion() in lib/motion.ts. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 @media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {

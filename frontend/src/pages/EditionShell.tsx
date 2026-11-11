@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
-import { NavLink, Outlet, useLocation, useMatch, useParams } from "react-router-dom";
+import { useState, useRef, useEffect, useLayoutEffect, type ReactNode } from "react";
+import { NavLink, Outlet, useLocation, useMatch, useParams, useOutlet } from "react-router-dom";
 import { EditionSearchResultsPanel } from "../components/EditionSearchResults";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
-import { gsap, prefersReducedMotion, useGSAP } from "../lib/motion";
+import { gsap, prefersReducedMotion, useGSAP, DUR, EXIT } from "../lib/motion";
+import { useReadingOrderReveal } from "../lib/sequence";
 import { EditionSearchProvider, useEditionSearch } from "./EditionSearchContext";
 import "./EditionShell.css";
 import "./EditionViews.css";
@@ -92,24 +93,61 @@ function EditionCatalogueMain() {
   const { isSearching, query, results } = useEditionSearch();
   const location = useLocation();
   const contentRef = useRef<HTMLDivElement>(null);
+  const leavingRef = useRef<HTMLDivElement>(null);
+  const previousTabRef = useRef(-1);
+  const outlet = useOutlet();
+  // The view being left stays on screen while it moves out, so switching tabs never shows a
+  // blank gap between one view and the next.
+  const [lastPath, setLastPath] = useState(location.pathname);
+  const [leaving, setLeaving] = useState<ReactNode>(null);
+  const previousOutlet = useRef<ReactNode>(outlet);
+  if (lastPath !== location.pathname) {
+    setLeaving(previousOutlet.current);
+    setLastPath(location.pathname);
+  }
+  useLayoutEffect(() => {
+    previousOutlet.current = outlet;
+  });
 
   useGSAP(
     () => {
-      if (prefersReducedMotion() || !contentRef.current) return;
-      gsap.fromTo(
-        contentRef.current,
-        { autoAlpha: 0, y: 8 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.45,
-          ease: "power2.out",
-          overwrite: "auto",
-        }
-      );
+      const tabIndex = TABS.findIndex((tab) => location.pathname.endsWith(`/${tab.to}`));
+      const previousTab = previousTabRef.current;
+      previousTabRef.current = tabIndex;
+      const content = contentRef.current;
+      if (prefersReducedMotion() || !content) {
+        setLeaving(null);
+        return;
+      }
+      // Switching tabs: the old view gets out of the way at once (a quick fade where it sits),
+      // while the new view's content arrives piece by piece in reading order, left to right and
+      // top to bottom (useReadingOrderReveal below).
+      const switching = tabIndex >= 0 && previousTab >= 0 && tabIndex !== previousTab;
+      if (switching && leavingRef.current) {
+        gsap.fromTo(
+          leavingRef.current,
+          { autoAlpha: 1 },
+          {
+            autoAlpha: 0,
+            duration: EXIT.duration,
+            ease: EXIT.ease,
+            overwrite: "auto",
+            onComplete: () => setLeaving(null),
+          },
+        );
+      } else {
+        setLeaving(null);
+      }
+      gsap.set(content, { clearProps: "opacity,visibility,transform" });
     },
     { dependencies: [location.pathname], scope: contentRef }
   );
+
+  useReadingOrderReveal(contentRef, {
+    units: ".edition-card, .edition-venue, .catalogue__row",
+    duration: DUR.emphasis,
+    enabled: !isSearching,
+  });
 
   return (
     <div className="edition-view">
@@ -117,8 +155,15 @@ function EditionCatalogueMain() {
       {isSearching ? (
         <EditionSearchResultsPanel query={query} results={results} />
       ) : (
-        <div ref={contentRef} className="edition-content-wrapper">
-          <Outlet />
+        <div className="edition-content-stage">
+          {leaving ? (
+            <div ref={leavingRef} className="edition-content-leaving" aria-hidden inert>
+              {leaving}
+            </div>
+          ) : null}
+          <div ref={contentRef} className="edition-content-wrapper">
+            {outlet}
+          </div>
         </div>
       )}
     </div>

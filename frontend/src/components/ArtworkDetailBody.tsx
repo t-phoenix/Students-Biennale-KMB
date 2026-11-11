@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { artworkImages, type ArtworkCard } from "../data/site";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
+import { useSlideGesture } from "../lib/gesture";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
@@ -27,8 +28,14 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   const [heroIndex, setHeroIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const heroTlRef = useRef<gsap.core.Timeline | null>(null);
+  const draggingRef = useRef(false);
 
   const slides = artworkImages(a);
+  // The slideshow's own change fades the new picture in over the old one. Swipes, arrows
+  // and dots animate themselves, so they must not also fade.
+  const [autoChange, setAutoChange] = useState(false);
+  const [outgoing, setOutgoing] = useState<string | null>(null);
 
   useEffect(() => {
     setHeroIndex(0);
@@ -48,11 +55,19 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
   }, [heroIndex, slides]);
 
   const slide = slides[Math.min(heroIndex, Math.max(slides.length - 1, 0))];
+  const [shownSlide, setShownSlide] = useState(slide);
+  if (shownSlide !== slide) {
+    setOutgoing(autoChange ? shownSlide ?? null : null);
+    setShownSlide(slide);
+  }
+  useEffect(() => {
+    if (!outgoing) return;
+    const timer = window.setTimeout(() => setOutgoing(null), 1500);
+    return () => window.clearTimeout(timer);
+  }, [outgoing]);
   const dotsTone = useCarouselDotsTone(slide ?? "", "center");
   const upcomingSlides = slides.filter((url) => url !== slide);
   const curated = curatorsForArtworkIn(a, catalogue.zones);
-  const goPrev = () => setHeroIndex((i) => (i - 1 + slides.length) % slides.length);
-  const goNext = () => setHeroIndex((i) => (i + 1) % slides.length);
 
   // Auto-advance the hero on a timer, same pace and pause-on-interact
   // pattern as the Home hero, per client feedback ("auto-advance on a
@@ -62,7 +77,10 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
       const hero = heroRef.current;
       if (!hero || slides.length <= 1 || prefersReducedMotion()) return;
       const tl = gsap.timeline({ repeat: -1 });
+      heroTlRef.current = tl;
       tl.to({}, { duration: 4 }).call(() => {
+        if (draggingRef.current) return;
+        setAutoChange(true);
         setHeroIndex((cur) => (cur + 1) % slides.length);
       });
       const pause = () => tl.pause();
@@ -82,17 +100,53 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
     { dependencies: [a.id, slides.length], scope: heroRef }
   );
 
+  // Drag, flick or trackpad swipe between images on every device.
+  const heroGesture = useSlideGesture(
+    heroRef,
+    {
+      count: slides.length,
+      getIndex: () => Math.min(heroIndex, Math.max(slides.length - 1, 0)),
+      ghost: { selector: ".detail__hero-img", getSrc: (index) => slides[index] ?? "" },
+      onGrab: () => {
+        draggingRef.current = true;
+        // Picking the picture up while the slideshow is still fading: the old one beneath
+        // must go, or it would show behind the finger.
+        setOutgoing(null);
+      },
+      onCommit: (index) => {
+        setAutoChange(false);
+        setHeroIndex(index);
+      },
+      onSettle: () => {
+        draggingRef.current = false;
+        heroTlRef.current?.restart();
+      },
+    },
+    slides.length > 1,
+    a.id,
+  );
+
   return (
     <div key={a.id}>
       <div ref={heroRef} className="detail__hero detail__hero--cover detail-reveal">
         {slide ? (
           <>
+            {outgoing ? (
+              <img
+                src={outgoing}
+                alt=""
+                aria-hidden
+                className="detail__hero-outgoing"
+              />
+            ) : null}
             <PreloadedImage
               key={slide}
               src={slide}
               alt=""
               className="detail__hero-img"
               prefetch={upcomingSlides}
+              crossfade={Boolean(outgoing)}
+              showLoader={!outgoing}
               onClick={() => setLightboxOpen(true)}
             />
             <button
@@ -124,7 +178,11 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
         )}
         {slides.length > 1 ? (
           <>
-            <CarouselNavArrows slideSrc={slide ?? ""} onPrev={goPrev} onNext={goNext} />
+            <CarouselNavArrows
+              slideSrc={slide ?? ""}
+              onPrev={() => heroGesture.step(-1)}
+              onNext={() => heroGesture.step(1)}
+            />
             <div
               className="detail__hero-dots detail__hero-dots--artwork carousel-dots"
               data-tone={dotsTone}
@@ -139,7 +197,7 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
                   aria-label={`Image ${i + 1} of ${slides.length}`}
                   aria-selected={i === heroIndex}
                   className={i === heroIndex ? "is-active" : undefined}
-                  onClick={() => setHeroIndex(i)}
+                  onClick={() => heroGesture.goTo(i)}
                 />
               ))}
             </div>

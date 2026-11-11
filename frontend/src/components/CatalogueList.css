@@ -66,7 +66,7 @@
   width: 16px;
   height: 16px;
   opacity: 1;
-  transition: opacity 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .catalogue__row-mark::before,
@@ -77,7 +77,7 @@
   left: 50%;
   background: var(--color-text-primary);
   transform: translate(-50%, -50%);
-  transition: transform 0.2s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
 .catalogue__row-mark::before {
@@ -91,6 +91,8 @@
 }
 
 .catalogue__row.is-active .catalogue__row-mark::after {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   transform: translate(-50%, -50%) scaleY(0);
 }
 
@@ -125,6 +127,8 @@
 }
 
 .catalogue__more:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -163,28 +167,33 @@
   background: var(--color-text-primary, #111111);
   opacity: 0.35;
   border-radius: 1px;
-  transition: opacity 0.2s ease, background 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), background calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .catalogue__preview:hover::-webkit-scrollbar-thumb,
 .catalogue__preview::-webkit-scrollbar-thumb:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: var(--color-text-primary, #111111);
   opacity: 0.85;
 }
 
-.catalogue__preview-inner-wrap {
-  animation: cataloguePreviewFade 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Two previews can overlap while one dissolves into the other (see PreviewCrossfade): the
+   new one is opaque, so it covers the old one completely once it has faded in. */
+.catalogue__preview-stack {
+  position: relative;
 }
 
-@keyframes cataloguePreviewFade {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.catalogue__preview-layer {
+  background: var(--color-neutral-white);
+}
+
+.catalogue__preview-layer.is-outgoing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
 }
 
 .catalogue__preview-media {
@@ -267,12 +276,16 @@
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-top: 10px;
-  transition: transform 0.25s ease, color 0.2s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
-.catalogue__preview-note-content a:hover {
-  color: var(--color-text-primary);
-  transform: translateX(3px);
+@media (hover: hover) and (pointer: fine) {
+  .catalogue__preview-note-content a:hover {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    color: var(--color-text-primary);
+    transform: translateX(3px);
+  }
 }
 
 /* Curators preview — zone header, then each curator's 315x360 portrait, name and
@@ -299,6 +312,8 @@
 }
 
 .curator-panel__person-link:hover h3 {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.75;
 }
 
@@ -374,6 +389,8 @@
 }
 
 .curator-panel__more:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -396,10 +413,14 @@
 
   /* On mobile, reset desktop hover minus mark and only show minus when row is expanded */
   .catalogue__row.is-active .catalogue__row-mark::after {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: translate(-50%, -50%) scaleY(1);
   }
 
   .catalogue__row.is-expanded .catalogue__row-mark::after {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: translate(-50%, -50%) scaleY(0);
   }
 
@@ -433,21 +454,69 @@
   .catalogue__row-accordion {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
-    opacity: 0;
+    /* Downward reveal: the preview sits still and the row's lower edge lowers over it. */
+    transition: grid-template-rows var(--reveal-duration-close) var(--reveal-ease-close),
+      visibility 0s linear 0s; /* closing: content gone at once */
+    visibility: hidden;
     overflow: hidden;
   }
 
   .catalogue__row-accordion.is-open {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     grid-template-rows: 1fr;
-    opacity: 1;
+    visibility: visible;
+    transition: grid-template-rows var(--reveal-duration-open) var(--reveal-ease-open),
+      visibility 0s linear 0s;
   }
 
+  /* Closed rows reserve no space, so every row has equal space above and below its names. */
   .catalogue__row-accordion-inner {
     min-height: 0;
+    padding: 0;
+    border-top: 1px dashed transparent;
+    margin-top: 0;
+    transition: padding var(--reveal-duration-close) var(--reveal-ease-close),
+      margin var(--reveal-duration-close) var(--reveal-ease-close),
+      border-color var(--reveal-duration-close) var(--reveal-ease-close);
+  }
+
+  .catalogue__row-accordion.is-open .catalogue__row-accordion-inner {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transition: padding var(--reveal-duration-open) var(--reveal-ease-open),
+      margin var(--reveal-duration-open) var(--reveal-ease-open),
+      border-color var(--reveal-duration-open) var(--reveal-ease-open);
+  }
+
+  /* The preview fades in where it sits while the space opens (never uncovered top-down). */
+  .catalogue__row-accordion-inner > * {
+    opacity: 0;
+    transition: opacity 0s linear 0s;
+  }
+
+  .catalogue__row-accordion.is-open .catalogue__row-accordion-inner > * {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    opacity: 1;
+    transition: opacity var(--reveal-fade-duration) var(--reveal-fade-ease) var(--reveal-fade-delay);
+  }
+
+  .catalogue__row-accordion.is-open .catalogue__row-accordion-inner {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     padding: 6px 0 24px;
-    border-top: 1px dashed color-mix(in srgb, var(--color-neutral-gray-light) 70%, transparent);
+    border-top-color: color-mix(in srgb, var(--color-neutral-gray-light) 70%, transparent);
     margin-top: 2px;
+  }
+
+  /* The search underline above and the footer line below already frame the list. */
+  .catalogue__row:first-of-type {
+    border-top: 0;
+  }
+
+  .catalogue__row:last-of-type {
+    border-bottom: 0;
   }
 
   .catalogue__row-accordion .catalogue__preview-inner {

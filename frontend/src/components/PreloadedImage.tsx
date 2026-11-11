@@ -8,7 +8,16 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> & {
   prefetch?: readonly string[];
   showLoader?: boolean;
   loaderVariant?: "cover" | "inline";
+  /** Fade in even when already loaded, slowly and softly, over whatever sits beneath it. */
+  crossfade?: boolean;
 };
+
+function isAlreadyLoaded(src: string) {
+  if (typeof Image === "undefined" || !src) return false;
+  const probe = new Image();
+  probe.src = src;
+  return probe.complete && probe.naturalWidth > 0;
+}
 
 /**
  * Image with brand loader overlay — fades in once decoded.
@@ -19,20 +28,28 @@ export function PreloadedImage({
   prefetch,
   showLoader = true,
   loaderVariant = "cover",
+  crossfade = false,
   className,
   onLoad,
   onError,
   style,
   ...rest
 }: Props) {
-  const [ready, setReady] = useState(false);
+  // An image the browser already holds shows at once, instead of fading in over the grey.
+  const [ready, setReady] = useState(() => !crossfade && isAlreadyLoaded(src));
 
   useEffect(() => {
-    setReady(false);
+    setReady(!crossfade && isAlreadyLoaded(src));
     let cancelled = false;
 
     void preloadUrl(src, "high").then(() => {
-      if (!cancelled) setReady(true);
+      if (cancelled) return;
+      if (!crossfade) {
+        setReady(true);
+        return;
+      }
+      // Two frames later, so the browser has painted the hidden start and the fade runs.
+      requestAnimationFrame(() => requestAnimationFrame(() => !cancelled && setReady(true)));
     });
 
     return () => {
@@ -50,7 +67,11 @@ export function PreloadedImage({
   const mergedStyle = {
     ...style,
     opacity: ready ? 1 : 0,
-    transition: ready ? "opacity 0.45s ease" : undefined,
+    transition: ready
+      ? crossfade
+        ? "opacity 1.3s var(--enter-ease-fade)"
+        : "opacity 0.45s var(--enter-ease-fade)"
+      : undefined,
   };
 
   return (
@@ -64,7 +85,7 @@ export function PreloadedImage({
         className={className}
         style={mergedStyle}
         onLoad={(event) => {
-          setReady(true);
+          if (!crossfade) setReady(true);
           onLoad?.(event);
         }}
         onError={(event) => {

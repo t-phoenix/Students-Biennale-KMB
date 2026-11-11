@@ -24,12 +24,14 @@
   color: var(--color-text-tertiary);
   width: 100%;
   text-align: right;
-  transition: color 0.2s ease;
+  transition: color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .edition__tabs a:hover,
 .edition__tabs a:focus-visible,
 .edition__tabs a.is-selected {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -72,12 +74,14 @@
   width: 100%;
   text-align: right;
   display: block;
-  transition: color 0.2s ease;
+  transition: color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .edition__prev a:hover,
 .edition__prev a:focus-visible,
 .edition__prev a.is-selected {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -152,6 +156,8 @@
 
   @media (hover: hover) and (pointer: fine) {
     .edition__archive-toggle:hover {
+      --hover: 1;
+      --hover-ease: var(--enter-ease);
       color: var(--color-text-primary);
       border-color: var(--color-text-primary);
       background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
@@ -159,12 +165,16 @@
   }
 
   .edition__archive-toggle:focus-visible {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     color: var(--color-text-primary);
     border-color: var(--color-text-primary);
     background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
   }
 
   .edition__archive-toggle.is-open {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     background: var(--color-text-primary, #000000);
     color: var(--color-text-inverse, #ffffff) !important;
     border-color: var(--color-text-primary, #000000);
@@ -173,11 +183,13 @@
   }
 
   .edition__archive-chevron {
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
     flex-shrink: 0;
   }
 
   .edition__archive-toggle.is-open .edition__archive-chevron {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: rotate(180deg);
   }
 
@@ -229,7 +241,7 @@
     text-decoration: none;
     white-space: nowrap;
     border: 1px solid color-mix(in srgb, var(--color-text-primary) 14%, transparent);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
     flex-shrink: 0;
     touch-action: manipulation;
     -webkit-user-select: none;
@@ -241,6 +253,8 @@
 
   @media (hover: hover) and (pointer: fine) {
     .edition__mobile-tab:hover {
+      --hover: 1;
+      --hover-ease: var(--enter-ease);
       color: var(--color-text-primary);
       border-color: var(--color-text-primary);
       background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
@@ -248,12 +262,16 @@
   }
 
   .edition__mobile-tab:focus-visible {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     color: var(--color-text-primary);
     border-color: var(--color-text-primary);
     background: color-mix(in srgb, var(--color-text-primary) 5%, transparent);
   }
 
   .edition__mobile-tab.is-active {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     background: var(--color-text-primary, #000000);
     color: var(--color-text-inverse, #ffffff) !important;
     border-color: var(--color-text-primary, #000000);
@@ -262,23 +280,49 @@
   }
 
   /* Collapsible Archive Drawer (sticky under tabs) */
+  /* Downward reveal: the chips sit still and the drawer's lower edge lowers over them. Grid rows
+     follow the real content height, so the motion lasts the full time (a max-height cap ran out
+     early and then sat still). */
   .edition__archive-drawer {
-    max-height: 0;
+    display: grid;
+    grid-template-rows: 0fr;
     overflow: hidden;
-    opacity: 0;
-    transition: max-height 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+    visibility: hidden;
+    /* A single drawer, not a list: it closes on the quick exit. */
+    transition: grid-template-rows var(--exit-duration) var(--exit-ease),
+      visibility 0s linear 0s; /* closing: content gone at once */
     background: var(--color-bg);
   }
 
   .edition__archive-drawer.is-open {
-    max-height: 320px;
-    opacity: 1;
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows var(--reveal-duration-open) var(--reveal-ease-open),
+      visibility 0s linear 0s;
     border-top: 1px solid color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   }
 
   .edition__archive-drawer-inner {
+    min-height: 0;
+    max-height: 320px;
+    overflow: hidden;
     padding: 14px 4px 18px;
     background: color-mix(in srgb, var(--color-text-primary) 3%, transparent);
+  }
+
+  /* The chips fade in where they sit while the drawer opens (never uncovered top-down). */
+  .edition__archive-drawer-inner > * {
+    opacity: 0;
+    transition: opacity 0s linear 0s;
+  }
+
+  .edition__archive-drawer.is-open .edition__archive-drawer-inner > * {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    opacity: 1;
+    transition: opacity var(--reveal-fade-duration) var(--reveal-fade-ease) var(--reveal-fade-delay);
   }
 
   .edition__archive-drawer-header {
@@ -310,12 +354,14 @@
     cursor: pointer;
     border-radius: 50%;
     padding: 0;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background calc(var(--hover, 0) * var(--motion-duration-fast) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-fast) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
     touch-action: manipulation;
   }
 
   @media (hover: hover) and (pointer: fine) {
     .edition__archive-close-btn:hover {
+      --hover: 1;
+      --hover-ease: var(--enter-ease);
       color: var(--color-text-primary);
       background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
     }
@@ -341,7 +387,7 @@
     color: var(--color-text-primary);
     text-decoration: none;
     background: var(--color-bg);
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: background calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), border-color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
     touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
@@ -350,17 +396,23 @@
 
   @media (hover: hover) and (pointer: fine) {
     .edition__archive-chip:hover {
+      --hover: 1;
+      --hover-ease: var(--enter-ease);
       border-color: var(--color-text-primary);
       background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
     }
   }
 
   .edition__archive-chip:focus-visible {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     border-color: var(--color-text-primary);
     background: color-mix(in srgb, var(--color-text-primary) 8%, transparent);
   }
 
   .edition__archive-chip.is-current {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     background: var(--color-text-primary, #000000);
     color: var(--color-text-inverse, #ffffff) !important;
     border-color: var(--color-text-primary, #000000);
@@ -369,3 +421,32 @@
 }
 
 
+
+/* Mobile list view: the gap below the last row matches the 42px above the first
+   (19px of row padding plus 23px here). */
+@media (max-width: 899px) {
+  .edition:has(.catalogue__rows) {
+    padding-bottom: 23px;
+  }
+}
+
+/* A "more" link closes the list instead, so it gets the same 42px. */
+@media (max-width: 899px) {
+  .edition:has(.catalogue__more) {
+    padding-bottom: 42px;
+  }
+}
+
+.edition-content-stage {
+  position: relative;
+}
+
+/* The view being left: it stays in place over the new one while it fades out. */
+.edition-content-leaving {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  pointer-events: none;
+}

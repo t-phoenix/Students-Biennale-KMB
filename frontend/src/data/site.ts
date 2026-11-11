@@ -1,3 +1,4 @@
+import { tileThumb } from "../lib/tileThumb";
 export const LATEST_EDITION = { id: "2025-26", label: "Students' Biennale 2025–26" };
 
 export const PREVIOUS_EDITIONS = [
@@ -69,6 +70,31 @@ const KIND_SCALE: Record<CanvasItem["kind"], [number, number]> = {
   venue: [0.80, 0.98],
   artwork: [0.58, 0.98],
 };
+
+/**
+ * Discover shows its field 25% smaller than the original sizing, so more artwork fits on
+ * screen. The layout itself is scaled (not a CSS zoom), so every tile edge can land on a
+ * whole device pixel: a zoom leaves tile edges between pixels, which shows as a pale line.
+ */
+export const CANVAS_DENSITY = 0.5625;
+/** The world keeps the width it had at 75%, so a repeat is still wider than a screen. The
+ *  tiles are smaller, so it holds proportionally more columns instead. */
+const CANVAS_WORLD_SCALE = 0.75;
+
+function scaledConfig(c: (typeof TIER_CONFIG)[CanvasTier]) {
+  const s = (v: number) => Math.round(v * CANVAS_DENSITY);
+  return {
+    ...c,
+    seedW: Math.round(c.seedW * CANVAS_WORLD_SCALE),
+    seedH: s(c.seedH),
+    colGap: s(c.colGap),
+    rowGap: s(c.rowGap),
+    minTileH: s(c.minTileH),
+    maxTileH: s(c.maxTileH),
+    absMinW: s(c.absMinW),
+    columns: Math.round((c.columns * CANVAS_WORLD_SCALE) / CANVAS_DENSITY),
+  };
+}
 
 export function getCanvasTier(viewportWidth: number): CanvasTier {
   if (viewportWidth < 640) return "mobile";
@@ -199,7 +225,7 @@ function artworkDrafts(artworks: ArtworkCard[]): CanvasDraft[] {
       .join(" ")
       .toLowerCase();
 
-    return withNaturalSize({
+    const draft = withNaturalSize({
       id: `aw-${artwork.id}`,
       kind: "artwork" as const,
       name: artwork.title,
@@ -210,6 +236,8 @@ function artworkDrafts(artworks: ArtworkCard[]): CanvasDraft[] {
       imageW: artwork.imageWidth ?? (artwork.image ? 1600 : undefined),
       imageH: artwork.imageHeight ?? (artwork.image ? 1200 : undefined),
     });
+    // Tiles show a resized copy, not the 1600px original.
+    return { ...draft, image: tileThumb(draft.image) };
   });
 }
 
@@ -238,7 +266,7 @@ function packMasonry(
   tier: CanvasTier,
   artworks?: ArtworkCard[],
 ): { items: CanvasItem[]; colWidths: number[]; colPeriods: number[] } {
-  const config = TIER_CONFIG[tier];
+  const config = scaledConfig(TIER_CONFIG[tier]);
   const { seedW, seedH, colGap, rowGap, gapJitter, columns, columnJitter, minTileH, maxTileH, absMinW } = config;
   const gapLo = rowGap * (1 - gapJitter);
   const gapHi = rowGap * (1 + gapJitter);
@@ -376,7 +404,7 @@ export type CanvasPack = {
 const packCache = new Map<string, CanvasPack>();
 
 /** Bust layout cache after packing rules change (dev / HMR safety). */
-const PACK_VERSION = "artworks-no-adjacent-similar-sizes-v19";
+const PACK_VERSION = "artworks-no-adjacent-similar-sizes-v21-denser";
 
 export function getCanvasPack(
   tier: CanvasTier = "desktop",
@@ -389,7 +417,7 @@ export function getCanvasPack(
     const packed = packMasonry(tier, artworks);
     cached = {
       items: packed.items,
-      seedW: TIER_CONFIG[tier].seedW,
+      seedW: scaledConfig(TIER_CONFIG[tier]).seedW,
       colWidths: packed.colWidths,
       colPeriods: packed.colPeriods,
     };

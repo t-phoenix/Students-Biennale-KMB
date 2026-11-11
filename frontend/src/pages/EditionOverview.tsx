@@ -1,6 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { gsap, useGSAP, prefersReducedMotion, DUR, EASE, STAGGER, DISTANCE } from "../lib/motion";
 import { splitLinesOnScroll, cascadeCardsOnScroll } from "../lib/splitTextScroll";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
@@ -16,6 +16,7 @@ import {
 import { LATEST_EDITION } from "../data/site";
 import { useCatalogue, useEditionCatalogue } from "../lib/catalogue";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
+import { useSlideGesture } from "../lib/gesture";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { preloadUrls } from "../lib/preloadImages";
 import { GalleryLightbox } from "../components/GalleryLightbox";
@@ -414,100 +415,52 @@ function cleanIntroParagraphs(
     setSlide(index);
   }, []);
 
+  const heroResumeRef = useRef<gsap.core.Tween | null>(null);
   const resumeHeroTimeline = useCallback((index: number) => {
+    heroResumeRef.current?.kill();
     if (prefersReducedMotion() || slidesRef.current.length <= 1) return;
-    buildAutoSlideTimeline(
-      slidesRef.current,
-      index,
-      (next) => {
-        slideIndexRef.current = next;
-        setSlide(next);
-      },
-      heroTlRef,
-      5,
-    );
+    // Wait for the slide to land: rebuilding the slideshow would cancel it.
+    heroResumeRef.current = gsap.delayedCall(DUR.page, () => {
+      buildAutoSlideTimeline(
+        slidesRef.current,
+        index,
+        (next) => {
+          slideIndexRef.current = next;
+          setSlide(next);
+        },
+        heroTlRef,
+        5,
+      );
+    });
   }, []);
 
   const currentHeroSrc = heroImages[slide] ?? heroImages[0] ?? "";
   const dotsTone = useCarouselDotsTone(currentHeroSrc, "center");
 
-  // Touch gesture handling on Edition Overview hero: horizontal swipe
-  useEffect(() => {
-    const hero = heroRef.current;
-    if (!hero) return;
-
-    let startX = 0;
-    let startY = 0;
-    let isHorizontalGesture: boolean | null = null;
-    let tracking = false;
-
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      if ((e.target as HTMLElement).closest(".carousel-dots, button, a")) {
-        tracking = false;
-        return;
-      }
-      tracking = true;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      isHorizontalGesture = null;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!tracking || e.touches.length !== 1) return;
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const diffX = currentX - startX;
-      const diffY = currentY - startY;
-
-      if (isHorizontalGesture === null) {
-        if (Math.hypot(diffX, diffY) > 6) {
-          isHorizontalGesture = Math.abs(diffX) > Math.abs(diffY);
-        }
-      }
-
-      if (isHorizontalGesture && e.cancelable) {
-        e.preventDefault();
-      }
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (!tracking) return;
-      tracking = false;
-      if (isHorizontalGesture && e.changedTouches.length > 0) {
-        const endX = e.changedTouches[0].clientX;
-        const diffX = startX - endX;
-        const count = heroImages.length;
-        if (count > 1 && Math.abs(diffX) > 28) {
-          const currentIdx = slideIndexRef.current;
-          const nextIdx =
-            diffX > 0
-              ? (currentIdx + 1) % count
-              : (currentIdx - 1 + count) % count;
-          goToSlide(nextIdx);
-          resumeHeroTimeline(nextIdx);
-        }
-      }
-      isHorizontalGesture = null;
-    };
-
-    const onTouchCancel = () => {
-      tracking = false;
-      isHorizontalGesture = null;
-    };
-
-    hero.addEventListener("touchstart", onTouchStart, { passive: true });
-    hero.addEventListener("touchmove", onTouchMove, { passive: false });
-    hero.addEventListener("touchend", onTouchEnd, { passive: true });
-    hero.addEventListener("touchcancel", onTouchCancel, { passive: true });
-
-    return () => {
-      hero.removeEventListener("touchstart", onTouchStart);
-      hero.removeEventListener("touchmove", onTouchMove);
-      hero.removeEventListener("touchend", onTouchEnd);
-      hero.removeEventListener("touchcancel", onTouchCancel);
-    };
-  }, [heroImages.length, goToSlide, resumeHeroTimeline]);
+  // Drag, flick or trackpad swipe between slides on every device.
+  useSlideGesture(
+    heroRef,
+    {
+      count: heroImages.length,
+      getIndex: () => slideIndexRef.current,
+      getSlides: () => {
+        const slides = Array.from(
+          heroRef.current?.querySelectorAll<HTMLElement>(".edition-overview__hero-slide") ?? [],
+        );
+        slidesRef.current = slides;
+        return slides;
+      },
+      onGrab: () => {
+        heroResumeRef.current?.kill();
+        heroTlRef.current?.kill();
+        heroTlRef.current = null;
+      },
+      onTargetChange: setSlide,
+      onCommit: goToSlide,
+      onSettle: resumeHeroTimeline,
+    },
+    heroImages.length > 1,
+  );
 
   useGSAP(
     () => {
@@ -516,13 +469,13 @@ function cleanIntroParagraphs(
 
       // Top intro/hero block reveals on load
       const topItems = root.current?.querySelectorAll(
-        ".edition-overview__title-rail, .edition-overview__title, .edition-overview__intro, .edition-overview__links"
+        ".edition-overview__title-rail, .edition-overview__intro, .edition-overview__links"
       );
       if (topItems && topItems.length > 0) {
         gsap.fromTo(
           topItems,
-          { autoAlpha: 0 },
-          { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)", delay: 0.1 }
+          { autoAlpha: 0, y: DISTANCE.rise },
+          { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal, delay: 0.1 }
         );
       }
 
@@ -533,7 +486,8 @@ function cleanIntroParagraphs(
           const tl = gsap.timeline({
             scrollTrigger: {
               trigger: sec,
-              start: "top 76%",
+              // Phones: as soon as it enters, so labels arrive with the pictures beside them.
+              start: window.innerWidth <= 899 ? "top 98%" : "top 76%",
               once: true,
             },
           });
@@ -542,8 +496,8 @@ function cleanIntroParagraphs(
           if (headings.length > 0) {
             tl.fromTo(
               headings,
-              { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.85, stagger: 0.06, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 0, y: DISTANCE.rise },
+              { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
               0
             );
           }
@@ -563,8 +517,8 @@ function cleanIntroParagraphs(
           if (otherReveals.length > 0) {
             tl.fromTo(
               otherReveals,
-              { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 0.85, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+              { autoAlpha: 0, y: DISTANCE.rise },
+              { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
               0.16
             );
           }

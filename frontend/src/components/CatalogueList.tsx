@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode, useCallback } from "react";
+import { REVEAL } from "../lib/motion";
 import { Link } from "react-router-dom";
 import { FormattedText } from "./FormattedText";
 import { MetaGrid, MetaRow } from "./MetaGrid";
 import { subscribeLenis, getLenisInstance } from "../lib/lenisSingleton";
 import "./CatalogueList.css";
+import { PreviewCrossfade } from "./PreviewCrossfade";
 
 export type CatalogueRow = {
   id: string;
@@ -167,9 +169,34 @@ export function CatalogueList({
 }: CatalogueListProps) {
   const [activeId, setActiveId] = useState(rows[0]?.id ?? "");
   const [mobileExpandedId, setMobileExpandedId] = useState<string | null>(null);
+  // A row that is closing keeps its preview until its lower edge has risen over it; removing it
+  // at once made the row snap shut instead of closing.
+  const [closingId, setClosingId] = useState<string | null>(null);
+  const lastExpandedRef = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    const prev = lastExpandedRef.current;
+    lastExpandedRef.current = mobileExpandedId;
+    if (!prev || prev === mobileExpandedId) return;
+    setClosingId(prev);
+    const t = window.setTimeout(() => setClosingId(null), REVEAL.close * 1000 + 60);
+    return () => window.clearTimeout(t);
+  }, [mobileExpandedId]);
   const [touchActivatedId, setTouchActivatedId] = useState<string | null>(null);
   const [shown, setShown] = useState(pageSize);
   const previewRef = useRef<HTMLElement>(null);
+
+  // Rolling the pointer down the list must not flip the preview on every row it crosses: a
+  // row is chosen only once the pointer has rested on it for a moment.
+  const pendingChoice = useRef(0);
+  const cancelPendingChoice = useCallback(() => window.clearTimeout(pendingChoice.current), []);
+  const chooseAfterPause = useCallback(
+    (id: string) => {
+      window.clearTimeout(pendingChoice.current);
+      pendingChoice.current = window.setTimeout(() => setActiveId(id), 110);
+    },
+    [],
+  );
+  useEffect(() => cancelPendingChoice, [cancelPendingChoice]);
 
   const visible = rows.slice(0, shown);
   const shownId = rows.some((r) => r.id === activeId) ? activeId : rows[0]?.id;
@@ -236,7 +263,7 @@ export function CatalogueList({
       const isMarkClick = Boolean(target.closest(".catalogue__row-mark"));
 
       if (!isExpanded) {
-        // First click on this article: expand it in-place
+        // First click on this article: expand it in place. The page never scrolls.
         e.preventDefault();
         setMobileExpandedId(row.id);
         setActiveId(row.id);
@@ -311,8 +338,12 @@ export function CatalogueList({
               className={`catalogue__row${isDesktopActive ? " is-active" : ""}${
                 isMobileExpanded ? " is-expanded" : ""
               }`}
-              onMouseEnter={() => setActiveId(row.id)}
-              onFocus={() => setActiveId(row.id)}
+              onMouseEnter={() => chooseAfterPause(row.id)}
+              onMouseLeave={cancelPendingChoice}
+              onFocus={() => {
+                cancelPendingChoice();
+                setActiveId(row.id);
+              }}
             >
               {row.href ? (
                 <Link
@@ -340,7 +371,7 @@ export function CatalogueList({
                 aria-hidden={!isMobileExpanded}
               >
                 <div className="catalogue__row-accordion-inner">
-                  {isMobileExpanded
+                  {isMobileExpanded || row.id === closingId
                     ? renderPreviewBody(row.id, previewFor, renderPreview)
                     : null}
                 </div>
@@ -369,9 +400,10 @@ export function CatalogueList({
           data-lenis-prevent-touch
           aria-live="polite"
         >
-          <div key={shownId} className="catalogue__preview-inner-wrap">
-            {renderPreviewBody(shownId, previewFor, renderPreview)}
-          </div>
+          <PreviewCrossfade
+            id={shownId}
+            render={(id) => renderPreviewBody(id, previewFor, renderPreview)}
+          />
         </aside>
       ) : null}
     </div>

@@ -16,7 +16,7 @@ export function useCarouselDotsTone(
 
   useEffect(() => {
     let cancelled = false;
-    setTone("unknown");
+    // Keep the current tone until the new picture has been measured (no flash through "unknown").
     sampleCarouselDotsTone(slideSrc, align).then((next) => {
       if (!cancelled) setTone(next);
     });

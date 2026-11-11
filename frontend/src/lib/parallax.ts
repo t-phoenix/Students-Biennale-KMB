@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { gsap, ScrollTrigger, prefersReducedMotion } from "./motion";
 
 export interface ParallaxOptions {
@@ -18,7 +18,7 @@ function isEligibleImage(img: HTMLImageElement): boolean {
 
   // Check if image or any ancestor requested no parallax
   const parentNoParallax = img.closest(
-    "[data-no-parallax='true'], .home-programmes__banner, .programmes__hero, .programmes__hero-slides, .home-sensing, .home-sensing__scroll, .home-sensing__scroll-track, .home-sensing__scroll-item, .home-edition"
+    "[data-no-parallax='true'], .detail__hero, .detail__portrait, .detail__venue-hero, .home-hero__slides, .home-programmes__banner, .programmes__hero, .programmes__hero-slides, .home-sensing, .home-sensing__scroll, .home-sensing__scroll-track, .home-sensing__scroll-item, .home-edition"
   );
   if (parentNoParallax) return false;
 
@@ -37,19 +37,23 @@ function isEligibleImage(img: HTMLImageElement): boolean {
     return false;
   }
 
-  // Check element dimensions (skip tiny avatars/icons < 48px)
-  const rect = img.getBoundingClientRect();
-  if (rect.width > 0 && rect.width < 48) return false;
-  if (rect.height > 0 && rect.height < 48) return false;
-
   // Check ancestors
   const parent = img.parentElement;
   if (!parent) return false;
 
+  // The Discover canvas moves as one field: a parallax on each of its ~1000 tiles made every
+  // tile its own GPU layer with its own scroll trigger, which is what made swiping stutter
+  // and flicker. The artwork sheet opened from it has no parallax either. Checked before the
+  // size below, so its tiles don't each force a layout measurement either.
   const closestIgnored = img.closest(
-    ".site-header, .site-footer, .scribble-layer, .type-inspector, .adm-, [role='dialog'], .lightbox, .modal, .carousel-nav, .brand-arrow, .catalogue-list__thumb, .catalogue-list__preview-media, .catalogue-preview"
+    ".infinite-canvas, .canvas-expand, .site-header, .site-footer, .scribble-layer, .type-inspector, .adm-, [role='dialog'], .lightbox, .modal, .carousel-nav, .brand-arrow, .catalogue-list__thumb, .catalogue-list__preview-media, .catalogue-preview"
   );
   if (closestIgnored) return false;
+
+  // Check element dimensions (skip tiny avatars/icons < 48px)
+  const rect = img.getBoundingClientRect();
+  if (rect.width > 0 && rect.width < 48) return false;
+  if (rect.height > 0 && rect.height < 48) return false;
 
   return true;
 }
@@ -85,14 +89,11 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
     return () => {};
   }
 
-  const triggers: ScrollTrigger[] = [];
+  const triggers = new Map<HTMLImageElement, ScrollTrigger>();
   const processedImages = new Set<HTMLImageElement>();
 
-  // Query all content images
-  const images = Array.from(root.querySelectorAll<HTMLImageElement>("img"));
-
-  images.forEach((img) => {
-    if (!isEligibleImage(img) || processedImages.has(img)) return;
+  const setup = (img: HTMLImageElement) => {
+    if (processedImages.has(img) || !isEligibleImage(img)) return;
     processedImages.add(img);
 
     const container = findParallaxContainer(img);
@@ -153,12 +154,57 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
     );
 
     if (tween.scrollTrigger) {
-      triggers.push(tween.scrollTrigger);
+      triggers.set(img, tween.scrollTrigger);
+    }
+  };
+
+  const release = (img: HTMLImageElement) => {
+    triggers.get(img)?.kill();
+    triggers.delete(img);
+    processedImages.delete(img);
+  };
+
+  root.querySelectorAll<HTMLImageElement>("img").forEach(setup);
+
+  // Pages fill in after the route changes - the code for the page, then its content from the
+  // CMS, then its images. Scanning once at the route change found nothing on a direct load or a
+  // refresh, so the parallax never started there. Images are now set up as they arrive. The
+  // observer runs before the browser paints, so an image never shows first without its
+  // parallax scale and then jumps.
+  let refreshTimer = 0;
+  const observer = new MutationObserver((records) => {
+    let added = false;
+    for (const record of records) {
+      record.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) return;
+        const imgs = node instanceof HTMLImageElement ? [node] : Array.from(node.querySelectorAll<HTMLImageElement>("img"));
+        imgs.forEach((img) => {
+          const before = processedImages.size;
+          setup(img);
+          if (processedImages.size > before) added = true;
+        });
+      });
+      record.removedNodes.forEach((node) => {
+        if (!(node instanceof Element)) return;
+        const imgs = node instanceof HTMLImageElement ? [node] : Array.from(node.querySelectorAll<HTMLImageElement>("img"));
+        imgs.forEach((img) => {
+          if (!img.isConnected) release(img);
+        });
+      });
+    }
+    // New content usually moves what is below it: re-measure every scroll-linked animation once,
+    // after the content has settled.
+    if (added) {
+      window.clearTimeout(refreshTimer);
+      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 250);
     }
   });
+  observer.observe(root, { childList: true, subtree: true });
 
   // Return teardown function
   return () => {
+    observer.disconnect();
+    window.clearTimeout(refreshTimer);
     triggers.forEach((st) => st.kill());
     processedImages.forEach((img) => {
       gsap.set(img, { clearProps: "transform,scale,yPercent,willChange" });
@@ -174,7 +220,8 @@ export function useImageParallax(
   scopeRef?: React.RefObject<HTMLElement | null>,
   deps: React.DependencyList = []
 ) {
-  useEffect(() => {
+  // Before paint: applied any later, an image already on screen visibly jumps in size.
+  useLayoutEffect(() => {
     if (prefersReducedMotion()) return;
 
     const root = scopeRef?.current || document.body;

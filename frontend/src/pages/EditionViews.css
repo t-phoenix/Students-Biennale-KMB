@@ -50,12 +50,13 @@
   font-weight: 500;
   color: var(--color-text-primary);
   transform-origin: left bottom;
-  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
-              color 0.26s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
   user-select: none;
 }
 
 .edition-search.is-active .edition-search__label {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   transform: translateY(-30px) scale(0.68);
   color: #767676;
 }
@@ -94,7 +95,7 @@
   place-items: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, color 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
   z-index: 2;
 }
 
@@ -105,11 +106,15 @@
 }
 
 .edition-search__clear.is-visible {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 1;
   pointer-events: auto;
 }
 
 .edition-search__clear:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.7;
 }
 
@@ -133,7 +138,7 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .edition-view-toggle button svg {
@@ -143,11 +148,15 @@
 }
 
 .edition-view-toggle button.is-active {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: var(--color-neutral-black, #000000);
   color: var(--color-neutral-white, #ffffff);
 }
 
 .edition-view-toggle button:not(.is-active):hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 
@@ -317,16 +326,20 @@
   filter: grayscale(1);
   transform: scale(1.02);
   transform-origin: center center;
-  transition: filter 0.3s ease;
+  transition: filter calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .edition-card--curator:hover .edition-card__frame img,
 .edition-card--curator:focus-visible .edition-card__frame img {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   filter: grayscale(0);
 }
 
 .edition-card--curator:hover .edition-card__frame img.has-parallax-img,
 .edition-card--curator:focus-visible .edition-card__frame img.has-parallax-img {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   filter: grayscale(0);
 }
 
@@ -363,12 +376,16 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), filter 0.3s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-emphasis) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease)), filter calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
-.edition-card:hover .edition-card__media img,
+@media (hover: hover) and (pointer: fine) {
+  .edition-card:hover .edition-card__media img,
 .edition-card:focus-visible .edition-card__media img {
-  transform: scale(1.03);
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transform: scale(1.03);
+  }
 }
 
 .edition-card__media--portrait {
@@ -455,11 +472,15 @@
   max-width: none;
   object-fit: cover;
   display: block;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-emphasis) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-.edition-venue:hover .edition-venue__media img {
-  transform: scale(1.03);
+@media (hover: hover) and (pointer: fine) {
+  .edition-venue:hover .edition-venue__media img {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transform: scale(1.03);
+  }
 }
 
 .edition-venue__copy h3 {
@@ -486,11 +507,13 @@
   font-size: var(--type-body-size);
   color: var(--color-text-secondary, #545454);
   text-decoration: none;
-  transition: color 0.35s var(--ease-craft);
+  transition: color calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .edition-venue__copy > a.edition-venue__more:hover,
 .edition-venue__more:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   color: var(--color-text-primary);
 }
 

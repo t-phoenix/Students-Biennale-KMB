@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { useReadingOrderReveal } from "../lib/sequence";
 import { ScholarSpotlight } from "../components/ScholarSpotlight";
 import { BrandArrow } from "../components/BrandArrow";
 import { RAZA_SCHOLARS } from "../data/site";
@@ -21,24 +21,8 @@ export function RazaScholarship() {
   const root = useRef<HTMLDivElement>(null);
   const [openScholarId, setOpenScholarId] = useState<string | null>(null);
 
-  useGSAP(
-    () => {
-      if (prefersReducedMotion()) return;
-      gsap.fromTo(
-        ".raza-reveal",
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 0.95,
-          delay: 0.12,
-          stagger: 0.08,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          clearProps: "opacity,visibility,transform",
-        }
-      );
-    },
-    { scope: root }
-  );
+  // Paragraphs, images and links arrive one by one in reading order.
+  useReadingOrderReveal(root, { delay: 0.12 });
 
   return (
     <div ref={root} className="raza-page">

@@ -5,6 +5,8 @@
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  /* Tone changes between pictures ease in with the crossfade instead of snapping. */
+  transition: border-color calc(var(--hover, 0) * var(--motion-duration-page) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), background-color calc(var(--hover, 0) * var(--motion-duration-page) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), box-shadow calc(var(--hover, 0) * var(--motion-duration-page) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 @media (pointer: coarse) {
@@ -24,6 +26,8 @@
 }
 
 .carousel-dots[data-tone="dark"] button.is-active {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: var(--color-neutral-white);
 }
 
@@ -32,6 +36,8 @@
 }
 
 .carousel-dots[data-tone="light"] button.is-active {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: rgba(0, 0, 0, 0.52);
 }
 
@@ -42,5 +48,7 @@
 }
 
 .carousel-dots[data-tone="unknown"] button.is-active {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: rgba(0, 0, 0, 0.45);
 }

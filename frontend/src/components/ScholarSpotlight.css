@@ -26,7 +26,6 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding-bottom: 60px;
-  will-change: transform, opacity;
 }
 
 .scholar-spotlight__sheet .detail__hero--cover {

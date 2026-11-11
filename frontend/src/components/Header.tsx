@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo, type MouseEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { DUR, EASE, EXIT, STAGGER, gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import { useCatalogue, useAllArtworks } from "../lib/catalogue";
 import { prefetchRouteHero } from "../lib/predictivePrefetch";
@@ -11,7 +11,7 @@ import {
   scrollToSection,
   scrollToId,
 } from "../lib/scrollToSection";
-import { getLenisInstance } from "../lib/lenisSingleton";
+import { glideToTop } from "../lib/lenisSingleton";
 import { MobileNavDrawer } from "./MobileNavDrawer";
 import "./Header.css";
 
@@ -94,8 +94,8 @@ export function Header() {
     } else {
       gsap.to(header, {
         yPercent: 0,
-        duration: 0.38,
-        ease: "power3.out",
+        duration: DUR.emphasis,
+        ease: EASE.enterSoft,
         overwrite: "auto",
       });
     }
@@ -109,10 +109,11 @@ export function Header() {
       if (prefersReducedMotion()) {
         gsap.set(header, { yPercent: -100 });
       } else {
+        // Exit: out of the way at once.
         gsap.to(header, {
           yPercent: -100,
-          duration: 0.38,
-          ease: "power3.inOut",
+          duration: EXIT.duration,
+          ease: EXIT.ease,
           overwrite: "auto",
         });
       }
@@ -195,9 +196,9 @@ export function Header() {
       const el = discoverRef.current;
       if (!el || prefersReducedMotion()) return;
       const enter = () =>
-        gsap.to(el, { scale: 1.04, autoAlpha: 1, duration: 0.2, ease: "power2.out" });
+        gsap.to(el, { scale: 1.04, autoAlpha: 1, duration: DUR.fast, ease: EASE.enter });
       const leave = () =>
-        gsap.to(el, { scale: 1, duration: 0.2, ease: "power2.out" });
+        gsap.to(el, { scale: 1, duration: EXIT.micro, ease: EXIT.ease });
       el.addEventListener("pointerenter", enter);
       el.addEventListener("pointerleave", leave);
       return () => {
@@ -225,8 +226,8 @@ export function Header() {
             gsap.to(panel, {
               autoAlpha: 0,
               y: -8,
-              duration: 0.22,
-              ease: "power2.in",
+              duration: EXIT.micro,
+              ease: EXIT.ease,
             });
           }
         }
@@ -283,15 +284,15 @@ export function Header() {
               autoAlpha: 1,
               y: 0,
               scaleY: 1,
-              duration: 0.35,
-              ease: "power3.out",
+              duration: DUR.base,
+              ease: EASE.enterSoft,
               transformOrigin: "top center",
             }
           );
           gsap.fromTo(
             activeSlot,
             { autoAlpha: 0 },
-            { autoAlpha: 1, duration: 0.25, ease: "power2.out" }
+            { autoAlpha: 1, duration: DUR.base, ease: EASE.enter }
           );
           gsap.fromTo(
             activeSlot.querySelectorAll(".site-header__dropdown-item"),
@@ -299,9 +300,9 @@ export function Header() {
             {
               autoAlpha: 1,
               y: 0,
-              duration: 0.28,
-              stagger: 0.025,
-              ease: "power2.out",
+              duration: DUR.base,
+              stagger: STAGGER.tight,
+              ease: EASE.enter,
             }
           );
         }
@@ -313,14 +314,14 @@ export function Header() {
         } else {
           gsap.to(panel, {
             height: targetHeight,
-            duration: 0.35,
-            ease: "power3.out",
+            duration: DUR.base,
+            ease: EASE.enterSoft,
             overwrite: "auto",
           });
           gsap.fromTo(
             activeSlot,
             { autoAlpha: 0 },
-            { autoAlpha: 1, duration: 0.22, ease: "power2.out" }
+            { autoAlpha: 1, duration: DUR.base, ease: EASE.enter }
           );
           gsap.fromTo(
             activeSlot.querySelectorAll(".site-header__dropdown-item"),
@@ -328,9 +329,9 @@ export function Header() {
             {
               autoAlpha: 1,
               y: 0,
-              duration: 0.24,
-              stagger: 0.02,
-              ease: "power2.out",
+              duration: DUR.base,
+              stagger: STAGGER.tight,
+              ease: EASE.enter,
             }
           );
         }
@@ -412,12 +413,7 @@ export function Header() {
     } else if (to === "/programmes") {
       if (location.pathname === "/programmes") {
         event.preventDefault();
-        const lenis = getLenisInstance();
-        if (lenis) {
-          lenis.scrollTo(0);
-        } else {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
+        glideToTop({ reduced: prefersReducedMotion() });
         if (location.hash) {
           window.history.replaceState(null, "", "/programmes");
         }

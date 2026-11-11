@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { getCanvasPack, getCanvasTier, type ArtworkCard, type CanvasItem } from "../../data/site";
+import { alignPackToPixels } from "../../lib/discoverCanvas";
 import { findCard } from "../../lib/catalogue";
 import {
   getDiscoverEagerImageUrls,
   prefetchArtworkGallery,
 } from "../../lib/predictivePrefetch";
-import { gsap, prefersReducedMotion, useGSAP } from "../../lib/motion";
+import { EASE, gsap, prefersReducedMotion } from "../../lib/motion";
 import { CanvasTile } from "./CanvasTile";
 import "./InfiniteCanvas.css";
 
@@ -20,18 +21,25 @@ type Props = {
   sourceKey?: string;
 };
 
-/** Horizontal repeat count — all columns share one X period (seedW). */
-const REPEAT_X = 3;
-/** Vertical repeat count *per column* — each column has its own period. */
-const REPEAT_Y = 3;
-const DRAG_THRESHOLD = 12;
-
-/** How far a released flick glides, as a multiplier on its exit velocity. */
-const THROW_DISTANCE_MULT = 14;
+/** Vertical repeat count *per column* — each column has its own period. Two copies cover the
+ *  screen at every wrap position because a column's period is several screens tall. */
+const REPEAT_Y = 2;
+/** How far the pointer must travel before a press becomes a drag (a shorter press is a click). */
+const DRAG_THRESHOLD = 6;
+/** Friction after a throw: velocity falls by e^(-FRICTION) each second, so a throw glides
+ *  velocity / FRICTION pixels and settles smoothly, with no fixed end point. */
+const FRICTION = 3.4;
+/** Only the last stretch of a drag sets the throw: lifting after a pause places the field. */
+const THROW_WINDOW_MS = 60;
+const MAX_THROW = 4200; // px per second
+/** How quickly the slow drift takes over again once a throw has died down (per second). */
+const DRIFT_BLEND = 0.7;
 /** User-controlled zoom range — Ctrl+wheel/trackpad-pinch on desktop, real
  *  two-finger pinch on touch. */
 const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 1.8;
+/** Where the canvas rests: 10% closer than the layout's own size (see CANVAS_DENSITY). */
+const REST_ZOOM = 1.1;
 /** Wheel-delta-to-zoom sensitivity for Ctrl+scroll / trackpad pinch. */
 const WHEEL_ZOOM_SPEED = 0.012;
 
@@ -76,18 +84,34 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   const columnEls = useRef(new Map<string, HTMLDivElement>());
 
   const tier = useCanvasTier();
+  const [dpr, setDpr] = useState(() => (typeof window === "undefined" ? 1 : window.devicePixelRatio || 1));
+  const dprRef = useRef(dpr);
+  dprRef.current = dpr;
+  useEffect(() => {
+    const onResize = () => setDpr((prev) => (prev === (window.devicePixelRatio || 1) ? prev : window.devicePixelRatio || 1));
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
   const pack = useMemo(
-    () => getCanvasPack(tier, artworks, sourceKey),
-    [tier, sourceKey, artworks],
+    () => alignPackToPixels(getCanvasPack(tier, artworks, sourceKey), dpr),
+    [tier, sourceKey, artworks, dpr],
   );
   const { items: pool, seedW, colWidths, colPeriods } = pack;
+  // Enough copies side by side to cover the screen even when zoomed all the way out: a
+  // narrow phone needs two, a wide monitor more. (The old fixed three left a gap at the
+  // right of very wide screens once the world was made narrower.)
+  const repeatX = useMemo(() => {
+    const viewportW = typeof window === "undefined" ? 1440 : window.innerWidth;
+    return Math.max(2, Math.min(6, Math.ceil((seedW + viewportW / MIN_ZOOM) / seedW)));
+  }, [seedW, tier]);
   const columns = colWidths.length;
   const tileKey = `masonry-${tier}`;
 
   const eagerImageUrls = useMemo(() => {
     const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
     const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
-    return getDiscoverEagerImageUrls(artworks, viewportW, viewportH, sourceKey);
+    // A little beyond the screen, so the edge tiles are ready too.
+    return getDiscoverEagerImageUrls(artworks, viewportW * 1.1, viewportH * 1.1, sourceKey);
   }, [artworks, sourceKey, tier, seedW]);
 
   const itemsByCol = useMemo(() => {
@@ -97,14 +121,20 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   }, [pool, columns]);
 
   const offset = useRef({ x: -40, y: -40 });
+  /** The field's velocity in px per second: set by a throw, decays with friction, and blends
+   *  into the slow drift. One velocity for everything, so a throw hands over to the drift
+   *  seamlessly instead of stopping and starting again. */
   const vel = useRef({ x: 0, y: 0 });
+  const samples = useRef<{ x: number; y: number; t: number }[]>([]);
+  /** A tile under a resting mouse: the drift eases to a stop so it doesn't slide away. */
+  const hoveringTile = useRef(false);
+  const lastInteract = useRef(0);
   const dragging = useRef(false);
   const didDrag = useRef(false);
   const suppressClick = useRef(false);
   const pointerId = useRef<number | null>(null);
   const last = useRef({ x: 0, y: 0, t: 0 });
   const origin = useRef({ x: 0, y: 0 });
-  const raf = useRef(0);
 
   // Buttery release glide — a GSAP-authored ease replaces per-frame friction
   // decay, so momentum reads as a deliberately-curved deceleration rather
@@ -120,8 +150,8 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   // User-controlled zoom — Ctrl+wheel/trackpad-pinch (desktop) or a real
   // two-finger pinch (touch). Persists at whatever level the user sets it to;
   // panning/dragging no longer resets it.
-  const zoomScale = useRef({ value: 1 });
-  const targetZoomRef = useRef(1);
+  const zoomScale = useRef({ value: REST_ZOOM });
+  const targetZoomRef = useRef(REST_ZOOM);
   const zoomTween = useRef<gsap.core.Tween | null>(null);
   const zoomFocalRef = useRef({ x: 0, y: 0 });
 
@@ -165,6 +195,10 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   // in this component is specifically built to avoid.
   const handleTileHover = useCallback(
     (id: string | null) => {
+      // Only a real hovering mouse pauses the drift (a tap also fires mouseenter on touch).
+      if (window.matchMedia("(hover: hover)").matches) hoveringTile.current = Boolean(id);
+      // Tiles passing under the pointer during a drag are not being looked at: no prefetching.
+      if (dragging.current) return;
       if (!id || !artworks?.length || !id.startsWith("aw-")) return;
       const artworkId = id.slice(3).replace(/__c\d+-\d+$/, "");
       const artwork = findCard(artworks, artworkId);
@@ -176,22 +210,25 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
   const applyTransform = useCallback(() => {
     const world = worldRef.current;
     if (!world) return;
+    // Positions are NOT rounded to whole pixels: the drift is only a few pixels a second,
+    // so rounding turns it into a step every dozen frames, which reads as stutter. The
+    // GPU moves layers smoothly at sub-pixel positions on its own.
     // World handles X only — all columns share the same horizontal period.
-    const x = -wrap(-offset.current.x, seedW) - seedW;
+    const x = -wrap(-offset.current.x, seedW);
     world.style.transform = `translate3d(${x}px, 0, 0)`;
 
     // Each column wraps on its own vertical period, so different columns'
     // "reset" points land at different Y — no shared seam across the canvas.
     for (let col = 0; col < columns; col++) {
       const period = colPeriods[col] || 1;
-      const y = -wrap(-offset.current.y, period) - period;
+      const y = -wrap(-offset.current.y, period);
       const transform = `translate3d(0, ${y}px, 0)`;
-      for (let tx = 0; tx < REPEAT_X; tx++) {
+      for (let tx = 0; tx < repeatX; tx++) {
         const el = columnEls.current.get(`${tx}-${col}`);
         if (el) el.style.transform = transform;
       }
     }
-  }, [seedW, columns, colPeriods]);
+  }, [seedW, columns, colPeriods, repeatX]);
 
   const zoomTo = useCallback(
     (
@@ -275,17 +312,59 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     return () => window.clearTimeout(ambientWanderTimeout.current);
   }, []);
 
+  // The drift runs on GSAP's ticker, the same frame loop as every other animation, and
+  // moves by elapsed time, so its speed is identical at 60 Hz and 120 Hz.
+  const ready = useRef(false);
+  const dirty = useRef(false);
+  const glidingRef = useRef(false);
   useEffect(() => {
-    const step = () => {
-      if (!dragging.current && !paused) {
-        offset.current.x += ambient.current.vx / 60;
-        offset.current.y += ambient.current.vy / 60;
-        applyTransform();
+    const reduced = prefersReducedMotion();
+    const step = (_time: number, deltaTime: number) => {
+      // While dragging, the field follows the finger: moves are applied here, once per frame.
+      if (dragging.current) {
+        if (dirty.current) {
+          dirty.current = false;
+          applyTransform();
+        }
+        return;
       }
-      raf.current = requestAnimationFrame(step);
+      if (paused || !ready.current) return;
+      // A search glide is in charge of the position while it runs.
+      if (glideTween.current?.isActive()) {
+        vel.current = { x: 0, y: 0 };
+        return;
+      }
+      const seconds = Math.min(deltaTime, 50) / 1000;
+      const v = vel.current;
+      // The throw slows with friction...
+      const decay = Math.exp(-seconds * FRICTION);
+      v.x *= decay;
+      v.y *= decay;
+      // ...and the slow drift gradually takes over (none while the mouse rests on a tile).
+      if (!reduced) {
+        const tx = hoveringTile.current ? 0 : ambient.current.vx;
+        const ty = hoveringTile.current ? 0 : ambient.current.vy;
+        const k = Math.min(1, seconds * DRIFT_BLEND);
+        v.x += (tx - v.x) * k;
+        v.y += (ty - v.y) * k;
+      }
+      // While the field glides fast, tiles slide past a still mouse: their hover lift is held
+      // back until it settles, or each tile would pop up and drop as it passes.
+      const gliding = Math.hypot(v.x, v.y) > 60;
+      if (gliding !== glidingRef.current) {
+        glidingRef.current = gliding;
+        rootRef.current?.classList.toggle("is-gliding", gliding);
+      }
+      if (Math.abs(v.x) < 0.001 && Math.abs(v.y) < 0.001 && !dirty.current) return;
+      dirty.current = false;
+      offset.current.x += v.x * seconds;
+      offset.current.y += v.y * seconds;
+      applyTransform();
     };
-    raf.current = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf.current);
+    gsap.ticker.add(step);
+    return () => {
+      gsap.ticker.remove(step);
+    };
   }, [applyTransform, paused]);
 
   useEffect(() => {
@@ -323,9 +402,20 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       didDrag.current = false;
       suppressClick.current = false;
       pointerId.current = e.pointerId;
+      // Pressing catches a moving field, like a hand landing on a sliding print.
       vel.current = { x: 0, y: 0 };
       origin.current = { x: e.clientX, y: e.clientY };
       last.current = { x: e.clientX, y: e.clientY, t: performance.now() };
+      samples.current = [{ x: e.clientX, y: e.clientY, t: performance.now() }];
+    };
+
+    // The page hides its header while the canvas is in use. Telling it a few times a second is
+    // enough; telling it on every pointer event restarted the header's animation constantly.
+    const interacting = () => {
+      const now = performance.now();
+      if (now - lastInteract.current < 250) return;
+      lastInteract.current = now;
+      window.dispatchEvent(new CustomEvent("canvas:interacting"));
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -336,26 +426,23 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
         didDrag.current = true;
         suppressClick.current = true;
         root.classList.add("is-grabbing");
-        window.dispatchEvent(new CustomEvent("canvas:interacting"));
         try {
           root.setPointerCapture(e.pointerId);
         } catch {
           /* ignore */
         }
-        last.current = { x: e.clientX, y: e.clientY, t: performance.now() };
-        return;
+        // No early return: the field catches up with the pointer from where the press began,
+        // so it stays locked under the finger instead of trailing it by the threshold.
       }
-      const dx = e.clientX - last.current.x;
-      const dy = e.clientY - last.current.y;
       const now = performance.now();
-      const dt = Math.max(16, now - last.current.t);
-      offset.current.x += dx;
-      offset.current.y += dy;
-      vel.current.x = (dx / dt) * 16;
-      vel.current.y = (dy / dt) * 16;
+      offset.current.x += e.clientX - last.current.x;
+      offset.current.y += e.clientY - last.current.y;
       last.current = { x: e.clientX, y: e.clientY, t: now };
-      applyTransform();
-      window.dispatchEvent(new CustomEvent("canvas:interacting"));
+      const list = samples.current;
+      list.push({ x: e.clientX, y: e.clientY, t: now });
+      while (list.length > 2 && now - list[0].t > THROW_WINDOW_MS * 2) list.shift();
+      dirty.current = true;
+      interacting();
     };
 
     const onPointerUp = (e: PointerEvent) => {
@@ -374,20 +461,28 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
           /* ignore */
         }
 
-        const speed = Math.hypot(vel.current.x, vel.current.y);
-        if (speed > 0.4 && !prefersReducedMotion()) {
-          const targetX = offset.current.x + vel.current.x * THROW_DISTANCE_MULT;
-          const targetY = offset.current.y + vel.current.y * THROW_DISTANCE_MULT;
-          const duration = clamp(0.5 + speed * 0.03, 0.5, 1.4);
-          glideTween.current?.kill();
-          glideTween.current = gsap.to(offset.current, {
-            x: targetX,
-            y: targetY,
-            duration,
-            ease: "power3.out",
-            onUpdate: applyTransform,
-          });
+        // The throw: the pointer's velocity over the last moment of the drag, measured over
+        // real time (correct at 60 Hz and 120 Hz alike). Lifting after a pause gives none.
+        const now = performance.now();
+        const list = samples.current.filter((pt) => now - pt.t <= THROW_WINDOW_MS);
+        let vx = 0;
+        let vy = 0;
+        if (didDrag.current && list.length >= 2 && !prefersReducedMotion()) {
+          const a = list[0];
+          const z = list[list.length - 1];
+          const span = Math.max(8, z.t - a.t) / 1000;
+          vx = (z.x - a.x) / span;
+          vy = (z.y - a.y) / span;
+          const speed = Math.hypot(vx, vy);
+          if (speed > MAX_THROW) {
+            vx *= MAX_THROW / speed;
+            vy *= MAX_THROW / speed;
+          }
+          if (speed < 60) vx = vy = 0;
         }
+        vel.current = { x: vx, y: vy };
+        samples.current = [];
+        dirty.current = true;
       }
 
       // Allow click events on tiles fired synchronously in this tick, but reset suppression immediately after
@@ -397,8 +492,11 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     };
 
     const onWheel = (e: WheelEvent) => {
+      // An opened artwork, image viewer or any other overlay scrolls on its own: the
+      // canvas underneath must neither move nor swallow the wheel.
+      if ((e.target as Element | null)?.closest?.(".canvas-expand, .gallery-lightbox, [role='dialog']")) return;
       e.preventDefault();
-      window.dispatchEvent(new CustomEvent("canvas:interacting"));
+      interacting();
 
       const rect = root.getBoundingClientRect();
       const clientX = e.clientX - rect.left;
@@ -419,11 +517,13 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       }
 
       // Normal wheel: pan with momentum glide
+      // Trackpads bring their own momentum and wheels move in steps: the field takes the
+      // movement as it comes, applied on the next frame; the drift eases back in afterwards.
       glideTween.current?.kill();
       offset.current.x -= e.deltaX;
       offset.current.y -= e.deltaY;
       vel.current = { x: 0, y: 0 };
-      applyTransform();
+      dirty.current = true;
     };
 
     const onDblClick = (e: MouseEvent) => {
@@ -431,7 +531,8 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
       const clientX = e.clientX - rect.left;
       const clientY = e.clientY - rect.top;
       const current = zoomScale.current.value;
-      const nextTarget = current < 1.15 ? 1.45 : 1.0;
+      // Double-click zooms in close; double-click again returns to the resting view.
+      const nextTarget = current < REST_ZOOM + 0.05 ? REST_ZOOM * 1.25 : REST_ZOOM;
       zoomTo(nextTarget, clientX, clientY, {
         duration: 0.75,
         ease: "power3.out",
@@ -462,7 +563,7 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     const onTouchMove = (e: TouchEvent) => {
       if (e.touches.length !== 2 || !pinch.current) return;
       e.preventDefault();
-      window.dispatchEvent(new CustomEvent("canvas:interacting"));
+      interacting();
       const [t1, t2] = [e.touches[0], e.touches[1]];
       const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
       const ratio = dist / (pinch.current.startDist || 1);
@@ -515,47 +616,126 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
     };
   }, [applyTransform, zoomTo]);
 
-  // Gentle field zoom-in on open — individual tiles reveal progressively as
-  // their images decode (see CanvasTile), staggered from viewport center.
-  useGSAP(
-    () => {
-      if (prefersReducedMotion()) {
-        zoomScale.current.value = 1;
-        applyZoom();
+  // Opening: the field stays hidden until every picture on the opening screen has been
+  // fetched and decoded, then all of it is revealed together in one GSAP timeline. That
+  // is what keeps tiles from popping in one by one in whatever order they happen to load.
+  const [isReady, setIsReady] = useState(false);
+  const tilesInView = useCallback(() => {
+    const root = rootRef.current;
+    if (!root) return [] as HTMLElement[];
+    const view = root.getBoundingClientRect();
+    return Array.from(root.querySelectorAll<HTMLElement>(".canvas-tile")).filter((tile) => {
+      const b = tile.getBoundingClientRect();
+      return b.right > view.left && b.left < view.right && b.bottom > view.top && b.top < view.bottom;
+    });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    ready.current = false;
+    setIsReady(false);
+    const open = async () => {
+      // Two frames: the opening position has been applied and tiles have been laid out.
+      await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+      if (cancelled) return;
+      const pictures = tilesInView()
+        .map((tile) => tile.querySelector<HTMLImageElement>("img"))
+        .filter((img): img is HTMLImageElement => Boolean(img));
+      const decoded = Promise.all(
+        pictures.map((img) => (typeof img.decode === "function" ? img.decode().catch(() => undefined) : Promise.resolve())),
+      );
+      // Never leave someone staring at a blank screen if a picture is slow or missing.
+      await Promise.race([decoded, new Promise<void>((resolve) => window.setTimeout(resolve, 6000))]);
+      if (cancelled) return;
+      ready.current = true;
+      setIsReady(true);
+    };
+    void open();
+    return () => {
+      cancelled = true;
+    };
+  }, [tileKey, tilesInView]);
+
+  useLayoutEffect(() => {
+    if (!isReady) return;
+    const root = rootRef.current;
+    if (!root) return;
+    const tiles = tilesInView();
+    const view = root.getBoundingClientRect();
+    if (prefersReducedMotion() || !tiles.length) return;
+
+    // Ripple outward from the centre of the screen, finishing within about a second.
+    const cx = view.left + view.width / 2;
+    const cy = view.top + view.height / 2;
+    const distance = tiles.map((tile) => {
+      const b = tile.getBoundingClientRect();
+      return Math.hypot(b.left + b.width / 2 - cx, b.top + b.height / 2 - cy);
+    });
+    const farthest = Math.max(...distance, 1);
+    gsap.set(tiles, { autoAlpha: 0 });
+    const reveal = gsap.to(tiles, {
+      autoAlpha: 1,
+      duration: 0.9,
+      ease: EASE.reveal,
+      delay: (index: number) => (distance[index] / farthest) * 0.55,
+      clearProps: "opacity,visibility",
+    });
+    // A very slight settle of the whole field as it appears.
+    zoomScale.current.value = REST_ZOOM * 0.97;
+    applyZoom();
+    zoomTo(REST_ZOOM, view.width / 2, view.height / 2, { duration: 1.6, ease: "power2.out" });
+    return () => {
+      reveal.kill();
+      gsap.set(tiles, { clearProps: "opacity,visibility" });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isReady]);
+
+  const handleSelect = useCallback(
+    (item: CanvasItem, el: HTMLButtonElement) => {
+      if (suppressClick.current) {
+        suppressClick.current = false;
         return;
       }
-      zoomScale.current.value = 0.94;
-      applyZoom();
-      const viewportW = rootRef.current?.getBoundingClientRect().width || window.innerWidth;
-      const viewportH = rootRef.current?.getBoundingClientRect().height || window.innerHeight;
-      zoomTo(1, viewportW / 2, viewportH / 2, { duration: 1.4, ease: "power2.out" });
+      if (item.id.startsWith("aw-") && artworks?.length) {
+        const artworkId = item.id.slice(3).replace(/__c\d+-\d+$/, "");
+        prefetchArtworkGallery(findCard(artworks, artworkId));
+      }
+      onSelect(item, el);
     },
-    { scope: rootRef, dependencies: [] }
+    [artworks, onSelect],
   );
 
-  const handleSelect = (item: CanvasItem, el: HTMLButtonElement) => {
-    if (suppressClick.current) {
-      suppressClick.current = false;
-      return;
-    }
-    if (item.id.startsWith("aw-") && artworks?.length) {
-      const artworkId = item.id.slice(3).replace(/__c\d+-\d+$/, "");
-      prefetchArtworkGallery(findCard(artworks, artworkId));
-    }
-    onSelect(item, el);
-  };
-
-  const xCopies = useMemo(() => Array.from({ length: REPEAT_X }, (_, tx) => tx), []);
+  const tileCopies = useMemo(
+    () =>
+      itemsByCol.map((items, col) => {
+        const colPeriod = colPeriods[col] || 1;
+        return Array.from({ length: REPEAT_Y }, (_, ty) =>
+          items.map((item) => ({ source: item, placed: ty === 0 ? item : { ...item, y: item.y + ty * colPeriod }, ty })),
+        ).flat();
+      }),
+    [itemsByCol, colPeriods],
+  );
+  const xCopies = useMemo(() => Array.from({ length: repeatX }, (_, tx) => tx), [repeatX]);
   const colIndexes = useMemo(() => Array.from({ length: columns }, (_, i) => i), [columns]);
-  const yCopies = useMemo(() => Array.from({ length: REPEAT_Y }, (_, ty) => ty), []);
 
   return (
-    <div ref={rootRef} className="infinite-canvas" aria-label="Discover Artworks canvas">
+    <div
+      ref={rootRef}
+      className={`infinite-canvas${isReady ? "" : " is-loading"}`}
+      aria-label="Discover Artworks canvas"
+      aria-busy={!isReady}
+    >
+      {isReady ? null : (
+        <div className="infinite-canvas__loading" aria-hidden>
+          <img src="/logo-sb-mark.svg" alt="" />
+        </div>
+      )}
       <div ref={zoomRef} className="infinite-canvas__zoom">
         <div
           ref={worldRef}
           className="infinite-canvas__world"
-          style={{ width: seedW * REPEAT_X, height: "100%" }}
+          style={{ width: seedW * repeatX, height: "100%" }}
         >
           {xCopies.map((tx) => (
             <div
@@ -573,22 +753,17 @@ export function InfiniteCanvas({ query, onSelect, paused = false, artworks, sour
                   }}
                   className="infinite-canvas__column"
                 >
-                  {yCopies.map((ty) =>
-                    itemsByCol[col].map((item) => {
-                      const colPeriod = colPeriods[col] || 1;
-                      return (
-                        <CanvasTile
-                          key={`${tileKey}-x${tx}-c${col}-y${ty}-${item.id}`}
-                          item={ty === 0 ? item : { ...item, y: item.y + ty * colPeriod }}
-                          dimmed={Boolean(q) && !matches(item)}
-                          highlighted={Boolean(q) && matches(item)}
-                          eager={Boolean(item.image && eagerImageUrls.has(item.image))}
-                          onSelect={handleSelect}
-                          onHoverChange={handleTileHover}
-                        />
-                      );
-                    })
-                  )}
+                  {tileCopies[col].map(({ source, placed, ty }) => (
+                    <CanvasTile
+                      key={`${tileKey}-x${tx}-c${col}-y${ty}-${source.id}`}
+                      item={placed}
+                      dimmed={Boolean(q) && !matches(source)}
+                      highlighted={Boolean(q) && matches(source)}
+                      eager={Boolean(source.image && eagerImageUrls.has(source.image))}
+                      onSelect={handleSelect}
+                      onHoverChange={handleTileHover}
+                    />
+                  ))}
                 </div>
               ))}
             </div>

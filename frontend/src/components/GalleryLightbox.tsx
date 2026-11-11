@@ -1,5 +1,6 @@
-import { useEffect, useRef, type TouchEvent as ReactTouchEvent } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useSlideGesture } from "../lib/gesture";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useModalPortal } from "../lib/useModalPortal";
 import { PreloadedImage } from "./PreloadedImage";
@@ -17,13 +18,11 @@ type Props = {
  *  (Past Workshops, Residencies). Portal/focus-trap/scroll-lock/Escape come from
  *  useModalPortal; this component owns the image-specific bits — prev/next, the
  *  counter, and Arrow key navigation. */
-/** Swipe past this distance (px) before it counts as a gesture, not a tap. */
-const SWIPE_THRESHOLD = 40;
-
 export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
+  const stepRef = useRef<(direction: 1 | -1) => void>(() => {});
 
   useModalPortal({ open: true, onClose, panelRef, initialFocusRef: closeRef });
 
@@ -40,38 +39,37 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") {
         e.preventDefault();
-        onIndexChange((index - 1 + images.length) % images.length);
+        stepRef.current(-1);
       } else if (e.key === "ArrowRight") {
         e.preventDefault();
-        onIndexChange((index + 1) % images.length);
+        stepRef.current(1);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [images.length, index, onIndexChange]);
+  }, []);
 
-  const goPrev = () => onIndexChange((index - 1 + images.length) % images.length);
-  const goNext = () => onIndexChange((index + 1) % images.length);
 
-  const onTouchStart = (e: ReactTouchEvent) => {
-    const t = e.touches[0];
-    touchStart.current = { x: t.clientX, y: t.clientY };
-  };
+  // The image follows the finger or mouse: sideways changes image, down closes.
+  const gesture = useSlideGesture(panelRef, {
+    count: images.length,
+    getIndex: () => index,
+    ghost: { selector: ".gallery-lightbox__image", getSrc: (i) => images[i] ?? "" },
+    getTravel: () => window.innerWidth,
+    onCommit: onIndexChange,
+    dismiss: {
+      getTarget: () => frameRef.current,
+      getFades: () =>
+        Array.from(
+          document.querySelectorAll<HTMLElement>(
+            ".gallery-lightbox__scrim, .gallery-lightbox__nav, .gallery-lightbox__counter, .gallery-lightbox__close",
+          ),
+        ),
+      onDismiss: onClose,
+    },
+  });
 
-  const onTouchEnd = (e: ReactTouchEvent) => {
-    const start = touchStart.current;
-    touchStart.current = null;
-    if (!start) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - start.x;
-    const dy = t.clientY - start.y;
-    if (Math.abs(dx) > Math.abs(dy)) {
-      if (dx > SWIPE_THRESHOLD) goPrev();
-      else if (dx < -SWIPE_THRESHOLD) goNext();
-    } else if (dy > SWIPE_THRESHOLD) {
-      onClose();
-    }
-  };
+  stepRef.current = gesture.step;
 
   return createPortal(
     <div className="gallery-lightbox" role="presentation" data-lenis-prevent>
@@ -109,10 +107,8 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
         role="dialog"
         aria-modal="true"
         aria-label="Image viewer"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
       >
-        <div className="gallery-lightbox__frame">
+        <div ref={frameRef} className="gallery-lightbox__frame">
           <PreloadedImage
             key={images[index]}
             src={images[index]}
@@ -123,10 +119,10 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
         </div>
         {images.length > 1 ? (
           <>
-            <button type="button" className="gallery-lightbox__nav gallery-lightbox__prev" onClick={goPrev} aria-label="Previous image">
+            <button type="button" className="gallery-lightbox__nav gallery-lightbox__prev" onClick={() => gesture.step(-1)} aria-label="Previous image">
               <BrandArrow direction="left" />
             </button>
-            <button type="button" className="gallery-lightbox__nav gallery-lightbox__next" onClick={goNext} aria-label="Next image">
+            <button type="button" className="gallery-lightbox__nav gallery-lightbox__next" onClick={() => gesture.step(1)} aria-label="Next image">
               <BrandArrow direction="right" />
             </button>
             <div className="gallery-lightbox__counter">

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { gsap, useGSAP } from "../../lib/motion";
+import { DUR, EASE, EXIT, gsap, useGSAP } from "../../lib/motion";
 import type { CanvasItem } from "../../data/discover";
 import "./CanvasExpand.css";
 
@@ -39,7 +39,7 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
     });
     gsap
       .timeline({ onComplete: onClose })
-      .to(backdrop, { autoAlpha: 0, duration: 0.22 }, 0)
+      .to(backdrop, { autoAlpha: 0, duration: EXIT.duration, ease: EXIT.ease }, 0)
       .to(
         sheet,
         {
@@ -47,8 +47,8 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
           y: o.top,
           width: o.width,
           height: o.height,
-          duration: 0.4,
-          ease: "power2.inOut",
+          duration: EXIT.travel,
+          ease: EASE.fade,
         },
         0
       );
@@ -70,7 +70,7 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
     gsap.set(backdrop, { autoAlpha: 0 });
     gsap
       .timeline()
-      .to(backdrop, { autoAlpha: 1, duration: 0.25 }, 0)
+      .to(backdrop, { autoAlpha: 1, duration: DUR.base, ease: EASE.enter }, 0)
       .to(
         sheet,
         {
@@ -78,8 +78,8 @@ export function CanvasExpand({ item, origin, onClose }: Props) {
           y: headerH,
           width: window.innerWidth,
           height: window.innerHeight - headerH,
-          duration: 0.45,
-          ease: "power2.inOut",
+          duration: DUR.slow,
+          ease: EASE.enterSoft,
         },
         0
       );

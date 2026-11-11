@@ -17,8 +17,9 @@ export function CarouselNavArrows({ slideSrc, onPrev, onNext }: Props) {
 
   useEffect(() => {
     let cancelled = false;
-    setPrevTone("unknown");
-    setNextTone("unknown");
+    // The arrows keep their current colours until the new picture's edges have been measured,
+    // then ease to the new ones. (Resetting to "unknown" first turned a white arrow black for a
+    // moment on every slide change: the flicker.)
     (async () => {
       const [left, right] = await Promise.all([
         sampleCarouselNavTone(slideSrc, "left"),

@@ -29,7 +29,10 @@
     transparent 100%
   );
   pointer-events: none;
-  transition: opacity 0.3s var(--ease-craft, ease), visibility 0.3s var(--ease-craft, ease);
+  /* Shown is the state being entered here (entrance timing); hiding is the exit (quick). */
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), visibility calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 /* Extend background upwards behind the header so no gap or canvas ever peeks through during animation */
@@ -44,7 +47,14 @@
   pointer-events: none;
 }
 
+/* Closing an artwork: the bar is simply back, already in place behind the closing sheet (which
+   sits above it), so it is uncovered rather than appearing. */
+.discover__search.is-restored {
+  transition: none;
+}
+
 .discover__search.is-hidden {
+  --hover: 0;
   opacity: 0;
   visibility: hidden;
   pointer-events: none !important;
@@ -77,12 +87,13 @@
   font-weight: 500;
   color: var(--color-text-primary);
   transform-origin: left bottom;
-  transition: transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
-              color 0.26s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
   user-select: none;
 }
 
 .discover__search-field.is-active .discover__search-label {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   transform: translateY(-30px) scale(0.68);
   color: #767676;
 }
@@ -129,7 +140,7 @@
   place-items: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.2s ease, color 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), color calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
   z-index: 2;
 }
 
@@ -140,11 +151,15 @@
 }
 
 .discover__clear.is-visible {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 1;
   pointer-events: auto;
 }
 
 .discover__clear:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.7;
 }
 

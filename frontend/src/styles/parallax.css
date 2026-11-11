@@ -7,7 +7,7 @@
 .has-parallax-img {
   will-change: transform;
   transform-origin: center center;
-  transition: filter 0.3s ease !important;
+  transition: filter var(--motion-duration-slow) var(--motion-ease-enter) !important;
 }
 
 /* Ensure media wrapper containers properly constrain parallax transforms */

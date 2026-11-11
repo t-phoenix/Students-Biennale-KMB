@@ -68,6 +68,8 @@
 }
 
 .edition-overview__hero-dots button.is-active {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   background: var(--color-neutral-white);
 }
 
@@ -351,10 +353,12 @@
   padding: 0;
   min-height: auto;
   width: auto;
-  transition: opacity 0.2s ease;
+  transition: opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
 }
 
 .edition-overview__download-card:hover {
+  --hover: 1;
+  --hover-ease: var(--enter-ease);
   opacity: 0.7;
 }
 
@@ -405,11 +409,15 @@ button.edition-overview__slot {
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-button.edition-overview__slot:hover img {
-  transform: scale(1.04);
+@media (hover: hover) and (pointer: fine) {
+  button.edition-overview__slot:hover img {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transform: scale(1.03);
+  }
 }
 
 /* Navigation footer */

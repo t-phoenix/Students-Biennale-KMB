@@ -101,7 +101,7 @@
   flex: none;
   width: 44px;
   height: 44px;
-  transition: transform 0.25s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
 /* Tablet / Medium viewport adjustments (600px - 899px) */
@@ -141,18 +141,26 @@
 /* Direction-aware hover micro-interactions strictly for fine pointers (mouse) */
 @media (hover: hover) and (pointer: fine) {
   .cta-link--right:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: translateX(4px);
   }
 
   .cta-link--left:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: translateX(-4px);
   }
 
   .cta-link--down:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: translateY(4px);
   }
 
   .cta-link--up:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: translateY(-4px);
   }
 }
@@ -163,6 +171,8 @@
   }
 
   .cta-link:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: none;
   }
 }

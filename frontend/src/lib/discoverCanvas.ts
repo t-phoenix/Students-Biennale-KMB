@@ -8,7 +8,7 @@ import {
 } from "../data/site";
 
 const REPEAT_X = 3;
-const REPEAT_Y = 3;
+const REPEAT_Y = 2;
 
 /** Unique tile image URLs used by the Discover canvas pack. */
 export function getDiscoverCanvasImageUrls(
@@ -89,4 +89,38 @@ export function splitDiscoverImageUrls(
   const visibleSet = new Set(visible);
   const rest = all.filter((url) => !visibleSet.has(url));
   return { all, visible, rest };
+}
+
+const alignedPacks = new WeakMap<CanvasPack, Map<number, CanvasPack>>();
+
+/**
+ * Puts every tile edge on a whole device pixel. A whole-number layout already does on
+ * 1x, 2x and 3x screens; on 1.25x or 1.5x screens (common on Windows) the edges would
+ * fall between pixels and blend with the background as a pale line.
+ */
+export function alignPackToPixels(pack: CanvasPack, dpr: number): CanvasPack {
+  const d = Math.round(dpr * 1000) / 1000;
+  if (!Number.isFinite(d) || d <= 0 || Number.isInteger(d)) return pack;
+  let byDpr = alignedPacks.get(pack);
+  if (!byDpr) {
+    byDpr = new Map();
+    alignedPacks.set(pack, byDpr);
+  }
+  const cached = byDpr.get(d);
+  if (cached) return cached;
+  const r = (v: number) => Math.round(v * d) / d;
+  const aligned: CanvasPack = {
+    items: pack.items.map((item) => ({
+      ...item,
+      x: r(item.x),
+      y: r(item.y),
+      width: r(item.width),
+      height: r(item.height),
+    })),
+    seedW: r(pack.seedW),
+    colWidths: pack.colWidths.map(r),
+    colPeriods: pack.colPeriods.map(r),
+  };
+  byDpr.set(d, aligned);
+  return aligned;
 }

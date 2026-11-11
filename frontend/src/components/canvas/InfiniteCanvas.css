@@ -45,4 +45,41 @@
   top: 0;
   left: 0;
   will-change: transform;
+  /* Each column's tiles are laid out and styled on their own. */
+  contain: layout style;
+}
+
+/* Hidden until the opening screen's pictures are ready, then revealed together. */
+.infinite-canvas.is-loading .infinite-canvas__zoom {
+  visibility: hidden;
+}
+
+.infinite-canvas__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.infinite-canvas__loading img {
+  width: 44px;
+  height: auto;
+  opacity: 0.55;
+  animation: canvasLoadingPulse 1.6s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+@keyframes canvasLoadingPulse {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .infinite-canvas__loading img {
+    animation: none;
+  }
 }

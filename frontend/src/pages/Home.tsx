@@ -1,6 +1,7 @@
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion, withMotionPreference } from "../lib/motion";
+import { gsap, useGSAP, prefersReducedMotion, withMotionPreference, DISTANCE, DUR, EASE, EXIT, REVEAL, STAGGER } from "../lib/motion";
+import { onAccordionKeyDown, rowClickOpensArticle, useAccordionHover, useEqualDrawerHeights } from "../lib/accordionScroll";
 import { splitLinesOnScroll } from "../lib/splitTextScroll";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { CtaLink } from "../components/CtaLink";
@@ -29,6 +30,7 @@ import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { prefetchHomeDestinations } from "../lib/predictivePrefetch";
 import { ensureLcpImagePreload } from "../lib/preloadImages";
 import { buildAutoSlideTimeline, jumpToSlide } from "../lib/imageSlider";
+import { bindSwipeAway, GESTURE, useSlideGesture } from "../lib/gesture";
 import { useProgrammes } from "../lib/programmes";
 import { useProgrammesCovers } from "../lib/programmesCms";
 import { usePressItems } from "../lib/pressCms";
@@ -70,6 +72,48 @@ export function Home() {
   const heroRef = useRef<HTMLElement>(null);
   const heroAutoResumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [slide, setSlide] = useState(0);
+  // The slide whose caption is on screen. It trails `slide` so the caption can fade out, change
+  // and fade in, instead of the words being swapped in place.
+  const [creditSlide, setCreditSlide] = useState(0);
+  const creditRef = useRef<HTMLDivElement>(null);
+  const mobileCreditRef = useRef<HTMLDivElement>(null);
+  const creditFadingIn = useRef(false);
+  useEffect(() => {
+    if (slide === creditSlide) return;
+    const els = [creditRef.current, mobileCreditRef.current].filter((el): el is HTMLDivElement => Boolean(el));
+    if (!els.length || prefersReducedMotion()) {
+      setCreditSlide(slide);
+      return;
+    }
+    // Out quickly (from wherever it is, if a fade was already running), then change.
+    const out = gsap.to(els, {
+      autoAlpha: 0,
+      y: -4,
+      duration: EXIT.micro,
+      ease: EXIT.ease,
+      overwrite: true,
+      onComplete: () => {
+        creditFadingIn.current = true;
+        setCreditSlide(slide);
+      },
+    });
+    return () => {
+      out.kill();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slide]);
+  useLayoutEffect(() => {
+    if (!creditFadingIn.current) return;
+    creditFadingIn.current = false;
+    const els = [creditRef.current, mobileCreditRef.current].filter((el): el is HTMLDivElement => Boolean(el));
+    if (!els.length) return;
+    // In softly with the rest of the picture's crossfade.
+    gsap.fromTo(
+      els,
+      { autoAlpha: 0, y: 6 },
+      { autoAlpha: 1, y: 0, duration: DUR.slow, ease: EASE.fade, overwrite: true, clearProps: "opacity,visibility,transform" },
+    );
+  }, [creditSlide]);
   const [editionExpanded, setEditionExpanded] = useState(false);
   const [sensingOpen, setSensingOpen] = useState(false);
   const [razaModalOpen, setRazaModalOpen] = useState(false);
@@ -77,50 +121,30 @@ export function Home() {
   const [activeCard, setActiveCard] = useState<ActiveUpdateCard | null>(null);
   const [dismissedCardIds, setDismissedCardIds] = useState<string[]>([]);
   const [mobileCardsExpanded, setMobileCardsExpanded] = useState(false);
+  const cardDraggingRef = useRef(false);
   const [programmesHover, setProgrammesHover] = useState<string | null>(null);
-  const [clickedPressId, setClickedPressId] = useState<string>("");
-  const [hoveredPressId, setHoveredPressId] = useState<string>("");
+  // One article open at a time. null until the first click: the first article starts open.
+  const [openPressId, setOpenPressId] = useState<string | null>(null);
+  const pressHover = useAccordionHover(setOpenPressId);
+  const pressListRef = useRef<HTMLDivElement>(null);
+  const programmesLabelTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Rail labels: wait a beat before reacting, and bridge the gaps between labels, so rolling the
+  // pointer down the list doesn't make the thumbnails chase it.
+  const labelHoverIn = (hash: string) => {
+    if (programmesLabelTimer.current) clearTimeout(programmesLabelTimer.current);
+    programmesLabelTimer.current = setTimeout(() => setProgrammesHover(hash), 200);
+  };
+  const labelHoverOut = () => {
+    if (programmesLabelTimer.current) clearTimeout(programmesLabelTimer.current);
+    programmesLabelTimer.current = setTimeout(() => setProgrammesHover(null), 260);
+  };
+  const thumbHover = (hash: string | null) => {
+    if (programmesLabelTimer.current) clearTimeout(programmesLabelTimer.current);
+    setProgrammesHover(hash);
+  };
   const programmesThumbsRef = useRef<HTMLDivElement>(null);
+  const programmesTweenRef = useRef<gsap.core.Tween | null>(null);
   const programmesThumbEls = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const pressHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const isDesktopHover = useCallback(
-    () =>
-      typeof window !== "undefined" &&
-      window.innerWidth > 899 &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
-    [],
-  );
-
-  const handlePressPointerEnter = useCallback(
-    (e: React.PointerEvent, id: string) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-      pressHoverTimerRef.current = setTimeout(() => {
-        setHoveredPressId(id);
-      }, 35);
-    },
-    [isDesktopHover],
-  );
-
-  const handlePressPointerLeave = useCallback(
-    (e: React.PointerEvent) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-      pressHoverTimerRef.current = setTimeout(() => {
-        setHoveredPressId("");
-      }, 80);
-    },
-    [isDesktopHover],
-  );
-
-  const handleTogglePress = useCallback((id: string) => {
-    if (pressHoverTimerRef.current) clearTimeout(pressHoverTimerRef.current);
-    setHoveredPressId("");
-    setClickedPressId((prev) => (prev === id ? "" : id));
-  }, []);
-
-  const activePressId = clickedPressId || hoveredPressId;
 
   useEffect(() => {
     if (razaModalOpen || openScholarId !== null || activeCard !== null) {
@@ -142,6 +166,8 @@ export function Home() {
     };
 
     const checkSwipeOrExit = (clientX: number, clientY: number) => {
+      // Throwing a card away must not also collapse the stack underneath it.
+      if (cardDraggingRef.current) return;
       const dx = clientX - touchStartX;
       const dy = clientY - touchStartY;
       const dist = Math.hypot(dx, dy);
@@ -239,6 +265,10 @@ export function Home() {
   const { covers: dynamicCovers, cards: cmsCards } = useHomeCms();
   const { willShow: splashWillShow, completed: splashCompleted } = useSplash();
   const { items: pressItems } = usePressItems();
+  const firstPressId = pressItems[0]?.id ?? "";
+  const activePressId = openPressId ?? firstPressId;
+  // Every article opens to the same height, so the section never changes height.
+  useEqualDrawerHeights(pressListRef, ".home-press__drawer-content", pressItems.length);
   const covers = dynamicCovers;
   const cards: ActiveUpdateCard[] = cmsCards.map((c) => {
     const mode = normalizeCardMode(c.card_type);
@@ -256,15 +286,18 @@ export function Home() {
   });
   const currentCover = covers[slide] ?? covers[0];
   const dotsTone = useCarouselDotsTone(currentCover?.image_url ?? "", "center");
-  const showArtwork = heroCreditVisible(currentCover?.show_artwork_name, currentCover?.artwork_name);
-  const showArtist = heroCreditVisible(currentCover?.show_artist, currentCover?.artist);
+  // The caption follows the slide a beat behind: the old title fades out, then the new one
+  // fades in, both within the picture's crossfade. (Swapping the text in place made it flicker.)
+  const creditCover = covers[creditSlide] ?? currentCover;
+  const showArtwork = heroCreditVisible(creditCover?.show_artwork_name, creditCover?.artwork_name);
+  const showArtist = heroCreditVisible(creditCover?.show_artist, creditCover?.artist);
   const showInstitution = heroCreditVisible(
-    currentCover?.show_institution,
-    currentCover?.institution,
+    creditCover?.show_institution,
+    creditCover?.institution,
   );
-  const creditArtwork = (currentCover?.artwork_name ?? "").trim();
-  const creditArtist = (currentCover?.artist ?? "").trim();
-  const creditInst = (currentCover?.institution ?? "").trim();
+  const creditArtwork = (creditCover?.artwork_name ?? "").trim();
+  const creditArtist = (creditCover?.artist ?? "").trim();
+  const creditInst = (creditCover?.institution ?? "").trim();
   const showCredits = showArtwork || showArtist || showInstitution;
   const workshopThumb =
     upcomingWorkshops[0]?.image || pastWorkshops[0]?.heroImage || "";
@@ -368,16 +401,22 @@ export function Home() {
         gsap.set(el, { height: editionExpanded ? "auto" : 0 });
         return;
       }
+      // Same downward reveal as every accordion: the text is already in place and the clip edge
+      // lowers over it. Retargets from the current height if toggled mid-way.
       if (editionExpanded) {
+        const from = el.offsetHeight;
         gsap.set(el, { height: "auto" });
         const target = el.offsetHeight;
         gsap.fromTo(
           el,
-          { height: 0 },
-          { height: target, duration: 0.55, ease: "power3.out" }
+          { height: from },
+          { height: target, duration: REVEAL.open, ease: REVEAL.easeOpen, overwrite: true,
+            // Stays open at its natural height if the text later reflows (rotation, resize).
+            onComplete: () => gsap.set(el, { height: "auto" }) }
         );
       } else {
-        gsap.to(el, { height: 0, duration: 0.45, ease: "power3.inOut" });
+        // A single expander, not a list: it closes on the quick exit.
+        gsap.to(el, { height: 0, duration: EXIT.duration, ease: EXIT.ease, overwrite: true });
       }
     },
     { dependencies: [editionExpanded], scope: rootRef }
@@ -458,8 +497,15 @@ export function Home() {
         }, 1200);
       };
 
+      // Off-screen: stop writing transforms every frame.
+      let isOnScreen = true;
+      const visibilityObserver = new IntersectionObserver(([entry]) => {
+        isOnScreen = entry.isIntersecting;
+      });
+      visibilityObserver.observe(track);
+
       const tickerCallback = (_time: number, deltaTime: number) => {
-        if (isDragging || !isAutoScrolling) return;
+        if (isDragging || !isAutoScrolling || !isOnScreen) return;
         const dt = deltaTime / 1000;
         updatePosition(currentXPercent + currentSpeed * hoverMultiplier * dt);
       };
@@ -565,6 +611,9 @@ export function Home() {
           return;
         }
 
+        // A finger that paused before lifting has no speed left to carry.
+        if (performance.now() - lastTime > GESTURE.stalePauseMs) velocityX = 0;
+
         // If flicked with velocity, apply decelerating momentum
         const trackWidth = track.offsetWidth || 1;
         const velocityPercentPerSec = ((velocityX * 1000) / trackWidth) * 100;
@@ -599,6 +648,7 @@ export function Home() {
       return () => {
         stopAllMotion();
         hoverTween?.kill();
+        visibilityObserver.disconnect();
         gsap.ticker.remove(tickerCallback);
         container?.removeEventListener("pointerenter", onPointerEnter);
         container?.removeEventListener("pointerleave", onPointerLeave);
@@ -627,21 +677,50 @@ export function Home() {
       }
       const total = container.getBoundingClientRect().width;
       if (!total) return;
-      const gap = 20;
-      const base = (total - gap * 2) / 3;
-      const reduce = prefersReducedMotion();
+      const gap = parseFloat(getComputedStyle(container).columnGap) || 20;
+      const room = total - gap * 2;
+      const base = room / 3;
+      const hashes = ["workshops", "awards", "residencies"];
+      const els = hashes.map((hash) => programmesThumbEls.current[hash]);
+      if (els.some((el) => !el)) return;
 
-      ["workshops", "awards", "residencies"].forEach((hash) => {
-        const el = programmesThumbEls.current[hash];
-        if (!el) return;
+      const from = els.map((el) => el!.getBoundingClientRect().width);
+      const to = hashes.map((hash) => {
         const isHovered = programmesHover === hash;
         const isDimmed = programmesHover !== null && !isHovered;
-        const width = `${isHovered ? base + 120 : isDimmed ? base - 60 : base}px`;
-        if (reduce) {
-          gsap.set(el, { flexBasis: width });
-        } else {
-          gsap.to(el, { flexBasis: width, duration: 0.6, ease: "power3.out" });
-        }
+        return isHovered ? base + 120 : isDimmed ? base - 60 : base;
+      });
+
+      // All three widths come from one shared progress value, and the two edges between the
+      // pictures land on whole pixels. Tweening each width on its own let their fractions
+      // drift apart, so a picture that should stay still wobbled by a fraction of a pixel
+      // every frame — the "shivering".
+      const apply = (p: number) => {
+        const w = from.map((f, i) => f + (to[i] - f) * p);
+        const e1 = Math.round(w[0]);
+        const e2 = Math.round(w[0] + w[1]);
+        const widths = [e1, e2 - e1, room - e2];
+        els.forEach((el, i) => {
+          el!.style.flex = `0 0 ${widths[i]}px`;
+        });
+      };
+      const settle = () => {
+        if (programmesHover === null) els.forEach((el) => (el!.style.flex = ""));
+      };
+
+      programmesTweenRef.current?.kill();
+      if (prefersReducedMotion()) {
+        apply(1);
+        settle();
+        return;
+      }
+      const proxy = { p: 0 };
+      programmesTweenRef.current = gsap.to(proxy, {
+        p: 1,
+        duration: DUR.page,
+        ease: EASE.enterSoft,
+        onUpdate: () => apply(proxy.p),
+        onComplete: settle,
       });
     },
     { dependencies: [programmesHover], scope: programmesThumbsRef }
@@ -660,11 +739,12 @@ export function Home() {
               scrollTrigger: { trigger: edition, start: "top 76%", once: true },
             });
             const label = edition.querySelector(".fig-label");
-            if (label) {
+            // A large title has its own masked reveal; a second fade would make it flicker.
+            if (label && !label.matches(".fig-heading")) {
               tl.fromTo(
                 label,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.08
               );
             }
@@ -679,8 +759,8 @@ export function Home() {
             if (btn) {
               tl.fromTo(
                 btn,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.32
               );
             }
@@ -696,8 +776,8 @@ export function Home() {
             if (links.length > 0) {
               tl.fromTo(
                 links,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
                 0.08
               );
             }
@@ -705,8 +785,8 @@ export function Home() {
             if (scroll) {
               tl.fromTo(
                 scroll,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.18
               );
             }
@@ -714,8 +794,8 @@ export function Home() {
             if (cta) {
               tl.fromTo(
                 cta,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.9, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.28
               );
             }
@@ -731,8 +811,8 @@ export function Home() {
             if (topLabel) {
               tl.fromTo(
                 topLabel,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.08
               );
             }
@@ -740,8 +820,8 @@ export function Home() {
             if (banner) {
               tl.fromTo(
                 banner,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 1.05, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.16
               );
             }
@@ -749,8 +829,8 @@ export function Home() {
             if (railLinks.length > 0) {
               tl.fromTo(
                 railLinks,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
                 0.2
               );
             }
@@ -758,8 +838,8 @@ export function Home() {
             if (thumbs.length > 0) {
               tl.fromTo(
                 thumbs,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
                 0.24
               );
             }
@@ -767,8 +847,8 @@ export function Home() {
             if (mobileCards.length > 0) {
               tl.fromTo(
                 mobileCards,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
                 0.22
               );
             }
@@ -784,8 +864,8 @@ export function Home() {
             if (pressLabel) {
               tl.fromTo(
                 pressLabel,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.08
               );
             }
@@ -793,8 +873,8 @@ export function Home() {
             if (pressItemsEls.length > 0) {
               tl.fromTo(
                 pressItemsEls,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, stagger: 0.1, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
                 0.16
               );
             }
@@ -802,8 +882,8 @@ export function Home() {
             if (pressMore) {
               tl.fromTo(
                 pressMore,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.85, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0.26
               );
             }
@@ -820,8 +900,8 @@ export function Home() {
               });
               tlAbout.fromTo(
                 introLabel,
-                { autoAlpha: 0 },
-                { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                { autoAlpha: 0, y: DISTANCE.rise },
+                { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                 0
               );
             }
@@ -836,8 +916,8 @@ export function Home() {
               if (kbfLogo) {
                 tlKbf.fromTo(
                   kbfLogo,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0, y: DISTANCE.rise },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                   0
                 );
               }
@@ -859,8 +939,8 @@ export function Home() {
               if (sbLogo) {
                 tlSb.fromTo(
                   sbLogo,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0, y: DISTANCE.rise },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                   0
                 );
               }
@@ -882,8 +962,8 @@ export function Home() {
               if (teamLabel) {
                 tlTeam.fromTo(
                   teamLabel,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0, y: DISTANCE.rise },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                   0
                 );
               }
@@ -891,8 +971,8 @@ export function Home() {
               if (teamCols.length > 0) {
                 tlTeam.fromTo(
                   teamCols,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0, y: DISTANCE.rise },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
                   0.1
                 );
               }
@@ -908,8 +988,8 @@ export function Home() {
               if (sponsorsLabel) {
                 tlSponsors.fromTo(
                   sponsorsLabel,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0, y: DISTANCE.rise },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, ease: EASE.reveal },
                   0
                 );
               }
@@ -917,8 +997,8 @@ export function Home() {
               if (sponsorItems.length > 0) {
                 tlSponsors.fromTo(
                   sponsorItems,
-                  { autoAlpha: 0 },
-                  { autoAlpha: 1, duration: 0.95, stagger: 0.08, ease: "cubic-bezier(0.16, 1, 0.3, 1)" },
+                  { autoAlpha: 0, y: DISTANCE.rise },
+                  { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
                   0.1
                 );
               }
@@ -984,7 +1064,7 @@ export function Home() {
 
           // 1. Initial Hero Background & Content Entrance Choreography
           const heroTl = gsap.timeline({
-            defaults: { ease: "power3.out" },
+            defaults: { ease: EASE.enterSoft },
           });
 
           heroTl
@@ -1004,28 +1084,27 @@ export function Home() {
             )
             .fromTo(
               ".home-hero__card",
-              { autoAlpha: 0, y: 36, rotation: -1.5 },
+              { autoAlpha: 0, y: DISTANCE.md },
               {
                 autoAlpha: 1,
                 y: 0,
-                rotation: 0,
-                stagger: 0.1,
-                duration: 1.05,
-                ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-                clearProps: "transform,rotation",
+                stagger: STAGGER.step * 2,
+                duration: DUR.reveal,
+                ease: EASE.reveal,
+                clearProps: "transform",
               },
               0.15
             )
             .fromTo(
               ".home-hero__credit p, .home-hero__mobile-meta",
               { autoAlpha: 0, y: 14 },
-              { autoAlpha: 1, y: 0, duration: 0.95, stagger: 0.08, ease: "power3.out" },
+              { autoAlpha: 1, y: 0, duration: DUR.reveal, stagger: STAGGER.step * 2, ease: EASE.reveal },
               0.25
             )
             .fromTo(
               ".home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
               { autoAlpha: 0 },
-              { autoAlpha: 1, duration: 1.0, ease: "power2.out" },
+              { autoAlpha: 1, duration: DUR.reveal, ease: EASE.reveal },
               0.4
             );
 
@@ -1034,7 +1113,7 @@ export function Home() {
           slidesRef.current = slides;
           if (slides.length) {
             slideIndexRef.current = 0;
-            const tl = buildAutoSlideTimeline(
+            buildAutoSlideTimeline(
               slides,
               0,
               (index) => {
@@ -1050,7 +1129,7 @@ export function Home() {
                 clearTimeout(heroAutoResumeTimerRef.current);
                 heroAutoResumeTimerRef.current = null;
               }
-              tl.pause();
+              heroTlRef.current?.pause();
             };
             const onPointerLeave = (e: Event) => {
               if ((e as PointerEvent).pointerType && (e as PointerEvent).pointerType !== "mouse") return;
@@ -1168,92 +1247,51 @@ export function Home() {
     }
   );
 
-  // Touch gesture handling on hero: smooth horizontal swipe between slides
-  // while preserving natural vertical page scrolling.
+  // Update cards can be dragged or flicked away on every device.
   useEffect(() => {
     const hero = heroRef.current;
     if (!hero) return;
+    return bindSwipeAway(hero, {
+      selector: ".home-hero__card",
+      ignore: ".home-hero__card-close",
+      onDragChange: (dragging) => {
+        cardDraggingRef.current = dragging;
+      },
+      onDismiss: (card) => {
+        const id = card.dataset.cardId;
+        if (id) setDismissedCardIds((prev) => [...prev, id]);
+      },
+    });
+  }, []);
 
-    let startX = 0;
-    let startY = 0;
-    let isHorizontalGesture: boolean | null = null;
-    let tracking = false;
-
-    const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length !== 1) return;
-      // Do not hijack taps on interactive cards, close buttons, dots, or links
-      if (
-        (e.target as HTMLElement).closest(
-          ".home-hero__card, .home-hero__card-close, .carousel-dots, button, a"
-        )
-      ) {
-        tracking = false;
-        return;
-      }
-      tracking = true;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      isHorizontalGesture = null;
-    };
-
-    const onTouchMove = (e: TouchEvent) => {
-      if (!tracking || e.touches.length !== 1) return;
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const diffX = currentX - startX;
-      const diffY = currentY - startY;
-
-      if (isHorizontalGesture === null) {
-        // Once finger moves > 6px, lock gesture direction
-        if (Math.hypot(diffX, diffY) > 6) {
-          isHorizontalGesture = Math.abs(diffX) > Math.abs(diffY);
+  // Drag, flick or trackpad swipe between slides on every device.
+  useSlideGesture(
+    heroRef,
+    {
+      count: covers.length,
+      getIndex: () => slideIndexRef.current,
+      getSlides: () => {
+        const slides = Array.from(
+          heroRef.current?.querySelectorAll<HTMLElement>(".home-hero__slide") ?? [],
+        );
+        slidesRef.current = slides;
+        return slides;
+      },
+      ignore: ".home-hero__card, .home-hero__card-close",
+      onGrab: () => {
+        if (heroAutoResumeTimerRef.current) {
+          clearTimeout(heroAutoResumeTimerRef.current);
+          heroAutoResumeTimerRef.current = null;
         }
-      }
-
-      if (isHorizontalGesture) {
-        // Horizontal swipe confirmed: prevent vertical scroll / gesture abort
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-      }
-    };
-
-    const onTouchEnd = (e: TouchEvent) => {
-      if (!tracking) return;
-      tracking = false;
-      if (isHorizontalGesture && e.changedTouches.length > 0) {
-        const endX = e.changedTouches[0].clientX;
-        const diffX = startX - endX;
-        const count = covers.length;
-        if (count > 1 && Math.abs(diffX) > 28) {
-          const currentIdx = slideIndexRef.current;
-          if (diffX > 0) {
-            goToSlide((currentIdx + 1) % count);
-          } else {
-            goToSlide((currentIdx - 1 + count) % count);
-          }
-        }
-      }
-      isHorizontalGesture = null;
-    };
-
-    const onTouchCancel = () => {
-      tracking = false;
-      isHorizontalGesture = null;
-    };
-
-    hero.addEventListener("touchstart", onTouchStart, { passive: true });
-    hero.addEventListener("touchmove", onTouchMove, { passive: false });
-    hero.addEventListener("touchend", onTouchEnd, { passive: true });
-    hero.addEventListener("touchcancel", onTouchCancel, { passive: true });
-
-    return () => {
-      hero.removeEventListener("touchstart", onTouchStart);
-      hero.removeEventListener("touchmove", onTouchMove);
-      hero.removeEventListener("touchend", onTouchEnd);
-      hero.removeEventListener("touchcancel", onTouchCancel);
-    };
-  }, [covers.length, goToSlide]);
+        heroTlRef.current?.kill();
+        heroTlRef.current = null;
+      },
+      onTargetChange: setSlide,
+      onCommit: goToSlide,
+      onSettle: resumeHeroTimeline,
+    },
+    covers.length > 1,
+  );
 
   return (
     <div ref={rootRef} className="home" data-node-id="6:1016">
@@ -1300,7 +1338,7 @@ export function Home() {
                 }
               }}
             >
-              <div className="home-hero__mobile-credit">
+              <div ref={mobileCreditRef} className="home-hero__mobile-credit">
                 {creditArtwork ? (
                   <span className="home-hero__mobile-artwork">{creditArtwork}</span>
                 ) : null}
@@ -1339,6 +1377,7 @@ export function Home() {
                     <article
                       key={item.id}
                       className="home-hero__card home-hero__card--interactive"
+                      data-card-id={item.id}
                       style={{ zIndex: arr.length - i }}
                       data-offset={i}
                       role="button"
@@ -1389,7 +1428,20 @@ export function Home() {
                         aria-label={`Dismiss ${item.heading}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setDismissedCardIds((prev) => [...prev, item.id]);
+                          const cardEl = e.currentTarget.closest<HTMLElement>(".home-hero__card");
+                          const dismiss = () => setDismissedCardIds((prev) => [...prev, item.id]);
+                          if (!cardEl || prefersReducedMotion()) {
+                            dismiss();
+                            return;
+                          }
+                          gsap.to(cardEl, {
+                            autoAlpha: 0,
+                            y: -DISTANCE.sm,
+                            duration: EXIT.duration,
+                            ease: EXIT.ease,
+                            clearProps: "opacity,visibility,transform",
+                            onComplete: dismiss,
+                          });
                         }}
                       >
                         ✕
@@ -1419,7 +1471,7 @@ export function Home() {
 
           <div className="home-hero__meta">
             {showCredits ? (
-              <div className="home-hero__credit">
+              <div ref={creditRef} className="home-hero__credit">
                 {showArtwork ? <p className="home-hero__artwork">{creditArtwork}</p> : null}
                 {showArtist ? <p className="home-hero__artist">{creditArtist}</p> : null}
                 {showInstitution ? <p className="home-hero__inst">{creditInst}</p> : null}
@@ -1592,8 +1644,8 @@ export function Home() {
                   key={tab.hash}
                   to={tab.to}
                   className={`fig-subheading${programmesHover === tab.hash ? " is-selected" : ""}`}
-                  onMouseEnter={() => setProgrammesHover(tab.hash)}
-                  onMouseLeave={() => setProgrammesHover(null)}
+                  onMouseEnter={() => labelHoverIn(tab.hash)}
+                  onMouseLeave={labelHoverOut}
                 >
                   {tab.label}
                   <span className="fig-subheading__underline" aria-hidden />
@@ -1612,8 +1664,8 @@ export function Home() {
                     programmesThumbEls.current[tab.hash] = el;
                   }}
                   to={tab.to}
-                  onMouseEnter={() => setProgrammesHover(tab.hash)}
-                  onMouseLeave={() => setProgrammesHover(null)}
+                  onMouseEnter={() => thumbHover(tab.hash)}
+                  onMouseLeave={() => thumbHover(null)}
                 >
                   {tab.img ? (
                     <img src={tab.img} alt="" />
@@ -1649,10 +1701,7 @@ export function Home() {
         <section id="press" className="home-section home-press">
           <div className="fig-grid">
             <h2 className="fig-label fig-heading">PRESS</h2>
-            <div
-              className="home-press__items fig-c4-12"
-              onPointerLeave={handlePressPointerLeave}
-            >
+            <div ref={pressListRef} className="home-press__items fig-c4-12">
               {pressItems.map((item) => {
                 const isExpanded = activePressId === item.id;
                 return (
@@ -1660,14 +1709,21 @@ export function Home() {
                     key={item.id}
                     data-id={item.id}
                     className={`home-press__item${isExpanded ? " is-expanded" : ""}`}
-                    onPointerEnter={(e) => handlePressPointerEnter(e, item.id)}
+                    onPointerMove={(e) => pressHover.onRowPointerMove(e, item.id, isExpanded)}
+                    onPointerLeave={() => pressHover.onRowPointerLeave(item.id)}
                   >
                     <button
                       type="button"
                       className="home-press__header"
                       aria-expanded={isExpanded}
                       onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => handleTogglePress(item.id)}
+                      onKeyDown={onAccordionKeyDown}
+                      onClick={(e) => {
+                      pressHover.onRowClick(item.id);
+                      // Hover expands; a click opens the full article (touch: first tap expands).
+                      if (rowClickOpensArticle(e, isExpanded)) navigate(`/press?article=${item.id}`);
+                      else setOpenPressId(item.id);
+                    }}
                     >
                       <span className="home-press__title">{item.title}</span>
                       <time className="home-press__date">{item.date}</time>

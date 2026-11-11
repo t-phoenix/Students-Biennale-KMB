@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { prefersReducedMotion } from "../lib/motion";
+import { useReadingOrderReveal } from "../lib/sequence";
+import { glideToTop } from "../lib/lenisSingleton";
+import { onAccordionKeyDown, rowClickOpensArticle, useAccordionHover, useEqualDrawerHeights } from "../lib/accordionScroll";
 import { SectionEmpty } from "../components/SectionEmpty";
 import { MetaGrid, MetaRow } from "../components/MetaGrid";
 import { BrandArrow } from "../components/BrandArrow";
@@ -27,9 +30,8 @@ export function Press() {
   const root = useRef<HTMLDivElement>(null);
   const featureRef = useRef<HTMLElement>(null);
   const [params, setParams] = useSearchParams();
-  const { items: articles } = usePressItems();
+  const { items: articles, status } = usePressItems();
   const [clickedArticleId, setClickedArticleId] = useState<string>("");
-  const [hoveredArticleId, setHoveredArticleId] = useState<string>("");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const articleParam = params.get("article");
@@ -57,81 +59,25 @@ export function Press() {
     return articles[articleIndex + 1];
   }, [articles, articleIndex]);
 
-  const articleHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const articleHover = useAccordionHover(setClickedArticleId);
+  const relatedListRef = useRef<HTMLUListElement>(null);
+  // Every article opens to the same height, so the section never changes height.
+  useEqualDrawerHeights(relatedListRef, ".press__drawer-content", `${featured?.id}-${articles.length}`);
 
-  const isDesktopHover = useCallback(
-    () =>
-      typeof window !== "undefined" &&
-      window.innerWidth > 899 &&
-      window.matchMedia("(hover: hover) and (pointer: fine)").matches,
-    [],
-  );
-
-  const handleArticlePointerEnter = useCallback(
-    (e: React.PointerEvent, id: string) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-      articleHoverTimerRef.current = setTimeout(() => {
-        setHoveredArticleId(id);
-      }, 35);
-    },
-    [isDesktopHover],
-  );
-
-  const handleArticlePointerLeave = useCallback(
-    (e: React.PointerEvent) => {
-      if (e.pointerType !== "mouse" || !isDesktopHover()) return;
-      if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-      articleHoverTimerRef.current = setTimeout(() => {
-        setHoveredArticleId("");
-      }, 80);
-    },
-    [isDesktopHover],
-  );
-
-  const handleToggleArticle = useCallback((id: string) => {
-    if (articleHoverTimerRef.current) clearTimeout(articleHoverTimerRef.current);
-    setHoveredArticleId("");
-    setClickedArticleId((prev) => (prev === id ? "" : id));
-  }, []);
-
-  const activeArticleId = clickedArticleId || hoveredArticleId;
+  const activeArticleId = clickedArticleId;
 
   const handleSelect = useCallback(
     (id: string) => {
       setParams({ article: id });
-      setHoveredArticleId("");
       setClickedArticleId("");
-      window.scrollTo({
-        top: 0,
-        behavior: prefersReducedMotion() ? "auto" : "smooth",
-      });
+      glideToTop({ reduced: prefersReducedMotion() });
     },
     [setParams],
   );
 
-  useGSAP(
-    () => {
-      const el = featureRef.current;
-      if (!el) return;
-      if (prefersReducedMotion()) {
-        gsap.set(el, { autoAlpha: 1 });
-        return;
-      }
-      gsap.fromTo(
-        el,
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 0.95,
-          delay: 0.12,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          clearProps: "opacity,visibility,transform",
-        }
-      );
-    },
-    { dependencies: [featured?.id], scope: root },
-  );
+  // Paragraphs, images and links arrive one by one in reading order, once the articles are in
+  // (so nothing is placed before the content above it has landed).
+  useReadingOrderReveal(root, { key: featured?.id, delay: 0.12, enabled: status !== "loading" });
 
   if (!featured) {
     return (
@@ -226,10 +172,7 @@ export function Press() {
       {/* Related list spans cols 4–12 (Figma 1:795 / 1:829) */}
       {relatedArticles.length > 0 ? (
         <div className="fig-grid press__related">
-          <ul
-            className="press__list fig-c4-12"
-            onPointerLeave={handleArticlePointerLeave}
-          >
+          <ul ref={relatedListRef} className="press__list fig-c4-12">
             {relatedArticles.map((item) => {
               const isExpanded = activeArticleId === item.id;
 
@@ -238,14 +181,21 @@ export function Press() {
                   key={item.id}
                   data-id={item.id}
                   className={`press__item${isExpanded ? " is-expanded" : ""}`}
-                  onPointerEnter={(e) => handleArticlePointerEnter(e, item.id)}
+                  onPointerMove={(e) => articleHover.onRowPointerMove(e, item.id, isExpanded)}
+                  onPointerLeave={() => articleHover.onRowPointerLeave(item.id)}
                 >
                   <button
                     type="button"
                     className="press__header"
                     aria-expanded={isExpanded}
                     onMouseDown={(e) => e.preventDefault()}
-                    onClick={() => handleToggleArticle(item.id)}
+                    onKeyDown={onAccordionKeyDown}
+                    onClick={(e) => {
+                      articleHover.onRowClick(item.id);
+                      // Hover expands; a click opens the full article (touch: first tap expands).
+                      if (rowClickOpensArticle(e, isExpanded)) handleSelect(item.id);
+                      else setClickedArticleId(item.id);
+                    }}
                   >
                     <span className="press__title">{item.title}</span>
                     {item.date ? (

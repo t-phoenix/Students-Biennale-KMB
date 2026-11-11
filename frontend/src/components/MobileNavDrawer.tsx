@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import {
@@ -7,7 +7,9 @@ import {
   scrollToSection,
   scrollToId,
 } from "../lib/scrollToSection";
-import { getLenisInstance } from "../lib/lenisSingleton";
+import { getLenisInstance, glideToTop } from "../lib/lenisSingleton";
+import { bindPullToDismiss } from "../lib/gesture";
+import { EXIT, gsap, prefersReducedMotion } from "../lib/motion";
 import "./MobileNavDrawer.css";
 
 type Props = {
@@ -37,6 +39,57 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
   const [expandedSection, setExpandedSection] = useState<string | null>("editions");
+  // Stays mounted through the exit so closing plays the reverse of opening.
+  const [mounted, setMounted] = useState(isOpen);
+  const [closing, setClosing] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    if (isOpen) {
+      setMounted(true);
+      setClosing(false);
+      return;
+    }
+    if (!mounted) return;
+    if (prefersReducedMotion()) {
+      setMounted(false);
+      return;
+    }
+    setClosing(true);
+    const timer = window.setTimeout(() => {
+      setMounted(false);
+      setClosing(false);
+    }, EXIT.duration * 1000);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // The menu opens downward, so on touch it closes by being pulled back up.
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!mounted || !isOpen || !content) return;
+    return bindPullToDismiss({
+      sheet: content,
+      backdrop: backdropRef.current,
+      direction: "up",
+      onDismiss: () => {
+        // The exit animation starts from wherever the drag left it.
+        const root = rootRef.current;
+        const backdrop = backdropRef.current;
+        if (root) {
+          root.style.setProperty("--drawer-exit-from-y", `${gsap.getProperty(content, "y")}px`);
+          if (backdrop) root.style.setProperty("--drawer-exit-from-opacity", String(gsap.getProperty(backdrop, "opacity")));
+        }
+        gsap.set(content, { clearProps: "transform" });
+        if (backdrop) gsap.set(backdrop, { clearProps: "opacity,visibility" });
+        onCloseRef.current();
+      },
+    });
+  }, [mounted, isOpen]);
 
   const toggleSection = (section: string) => {
     setExpandedSection((prev) => (prev === section ? null : section));
@@ -98,12 +151,7 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
         }
       } else if (to === "/programmes") {
         if (location.pathname === "/programmes") {
-          const lenis = getLenisInstance();
-          if (lenis) {
-            lenis.scrollTo(0);
-          } else {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
+          glideToTop({ reduced: prefersReducedMotion() });
           if (location.hash) {
             navigate("/programmes", { replace: true });
           }
@@ -117,12 +165,12 @@ export function MobileNavDrawer({ isOpen, onClose }: Props) {
     [location.pathname, location.hash, navigate, onClose]
   );
 
-  if (!isOpen) return null;
+  if (!mounted) return null;
 
   return (
-    <div className="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation Menu" data-lenis-prevent>
-      <div className="mobile-drawer__backdrop" onClick={onClose} aria-hidden="true" />
-      <div className="mobile-drawer__content" data-lenis-prevent>
+    <div ref={rootRef} className={`mobile-drawer${closing ? " is-closing" : ""}`} role="dialog" aria-modal="true" aria-label="Navigation Menu" data-lenis-prevent>
+      <div ref={backdropRef} className="mobile-drawer__backdrop" onClick={onClose} aria-hidden="true" />
+      <div ref={contentRef} className="mobile-drawer__content" data-lenis-prevent>
         <div className="mobile-drawer__top">
           <button
             type="button"

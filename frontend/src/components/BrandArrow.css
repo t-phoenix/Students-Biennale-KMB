@@ -6,7 +6,7 @@
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
-  transition: transform 0.25s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
 @media (max-width: 899px) {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getLenisInstance, subscribeLenis } from '../lib/lenisSingleton';
+import { createPortal } from 'react-dom';
+import { getLenisInstance } from '../lib/lenisSingleton';
 import './SketchLayer.css';
 
 type SketchMode = 'navigate' | 'nudge' | 'sketch' | 'drawing';
@@ -73,18 +74,22 @@ const DEFAULT_OPACITY = 0.65;
 
 const MIN_WIDTH = 1;
 const MAX_WIDTH = 28;
-const IDLE_MS = 3000;
+/** Rest before the first "press P" hint of a visit, and before every later one. */
+const FIRST_IDLE_MS = 3000;
+const IDLE_MS = 2000;
+/** The first hint of a visit becomes the cursor for this long, following the mouse. */
+const INTRO_NUDGE_MS = 5000;
+/** Once per visit: a refresh or a fresh open of the site shows the long first hint again. */
+let introNudgeShown = false;
 
 function clampWidth(w: number) {
   return Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, w));
 }
 
 // A point is stored as a pixel offset from its anchor element's top-left
-// corner, measured at draw time. On redraw it's re-placed at
-// anchor.getBoundingClientRect().left/top (tracking scroll, resize, and
-// reflow automatically) and scaled by a single uniform factor - so the
-// whole stroke grows/shrinks together with the element like a sticker,
-// never stretched or squeezed independently in x vs y.
+// corner, measured at draw time, and re-placed from the anchor's layout box
+// (tracking resize and reflow) with one uniform scale - so the whole stroke
+// grows/shrinks with the element like a sticker, never warped in x vs y.
 interface AnchoredPoint {
   ox: number;
   oy: number;
@@ -99,12 +104,69 @@ interface ResolvedPoint {
 
 interface Stroke {
   anchor: Element;
-  anchorWidth: number; // anchor's rect.width at draw time, for proportional width scaling
-  anchorRect?: DOMRect; // Cached for live drawing performance
+  anchorWidth: number; // anchor's layout width at draw time, for proportional scaling
   points: AnchoredPoint[];
   color: string;
   width: number;
   opacity?: number;
+}
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** An element's layout box in document coordinates. */
+interface LayoutBox {
+  left: number;
+  top: number;
+  width: number;
+}
+
+/**
+ * Where an element sits in the page's layout, in document coordinates, ignoring CSS transforms.
+ *
+ * Transforms are deliberately ignored: images drift with scroll parallax, sections rise in on
+ * reveal, cards lift on hover. A stroke attached to the transformed box would slide with the
+ * parallax ("moving when scrolling") instead of staying where it was drawn. The layout box only
+ * moves when the page really reflows (resize, an accordion opening above), and the stroke follows that.
+ * Returns null when the element is not laid out (removed, display: none, collapsed).
+ */
+function layoutBox(anchor: Element): LayoutBox | null {
+  let el: Element | null = anchor;
+  while (el && !(el instanceof HTMLElement)) el = el.parentElement;
+  const h = (el as HTMLElement | null) ?? document.body;
+  if (!h.isConnected) return null;
+  if (h !== document.body && h.offsetWidth === 0 && h.offsetHeight === 0 && h.getClientRects().length === 0) {
+    return null;
+  }
+
+  let x = 0;
+  let y = 0;
+  let fixed = false;
+  let e: HTMLElement | null = h;
+  while (e && e !== document.body) {
+    x += e.offsetLeft;
+    y += e.offsetTop;
+    const parent = e.offsetParent as HTMLElement | null;
+    if (!parent) {
+      fixed = getComputedStyle(e).position === 'fixed';
+      break;
+    }
+    // With <body> as the offset parent, offsets are already measured from the page itself.
+    if (parent === document.body) break;
+    x += parent.clientLeft;
+    y += parent.clientTop;
+    e = parent;
+  }
+  // Content inside its own scroller (a modal sheet, a scrolling row) moves with that scroller.
+  for (let p = h.parentElement; p && p !== document.body && p !== document.documentElement; p = p.parentElement) {
+    x -= p.scrollLeft;
+    y -= p.scrollTop;
+  }
+  // A fixed element's offsets are relative to the screen: turn them into page coordinates.
+  if (fixed) {
+    x += window.scrollX;
+    y += window.scrollY;
+  }
+  return { left: x, top: y, width: h.offsetWidth || h.getBoundingClientRect().width };
 }
 
 // Desktop, laptop, and iPad/tablets - supports fine pointer, iPad, or any touch tablet with width >= 600
@@ -281,167 +343,84 @@ function elementUnderPoint(canvas: HTMLCanvasElement, x: number, y: number): Ele
   return el && el !== document.documentElement ? el : document.body;
 }
 
-function toAnchoredPoint(rect: DOMRect, clientX: number, clientY: number, color: string): AnchoredPoint {
+/** A pointer position as an offset from the anchor's layout box (box is in page coordinates). */
+function toAnchoredPoint(box: LayoutBox, clientX: number, clientY: number, color: string): AnchoredPoint {
   return {
-    ox: clientX - rect.left,
-    oy: clientY - rect.top,
+    ox: clientX + window.scrollX - box.left,
+    oy: clientY + window.scrollY - box.top,
     color,
   };
 }
 
-// Clean smoothed line: quadratic-curve stroke through captured points.
-// Smoothly blends gradient colors across segments when cycling across colors.
-function drawResolvedStroke(
-  ctx: CanvasRenderingContext2D,
-  pts: ResolvedPoint[],
-  defaultColor: string,
-  width: number,
-  opacity: number = DEFAULT_OPACITY
-) {
-  if (pts.length === 0) return;
+const fmt = (n: number) => (Math.round(n * 100) / 100).toString();
 
-  ctx.save();
-  ctx.globalAlpha = opacity;
-
+/**
+ * The stroke as SVG path pieces: one smooth path when the colour is uniform; otherwise a piece
+ * per segment in that segment's colour (the brand colour cycle drifts slowly, so neighbouring
+ * pieces differ only slightly). Same quadratic smoothing as before.
+ */
+function strokePieces(pts: ResolvedPoint[], defaultColor: string): { d: string; color: string }[] {
+  if (pts.length === 0) return [];
+  const col = (p: ResolvedPoint) => p.color || defaultColor;
   if (pts.length === 1) {
-    ctx.fillStyle = pts[0].color || defaultColor;
-    ctx.beginPath();
-    ctx.arc(pts[0].x, pts[0].y, width / 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-    return;
+    // A zero-length line with round caps renders as a dot of the brush's width.
+    const p = pts[0];
+    return [{ d: `M${fmt(p.x)} ${fmt(p.y)}h0.01`, color: col(p) }];
   }
-
   if (pts.length === 2) {
-    const c0 = pts[0].color || defaultColor;
-    const c1 = pts[1].color || defaultColor;
-    ctx.lineWidth = width;
-    ctx.lineCap = 'round';
-    if (c0 !== c1) {
-      const grad = ctx.createLinearGradient(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
-      grad.addColorStop(0, c0);
-      grad.addColorStop(1, c1);
-      ctx.strokeStyle = grad;
-    } else {
-      ctx.strokeStyle = c0;
-    }
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    ctx.lineTo(pts[1].x, pts[1].y);
-    ctx.stroke();
-    ctx.restore();
-    return;
+    return [{ d: `M${fmt(pts[0].x)} ${fmt(pts[0].y)}L${fmt(pts[1].x)} ${fmt(pts[1].y)}`, color: col(pts[1]) }];
   }
-
-  // pts.length >= 3
-  const firstColor = pts[0].color || defaultColor;
-  let isUniform = true;
-  for (let i = 1; i < pts.length; i++) {
-    if ((pts[i].color || defaultColor) !== firstColor) {
-      isUniform = false;
-      break;
-    }
-  }
-
-  if (isUniform) {
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = width;
-    ctx.strokeStyle = firstColor;
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    for (let i = 1; i < pts.length - 1; i++) {
-      const mx = (pts[i].x + pts[i + 1].x) / 2;
-      const my = (pts[i].y + pts[i + 1].y) / 2;
-      ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-    }
-    const last = pts[pts.length - 1];
-    const secondLast = pts[pts.length - 2];
-    ctx.quadraticCurveTo(secondLast.x, secondLast.y, last.x, last.y);
-    ctx.stroke();
-    ctx.restore();
-    return;
-  }
-
-  // Multi-color curve with smooth gradient transitions between points
-  ctx.lineWidth = width;
-  ctx.lineCap = 'butt';
-  ctx.lineJoin = 'round';
-
-  // Smooth start cap
-  ctx.fillStyle = pts[0].color || defaultColor;
-  ctx.beginPath();
-  ctx.arc(pts[0].x, pts[0].y, width / 2, 0, Math.PI * 2);
-  ctx.fill();
-
+  const uniform = pts.every((p) => col(p) === col(pts[0]));
+  const pieces: { d: string; color: string }[] = [];
+  let d = `M${fmt(pts[0].x)} ${fmt(pts[0].y)}`;
   let prevX = pts[0].x;
   let prevY = pts[0].y;
-
   for (let i = 1; i < pts.length - 1; i++) {
     const mx = (pts[i].x + pts[i + 1].x) / 2;
     const my = (pts[i].y + pts[i + 1].y) / 2;
-    const c0 = pts[i - 1].color || defaultColor;
-    const c1 = pts[i].color || defaultColor;
-
-    ctx.beginPath();
-    ctx.moveTo(prevX, prevY);
-    ctx.quadraticCurveTo(pts[i].x, pts[i].y, mx, my);
-
-    if (c0 !== c1) {
-      const grad = ctx.createLinearGradient(prevX, prevY, mx, my);
-      grad.addColorStop(0, c0);
-      grad.addColorStop(1, c1);
-      ctx.strokeStyle = grad;
-    } else {
-      ctx.strokeStyle = c0;
-    }
-    ctx.stroke();
-
+    const seg = `Q${fmt(pts[i].x)} ${fmt(pts[i].y)} ${fmt(mx)} ${fmt(my)}`;
+    if (uniform) d += seg;
+    else pieces.push({ d: `M${fmt(prevX)} ${fmt(prevY)}${seg}`, color: col(pts[i]) });
     prevX = mx;
     prevY = my;
   }
-
-  // Final segment to last point
   const last = pts[pts.length - 1];
-  const lastColor = last.color || defaultColor;
-  const secondLastColor = pts[pts.length - 2].color || defaultColor;
-  ctx.beginPath();
-  ctx.moveTo(prevX, prevY);
-  ctx.lineTo(last.x, last.y);
-  if (secondLastColor !== lastColor) {
-    const grad = ctx.createLinearGradient(prevX, prevY, last.x, last.y);
-    grad.addColorStop(0, secondLastColor);
-    grad.addColorStop(1, lastColor);
-    ctx.strokeStyle = grad;
-  } else {
-    ctx.strokeStyle = lastColor;
-  }
-  ctx.stroke();
-
-  // Smooth end cap
-  ctx.fillStyle = lastColor;
-  ctx.beginPath();
-  ctx.arc(last.x, last.y, width / 2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.restore();
+  const tail = `L${fmt(last.x)} ${fmt(last.y)}`;
+  if (uniform) return [{ d: d + tail, color: col(pts[0]) }];
+  pieces.push({ d: `M${fmt(prevX)} ${fmt(prevY)}${tail}`, color: col(last) });
+  return pieces;
 }
 
-function resolveStrokePoints(stroke: Stroke): { points: ResolvedPoint[]; width: number } | null {
-  if (!stroke.anchor.isConnected) return null;
-  const rect = stroke.anchorRect || stroke.anchor.getBoundingClientRect();
-  if (rect.width === 0 || rect.height === 0) return null;
-  // One uniform scale for both axes (and for line width) - so the stroke
-  // resizes with its anchor like a sticker, never warped independently.
-  const scale = stroke.anchorWidth > 0 ? rect.width / stroke.anchorWidth : 1;
+/** The stroke's points in the ink layer's coordinates, or null when its anchor is not on the page. */
+function resolveStroke(
+  stroke: Stroke,
+  box: LayoutBox | null,
+  origin: { left: number; top: number }
+): { points: ResolvedPoint[]; width: number } | null {
+  if (!box || box.width === 0) return null;
+  // One uniform scale for both axes and the line width: the stroke resizes with its anchor.
+  const scale = stroke.anchorWidth > 0 ? box.width / stroke.anchorWidth : 1;
+  const left = box.left - origin.left;
+  const top = box.top - origin.top;
   return {
-    points: stroke.points.map((p) => ({
-      x: rect.left + p.ox * scale,
-      y: rect.top + p.oy * scale,
-      color: p.color || stroke.color,
-    })),
+    points: stroke.points.map((p) => ({ x: left + p.ox * scale, y: top + p.oy * scale, color: p.color || stroke.color })),
     width: stroke.width * scale,
   };
+}
+
+/** Fills a stroke's group with its path pieces. The group carries the opacity, so where pieces
+ *  overlap at their round joins they don't darken. */
+function paintStroke(g: SVGGElement, stroke: Stroke, resolved: { points: ResolvedPoint[]; width: number }) {
+  g.setAttribute('opacity', String(stroke.opacity ?? DEFAULT_OPACITY));
+  const pieces = strokePieces(resolved.points, stroke.color);
+  const paths = pieces.map(({ d, color }) => {
+    const path = document.createElementNS(SVG_NS, 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', fmt(resolved.width));
+    return path;
+  });
+  g.replaceChildren(...paths);
 }
 
 export function SketchLayer() {
@@ -479,7 +458,8 @@ export function SketchLayer() {
   const strokesRef = useRef<Stroke[]>([]);
   const currentStrokeRef = useRef<Stroke | null>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const dprRef = useRef(1);
+  const inkRef = useRef<SVGSVGElement>(null);
+  const inkGroupsRef = useRef(new Map<Stroke, { g: SVGGElement; key: string }>());
   const reducedMotionRef = useRef(false);
   const brushWidthRef = useRef(DEFAULT_WIDTH);
   const redrawRef = useRef<() => void>(() => {});
@@ -518,56 +498,63 @@ export function SketchLayer() {
     redrawRef.current();
   }, []);
 
-  // Every stroke's position is re-derived from its anchor element's live
-  // rect, so this is correct no matter when it runs. Redraws synchronously
-  // with scroll so strokes are permanently glued to the content with zero lag.
-  const redraw = useCallback(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext('2d');
-    if (!canvas || !ctx) return;
-    const dpr = dprRef.current;
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  // The ink is an SVG layer inside the page (not a canvas pinned to the screen), so it scrolls
+  // with the content natively. On tablets and phones the page scrolls on the GPU, ahead of any
+  // JavaScript: a screen-pinned canvas repainted after each scroll always trailed the content
+  // and the strokes visibly slid. Strokes are only rebuilt when a stroke or its anchor's layout
+  // really changes, never because of scrolling.
+  const redraw = useCallback((force?: unknown) => {
+    const svg = inkRef.current;
+    const groups = inkGroupsRef.current;
+    if (!svg) return;
+    const all = currentStrokeRef.current ? [...strokesRef.current, currentStrokeRef.current] : strokesRef.current;
+    if (!all.length && !groups.size) return;
 
-    for (const stroke of strokesRef.current) {
-      const resolved = resolveStrokePoints(stroke);
-      if (resolved) {
-        drawResolvedStroke(ctx, resolved.points, stroke.color, resolved.width, stroke.opacity ?? DEFAULT_OPACITY);
+    const o = svg.getBoundingClientRect();
+    const origin = { left: o.left + window.scrollX, top: o.top + window.scrollY };
+    const boxes = new Map<Element, LayoutBox | null>();
+    const seen = new Set<Stroke>();
+    for (const stroke of all) {
+      seen.add(stroke);
+      let box = boxes.get(stroke.anchor);
+      if (box === undefined) {
+        box = layoutBox(stroke.anchor);
+        boxes.set(stroke.anchor, box);
       }
+      const key = box
+        ? `${fmt(box.left - origin.left)}|${fmt(box.top - origin.top)}|${fmt(box.width)}|${stroke.points.length}|${stroke.width}`
+        : 'hidden';
+      let entry = groups.get(stroke);
+      if (!entry || entry.g.parentNode !== svg) {
+        const g = document.createElementNS(SVG_NS, 'g');
+        svg.appendChild(g);
+        entry = { g, key: '' };
+        groups.set(stroke, entry);
+      }
+      if (entry.key === key && force !== true) continue;
+      entry.key = key;
+      const resolved = resolveStroke(stroke, box, origin);
+      if (resolved) paintStroke(entry.g, stroke, resolved);
+      else entry.g.replaceChildren();
     }
-    if (currentStrokeRef.current) {
-      const resolved = resolveStrokePoints(currentStrokeRef.current);
-      if (resolved) {
-        drawResolvedStroke(
-          ctx,
-          resolved.points,
-          currentStrokeRef.current.color,
-          resolved.width,
-          currentStrokeRef.current.opacity ?? DEFAULT_OPACITY
-        );
+    for (const [stroke, entry] of groups) {
+      if (!seen.has(stroke)) {
+        entry.g.remove();
+        groups.delete(stroke);
       }
     }
   }, []);
   redrawRef.current = redraw;
 
-  const resizeCanvas = useCallback(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    dprRef.current = dpr;
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    canvas.width = Math.floor(w * dpr);
-    canvas.height = Math.floor(h * dpr);
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
-    redraw();
-  }, [redraw]);
-
   const clearIdleTimer = useCallback(() => {
     if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
   }, []);
+
+  // While true, the first hint of the visit is the cursor: it follows the mouse instead of
+  // disappearing at the first move.
+  const introNudgeRef = useRef(false);
+  const introTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dismissNudgeRef = useRef<() => void>(() => {});
 
   const startIdleTimer = useCallback(() => {
     clearIdleTimer();
@@ -597,11 +584,24 @@ export function SketchLayer() {
           brushRef.current.style.top = `${cursorRef.current.y}px`;
         }
         setModeBoth('nudge');
+        if (!introNudgeShown) {
+          introNudgeShown = true;
+          introNudgeRef.current = true;
+          if (introTimerRef.current) clearTimeout(introTimerRef.current);
+          introTimerRef.current = setTimeout(() => {
+            introNudgeRef.current = false;
+            document.documentElement.classList.remove('scribble-cursor-allow-hero');
+            if (modeRef.current === 'nudge') dismissNudgeRef.current();
+          }, INTRO_NUDGE_MS);
+        }
       }
-    }, IDLE_MS);
+    }, introNudgeShown ? IDLE_MS : FIRST_IDLE_MS);
   }, [clearIdleTimer, setModeBoth]);
 
   const dismissNudge = useCallback(() => {
+    introNudgeRef.current = false;
+    if (introTimerRef.current) clearTimeout(introTimerRef.current);
+    document.documentElement.classList.remove('scribble-cursor-allow-hero');
     if (modeRef.current === 'nudge') {
       const pt = { x: cursorRef.current.x, y: cursorRef.current.y };
       setNudgeDismissing(pt);
@@ -612,16 +612,25 @@ export function SketchLayer() {
       startIdleTimer();
     }
   }, [setModeBoth, startIdleTimer]);
+  dismissNudgeRef.current = dismissNudge;
 
   // Hard exit: clears all strokes only on route change or explicit reset
   const hardExit = useCallback(() => {
     currentStrokeRef.current = null;
     pendingTargetClickRef.current = null;
     strokesRef.current = [];
+    document.documentElement.classList.remove('scribble-cursor-allow-hero');
+    // A pen user who taps a link keeps the pen on the next page: only the sketch is cleared.
+    // (Dropping back to navigate here made the next Pencil stroke scroll the page instead.)
+    if (penActiveRef.current) {
+      if (canvasRef.current) canvasRef.current.style.pointerEvents = 'auto';
+      setModeBoth('sketch');
+      redrawRef.current();
+      return;
+    }
     if (canvasRef.current) {
       canvasRef.current.style.pointerEvents = 'none';
     }
-    document.documentElement.classList.remove('scribble-cursor-allow-hero');
     setModeBoth('navigate');
     cursorOnRef.current = false;
     setCursor((c) => ({ ...c, on: false }));
@@ -651,11 +660,13 @@ export function SketchLayer() {
     if (canvasRef.current) {
       canvasRef.current.style.pointerEvents = shouldPassThrough ? 'none' : 'auto';
     }
-    cursorOnRef.current = !shouldPassThrough;
+    // The pen always shows at once, even over a link or the hero; links stay clickable, and
+    // the usual cursor rules take over from the next mouse move.
+    cursorOnRef.current = true;
     setCursor({
       x: cursorRef.current.x,
       y: cursorRef.current.y,
-      on: !shouldPassThrough,
+      on: true,
       color: nowColor,
     });
     if (brushRef.current) {
@@ -664,9 +675,17 @@ export function SketchLayer() {
     }
   }, [clearIdleTimer, setModeBoth]);
 
-  // Soft exit: keeps all strokes on the page (P toggle, Esc, wheel scroll)
-  const softExit = useCallback(() => {
+  /** Keeps the stroke being drawn (if any) as a finished stroke. */
+  const commitStroke = useCallback(() => {
+    const stroke = currentStrokeRef.current;
     currentStrokeRef.current = null;
+    if (stroke) strokesRef.current = [...strokesRef.current, stroke];
+  }, []);
+
+  // Soft exit: keeps all strokes on the page (P toggle, Esc, wheel scroll). A stroke still being
+  // drawn is kept too: leaving mid-stroke used to throw it away.
+  const softExit = useCallback(() => {
+    commitStroke();
     pendingTargetClickRef.current = null;
     if (canvasRef.current) {
       canvasRef.current.style.pointerEvents = 'none';
@@ -675,8 +694,9 @@ export function SketchLayer() {
     setModeBoth('navigate');
     cursorOnRef.current = false;
     setCursor((c) => ({ ...c, on: false }));
+    redrawRef.current();
     startIdleTimer();
-  }, [setModeBoth, startIdleTimer]);
+  }, [commitStroke, setModeBoth, startIdleTimer]);
 
   // Ensure canvas pointer events are properly synchronized with mode
   useEffect(() => {
@@ -724,25 +744,20 @@ export function SketchLayer() {
       return;
     }
 
-    resizeCanvas();
+    redraw(true);
     startIdleTimer();
 
-    // Redraw synchronously on both Lenis and native scroll so the sketch never skids
-    const onScrollImmediate = () => {
-      redraw();
+    // Scrolling needs no work at all (the ink scrolls with the page). Each frame only checks
+    // whether an anchor's layout moved - an accordion opening, images loading, a resize, a
+    // modal's own scroll - and rebuilds just those strokes. With no strokes it returns at once.
+    let frame = 0;
+    const watch = () => {
+      if (!document.hidden) redraw();
+      frame = requestAnimationFrame(watch);
     };
-
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('scroll', onScrollImmediate, { passive: true });
-
-    let unhookLenis: (() => void) | undefined;
-    const unsubscribeLenis = subscribeLenis((lenis) => {
-      unhookLenis?.();
-      unhookLenis = undefined;
-      if (!lenis) return;
-      lenis.on('scroll', onScrollImmediate);
-      unhookLenis = () => lenis.off('scroll', onScrollImmediate);
-    });
+    frame = requestAnimationFrame(watch);
+    const onResize = () => redraw(true);
+    window.addEventListener('resize', onResize);
 
     const tick = () => {
       const m = modeRef.current;
@@ -800,11 +815,29 @@ export function SketchLayer() {
       }
     };
 
+    // After a tap goes through to the page (a button, a link, a finger touch), the pen surface
+    // was left switched off. iPads mostly can't sense a Pencil hovering, so nothing switched it
+    // back on: the next Pencil stroke landed on the page, which iPadOS treats as a scroll, and
+    // the pen seemed to stop working. It is switched back on once the tap's click has gone
+    // through (a moment later, so that click still reaches the button or link).
+    let rearmTimer = 0;
+    const rearmForPen = () => {
+      if (!penActiveRef.current) return;
+      window.clearTimeout(rearmTimer);
+      rearmTimer = window.setTimeout(() => {
+        const m = modeRef.current;
+        if (!penActiveRef.current || (m !== 'sketch' && m !== 'drawing')) return;
+        const canvas = canvasRef.current;
+        if (canvas) canvas.style.pointerEvents = 'auto';
+      }, 80);
+    };
+
     const handleTouchEnd = (e: TouchEvent) => {
       const canvas = canvasRef.current;
       if (e.touches.length === 0 && modeRef.current === 'navigate' && canvas) {
         canvas.style.pointerEvents = 'none';
       }
+      if (e.touches.length === 0) rearmForPen();
     };
 
     const handlePointerMove = (e: PointerEvent) => {
@@ -857,13 +890,18 @@ export function SketchLayer() {
         }
       }
 
+      if (m === 'nudge' && introNudgeRef.current) {
+        // First hint of the visit: it is the cursor and follows the mouse; over links and the
+        // hero the normal cursor shows instead, and the hint returns off them.
+        document.documentElement.classList.toggle('scribble-cursor-allow-hero', shouldPassThrough);
+        return;
+      }
+
       if ((m === 'nudge' || m === 'sketch' || m === 'drawing') && isDisallowed) {
         if (m === 'nudge') {
           dismissNudge();
         } else if (m === 'drawing' && currentStrokeRef.current) {
-          delete currentStrokeRef.current.anchorRect;
-          strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
-          currentStrokeRef.current = null;
+          commitStroke();
           setModeBoth('sketch');
           redraw();
         }
@@ -879,9 +917,11 @@ export function SketchLayer() {
           return;
         }
         const stroke = currentStrokeRef.current;
-        const rect = stroke.anchorRect || stroke.anchor.getBoundingClientRect();
-        stroke.points.push(toAnchoredPoint(rect, e.clientX, e.clientY, nowColor));
-        redraw();
+        const box = layoutBox(stroke.anchor);
+        if (box) {
+          stroke.points.push(toAnchoredPoint(box, e.clientX, e.clientY, nowColor));
+          redraw();
+        }
         return;
       }
       tick();
@@ -900,6 +940,8 @@ export function SketchLayer() {
 
       // On tablets where pen is active, ignore finger touches for drawing
       // so the user can use their finger to scroll, pan, and tap naturally
+      // (A finger tap needs no help: the touch handler lets it through to the page before the
+      // browser's click is aimed, so the button or link underneath gets that click.)
       if (penActiveRef.current && e.pointerType === 'touch') {
         return;
       }
@@ -938,12 +980,15 @@ export function SketchLayer() {
       const nowColor = getCycleColor(Date.now(), cycleStateRef.current);
       const rawAnchor = elementUnderPoint(canvas, e.clientX, e.clientY);
       const anchor = findStationaryAnchor(rawAnchor);
-      const rect = anchor.getBoundingClientRect();
+      // An element that isn't laid out (rare: display: contents) falls back to the page itself.
+      const ownBox = layoutBox(anchor);
+      const strokeAnchor = ownBox ? anchor : document.body;
+      const box = ownBox ?? layoutBox(document.body);
+      if (!box) return;
       currentStrokeRef.current = {
-        anchor,
-        anchorWidth: rect.width,
-        anchorRect: rect,
-        points: [toAnchoredPoint(rect, e.clientX, e.clientY, nowColor)],
+        anchor: strokeAnchor,
+        anchorWidth: box.width,
+        points: [toAnchoredPoint(box, e.clientX, e.clientY, nowColor)],
         color: nowColor,
         width: brushWidthRef.current,
         opacity: DEFAULT_OPACITY,
@@ -967,16 +1012,26 @@ export function SketchLayer() {
             target.focus();
             target.click();
           } catch {}
+          // The browser may aim its own click at the same element a moment later (pens and
+          // touch do): swallow that one, or a toggle such as an accordion opens and shuts again.
+          const swallow = (ev: MouseEvent) => {
+            if (ev.isTrusted && ev.target instanceof Node && target.contains(ev.target)) {
+              ev.preventDefault();
+              ev.stopImmediatePropagation();
+            }
+          };
+          window.addEventListener('click', swallow, { capture: true, once: true });
+          window.setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 500);
         }
       }
 
+      // A Pencil has no hover on most iPads, so the pen surface can't be switched back on as the
+      // pen approaches: switch it back on as soon as this tap is done.
+      if (e.pointerType !== 'mouse') rearmForPen();
+
       if (modeRef.current !== 'drawing') return;
 
-      if (currentStrokeRef.current) {
-        delete currentStrokeRef.current.anchorRect;
-        strokesRef.current = [...strokesRef.current, currentStrokeRef.current];
-        currentStrokeRef.current = null;
-      }
+      commitStroke();
       setModeBoth('sketch');
       const canvas = canvasRef.current;
       if (canvas) {
@@ -988,7 +1043,9 @@ export function SketchLayer() {
 
         // Immediately reconcile pointerEvents and cursor after stroke completion
         const { isInteractive, isDisallowed } = getInteractiveOrHero(canvas, e.clientX, e.clientY);
-        if (isInteractive || isDisallowed) {
+        if (e.pointerType !== 'mouse' && penActiveRef.current) {
+          // Pen: the surface stays on for the next stroke (re-armed above).
+        } else if (isInteractive || isDisallowed) {
           canvas.style.pointerEvents = 'none';
           document.documentElement.classList.add('scribble-cursor-allow-hero');
           cursorOnRef.current = false;
@@ -1009,11 +1066,9 @@ export function SketchLayer() {
     const handleWheel = () => {
       const m = modeRef.current;
       if (m === 'nudge') {
-        dismissNudge();
+        if (!introNudgeRef.current) dismissNudge();
       } else if (m === 'sketch' || m === 'drawing') {
-        currentStrokeRef.current = null;
         softExit();
-        redraw();
       } else {
         tick();
       }
@@ -1023,12 +1078,12 @@ export function SketchLayer() {
       if (isFormElement(e.target)) return;
       const key = e.key;
 
-      if (key === 'p' || key === 'P') {
+      if ((key === 'p' || key === 'P') && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault();
+        introNudgeRef.current = false;
+        if (introTimerRef.current) clearTimeout(introTimerRef.current);
         if (modeRef.current === 'sketch' || modeRef.current === 'drawing') {
-          currentStrokeRef.current = null;
           softExit();
-          redraw();
         } else {
           enterSketch();
         }
@@ -1038,9 +1093,7 @@ export function SketchLayer() {
       if (key === 'Escape') {
         if (modeRef.current !== 'navigate') {
           e.preventDefault();
-          currentStrokeRef.current = null;
           softExit();
-          redraw();
         }
         return;
       }
@@ -1071,6 +1124,21 @@ export function SketchLayer() {
       }
     };
 
+    // A stroke whose pointer is taken away - palm rejection, a system gesture, switching window
+    // mid-stroke - is kept as drawn instead of being left half-open.
+    const handleInterrupted = () => {
+      if (modeRef.current !== 'drawing') return;
+      commitStroke();
+      setModeBoth('sketch');
+      redraw();
+    };
+    const handleVisibility = () => {
+      if (document.hidden) handleInterrupted();
+    };
+
+    window.addEventListener('lostpointercapture', handleInterrupted);
+    window.addEventListener('blur', handleInterrupted);
+    document.addEventListener('visibilitychange', handleVisibility);
     window.addEventListener('touchstart', handleTouchStart, { passive: false });
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd, { passive: true });
@@ -1085,10 +1153,11 @@ export function SketchLayer() {
 
     return () => {
       document.documentElement.classList.remove('scribble-cursor-allow-hero');
-      window.removeEventListener('resize', resizeCanvas);
-      window.removeEventListener('scroll', onScrollImmediate);
-      unsubscribeLenis();
-      unhookLenis?.();
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', onResize);
+      window.removeEventListener('lostpointercapture', handleInterrupted);
+      window.removeEventListener('blur', handleInterrupted);
+      document.removeEventListener('visibilitychange', handleVisibility);
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', handleTouchEnd);
@@ -1100,12 +1169,14 @@ export function SketchLayer() {
       window.removeEventListener('dblclick', handleDblClick);
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('keydown', handleKeyDown);
+      if (introTimerRef.current) clearTimeout(introTimerRef.current);
       clearIdleTimer();
+      window.clearTimeout(rearmTimer);
     };
   }, [
     supported,
     redraw,
-    resizeCanvas,
+    commitStroke,
     startIdleTimer,
     clearIdleTimer,
     setModeBoth,
@@ -1125,7 +1196,9 @@ export function SketchLayer() {
       className={`scribble-layer ${mode === 'nudge' ? 'is-nudge' : ''} ${isSketchActive ? 'is-sketch' : ''} ${mode === 'drawing' ? 'is-drawing' : ''}`}
       aria-hidden="true"
     >
-      <canvas ref={canvasRef} className="scribble-layer__canvas" />
+      {/* Catches the pen and mouse while sketching; the strokes themselves live in the ink layer. */}
+      <canvas ref={canvasRef} className="scribble-layer__canvas" width={1} height={1} />
+      {createPortal(<svg ref={inkRef} className="scribble-layer__ink" aria-hidden="true" />, document.body)}
 
       {nudgeDismissing && (
         <div

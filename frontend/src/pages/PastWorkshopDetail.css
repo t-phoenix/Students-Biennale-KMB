@@ -112,11 +112,15 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.3s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-slow) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-.past-workshop-detail__gallery-slot:hover img {
-  transform: scale(1.04);
+@media (hover: hover) and (pointer: fine) {
+  .past-workshop-detail__gallery-slot:hover img {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transform: scale(1.03);
+  }
 }
 
 .past-workshop-detail__nav {
@@ -140,15 +144,21 @@
 .past-workshop-detail__back .brand-arrow {
   width: 44px;
   height: 44px;
-  transition: transform 0.25s ease;
+  transition: transform calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration)) var(--hover-ease, var(--exit-ease));
 }
 
-.past-workshop-detail__back:hover .brand-arrow {
-  transform: translateX(-4px);
+@media (hover: hover) and (pointer: fine) {
+  .past-workshop-detail__back:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
+    transform: translateX(-4px);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .past-workshop-detail__back:hover .brand-arrow {
+    --hover: 1;
+    --hover-ease: var(--enter-ease);
     transform: none;
   }
 }

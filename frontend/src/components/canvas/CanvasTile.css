@@ -5,27 +5,43 @@
   text-align: left;
   cursor: pointer;
   border: 0;
-  background: #fff;
+  /* The grey a tile shows for the instant before its picture; never white. */
+  background: linear-gradient(
+    145deg,
+    var(--color-neutral-gray-mid),
+    var(--color-neutral-gray-light)
+  );
   color: var(--color-text-primary);
   overflow: hidden;
   border-radius: 0;
   box-shadow: none;
   -webkit-user-select: none;
   user-select: none;
-  container-type: inline-size;
   opacity: 1;
-  filter: grayscale(0%);
+  /* "none", not grayscale(0%): a filter on every tile gives each of the thousand-odd
+     tiles its own render pass, which is what makes panning heavy. */
+  filter: none;
   pointer-events: auto;
   touch-action: manipulation;
-  transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.3s ease;
+  transition: box-shadow var(--motion-duration-slow) var(--motion-ease-enter-soft), transform var(--motion-duration-slow) var(--motion-ease-enter-soft), filter var(--motion-duration-slow) var(--motion-ease-enter-soft);
 }
 
-.canvas-tile:hover {
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-4px) scale(1.02);
-  z-index: 10;
+@media (hover: hover) and (pointer: fine) {
+  .canvas-tile:hover {
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px) scale(1.02);
+    z-index: 10;
+  }
+}
+
+/* While the field is dragged or still gliding, tiles pass under the pointer without being
+   looked at: no lift, so they don't pop up and drop one after another. */
+@media (hover: hover) and (pointer: fine) {
+  .infinite-canvas.is-grabbing .canvas-tile:hover,
+  .infinite-canvas.is-gliding .canvas-tile:hover {
+    box-shadow: none;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -58,7 +74,7 @@
 /* Matching searched items: full color, full 100% opacity, enhanced elevation */
 .canvas-tile.is-matched {
   opacity: 1;
-  filter: grayscale(0%);
+  filter: none;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.26), 0 4px 14px rgba(0, 0, 0, 0.15);
   z-index: 5;
 }
@@ -75,17 +91,6 @@
   pointer-events: none;
   opacity: 1;
   transform: none;
-  transition: opacity 0.3s ease;
-}
-
-.canvas-tile__placeholder {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    145deg,
-    var(--color-neutral-gray-mid),
-    var(--color-neutral-gray-light)
-  );
 }
 
 .canvas-tile__media--empty {

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
-import { crossfadeSlides, initSlideStack } from "../lib/imageSlider";
+import { useSlideGesture } from "../lib/gesture";
+import { initSlideStack, jumpToSlide } from "../lib/imageSlider";
 import { preloadUrls } from "../lib/preloadImages";
 import { CarouselNavArrows } from "./CarouselNavArrows";
 import { MetaGrid, MetaRow } from "./MetaGrid";
@@ -66,7 +67,7 @@ export function ResidenciesBand({ slides }: Props) {
       return;
     }
 
-    crossfadeSlides(bgSlides, prevIndex.current, safeIndex);
+    jumpToSlide(bgSlides, prevIndex.current, safeIndex);
     prevIndex.current = safeIndex;
   }, [safeIndex, slides.length]);
 
@@ -120,6 +121,35 @@ export function ResidenciesBand({ slides }: Props) {
     { scope: sectionRef, dependencies: [slides.length] },
   );
 
+  // Below 900px the image sits inside the card; above it, the band's background moves.
+  const isNarrow =
+    typeof window !== "undefined" && window.matchMedia("(max-width: 899px)").matches;
+  useSlideGesture(
+    sectionRef,
+    {
+      count: slides.length,
+      getIndex: () => safeIndex,
+      ...(isNarrow
+        ? {
+            ghost: {
+              selector: ".residencies-band__mobile-thumb img",
+              getSrc: (i: number) => slides[i]?.image ?? "",
+            },
+            getTravel: () =>
+              sectionRef.current?.querySelector<HTMLElement>(".residencies-band__mobile-thumb")
+                ?.offsetWidth || 1,
+          }
+        : {
+            getSlides: () =>
+              bgRefs.current.filter((el): el is HTMLImageElement => Boolean(el)),
+            ignore: ".residencies-band__card-slot",
+          }),
+      onCommit: goToSlide,
+    },
+    hasMany,
+    isNarrow ? "narrow" : "wide",
+  );
+
   if (!slide) return null;
 
   return (
@@ -128,6 +158,7 @@ export function ResidenciesBand({ slides }: Props) {
       className="residencies-band"
       aria-label="Residencies"
       tabIndex={hasMany ? 0 : undefined}
+      data-no-sketch
     >
       <div ref={bgWrapRef} className="residencies-band__bg-wrap" aria-hidden>
         {slides.map((item, i) => (

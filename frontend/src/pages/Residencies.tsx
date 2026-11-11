@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { prefersReducedMotion } from "../lib/motion";
+import { useReadingOrderReveal } from "../lib/sequence";
+import { glideToTop } from "../lib/lenisSingleton";
 import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { GalleryLightbox } from "../components/GalleryLightbox";
@@ -44,33 +46,13 @@ export function Residencies() {
   const selectResidency = useCallback(
     (slug: string) => {
       setParams({ residency: slug });
-      window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" });
+      glideToTop({ reduced: prefersReducedMotion() });
     },
     [setParams],
   );
 
-  useGSAP(
-    () => {
-      const el = featureRef.current;
-      if (!el) return;
-      if (prefersReducedMotion()) {
-        gsap.set(el, { autoAlpha: 1 });
-        return;
-      }
-      gsap.fromTo(
-        el,
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 0.95,
-          delay: 0.12,
-          ease: "cubic-bezier(0.16, 1, 0.3, 1)",
-          clearProps: "opacity,visibility,transform",
-        }
-      );
-    },
-    { dependencies: [featured?.id], scope: root },
-  );
+  // Paragraphs, images and links arrive one by one in reading order.
+  useReadingOrderReveal(root, { key: featured?.id, delay: 0.12 });
 
   if (!featured) {
     return (
