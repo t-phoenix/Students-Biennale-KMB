@@ -83,7 +83,8 @@ export function Detail() {
         {
           autoAlpha: 1,
           // Opened with a tap or click: the picture is there almost at once, not after a wait.
-          duration: DUR.slow,
+          // An artwork's picture is the card just tapped, already loaded: it is there sooner.
+          duration: kindSeg === "artworks" ? DUR.fast : DUR.slow,
           ease: EASE.enter,
           clearProps: "opacity,visibility",
         }
@@ -115,7 +116,7 @@ export function Detail() {
             tl.fromTo(
               labelsAndHeadings,
               { autoAlpha: 0, y: DISTANCE.rise },
-              { autoAlpha: 1, y: 0, clearProps: "transform", duration: isFirst ? DUR.slow : DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+              { autoAlpha: 1, y: 0, clearProps: "transform", duration: isFirst ? (kindSeg === "artworks" ? DUR.fast : DUR.slow) : DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
               0
             );
           }
@@ -272,7 +273,7 @@ export function Detail() {
       idx >= 0 && list.length > 1 ? list[(idx + 1) % list.length] : undefined;
 
     return (
-      <div ref={root} className="detail">
+      <div ref={root} className="detail" data-quick-open="">
         <ArtworkDetailBody artwork={a} highlightQuery={highlight} />
 
         <div className="fig-grid detail__nav">

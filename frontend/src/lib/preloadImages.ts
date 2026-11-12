@@ -2,6 +2,8 @@
 
 const preloaded = new Set<string>();
 const inflight = new Map<string, Promise<void>>();
+/** Pictures someone is waiting for right now (the one just opened). */
+const urgent = new Set<Promise<void>>();
 const WARM_STORAGE_KEY = "sb-img-warm-v1";
 
 export type PreloadPriority = "high" | "low";
@@ -78,6 +80,11 @@ export function preloadUrl(url: string, priority: PreloadPriority = "low"): Prom
   });
 
   inflight.set(url, promise);
+  if (priority === "high") {
+    urgent.add(promise);
+    yieldBackground(url);
+    void promise.catch(() => undefined).finally(() => urgent.delete(promise));
+  }
   return promise;
 }
 
@@ -159,6 +166,17 @@ export function preloadAdjacent(
  * another, starting once the page has shown, so they never compete with what is on screen.
  */
 const turnQueue: string[] = [];
+let turnCurrent: { img: HTMLImageElement; url: string; stopped: boolean } | null = null;
+
+/** Someone is now waiting for a picture: a background download in progress steps aside (it is
+ *  stopped and put back at the front of the queue) so the wanted picture has the connection. */
+function yieldBackground(wanted: string) {
+  const current = turnCurrent;
+  if (!current || current.stopped || current.url === wanted) return;
+  current.stopped = true;
+  current.img.removeAttribute("src");
+  turnQueue.unshift(current.url);
+}
 let turnRunning = false;
 export function preloadInTurn(urls: readonly string[]) {
   for (const url of urls) {
@@ -168,8 +186,27 @@ export function preloadInTurn(urls: readonly string[]) {
   turnRunning = true;
   whenIdle(async () => {
     while (turnQueue.length) {
+      // Never alongside a picture someone is waiting for: it gets the whole connection first.
+      while (urgent.size) await Promise.allSettled([...urgent]);
       const next = turnQueue.shift()!;
-      await preloadUrl(next, "low").catch(() => undefined);
+      if (preloaded.has(next)) continue;
+      const pending = inflight.get(next);
+      if (pending) {
+        await pending.catch(() => undefined);
+        continue;
+      }
+      const img = new Image();
+      img.decoding = "async";
+      attachPriority(img, "low");
+      const current = { img, url: next, stopped: false };
+      turnCurrent = current;
+      img.src = next;
+      await loadAndDecode(img);
+      turnCurrent = null;
+      if (!current.stopped && img.naturalWidth > 0) {
+        preloaded.add(next);
+        writeWarmManifest(next);
+      }
     }
     turnRunning = false;
   }, 1200);

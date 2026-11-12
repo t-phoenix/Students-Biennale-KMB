@@ -163,7 +163,12 @@ export function Layout() {
           y: 0,
           // A curator, artwork, artist or venue opened from a card is there at once; a slow page
           // fade on top of its own entrance read as a delay after the tap.
-          duration: /^\/editions\/[^/]+\/(curators|artworks|artists|venue)\/[^/]+/.test(location.pathname) ? DUR.base : DUR.page,
+          // An artwork opened from Editions is lighter still: there within a fifth of a second.
+          duration: /^\/editions\/[^/]+\/artworks\/[^/]+/.test(location.pathname)
+            ? DUR.fast
+            : /^\/editions\/[^/]+\/(curators|artists|venue)\/[^/]+/.test(location.pathname)
+              ? DUR.base
+              : DUR.page,
           ease: EASE.reveal,
           overwrite: "auto",
           clearProps: "opacity,transform",

@@ -38,7 +38,10 @@ export function splitLinesOnScroll(
   if (typeof window === "undefined") return () => {};
   if (prefersReducedMotion()) return () => {};
 
-  const elements = gsap.utils.toArray(targets) as HTMLElement[];
+  // A box that holds other targets (e.g. an artwork description and its own paragraphs) is left
+  // to its paragraphs: splitting both measured and animated every line twice.
+  const all = gsap.utils.toArray(targets) as HTMLElement[];
+  const elements = all.filter((el) => !all.some((other) => other !== el && el.contains(other)));
   if (!elements.length) return () => {};
 
   const instances: SplitText[] = [];
@@ -145,7 +148,10 @@ export function splitLinesOnScroll(
           if (!entry.isIntersecting) return;
           const el = entry.target as HTMLElement;
           observer?.unobserve(el);
-          splitQueue.add(el, () => splitOne(el, validElements.indexOf(el)));
+          // On screen now: split this frame (in turn). Just below: when the browser is idle, so
+          // it never adds to the work of opening the page.
+          const onScreen = entry.boundingClientRect.top < window.innerHeight;
+          splitQueue.add(el, () => splitOne(el, validElements.indexOf(el)), !onScreen);
         });
       },
       { rootMargin: "0px 0px 100% 0px" },
@@ -185,7 +191,44 @@ export function splitLinesOnScroll(
  *  never freezes while it is being prepared. */
 const splitQueue = (() => {
   const jobs: { el: HTMLElement; run: () => void }[] = [];
+  const later: { el: HTMLElement; run: () => void; readyAt: number }[] = [];
   let scheduled = false;
+  let idleScheduled = false;
+  let waitTimer = 0;
+  // Text below the screen is not wanted while a page is opening: measuring it then took frames
+  // from the page's own entrance. It waits until the entrance has played.
+  const SETTLE_MS = 650;
+  const win = window as Window & { requestIdleCallback?: (cb: (d: { timeRemaining: () => number }) => void, o?: { timeout: number }) => number };
+  const idleTick = (deadline?: { timeRemaining: () => number }) => {
+    idleScheduled = false;
+    // Something on screen still waiting goes first.
+    if (jobs.length) {
+      scheduleIdle();
+      return;
+    }
+    const startAt = performance.now();
+    for (;;) {
+      const i = later.findIndex((j) => j.readyAt <= performance.now());
+      if (i < 0) break;
+      later.splice(i, 1)[0].run();
+      if (deadline ? deadline.timeRemaining() <= 4 : performance.now() - startAt >= BUDGET_MS) break;
+    }
+    if (later.length) scheduleIdle();
+  };
+  const scheduleIdle = () => {
+    if (idleScheduled || waitTimer || !later.length) return;
+    const wait = Math.min(...later.map((j) => j.readyAt)) - performance.now();
+    if (wait > 0) {
+      waitTimer = window.setTimeout(() => {
+        waitTimer = 0;
+        scheduleIdle();
+      }, wait);
+      return;
+    }
+    idleScheduled = true;
+    if (win.requestIdleCallback) win.requestIdleCallback(idleTick, { timeout: 1500 });
+    else window.setTimeout(() => idleTick(), 200);
+  };
   const BUDGET_MS = 8;
   const order = (a: HTMLElement, b: HTMLElement) =>
     a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
@@ -206,14 +249,22 @@ const splitQueue = (() => {
     requestAnimationFrame(tick);
   };
   return {
-    add(el: HTMLElement, run: () => void) {
+    add(el: HTMLElement, run: () => void, whenIdle = false) {
+      if (whenIdle) {
+        later.push({ el, run, readyAt: performance.now() + SETTLE_MS });
+        later.sort((a, b) => order(a.el, b.el));
+        scheduleIdle();
+        return;
+      }
       jobs.push({ el, run });
       jobs.sort((a, b) => order(a.el, b.el));
       schedule();
     },
     remove(el: HTMLElement) {
-      const i = jobs.findIndex((j) => j.el === el);
-      if (i >= 0) jobs.splice(i, 1);
+      for (const list of [jobs, later]) {
+        const i = list.findIndex((j) => j.el === el);
+        if (i >= 0) list.splice(i, 1);
+      }
     },
   };
 })();

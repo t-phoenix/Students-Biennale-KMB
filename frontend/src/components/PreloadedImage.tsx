@@ -10,6 +10,8 @@ type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> & {
   loaderVariant?: "cover" | "inline";
   /** Fade in even when already loaded, slowly and softly, over whatever sits beneath it. */
   crossfade?: boolean;
+  /** Arrives quickly once downloaded (a picture someone just tapped to open). */
+  quick?: boolean;
 };
 
 function isAlreadyLoaded(src: string) {
@@ -29,6 +31,7 @@ export function PreloadedImage({
   showLoader = true,
   loaderVariant = "cover",
   crossfade = false,
+  quick = false,
   className,
   onLoad,
   onError,
@@ -69,7 +72,7 @@ export function PreloadedImage({
     transition: ready
       ? crossfade
         ? "opacity 1.3s var(--enter-ease-fade)"
-        : "opacity 0.45s var(--enter-ease-fade)"
+        : `opacity ${quick ? 0.2 : 0.45}s var(--enter-ease-fade)`
       : undefined,
   };
 

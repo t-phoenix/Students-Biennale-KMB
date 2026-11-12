@@ -1,5 +1,5 @@
 import { useLayoutEffect, type RefObject } from "react";
-import { DISTANCE, DUR, EASE, SEQUENCE, SplitText, gsap, prefersReducedMotion } from "./motion";
+import { DISTANCE, DUR, EASE, SEQUENCE, STAGGER, SplitText, gsap, prefersReducedMotion } from "./motion";
 
 /**
  * Reading-order reveal, shared by every page.
@@ -71,7 +71,13 @@ export type SequenceOptions = {
   delay?: number;
   /** Only sequence pieces that are below the screen when it arms (already-visible ones stay). */
   belowFoldOnly?: boolean;
+  /** The first screen arrives quickly (a tab switched by a tap); later pieces as usual. */
+  quickFirst?: boolean;
 };
+
+/** A quick first screen: each piece takes this long, and the whole group starts within QUICK_MAX. */
+const QUICK_DURATION = DUR.base;
+const QUICK_MAX = 0.2;
 
 /** Sorts pieces top to bottom, and left to right within a row. */
 export function readingOrder<T extends Element>(els: T[]): T[] {
@@ -97,6 +103,7 @@ export function revealInReadingOrder(root: HTMLElement, options: SequenceOptions
   const skipSel = options.skip ? `${options.skip}, ${ALWAYS_SKIP}` : ALWAYS_SKIP;
   const duration = options.duration ?? DUR.reveal;
   let firstDelay = options.delay ?? 0;
+  let quickNext = Boolean(options.quickFirst);
 
   const seen = new WeakSet<Element>();
   const pending = new Set<HTMLElement>();
@@ -137,7 +144,7 @@ export function revealInReadingOrder(root: HTMLElement, options: SequenceOptions
    * during the animation and are put back exactly as they were afterwards, so later text
    * updates still apply (the same approach as the headline reveal).
    */
-  const revealLines = (el: HTMLElement) => {
+  const revealLines = (el: HTMLElement, duration: number) => {
     if (!el.isConnected) return;
     const originals = Array.from(el.childNodes);
     const copy = el.cloneNode(true) as HTMLElement;
@@ -206,7 +213,15 @@ export function revealInReadingOrder(root: HTMLElement, options: SequenceOptions
     });
     waiting.clear();
     const els = readingOrder(fresh);
-    const step = els.length > 1 ? Math.min(SEQUENCE.step, SEQUENCE.max / (els.length - 1)) : 0;
+    const quick = quickNext;
+    quickNext = false;
+    const dur = quick ? QUICK_DURATION : duration;
+    const step =
+      els.length > 1
+        ? quick
+          ? Math.min(STAGGER.step, QUICK_MAX / (els.length - 1))
+          : Math.min(SEQUENCE.step, SEQUENCE.max / (els.length - 1))
+        : 0;
     const start = firstDelay;
     firstDelay = 0;
     els.forEach((el, i) => {
@@ -215,7 +230,7 @@ export function revealInReadingOrder(root: HTMLElement, options: SequenceOptions
         const call = gsap.delayedCall(start + i * step, () => {
           waiting.delete(el);
           running.delete(call);
-          revealLines(el);
+          revealLines(el, dur);
         });
         running.add(call);
         waiting.set(el, call);
@@ -229,7 +244,7 @@ export function revealInReadingOrder(root: HTMLElement, options: SequenceOptions
         {
           autoAlpha: 1,
           ...(media ? {} : { y: 0 }),
-          duration,
+          duration: dur,
           delay: start + i * step,
           ease: EASE.reveal,
           clearProps: media ? "opacity,visibility,transition" : "opacity,visibility,transform,transition",
@@ -267,11 +282,17 @@ export function revealInReadingOrder(root: HTMLElement, options: SequenceOptions
 
   const scan = () => {
     if (stopped) return;
+    // Every new piece is measured first and hidden after: hiding each one as it was found made
+    // the browser recompute the page once per piece.
+    const found: HTMLElement[] = [];
     root.querySelectorAll<HTMLElement>(unitSel).forEach((el) => {
       if (seen.has(el)) return;
       seen.add(el);
       if (!isUnit(el)) return;
       if (options.belowFoldOnly && el.getBoundingClientRect().top < window.innerHeight) return;
+      found.push(el);
+    });
+    found.forEach((el) => {
       pending.add(el);
       gsap.set(el, { autoAlpha: 0, transition: "none" });
       observer.observe(el);
@@ -339,10 +360,10 @@ export function useReadingOrderReveal(
   ref: RefObject<HTMLElement | null>,
   options: SequenceOptions & { key?: string | number; enabled?: boolean } = {},
 ) {
-  const { key, enabled = true, units, skip, duration, delay, belowFoldOnly } = options;
+  const { key, enabled = true, units, skip, duration, delay, belowFoldOnly, quickFirst } = options;
   useLayoutEffect(() => {
     const root = ref.current;
     if (!root || !enabled) return;
-    return revealInReadingOrder(root, { units, skip, duration, delay, belowFoldOnly });
-  }, [ref, key, enabled, units, skip, duration, delay, belowFoldOnly]);
+    return revealInReadingOrder(root, { units, skip, duration, delay, belowFoldOnly, quickFirst });
+  }, [ref, key, enabled, units, skip, duration, delay, belowFoldOnly, quickFirst]);
 }

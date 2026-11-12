@@ -5,6 +5,8 @@ import { LATEST_EDITION, PREVIOUS_EDITIONS } from "../data/site";
 import { useCatalogue } from "../lib/catalogue";
 import { gsap, prefersReducedMotion, useGSAP, DUR, EXIT } from "../lib/motion";
 import { useReadingOrderReveal } from "../lib/sequence";
+import { whenIdle } from "../lib/preloadImages";
+import { loadDetail } from "../lib/routeChunks";
 import { EditionSearchProvider, useEditionSearch } from "./EditionSearchContext";
 import "./EditionShell.css";
 import "./EditionViews.css";
@@ -143,10 +145,16 @@ function EditionCatalogueMain() {
     { dependencies: [location.pathname], scope: contentRef }
   );
 
+  // Re-armed for every tab. After a tab is switched by a tap, its first screen arrives quickly
+  // so the switch feels immediate; what is scrolled to later arrives at the usual pace, and so
+  // does the first screen when the page itself opens.
+  const firstPathRef = useRef(location.pathname);
   useReadingOrderReveal(contentRef, {
+    key: location.pathname,
     units: ".edition-card, .edition-venue, .catalogue__row",
     duration: DUR.emphasis,
     enabled: !isSearching,
+    quickFirst: location.pathname !== firstPathRef.current,
   });
 
   return (
@@ -184,6 +192,12 @@ function EditionShellLayout() {
   useEffect(() => {
     setIsArchiveOpen(false);
   }, [location.pathname]);
+
+  // Every card here opens a detail page. Its code is fetched while the list is showing, so a
+  // tap opens it at once instead of first waiting for a download.
+  useEffect(() => {
+    whenIdle(() => void loadDetail().catch(() => {}), 1500);
+  }, []);
 
   useEffect(() => {
     if (!isArchiveOpen) return;

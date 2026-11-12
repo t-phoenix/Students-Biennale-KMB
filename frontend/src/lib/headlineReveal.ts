@@ -48,13 +48,15 @@ export function observeHeadlines(root: HTMLElement): () => void {
         gsap.set(mask, { paddingBottom: "0.2em", marginBottom: "-0.2em" });
       });
       running.add(finish);
+      // A page opened from a tap (an artwork) shows its title quickly; elsewhere it rises slowly.
+      const quick = Boolean(el.closest("[data-quick-open]"));
       tween = gsap.fromTo(
         split.lines,
         { yPercent: 110 },
         {
           yPercent: 0,
-          duration: DUR.reveal,
-          stagger: STAGGER.step * 2.5,
+          duration: quick ? DUR.base : DUR.reveal,
+          stagger: quick ? STAGGER.step : STAGGER.step * 2.5,
           ease: EASE.reveal,
           onComplete: finish,
         },

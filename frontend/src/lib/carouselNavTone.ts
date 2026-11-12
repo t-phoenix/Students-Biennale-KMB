@@ -28,10 +28,23 @@ export async function sampleCarouselNavTone(
 }
 
 /** Luminance under the dot tracker — bottom-right or bottom-center of the slide. */
-export async function sampleCarouselDotsTone(
+/** Each picture is measured once: the answer never changes, and measuring takes a moment. */
+const dotsToneCache = new Map<string, Promise<CarouselNavTone>>();
+
+export function sampleCarouselDotsTone(
   src: string,
   align: CarouselDotsAlign = "right",
 ): Promise<CarouselNavTone> {
+  const key = align + " " + src;
+  let tone = dotsToneCache.get(key);
+  if (!tone) {
+    tone = measureDotsTone(src, align);
+    dotsToneCache.set(key, tone);
+  }
+  return tone;
+}
+
+async function measureDotsTone(src: string, align: CarouselDotsAlign): Promise<CarouselNavTone> {
   try {
     const img = await loadImage(src);
     const canvas = document.createElement("canvas");
@@ -81,7 +94,12 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.decoding = "async";
-    img.onload = () => resolve(img);
+    // Decoded away from the page (img.decode), so drawing it to measure does not hold up a frame.
+    img.onload = () => {
+      const done = () => resolve(img);
+      if (typeof img.decode === "function") img.decode().then(done, done);
+      else done();
+    };
     img.onerror = () => reject(new Error(`carousel nav tone: ${src}`));
     img.src = src;
   });

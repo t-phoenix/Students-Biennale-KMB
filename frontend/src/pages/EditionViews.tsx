@@ -1,6 +1,7 @@
-import { useRef } from "react";
-import { Link, useParams } from "react-router-dom";
-import { type CuratorCard, hasActualTourUrl } from "../data/site";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigationType, useParams } from "react-router-dom";
+import { artworkImages, type ArtworkCard, type CuratorCard, hasActualTourUrl } from "../data/site";
+import { preloadUrl } from "../lib/preloadImages";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { useImageParallax } from "../lib/parallax";
 import { CatalogueList } from "../components/CatalogueList";
@@ -9,6 +10,57 @@ import { useEditionSearch } from "./EditionSearchContext";
 import "./EditionViews.css";
 
 // Cards, rows and text arrive in reading order through useReadingOrderReveal in EditionShell.
+
+// The picture of the card being opened: it must keep downloading when the list goes away.
+let openingSrc = "";
+
+function warmArtwork(a: ArtworkCard) {
+  const first = artworkImages(a)[0];
+  if (!first) return;
+  openingSrc = first;
+  void preloadUrl(first, "high");
+}
+
+// Card pictures load as they come within a screen of view, nearest first, not dozens at once:
+// a phone connection was still busy with list pictures when an artwork was opened, and the
+// artwork waited behind them.
+let cardObserver: IntersectionObserver | null = null;
+function observeCard(img: HTMLImageElement) {
+  if (typeof IntersectionObserver === "undefined") {
+    img.src = img.dataset.src ?? "";
+    return () => {};
+  }
+  cardObserver ??= new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target as HTMLImageElement;
+        cardObserver?.unobserve(el);
+        if (el.dataset.src) el.src = el.dataset.src;
+      });
+    },
+    // The screen and half a screen ahead (and a little behind), so pictures are there as they scroll in.
+    { rootMargin: "25% 0px 50% 0px" },
+  );
+  cardObserver.observe(img);
+  return () => cardObserver?.unobserve(img);
+}
+
+function CardImage({ src }: { src: string }) {
+  const ref = useRef<HTMLImageElement>(null);
+  useEffect(() => {
+    const img = ref.current;
+    if (!img) return;
+    const stop = observeCard(img);
+    return () => {
+      stop();
+      // Leaving the list: a picture still on its way is no longer wanted, unless it is the
+      // one being opened. Stopping it gives the connection to the page that opens.
+      if (!img.isConnected && !img.complete && img.dataset.src !== openingSrc) img.removeAttribute("src");
+    };
+  }, [src]);
+  return <img ref={ref} data-src={src} alt="" decoding="async" />;
+}
 
 function Forthcoming({
   catalogue,
@@ -145,11 +197,38 @@ export function CuratorsView() {
   );
 }
 
+// Cards drawn when the Artworks tab opens: two screens of cards on any device. The rest are
+// added a few at a time in the frames after, so the tab appears at once instead of waiting for
+// all 85 cards to be built and laid out.
+const FIRST_CARDS = 24;
+const MORE_CARDS = 16;
+
+function useCardsShown(total: number) {
+  // Coming back (the back button) draws every card at once, so the page can return to where
+  // it was scrolled.
+  const back = useNavigationType() === "POP";
+  const [shown, setShown] = useState(back ? Infinity : FIRST_CARDS);
+  useEffect(() => {
+    if (shown >= total) return;
+    let timer = 0;
+    // After the frame that shows the first cards has been painted.
+    const frame = requestAnimationFrame(() => {
+      timer = window.setTimeout(() => setShown((n) => n + MORE_CARDS), 0);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
+  }, [shown, total]);
+  return shown;
+}
+
 export function ArtworksView() {
   const { yearId = "2025-26" } = useParams();
   const { catalogue } = useEditionCatalogue(yearId);
   const { view } = useEditionSearch();
   const root = useRef<HTMLDivElement>(null);
+  const shown = useCardsShown(catalogue.artworks.length);
 
 
   return (
@@ -186,14 +265,18 @@ export function ArtworksView() {
         />
       ) : (
         <div className="edition-grid edition-grid--art">
-          {catalogue.artworks.map((a) => (
+          {catalogue.artworks.slice(0, shown).map((a) => (
             <Link
               key={a.id}
               className="edition-card"
               to={`/editions/${yearId}/artworks/${a.id}`}
+              // The finger touching (or the pointer resting on) a card starts its picture, a
+              // moment before the tap completes.
+              onPointerDown={() => warmArtwork(a)}
+              onPointerEnter={() => warmArtwork(a)}
             >
               <div className="edition-card__media edition-card__media--art" aria-hidden>
-                {a.image ? <img src={a.image} alt="" loading="lazy" decoding="async" /> : null}
+                {a.image ? <CardImage src={a.image} /> : null}
               </div>
               <h3>{a.title}</h3>
               <p>{a.medium ? a.medium : `Venue : ${a.venue}`}</p>

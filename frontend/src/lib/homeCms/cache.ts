@@ -1,5 +1,5 @@
 import { isSupabaseConfigured, supabase } from "../supabase";
-import { preloadUrl, preloadUrlsConcurrent, whenIdle } from "../preloadImages";
+import { preloadInTurn, preloadUrl, preloadUrlsConcurrent, whenIdle } from "../preloadImages";
 import type { HomeCms, HomeCover, HomeUpdateCard } from "./types";
 
 const STORAGE_KEY = "sb-home-cms-v3";
@@ -45,6 +45,12 @@ function writeSession(data: HomeCms) {
 /** Preload the LCP hero immediately; secondary covers/cards follow without long idle delay. */
 function preloadCmsImages(data: HomeCms) {
   const [primary, ...rest] = data.covers;
+  // On any other page (this runs on every page) only the first home picture is warmed, in the
+  // background: it steps aside whenever a page being opened needs the connection.
+  if (typeof window !== "undefined" && window.location.pathname !== "/") {
+    if (primary?.image_url) preloadInTurn([primary.image_url]);
+    return;
+  }
   if (primary?.image_url) void preloadUrl(primary.image_url, "high");
 
   const secondary = [

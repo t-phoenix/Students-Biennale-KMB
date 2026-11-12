@@ -10,6 +10,7 @@ import { HomeCmsProvider } from "./lib/homeCms";
 import { SplashProvider } from "./lib/splash";
 import { LATEST_EDITION, PREVIOUS_EDITIONS } from "./data/site";
 import { lazyWithRetry, registerVitePreloadErrorHandler } from "./lib/lazyRetry";
+import { loadDetail } from "./lib/routeChunks";
 
 const DiscoverArtworks = lazyWithRetry(() =>
   import("./pages/DiscoverArtworks").then((m) => ({ default: m.DiscoverArtworks })),
@@ -33,7 +34,7 @@ const VenueView = lazyWithRetry(() =>
   import("./pages/EditionViews").then((m) => ({ default: m.VenueView })),
 );
 const Detail = lazyWithRetry(() =>
-  import("./pages/Detail").then((m) => ({ default: m.Detail })),
+  loadDetail().then((m) => ({ default: m.Detail })),
 );
 const Programmes = lazyWithRetry(() =>
   import("./pages/Programmes").then((m) => ({ default: m.Programmes })),

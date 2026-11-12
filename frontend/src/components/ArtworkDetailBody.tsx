@@ -165,6 +165,7 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
               className="detail__hero-img"
               prefetch={upcomingSlides}
               crossfade={Boolean(outgoing)}
+              quick
               showLoader={!outgoing}
               onClick={() => setLightboxOpen(true)}
             />

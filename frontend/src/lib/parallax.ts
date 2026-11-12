@@ -91,13 +91,25 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
 
   const triggers = new Map<HTMLImageElement, ScrollTrigger>();
   const processedImages = new Set<HTMLImageElement>();
+  // Pictures further down the page, set up a few at a time while the browser is idle.
+  const pending = new Set<HTMLImageElement>();
+  let stopped = false;
 
-  const setup = (img: HTMLImageElement) => {
-    if (processedImages.has(img) || !isEligibleImage(img)) return;
-    processedImages.add(img);
+  interface Plan {
+    img: HTMLImageElement;
+    container: HTMLElement;
+    travelPercent: number;
+    scaleFactor: number;
+    scrubVal: number;
+  }
+
+  // Only reads the page. Every picture of a batch is measured first and changed after, so the
+  // browser lays the page out once per batch instead of once per picture.
+  const plan = (img: HTMLImageElement): Plan | null => {
+    if (processedImages.has(img) || !isEligibleImage(img)) return null;
 
     const container = findParallaxContainer(img);
-    if (!container) return;
+    if (!container) return null;
 
     // Determine variant based on container size and classes
     const isHero =
@@ -124,6 +136,14 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
     const baseScaleFactor = isHero ? (isMobile ? 1.14 : 1.18) : (isMobile ? 1.12 : 1.14);
     const scaleFactor = isCurator ? baseScaleFactor + 0.02 : baseScaleFactor;
     const scrubVal = isMobile ? 0.4 : 0.6; // Snappier finger tracking on touch devices
+    return { img, container, travelPercent, scaleFactor, scrubVal };
+  };
+
+  // Only writes to the page.
+  const apply = ({ img, container, travelPercent, scaleFactor, scrubVal }: Plan) => {
+    if (processedImages.has(img)) return;
+    processedImages.add(img);
+    pending.delete(img);
 
     // Ensure container hides overflow
     container.classList.add("has-parallax-container");
@@ -162,28 +182,100 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
     triggers.get(img)?.kill();
     triggers.delete(img);
     processedImages.delete(img);
+    pending.delete(img);
   };
 
-  root.querySelectorAll<HTMLImageElement>("img").forEach(setup);
+  const run = (imgs: HTMLImageElement[]) => {
+    const plans = imgs.map(plan).filter((p): p is Plan => p !== null);
+    plans.forEach(apply);
+    return plans.length;
+  };
+
+  // New content usually moves what is below it: re-measure every scroll-linked animation once,
+  // after the content has settled and every picture has its parallax.
+  let refreshTimer = 0;
+  let addedSinceRefresh = false;
+  const scheduleRefresh = () => {
+    window.clearTimeout(refreshTimer);
+    if (!addedSinceRefresh || pending.size) return;
+    refreshTimer = window.setTimeout(() => {
+      addedSinceRefresh = false;
+      ScrollTrigger.refresh();
+    }, 250);
+  };
+
+  // A whole grid arriving at once (the 85 cards of the Editions Artworks tab) used to have every
+  // picture set up before the new view could appear, which held the tab switch up for a third
+  // of a second on a phone. Pictures on or near the screen are still set up before the browser
+  // paints, so none is ever seen without its parallax scale and then jumps. The rest follow in
+  // small slices between frames, nearest first, long before they can be scrolled to.
+  const SLICE = 4;
+  let idleHandle = 0;
+  const win = window as Window & {
+    requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    cancelIdleCallback?: (id: number) => void;
+  };
+  const cancelDrain = () => {
+    if (!idleHandle) return;
+    if (win.cancelIdleCallback) win.cancelIdleCallback(idleHandle);
+    else window.clearTimeout(idleHandle);
+    idleHandle = 0;
+  };
+  const drain = () => {
+    idleHandle = 0;
+    if (stopped) return;
+    const vh = window.innerHeight;
+    const list: { img: HTMLImageElement; d: number }[] = [];
+    pending.forEach((img) => {
+      if (!img.isConnected || processedImages.has(img)) {
+        pending.delete(img);
+        return;
+      }
+      const r = img.getBoundingClientRect();
+      list.push({ img, d: r.top > vh ? r.top - vh : r.bottom < 0 ? -r.bottom : 0 });
+    });
+    list.sort((a, b) => a.d - b.d);
+    const slice = list.slice(0, SLICE).map((x) => x.img);
+    slice.forEach((img) => pending.delete(img));
+    if (run(slice)) addedSinceRefresh = true;
+    if (pending.size) scheduleDrain();
+    else scheduleRefresh();
+  };
+  const scheduleDrain = () => {
+    if (idleHandle || stopped) return;
+    idleHandle = win.requestIdleCallback
+      ? win.requestIdleCallback(drain, { timeout: 250 })
+      : window.setTimeout(drain, 32);
+  };
+
+  const enqueue = (imgs: Iterable<HTMLImageElement>) => {
+    const vh = window.innerHeight;
+    const now: HTMLImageElement[] = [];
+    let later = false;
+    for (const img of imgs) {
+      if (processedImages.has(img) || pending.has(img)) continue;
+      const r = img.getBoundingClientRect();
+      if (r.bottom > -vh * 0.5 && r.top < vh * 1.5) now.push(img);
+      else {
+        pending.add(img);
+        later = true;
+      }
+    }
+    if (run(now)) addedSinceRefresh = true;
+    if (later) scheduleDrain();
+    scheduleRefresh();
+  };
+
+  enqueue(root.querySelectorAll<HTMLImageElement>("img"));
 
   // Pages fill in after the route changes - the code for the page, then its content from the
   // CMS, then its images. Scanning once at the route change found nothing on a direct load or a
   // refresh, so the parallax never started there. Images are now set up as they arrive. The
-  // observer runs before the browser paints, so an image never shows first without its
-  // parallax scale and then jumps.
-  let refreshTimer = 0;
+  // observer runs before the browser paints, so an image near the screen never shows first
+  // without its parallax scale and then jumps.
   const observer = new MutationObserver((records) => {
-    let added = false;
+    const added = new Set<HTMLImageElement>();
     for (const record of records) {
-      record.addedNodes.forEach((node) => {
-        if (!(node instanceof Element)) return;
-        const imgs = node instanceof HTMLImageElement ? [node] : Array.from(node.querySelectorAll<HTMLImageElement>("img"));
-        imgs.forEach((img) => {
-          const before = processedImages.size;
-          setup(img);
-          if (processedImages.size > before) added = true;
-        });
-      });
       record.removedNodes.forEach((node) => {
         if (!(node instanceof Element)) return;
         const imgs = node instanceof HTMLImageElement ? [node] : Array.from(node.querySelectorAll<HTMLImageElement>("img"));
@@ -191,22 +283,28 @@ export function initImageParallax(root: HTMLElement = document.body): () => void
           if (!img.isConnected) release(img);
         });
       });
+      record.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) return;
+        if (node instanceof HTMLImageElement) added.add(node);
+        else node.querySelectorAll<HTMLImageElement>("img").forEach((img) => added.add(img));
+      });
     }
-    // New content usually moves what is below it: re-measure every scroll-linked animation once,
-    // after the content has settled.
-    if (added) {
-      window.clearTimeout(refreshTimer);
-      refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 250);
-    }
+    if (added.size) enqueue([...added].filter((img) => img.isConnected));
   });
   observer.observe(root, { childList: true, subtree: true });
 
   // Return teardown function
   return () => {
+    stopped = true;
     observer.disconnect();
+    cancelDrain();
+    pending.clear();
     window.clearTimeout(refreshTimer);
-    triggers.forEach((st) => st.kill());
+    // Pictures of the page just left are already gone: putting each one back as it was only
+    // measured the page again and again, between the tap and the new page appearing.
+    triggers.forEach((st, img) => (img.isConnected ? st.kill() : st.kill(false)));
     processedImages.forEach((img) => {
+      if (!img.isConnected) return;
       gsap.set(img, { clearProps: "transform,scale,yPercent,willChange" });
       img.classList.remove("has-parallax-img");
     });
