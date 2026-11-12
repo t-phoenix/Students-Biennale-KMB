@@ -642,6 +642,27 @@
   justify-self: end;
 }
 
+/* NEXT / NEXT ARTWORK matches BACK beside it: same arrow size, same text size, same gap. */
+.detail__nav .detail__next {
+  gap: 12px;
+}
+
+.detail__nav .detail__next .cta-link__label {
+  font-size: var(--type-subtitle-size);
+}
+
+.detail__nav .detail__next .brand-arrow {
+  width: 44px;
+  height: 44px;
+}
+
+@media (max-width: 899px) {
+  .detail__nav .detail__next .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+}
+
 .detail__zone--mobile {
   display: none;
 }

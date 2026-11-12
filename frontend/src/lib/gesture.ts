@@ -125,6 +125,10 @@ export type SlideGestureOptions = {
   onCommit: (index: number) => void;
   /** Everything is at rest, whether or not the index changed. */
   onSettle?: (index: number) => void;
+  /** A hand drag (finger, mouse or trackpad) has started or come to rest. Not called for arrows or keys. */
+  onDragChange?: (dragging: boolean) => void;
+  /** While true, no new drag starts (e.g. a zoomed picture is being panned instead). */
+  blocked?: () => boolean;
 };
 
 const DEFAULT_IGNORE = "button, a, input, textarea, select, label, .carousel-dots, .carousel-nav, [data-no-swipe]";
@@ -169,6 +173,13 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
   let wheelIdleTimer = 0;
   let wheelQuietUntil = 0;
   let isMouse = false;
+  /** True from the moment a hand drag starts until everything is at rest again. */
+  let handDrag = false;
+  const setHandDrag = (o: SlideGestureOptions, on: boolean) => {
+    if (handDrag === on) return;
+    handDrag = on;
+    o.onDragChange?.(on);
+  };
   /** Set while an arrow, dot or key drives the slide rather than a drag. */
   let forcedTarget: number | null = null;
   let settlingFinal: number | null = null;
@@ -312,6 +323,7 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
     current = null;
     neighbour = null;
     neighbourIndex = -1;
+    setHandDrag(o, false);
     if (finalIndex !== previous) o.onCommit(finalIndex);
     o.onSettle?.(finalIndex);
   };
@@ -375,6 +387,7 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
 
     if (reduced()) {
       phase = "idle";
+      setHandDrag(o, false);
       clearDismiss(o);
       if (dismiss) o.dismiss?.onDismiss();
       return;
@@ -390,6 +403,7 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
       onDone: () => {
         phase = "idle";
         stopSpring = null;
+        setHandDrag(o, false);
         if (dismiss) o.dismiss?.onDismiss();
         else clearDismiss(o);
       },
@@ -413,6 +427,7 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
       if (!o.ghost) setSlidesBusy(slidesFor(o), true);
     }
     o.onGrab?.();
+    setHandDrag(o, true);
     originX = x;
     velocity.reset();
     velocity.add(0);
@@ -422,7 +437,12 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
   function onDown(event: PointerEvent) {
     const o = getOptions();
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    if (pointerId !== null) return;
+    if (pointerId !== null) {
+      // A second finger means a pinch, not a swipe: let go of the swipe where it is.
+      if (event.pointerType === "touch") cancelActive();
+      return;
+    }
+    if (o.blocked?.()) return;
     const target = event.target as Element | null;
 
     if (phase === "settling-x" || phase === "settling-y") {
@@ -455,6 +475,11 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
   function onMove(event: PointerEvent) {
     if (event.pointerId !== pointerId) return;
     const o = getOptions();
+    // A pinch has begun (or the picture is zoomed): this is no longer a swipe.
+    if (o.blocked?.()) {
+      cancelActive();
+      return;
+    }
 
     if (phase === "pending") {
       const dx = event.clientX - startX;
@@ -466,6 +491,7 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
         if (isMouse) setDraggingCursor(true);
       } else if (o.dismiss && dy > 0) {
         phase = "y";
+        setHandDrag(o, true);
         originY = startY;
         velocity.reset();
         velocity.add(0);
@@ -519,10 +545,21 @@ function bindSlideGesture(surface: HTMLElement, getOptions: () => SlideGestureOp
     else phase = "idle";
   }
 
+  function cancelActive() {
+    const o = getOptions();
+    const wasX = phase === "x";
+    const wasY = phase === "y";
+    endListeners();
+    setDraggingCursor(false);
+    if (wasX) releaseX(o, true);
+    else if (wasY) releaseY(o, true);
+    else phase = "idle";
+  }
+
   /** Two-finger trackpad swipes. Vertical wheel movement always scrolls the page. */
   function onWheel(event: WheelEvent) {
     const o = getOptions();
-    if (event.ctrlKey || o.count <= 1 || pointerId !== null) return;
+    if (event.ctrlKey || o.count <= 1 || pointerId !== null || o.blocked?.()) return;
     if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
     event.preventDefault();
 

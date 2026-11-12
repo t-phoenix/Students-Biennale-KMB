@@ -7,6 +7,7 @@ import { CtaLink } from "../components/CtaLink";
 import { BrandArrow } from "../components/BrandArrow";
 import { CarouselNavArrows } from "../components/CarouselNavArrows";
 import { ArtworkDetailBody } from "../components/ArtworkDetailBody";
+import { SLIDER_CROSSFADE, SLIDER_HOLD_SECONDS } from "../lib/imageSlider";
 import { HighlightText } from "../components/HighlightText";
 import { FormattedParagraphs } from "../components/FormattedText";
 import { ImageCrossfadeStack } from "../components/ImageCrossfadeStack";
@@ -81,7 +82,8 @@ export function Detail() {
         { autoAlpha: 0 },
         {
           autoAlpha: 1,
-          duration: DUR.emphasis,
+          // Opened with a tap or click: the picture is there almost at once, not after a wait.
+          duration: DUR.slow,
           ease: EASE.enter,
           clearProps: "opacity,visibility",
         }
@@ -101,7 +103,8 @@ export function Detail() {
                   start: window.innerWidth <= 899 ? "top 98%" : "top 78%",
                   once: true,
                 },
-            delay: isFirst ? 0.12 : 0.08,
+            // The first section is what the tap opened: it arrives with the picture, not after it.
+            delay: isFirst ? 0 : 0.08,
           });
 
           // Headings, labels, and metadata: pure opacity fade without down-to-up movement
@@ -112,7 +115,7 @@ export function Detail() {
             tl.fromTo(
               labelsAndHeadings,
               { autoAlpha: 0, y: DISTANCE.rise },
-              { autoAlpha: 1, y: 0, clearProps: "transform", duration: DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
+              { autoAlpha: 1, y: 0, clearProps: "transform", duration: isFirst ? DUR.slow : DUR.reveal, stagger: STAGGER.step, ease: EASE.reveal },
               0
             );
           }
@@ -122,7 +125,7 @@ export function Detail() {
           const textParas = sec.querySelectorAll(".detail__desc p, .detail__note-body p, .detail__curator-bio p, .fig-body");
           if (textParas.length > 0) {
             const cleanupSplit = splitLinesOnScroll(textParas, {
-              delay: isFirst ? 0.18 : undefined,
+              ...(isFirst ? { delay: 0, duration: 0.6, stagger: 0.04 } : {}),
             });
             cleanups.push(cleanupSplit);
           }
@@ -145,7 +148,7 @@ export function Detail() {
       if (!venueHero || slides.length <= 1 || prefersReducedMotion()) return;
       const tl = gsap.timeline({ repeat: -1 });
       venueTlRef.current = tl;
-      tl.to({}, { duration: 4 }).call(() => {
+      tl.to({}, { duration: SLIDER_HOLD_SECONDS + SLIDER_CROSSFADE.duration }).call(() => {
         if (venueDraggingRef.current) return;
         setHeroIndex((cur) => (cur + 1) % slides.length);
       });
@@ -165,6 +168,17 @@ export function Detail() {
     },
     { dependencies: [id, kindSeg, data], scope: root }
   );
+
+
+  // Every change of picture, automatic or by hand, starts a fresh hold, so the next automatic
+  // change never comes early. Same rhythm as every other slideshow on the site.
+  useEffect(() => {
+    const tl = venueTlRef.current;
+    if (!tl) return;
+    const paused = tl.paused();
+    tl.restart();
+    if (paused) tl.pause();
+  }, [heroIndex]);
 
   useEffect(() => {
     const q = highlight.trim();

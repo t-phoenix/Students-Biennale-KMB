@@ -429,7 +429,6 @@ function cleanIntroParagraphs(
           setSlide(next);
         },
         heroTlRef,
-        5,
       );
     });
   }, []);
@@ -575,7 +574,6 @@ function cleanIntroParagraphs(
           setSlide(index);
         },
         heroTlRef,
-        5,
       );
 
       const onEnter = () => heroTlRef.current?.pause();

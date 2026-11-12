@@ -4,6 +4,7 @@ import { artworkImages, type ArtworkCard } from "../data/site";
 import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { useSlideGesture } from "../lib/gesture";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
+import { SLIDER_CROSSFADE, SLIDER_HOLD_SECONDS } from "../lib/imageSlider";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { CarouselNavArrows } from "./CarouselNavArrows";
@@ -78,7 +79,7 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
       if (!hero || slides.length <= 1 || prefersReducedMotion()) return;
       const tl = gsap.timeline({ repeat: -1 });
       heroTlRef.current = tl;
-      tl.to({}, { duration: 4 }).call(() => {
+      tl.to({}, { duration: SLIDER_HOLD_SECONDS + SLIDER_CROSSFADE.duration }).call(() => {
         if (draggingRef.current) return;
         setAutoChange(true);
         setHeroIndex((cur) => (cur + 1) % slides.length);
@@ -99,6 +100,22 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
     },
     { dependencies: [a.id, slides.length], scope: heroRef }
   );
+
+
+  // Every change of picture, automatic or by hand, starts a fresh hold, so the next automatic
+  // change never comes early. Same rhythm as every other slideshow on the site.
+  // While the picture is open full screen the slideshow waits: the viewer must never change
+  // picture on its own while someone is looking closely (or zoomed in).
+  useEffect(() => {
+    const tl = heroTlRef.current;
+    if (!tl) return;
+    if (lightboxOpen) {
+      tl.pause();
+      return;
+    }
+    tl.restart();
+    if (heroRef.current?.matches(":hover")) tl.pause();
+  }, [heroIndex, lightboxOpen]);
 
   // Drag, flick or trackpad swipe between images on every device.
   const heroGesture = useSlideGesture(

@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSlideGesture } from "../lib/gesture";
+import { usePinchZoom } from "../lib/pinchZoom";
 import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
 import { useModalPortal } from "../lib/useModalPortal";
 import { PreloadedImage } from "./PreloadedImage";
@@ -23,6 +24,17 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
   const closeRef = useRef<HTMLButtonElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const stepRef = useRef<(direction: 1 | -1) => void>(() => {});
+  const rootRef = useRef<HTMLDivElement>(null);
+  // While a picture is dragged by hand, the arrows step aside so nothing sits still over moving
+  // pictures.
+  const [dragging, setDragging] = useState(false);
+
+  // Phones and tablets: pinch, double-tap and pan to look closely at the picture.
+  const getImage = useCallback(
+    () => frameRef.current?.querySelector<HTMLElement>(".gallery-lightbox__image") ?? null,
+    [],
+  );
+  const zoom = usePinchZoom(rootRef, getImage, images[index]);
 
   useModalPortal({ open: true, onClose, panelRef, initialFocusRef: closeRef });
 
@@ -57,6 +69,8 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
     ghost: { selector: ".gallery-lightbox__image", getSrc: (i) => images[i] ?? "" },
     getTravel: () => window.innerWidth,
     onCommit: onIndexChange,
+    onDragChange: setDragging,
+    blocked: zoom.isActive,
     dismiss: {
       getTarget: () => frameRef.current,
       getFades: () =>
@@ -72,7 +86,7 @@ export function GalleryLightbox({ images, index, onClose, onIndexChange }: Props
   stepRef.current = gesture.step;
 
   return createPortal(
-    <div className="gallery-lightbox" role="presentation" data-lenis-prevent>
+    <div ref={rootRef} className={`gallery-lightbox${dragging ? " is-dragging" : ""}`} role="presentation" data-lenis-prevent>
       <button
         type="button"
         className="gallery-lightbox__scrim"

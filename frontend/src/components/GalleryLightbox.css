@@ -116,6 +116,30 @@
   letter-spacing: 0.1em;
 }
 
+/* The picture is being dragged by hand: the arrows step aside at once and come back once it
+   has landed, so nothing sits still over moving pictures. */
+.gallery-lightbox__nav {
+  transition: background calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease)), opacity calc(var(--hover, 0) * var(--motion-duration-base) + (1 - var(--hover, 0)) * var(--exit-duration-micro)) var(--hover-ease, var(--exit-ease));
+}
+
+.gallery-lightbox.is-dragging .gallery-lightbox__nav {
+  --hover: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Phones and tablets: swipe, pinch and double-tap do the work, so no arrows. The browser's own
+   pinch is handed to the picture instead of zooming the page behind it. */
+@media (hover: none) and (pointer: coarse) {
+  .gallery-lightbox {
+    touch-action: none;
+  }
+
+  .gallery-lightbox__nav {
+    display: none;
+  }
+}
+
 @media (max-width: 899px) {
   .gallery-lightbox__nav {
     padding: 10px 12px;
