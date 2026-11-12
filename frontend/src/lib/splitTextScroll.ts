@@ -43,7 +43,23 @@ export function splitLinesOnScroll(
 
   const instances: SplitText[] = [];
   const triggers: ScrollTrigger[] = [];
+  const hidden = new Set<HTMLElement>();
+  let observer: IntersectionObserver | null = null;
   let isCleanedUp = false;
+
+  // Splitting a paragraph into lines measures every word, which is slow. Doing every paragraph
+  // on the page at once froze the phone for a moment after a tap. So each paragraph is split only
+  // as it comes within a screen of view, a little per frame (see splitQueue). Until then it waits
+  // invisible, exactly as it would after splitting, so nothing shows unrevealed.
+  elements.forEach((el) => {
+    if (!el || !el.textContent?.trim() || (el as any)._splitTextActive) return;
+    el.style.opacity = "0";
+    hidden.add(el);
+  });
+  const unhide = (el: HTMLElement) => {
+    if (!hidden.delete(el)) return;
+    el.style.opacity = "";
+  };
 
   const init = () => {
     if (isCleanedUp) return;
@@ -54,6 +70,7 @@ export function splitLinesOnScroll(
       if (el.offsetParent === null && el.getClientRects().length === 0) return false;
       return true;
     });
+    elements.forEach((el) => !validElements.includes(el) && unhide(el));
 
     if (!validElements.length) return;
 
@@ -68,23 +85,24 @@ export function splitLinesOnScroll(
     const stagger = options.stagger ?? (isMobile ? 0.05 : 0.09);
     const delay = isMobile ? 0 : (options.delay ?? 0.05);
     const ease = options.ease ?? EASE.reveal;
-    const staggerFor = (lines: number) => Math.min(stagger, (isMobile ? 0.5 : 0.9) / Math.max(lines - 1, 1));
+    const spread = isMobile ? 0.5 : 0.9;
+    const staggerFor = (lines: number) => Math.min(stagger, spread / Math.max(lines - 1, 1));
     const start = options.start ?? (isMobile ? "top 98%" : "top 82%");
 
-    // If an explicit trigger is provided, animate all elements together under that trigger.
-    // Otherwise, each element triggers individually in natural top-to-bottom scroll order!
-    if (options.trigger) {
-      const triggerEl =
-        typeof options.trigger === "string"
-          ? document.querySelector(options.trigger) || validElements[0]
-          : options.trigger;
+    // With a shared trigger, all paragraphs arrive together under it, one after another in
+    // reading order. Otherwise each paragraph triggers on its own as it scrolls in.
+    const triggerEl = options.trigger
+      ? typeof options.trigger === "string"
+        ? document.querySelector(options.trigger) || validElements[0]
+        : options.trigger
+      : null;
+    const paragraphGap = Math.min(stagger * 2, spread / Math.max(validElements.length, 1));
 
-      validElements.forEach((el) => {
-        cleanSplitOnElement(el);
-      });
-
+    const splitOne = (el: HTMLElement, order: number) => {
+      if (isCleanedUp) return;
+      cleanSplitOnElement(el);
       try {
-        const split = SplitText.create(validElements, {
+        const split = SplitText.create(el, {
           type: "lines",
           linesClass: "scroll-reveal-line",
           autoSplit: true,
@@ -95,7 +113,7 @@ export function splitLinesOnScroll(
               { opacity: baseOpacity, y: baseOffset },
               {
                 scrollTrigger: {
-                  trigger: triggerEl,
+                  trigger: triggerEl ?? el,
                   start,
                   once: true,
                 },
@@ -103,7 +121,7 @@ export function splitLinesOnScroll(
                 y: 0,
                 duration,
                 stagger: staggerFor(self.lines.length),
-                delay,
+                delay: delay + (triggerEl ? order * paragraphGap : 0),
                 ease,
               }
             );
@@ -111,59 +129,28 @@ export function splitLinesOnScroll(
             return tween;
           },
         });
-
-        validElements.forEach((el) => {
-          (el as any)._splitTextActive = split;
-        });
+        (el as any)._splitTextActive = split;
         instances.push(split);
       } catch (err) {
         console.warn("splitLinesOnScroll error:", err);
       }
-    } else {
-      // Natural Waterfall: Each element gets its own trigger in reading order!
-      validElements.forEach((el) => {
-        cleanSplitOnElement(el);
+      // The lines now hold the paragraph hidden themselves.
+      unhide(el);
+    };
 
-        try {
-          const split = SplitText.create(el, {
-            type: "lines",
-            linesClass: "scroll-reveal-line",
-            autoSplit: true,
-            onSplit: (self) => {
-              if (!self.lines || !self.lines.length) return;
-              const tween = gsap.fromTo(
-                self.lines,
-                { opacity: baseOpacity, y: baseOffset },
-                {
-                  scrollTrigger: {
-                    trigger: el,
-                    start,
-                    once: true,
-                  },
-                  opacity: 1,
-                  y: 0,
-                  duration,
-                  stagger: staggerFor(self.lines.length),
-                  delay,
-                  ease,
-                }
-              );
-              if (tween.scrollTrigger) triggers.push(tween.scrollTrigger);
-              return tween;
-            },
-          });
-
-          (el as any)._splitTextActive = split;
-          instances.push(split);
-        } catch (err) {
-          console.warn("splitLinesOnScroll error:", err);
-        }
-      });
-    }
-
-    if (triggers.length > 0) {
-      ScrollTrigger.refresh();
-    }
+    // Within a screen of view: split now (in turn). Further down: when it gets that close.
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          observer?.unobserve(el);
+          splitQueue.add(el, () => splitOne(el, validElements.indexOf(el)));
+        });
+      },
+      { rootMargin: "0px 0px 100% 0px" },
+    );
+    validElements.forEach((el) => observer?.observe(el));
   };
 
   if (typeof document !== "undefined" && document.fonts?.ready) {
@@ -174,6 +161,8 @@ export function splitLinesOnScroll(
 
   return () => {
     isCleanedUp = true;
+    observer?.disconnect();
+    elements.forEach((el) => splitQueue.remove(el));
     triggers.forEach((st) => {
       try {
         st.kill();
@@ -187,9 +176,47 @@ export function splitLinesOnScroll(
     });
     elements.forEach((el) => {
       delete (el as any)._splitTextActive;
+      unhide(el);
     });
   };
 }
+
+/** Paragraphs waiting to be split, done in reading order a few at a time per frame so the page
+ *  never freezes while it is being prepared. */
+const splitQueue = (() => {
+  const jobs: { el: HTMLElement; run: () => void }[] = [];
+  let scheduled = false;
+  const BUDGET_MS = 8;
+  const order = (a: HTMLElement, b: HTMLElement) =>
+    a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+  const tick = () => {
+    scheduled = false;
+    const startAt = performance.now();
+    // Always at least one per frame, then as many as fit in the budget.
+    do {
+      const job = jobs.shift();
+      if (!job) break;
+      job.run();
+    } while (jobs.length && performance.now() - startAt < BUDGET_MS);
+    if (jobs.length) schedule();
+  };
+  const schedule = () => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(tick);
+  };
+  return {
+    add(el: HTMLElement, run: () => void) {
+      jobs.push({ el, run });
+      jobs.sort((a, b) => order(a.el, b.el));
+      schedule();
+    },
+    remove(el: HTMLElement) {
+      const i = jobs.findIndex((j) => j.el === el);
+      if (i >= 0) jobs.splice(i, 1);
+    },
+  };
+})();
 
 function cleanSplitOnElement(el: HTMLElement) {
   if ((el as any)._splitTextActive) {

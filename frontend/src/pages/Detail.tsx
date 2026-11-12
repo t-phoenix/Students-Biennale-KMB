@@ -426,7 +426,7 @@ export function Detail() {
                 >
                   {a.image ? (
                     <span className="detail__cards-media">
-                      <img src={a.image} alt="" />
+                      <img src={a.image} alt="" loading="lazy" decoding="async" />
                     </span>
                   ) : (
                     <span className="detail__cards-media" aria-hidden />
@@ -568,7 +568,7 @@ export function Detail() {
                 >
                   {a.image ? (
                     <span className="detail__cards-media">
-                      <img src={a.image} alt="" />
+                      <img src={a.image} alt="" loading="lazy" decoding="async" />
                     </span>
                   ) : (
                     <span className="detail__cards-media" aria-hidden />

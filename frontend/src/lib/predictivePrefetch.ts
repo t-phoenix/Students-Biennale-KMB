@@ -17,6 +17,7 @@ import {
   preloadUrls,
   preloadUrlsConcurrent,
   whenIdle,
+  preloadInTurn,
 } from "./preloadImages";
 import {
   peekHomeProgrammesBannerUrl,
@@ -113,7 +114,8 @@ export function prefetchNextArtwork(
   const idx = artworks.findIndex((row) => row.id === currentId);
   if (idx < 0 || !artworks.length) return;
   const next = artworks[(idx + 1) % artworks.length];
-  prefetchArtworkGallery(next);
+  // Only needed if NEXT is pressed: fetched in turn once this page is showing.
+  if (next) preloadInTurn(artworkImages(next));
 }
 
 /** Hero images for a primary nav destination. */

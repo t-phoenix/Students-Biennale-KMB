@@ -5,7 +5,7 @@ import { curatorsForArtworkIn, useEditionCatalogue } from "../lib/catalogue";
 import { useSlideGesture } from "../lib/gesture";
 import { gsap, useGSAP, prefersReducedMotion } from "../lib/motion";
 import { SLIDER_CROSSFADE, SLIDER_HOLD_SECONDS } from "../lib/imageSlider";
-import { preloadAdjacent, preloadUrls } from "../lib/preloadImages";
+import { preloadAdjacent, preloadUrl, preloadInTurn } from "../lib/preloadImages";
 import { useCarouselDotsTone } from "../lib/useCarouselDotsTone";
 import { CarouselNavArrows } from "./CarouselNavArrows";
 import { FormattedParagraphs } from "./FormattedText";
@@ -43,15 +43,17 @@ export function ArtworkDetailBody({ artwork: a, highlightQuery = "" }: Props) {
     setLightboxOpen(false);
   }, [a.id, slides.length]);
 
-  // Warm the full gallery as soon as the artwork opens — the carousel
-  // auto-advances every 4s, so upcoming slides should already be decoded.
+  // The picture you tapped first, on its own. The rest of the gallery follows one picture at a
+  // time once the page is showing (the slideshow's next change is seconds away).
   useEffect(() => {
     if (!slides.length) return;
-    void preloadUrls(slides, "high", 0);
+    void preloadUrl(slides[0], "high");
+    preloadInTurn(slides.slice(1));
   }, [a.id, slides]);
 
+  // Once someone moves through the pictures, the ones either side are wanted now.
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || heroIndex === 0) return;
     void preloadAdjacent(slides, heroIndex, 1, "high");
   }, [heroIndex, slides]);
 

@@ -154,6 +154,27 @@ export function preloadAdjacent(
   return preloadUrls(picked, priority, picked.indexOf(urls[clamped]));
 }
 
+/**
+ * Pictures that are only needed later (other slides, the next artwork): fetched one after
+ * another, starting once the page has shown, so they never compete with what is on screen.
+ */
+const turnQueue: string[] = [];
+let turnRunning = false;
+export function preloadInTurn(urls: readonly string[]) {
+  for (const url of urls) {
+    if (url && !preloaded.has(url) && !inflight.has(url) && !turnQueue.includes(url)) turnQueue.push(url);
+  }
+  if (turnRunning || !turnQueue.length) return;
+  turnRunning = true;
+  whenIdle(async () => {
+    while (turnQueue.length) {
+      const next = turnQueue.shift()!;
+      await preloadUrl(next, "low").catch(() => undefined);
+    }
+    turnRunning = false;
+  }, 1200);
+}
+
 /** Run work when the browser is idle — falls back to a short timeout. */
 export function whenIdle(task: () => void, timeoutMs = 1800) {
   if (typeof window === "undefined") return;

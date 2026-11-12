@@ -1,5 +1,5 @@
 import { useEffect, useState, type ImgHTMLAttributes } from "react";
-import { preloadUrl } from "../lib/preloadImages";
+import { preloadInTurn, preloadUrl } from "../lib/preloadImages";
 import { BrandImageLoader } from "./BrandImageLoader";
 
 type Props = Omit<ImgHTMLAttributes<HTMLImageElement>, "src"> & {
@@ -59,9 +59,8 @@ export function PreloadedImage({
 
   useEffect(() => {
     if (!prefetch?.length) return;
-    for (const url of prefetch) {
-      if (url && url !== src) void preloadUrl(url);
-    }
+    // The other pictures load one after another once this one is showing, not all at once.
+    preloadInTurn(prefetch.filter((url) => url && url !== src));
   }, [prefetch, src]);
 
   const mergedStyle = {
