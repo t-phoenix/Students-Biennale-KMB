@@ -402,10 +402,10 @@
   display: none;
 }
 
-/* Credit + dots — cols 10–12, right-aligned as a unit */
+/* Credit + dots — cols 6–12, right-aligned as a unit so long titles never overflow */
 .home-hero__meta {
-  grid-column: 10 / span 3;
-  justify-self: stretch;
+  grid-column: 6 / -1;
+  justify-self: end;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -413,11 +413,16 @@
   pointer-events: auto;
   color: var(--color-text-inverse);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  max-width: 100%;
 }
 
 .home-hero__credit {
   width: 100%;
+  max-width: 100%;
   text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .home-hero__artwork {
@@ -425,7 +430,10 @@
   font-size: var(--type-title-size);
   line-height: var(--type-title-line);
   font-weight: 600;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
 }
 
 /* Credit hierarchy: artwork (title, H1 level) > artist (subtitle, H2 level) > institution
@@ -435,6 +443,10 @@
   font-size: var(--type-subtitle-size);
   line-height: var(--type-subtitle-line);
   font-weight: var(--type-subtitle-weight);
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
 }
 
 .home-hero__inst {
@@ -442,12 +454,16 @@
   font-size: var(--type-body-size);
   line-height: var(--type-body-line);
   font-weight: 500;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: right;
 }
 
-/* Tablet Hero Credits Right Alignment & Clean Spacing — Text Alignment Only */
-@media (min-width: 600px) and (max-width: 1024px) {
+/* Tablet & iPad Pro (including iPad Pro 13" 1032px) Hero Credits Right Alignment & Clean Spacing */
+@media (min-width: 600px) and (max-width: 1199px) {
   .home-hero__meta {
-    grid-column: 7 / span 6;
+    grid-column: 6 / -1;
     justify-self: end;
   }
 
@@ -463,6 +479,8 @@
     line-height: 1.25;
     white-space: normal;
     word-break: break-word;
+    overflow-wrap: break-word;
+    text-align: right;
   }
 
   .home-hero__artist {
@@ -471,12 +489,17 @@
     font-weight: 500;
     white-space: normal;
     word-break: break-word;
+    overflow-wrap: break-word;
+    text-align: right;
   }
 
   .home-hero__inst {
     font-size: 14px;
     line-height: 1.35;
     white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    text-align: right;
   }
 }
 
@@ -717,7 +740,7 @@
    Eliminate the large blank area after EXPLORE EDITION by releasing
    the 100vh minimum container height and tightening the bottom padding. */
 @media (min-width: 768px) and (max-width: 1366px) and (orientation: landscape),
-       (min-width: 768px) and (max-width: 1024px) and (orientation: portrait),
+       (min-width: 768px) and (max-width: 1199px) and (orientation: portrait),
        (hover: none) and (pointer: coarse) and (min-width: 768px) and (max-width: 1366px) {
   .home-edition-wrap {
     min-height: auto;
