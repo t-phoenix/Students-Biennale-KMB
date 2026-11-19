@@ -91,7 +91,7 @@
 /* Three equally spaced columns with comfortable breathing room from the line */
 .site-footer__nav {
   display: grid;
-  grid-template-columns: 1.15fr 0.95fr 1.65fr;
+  grid-template-columns: 1.1fr 0.9fr 1.7fr;
   column-gap: 40px;
   padding-inline-start: 72px;
   padding-top: 120px;
@@ -185,7 +185,7 @@ a.site-footer__header {
   height: 100%;
 }
 
-@media (max-width: 999px) {
+@media (max-width: 1199px) {
   .site-footer {
     grid-template-columns: 1fr;
     padding: 48px var(--grid-margin) 60px;
@@ -240,7 +240,7 @@ a.site-footer__header {
     padding-top: 0;
     row-gap: 28px;
     grid-template-columns: 1.15fr 0.9fr 1.8fr;
-    column-gap: 24px;
+    column-gap: clamp(20px, 2.5vw, 28px);
   }
 
   .site-footer__contact-link {
