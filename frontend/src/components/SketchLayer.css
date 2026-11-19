@@ -34,7 +34,7 @@
 .scribble-layer.is-sketch .scribble-layer__canvas {
   pointer-events: auto;
   cursor: none;
-  touch-action: none;
+  touch-action: pan-y;
 }
 
 .scribble-layer.is-drawing .scribble-layer__canvas {

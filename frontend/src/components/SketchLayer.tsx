@@ -828,29 +828,16 @@ export function SketchLayer() {
         const m = modeRef.current;
         if (!penActiveRef.current || (m !== 'sketch' && m !== 'drawing')) return;
         const canvas = canvasRef.current;
-        if (canvas) {
-          const { isInteractive, isDisallowed } = getInteractiveOrHero(
-            canvas,
-            cursorRef.current.x,
-            cursorRef.current.y
-          );
-          if (!isInteractive && !isDisallowed) {
-            canvas.style.pointerEvents = 'auto';
-          }
-        }
-      }, 50);
+        if (canvas) canvas.style.pointerEvents = 'auto';
+      }, 80);
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
       const canvas = canvasRef.current;
-      const hasStylus = Array.from(e.touches).some((t: any) => t.touchType === 'stylus');
       if (e.touches.length === 0 && modeRef.current === 'navigate' && canvas) {
         canvas.style.pointerEvents = 'none';
       }
-      // Re-arm when stylus lifts, even if palm/finger is still resting on the screen
-      if (!hasStylus && penActiveRef.current && (modeRef.current === 'sketch' || modeRef.current === 'drawing')) {
-        rearmForPen();
-      }
+      if (e.touches.length === 0) rearmForPen();
     };
 
     const handlePointerMove = (e: PointerEvent) => {
@@ -913,7 +900,7 @@ export function SketchLayer() {
       if ((m === 'nudge' || m === 'sketch' || m === 'drawing') && isDisallowed) {
         if (m === 'nudge') {
           dismissNudge();
-        } else if (m === 'drawing') {
+        } else if (m === 'drawing' && currentStrokeRef.current) {
           commitStroke();
           setModeBoth('sketch');
           redraw();
@@ -959,13 +946,6 @@ export function SketchLayer() {
         return;
       }
 
-      // If previous stroke was interrupted or missed pointerup (e.g. fast strokes or palm lift),
-      // cleanly commit it and reset mode so this stroke starts reliably
-      if (modeRef.current === 'drawing') {
-        commitStroke();
-        setModeBoth('sketch');
-      }
-
       if (modeRef.current !== 'sketch') return;
 
       // Mouse requires left button (0); pen touches are always accepted
@@ -989,8 +969,10 @@ export function SketchLayer() {
       pendingTargetClickRef.current = null;
       if (isFormElement(e.target)) return;
 
-      // Do not block strokes when e.detail >= 2!
-      // In drawing applications, repeated taps or quick strokes must always be captured.
+      if (e.detail >= 2) {
+        e.preventDefault();
+        return;
+      }
 
       if (!canvas) return;
 
@@ -1041,14 +1023,13 @@ export function SketchLayer() {
           window.addEventListener('click', swallow, { capture: true, once: true });
           window.setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 500);
         }
-        rearmForPen();
-        return;
       }
 
-      if (modeRef.current !== 'drawing') {
-        if (penActiveRef.current) rearmForPen();
-        return;
-      }
+      // A Pencil has no hover on most iPads, so the pen surface can't be switched back on as the
+      // pen approaches: switch it back on as soon as this tap is done.
+      if (e.pointerType !== 'mouse') rearmForPen();
+
+      if (modeRef.current !== 'drawing') return;
 
       commitStroke();
       setModeBoth('sketch');
@@ -1062,12 +1043,13 @@ export function SketchLayer() {
 
         // Immediately reconcile pointerEvents and cursor after stroke completion
         const { isInteractive, isDisallowed } = getInteractiveOrHero(canvas, e.clientX, e.clientY);
-        if (isInteractive || isDisallowed) {
+        if (e.pointerType !== 'mouse' && penActiveRef.current) {
+          // Pen: the surface stays on for the next stroke (re-armed above).
+        } else if (isInteractive || isDisallowed) {
           canvas.style.pointerEvents = 'none';
           document.documentElement.classList.add('scribble-cursor-allow-hero');
           cursorOnRef.current = false;
           setCursor((c) => ({ ...c, on: false }));
-          if (penActiveRef.current) rearmForPen();
         } else {
           canvas.style.pointerEvents = 'auto';
           document.documentElement.classList.remove('scribble-cursor-allow-hero');
@@ -1145,21 +1127,10 @@ export function SketchLayer() {
     // A stroke whose pointer is taken away - palm rejection, a system gesture, switching window
     // mid-stroke - is kept as drawn instead of being left half-open.
     const handleInterrupted = () => {
-      if (modeRef.current === 'drawing') {
-        commitStroke();
-        setModeBoth('sketch');
-        redraw();
-      }
-      if (penActiveRef.current && canvasRef.current) {
-        const { isInteractive, isDisallowed } = getInteractiveOrHero(
-          canvasRef.current,
-          cursorRef.current.x,
-          cursorRef.current.y
-        );
-        if (!isInteractive && !isDisallowed) {
-          canvasRef.current.style.pointerEvents = 'auto';
-        }
-      }
+      if (modeRef.current !== 'drawing') return;
+      commitStroke();
+      setModeBoth('sketch');
+      redraw();
     };
     const handleVisibility = () => {
       if (document.hidden) handleInterrupted();

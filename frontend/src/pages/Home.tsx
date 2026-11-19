@@ -1396,7 +1396,7 @@ export function Home() {
                       onClick={(e) => {
                         const isTouchOrTablet =
                           typeof window !== "undefined" &&
-                          (window.innerWidth <= 1199 ||
+                          (window.innerWidth <= 1024 ||
                             window.matchMedia("(hover: none), (pointer: coarse)").matches);
 
                         if (isTouchOrTablet) {
@@ -1415,7 +1415,7 @@ export function Home() {
                           e.preventDefault();
                           const isTouchOrTablet =
                             typeof window !== "undefined" &&
-                            (window.innerWidth <= 1199 ||
+                            (window.innerWidth <= 1024 ||
                               window.matchMedia("(hover: none), (pointer: coarse)").matches);
 
                           if (isTouchOrTablet) {
