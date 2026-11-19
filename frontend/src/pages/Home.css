@@ -1221,7 +1221,8 @@
   letter-spacing: 0;
   color: var(--color-text-primary);
   text-align: left;
-  max-width: 480px;
+  max-width: none;
+  white-space: nowrap;
 }
 
 .home-about__sponsors-grid {
@@ -2103,6 +2104,10 @@
 }
 
 @media (max-width: 599px) {
+  .home-about__sponsor-caption {
+    white-space: normal;
+  }
+
   .home-press__header {
     flex-direction: row !important;
     align-items: flex-start !important;
