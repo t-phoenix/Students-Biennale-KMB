@@ -430,6 +430,11 @@
     width: 100%;
   }
 
+  .press__back .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+
   .press__next {
     grid-column: auto;
     justify-self: auto;

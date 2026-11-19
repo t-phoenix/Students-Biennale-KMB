@@ -222,6 +222,11 @@
     flex: 0 0 auto;
   }
 
+  .past-workshop-detail__back .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+
   .past-workshop-detail__next {
     justify-self: auto;
     margin-left: auto;

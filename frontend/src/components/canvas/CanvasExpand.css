@@ -254,6 +254,11 @@
     flex: 0 0 auto;
   }
 
+  .canvas-expand__bottom-back .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
+
   .canvas-expand__next-wrap {
     grid-column: auto;
     flex: 0 0 auto;

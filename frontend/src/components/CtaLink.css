@@ -27,11 +27,103 @@
   width: fit-content;
   text-align: right;
   align-items: flex-end;
-  font-family: var(--font-body, "Degular Variable", sans-serif);
+  font-family: var(--font-family, "Degular Variable", "Degular", system-ui, sans-serif);
   font-size: 25px;
   line-height: 1;
   font-weight: 400;
   text-transform: uppercase;
+}
+
+/* Next navigation variant: strictly matches BACK button typography and sizing across all devices */
+.cta-link--variant-next,
+.detail__next,
+.press__next,
+.past-workshop-detail__next,
+.residencies__next,
+.canvas-expand__next,
+.scholar-spotlight__next-btn,
+.edition-overview__next {
+  gap: 12px;
+}
+
+.cta-link--variant-next .cta-link__label,
+.detail__next .cta-link__label,
+.press__next .cta-link__label,
+.past-workshop-detail__next .cta-link__label,
+.residencies__next .cta-link__label,
+.canvas-expand__next .cta-link__label,
+.scholar-spotlight__next-btn .cta-link__label,
+.edition-overview__next .cta-link__label {
+  font-family: var(--font-family, "Degular Variable", "Degular", system-ui, sans-serif);
+  font-size: var(--type-subtitle-size);
+  line-height: var(--type-subtitle-line);
+  font-weight: inherit;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  text-align: right;
+  align-items: flex-end;
+}
+
+.cta-link--variant-next .cta-link__line,
+.detail__next .cta-link__line,
+.press__next .cta-link__line,
+.past-workshop-detail__next .cta-link__line,
+.residencies__next .cta-link__line,
+.canvas-expand__next .cta-link__line,
+.scholar-spotlight__next-btn .cta-link__line,
+.edition-overview__next .cta-link__line {
+  letter-spacing: 0.055em !important;
+  margin-right: -0.055em !important;
+  line-height: inherit;
+}
+
+.cta-link--variant-next .brand-arrow,
+.detail__next .brand-arrow,
+.press__next .brand-arrow,
+.past-workshop-detail__next .brand-arrow,
+.residencies__next .brand-arrow,
+.canvas-expand__next .brand-arrow,
+.scholar-spotlight__next-btn .brand-arrow,
+.edition-overview__next .brand-arrow {
+  width: 44px;
+  height: 44px;
+}
+
+@media (max-width: 899px) {
+  .cta-link--variant-next,
+  .detail__next,
+  .press__next,
+  .past-workshop-detail__next,
+  .residencies__next,
+  .canvas-expand__next,
+  .scholar-spotlight__next-btn,
+  .edition-overview__next {
+    gap: 12px;
+  }
+
+  .cta-link--variant-next .cta-link__label,
+  .detail__next .cta-link__label,
+  .press__next .cta-link__label,
+  .past-workshop-detail__next .cta-link__label,
+  .residencies__next .cta-link__label,
+  .canvas-expand__next .cta-link__label,
+  .scholar-spotlight__next-btn .cta-link__label,
+  .edition-overview__next .cta-link__label {
+    font-size: var(--type-subtitle-size);
+    line-height: var(--type-subtitle-line);
+  }
+
+  .cta-link--variant-next .brand-arrow,
+  .detail__next .brand-arrow,
+  .press__next .brand-arrow,
+  .past-workshop-detail__next .brand-arrow,
+  .residencies__next .brand-arrow,
+  .canvas-expand__next .brand-arrow,
+  .scholar-spotlight__next-btn .brand-arrow,
+  .edition-overview__next .brand-arrow {
+    width: 35px;
+    height: 35px;
+  }
 }
 
 .cta-link--left .cta-link__label {

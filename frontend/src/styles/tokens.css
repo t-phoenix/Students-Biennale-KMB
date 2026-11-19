@@ -43,6 +43,7 @@
 
   /* Type — Degular Variable (load font separately) */
   --font-family: "Degular Variable", "Degular", system-ui, sans-serif;
+  --font-body: var(--font-family);
 
   --type-title-size: 26px;
   --type-title-line: 34px;

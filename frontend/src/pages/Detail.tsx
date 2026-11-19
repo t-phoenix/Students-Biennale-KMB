@@ -592,6 +592,7 @@ export function Detail() {
           {nextVenue ? (
             <CtaLink
               className="detail__next"
+              variant="next"
               to={`/editions/${yearId}/venue/${nextVenue.id}`}
               lines={["NEXT"]}
               ariaLabel={`Next venue: ${nextVenue.name}`}

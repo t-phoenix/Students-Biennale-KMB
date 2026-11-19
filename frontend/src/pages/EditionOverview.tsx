@@ -843,6 +843,7 @@ function cleanIntroParagraphs(
           ) : (
             <CtaLink
               className="fig-cta-end edition-overview__next"
+              variant="next"
               to={`/editions/${nextId}`}
               lines={["Next", "Edition"]}
               direction="right"

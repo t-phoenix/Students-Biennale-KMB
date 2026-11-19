@@ -75,10 +75,14 @@ export function getCtaLineText(item: CtaLineItem): string {
 
 export function resolveCtaSpacing(
   lines: readonly CtaLineItem[],
-  explicit?: readonly string[]
+  explicit?: readonly string[],
+  variant?: "chevron" | "next"
 ): readonly string[] {
   if (explicit && explicit.length > 0) {
     return explicit;
+  }
+  if (variant === "next") {
+    return lines.map(() => "0.055em");
   }
   const phrase = lines.map(getCtaLineText).join(" ").trim().toUpperCase();
   if (CTA_PHRASE_SPACINGS[phrase]) {
@@ -113,12 +117,21 @@ export function CtaLink({
   lines,
   spacing,
   direction,
+  variant,
   className,
   onClick,
   ariaLabel,
 }: CtaLinkProps) {
+  const isNextVariant =
+    variant === "next" ||
+    Boolean(
+      className &&
+        /(detail__next|press__next|past-workshop-detail__next|residencies__next|canvas-expand__next|edition-overview__next|scholar-spotlight__next)/.test(
+          className
+        )
+    );
   const dir = resolveCtaDirection(lines, direction);
-  const activeSpacing = resolveCtaSpacing(lines, spacing);
+  const activeSpacing = resolveCtaSpacing(lines, spacing, isNextVariant ? "next" : variant);
   const label = ariaLabel ?? lines.map(getCtaLineText).join(" ");
   const isLeft = dir === "left";
   const phrase = lines.map(getCtaLineText).join(" ").trim().toUpperCase();
@@ -127,6 +140,7 @@ export function CtaLink({
   const classes = [
     "cta-link",
     `cta-link--${dir}`,
+    isNextVariant ? "cta-link--variant-next" : "",
     justifiedConfig ? "cta-link--justified" : "",
     className,
   ]

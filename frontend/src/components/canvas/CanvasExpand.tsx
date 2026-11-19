@@ -391,6 +391,7 @@ export function CanvasExpand({ item, origin, originEl, onClose, onCloseStart, on
                 <div className="canvas-expand__next-wrap">
                   <CtaLink
                     className="canvas-expand__next"
+                    variant="next"
                     onClick={goNextArtwork}
                     lines={["NEXT", "ARTWORK"]}
                   />

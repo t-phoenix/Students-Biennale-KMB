@@ -44,6 +44,11 @@ describe("CtaLink typography & justified lockups", () => {
     expect(resolveCtaSpacing(["NEXT"])).toEqual(["0.135em"]);
   });
 
+  it("resolves variant='next' to 0.055em letter-spacing matching BACK typography", () => {
+    expect(resolveCtaSpacing(["NEXT"], undefined, "next")).toEqual(["0.055em"]);
+    expect(resolveCtaSpacing(["NEXT", "ARTWORK"], undefined, "next")).toEqual(["0.055em", "0.055em"]);
+  });
+
   it("honors explicit spacing overrides when provided", () => {
     const custom = ["0.1em", "0.1em"];
     expect(resolveCtaSpacing(["Students' Biennale", "2023-24"], custom)).toEqual(custom);
