@@ -109,8 +109,12 @@ export default function App() {
               </Suspense>
             </ErrorBoundary>
             <SplashScreen />
-            <SpeedInsights />
-            <Analytics />
+            <SpeedInsights
+              beforeSend={(event) => (new URL(event.url).pathname.startsWith("/admin") ? null : event)}
+            />
+            <Analytics
+              beforeSend={(event) => (new URL(event.url).pathname.startsWith("/admin") ? null : event)}
+            />
           </SplashProvider>
         </HomeCmsProvider>
       </BrowserRouter>

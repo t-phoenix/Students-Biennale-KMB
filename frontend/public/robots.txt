@@ -1,0 +1,31 @@
+# Students' Biennale — https://www.studentsbiennale.org
+#
+# Search engines and AI answer engines (Google, Bing, ChatGPT search,
+# Claude, Perplexity…) may read and cite everything except the CMS.
+User-agent: *
+Allow: /
+Disallow: /admin
+
+# AI model-training crawlers may read the text, but not the artwork images.
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+User-agent: CCBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bytespider
+User-agent: meta-externalagent
+User-agent: cohere-training-data-crawler
+User-agent: Diffbot
+User-agent: omgili
+Allow: /
+Disallow: /admin
+Disallow: /*.jpg$
+Disallow: /*.jpeg$
+Disallow: /*.png$
+Disallow: /*.webp$
+Disallow: /*.avif$
+Disallow: /*.gif$
+Disallow: /*.mp4$
+
+Sitemap: https://www.studentsbiennale.org/sitemap.xml

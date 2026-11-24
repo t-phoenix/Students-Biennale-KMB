@@ -1,0 +1,33 @@
+# Students' Biennale
+
+> The Students' Biennale is the Kochi Biennale Foundation's flagship educational initiative and one of the most significant platforms for emerging artists in India. Established in 2014, it runs parallel to each edition of the Kochi-Muziris Biennale in Kochi, Kerala, and gives students and recent graduates from art institutions across India the chance to exhibit within an international contemporary art exhibition.
+
+The programme is both an exhibition and an evolving educational initiative: exhibitions, workshops, residencies, mentorship programmes, public talks, research projects, awards and international exchanges. Each edition brings together participants from art schools across India through curatorial research, institutional collaborations and open calls.
+
+Organiser: Kochi Biennale Foundation, Indian Chamber Centenary Building, Indian Chamber Road, Mattancherry, Kochi, Kerala 682002, India. Supported by Tata Trusts since 2016.
+
+Text on this site may be quoted with attribution. Artwork images belong to the artists and may not be used to train AI models.
+
+## Editions
+
+- [Students' Biennale 2025–26](https://www.studentsbiennale.org/editions/2025-26): latest edition
+- [Students' Biennale 2022–23](https://www.studentsbiennale.org/editions/2022-23)
+- [Students' Biennale 2020–21](https://www.studentsbiennale.org/editions/2020-21)
+- [Students' Biennale 2018–19](https://www.studentsbiennale.org/editions/2018-19)
+- [Students' Biennale 2016–17](https://www.studentsbiennale.org/editions/2016-17)
+- [Students' Biennale 2014–15](https://www.studentsbiennale.org/editions/2014-15): first edition
+
+Each edition has curators, artworks, artists and venue pages, for example `/editions/2022-23/curators`.
+
+## Explore
+
+- [All artworks](https://www.studentsbiennale.org/artworks): every artwork across editions
+- [Programmes](https://www.studentsbiennale.org/programmes): workshops, residencies and awards
+- [Residencies](https://www.studentsbiennale.org/programmes/residencies)
+- [Raza-Students' Biennale Scholarship](https://www.studentsbiennale.org/programmes/raza-scholarship): international exchange award with the Raza Foundation, Institut Français India and Beaux-Arts de Marseille
+- [Press](https://www.studentsbiennale.org/press)
+
+## Related
+
+- [Kochi-Muziris Biennale](https://kochimuzirisbiennale.org/)
+- [Instagram](https://www.instagram.com/studentsbiennale/)

@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import { track } from "@vercel/analytics";
 
 interface Props {
   children: ReactNode;
@@ -22,6 +23,11 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("ErrorBoundary caught an unhandled error:", error, errorInfo);
+    // Shows up in Vercel Web Analytics → Events → "crash", broken down by page.
+    track("crash", {
+      path: window.location.pathname,
+      message: String(error?.message ?? error).slice(0, 200),
+    });
 
     // If this is a chunk load failure or dynamically imported module failure:
     const isChunkError =
