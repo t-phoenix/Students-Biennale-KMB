@@ -151,7 +151,7 @@ The site is rendered in the browser. Most AI crawlers don't run JavaScript, so t
 | Supabase sign-ups | ✅ disabled; anonymous sign-in disabled |
 | Supabase RLS | ✅ anon sees only published rows (checked live on programmes, press, about); `import_sources` denied; writes require `app_metadata.role` = cms/admin (not user-editable) |
 | HD originals bucket | ✅ private |
-| **Public bucket listing** | ❌ **Anyone can list every file in `sb-assets-public`**, which makes bulk-downloading all artworks a one-liner. Fix written: `database/supabase/migrations/20261125120000_close_public_bucket_listing.sql`. **Not applied yet** (see below) |
+| Public bucket listing | ✅ **Fixed 25 Nov.** Anonymous listing of `sb-assets-public` is closed: it returned 6 top-level folders, now returns 0. Images and resized thumbnails still load (540/540 on /artworks). CMS admins keep read access |
 
 ## Code
 
@@ -167,6 +167,50 @@ The site is rendered in the browser. Most AI crawlers don't run JavaScript, so t
 
 ## Still to do (you)
 
-1. **Apply the storage migration.** The Supabase migration history has drifted: two migrations exist only on the server, and two exist only locally (`20260927120000`, `20261001121542`). `supabase db push` would try to re-run old ones. The safe route is to paste the migration's SQL into the Supabase SQL Editor once.
-2. **Supabase Auth hardening** for CMS accounts: turn on leaked-password protection and MFA (Authentication → Settings).
-3. **Vercel notifications:** turn on failed deployments and usage alerts.
+1. **Supabase Auth hardening** for CMS accounts: turn on leaked-password protection and MFA (Authentication → Settings).
+2. **Vercel notifications:** turn on failed deployments and usage alerts.
+
+# Database sync and hardening (25 Nov 2026)
+
+## Why the migrations had drifted
+Two migrations were applied straight to the live database through the Supabase dashboard/SQL tooling, not with `supabase db push`. Applying them that way stamps them with the time they were run. The repo files had been given hand-picked timestamps, so the same migration had two different version numbers:
+
+| Migration | Repo version (old) | Live version |
+|---|---|---|
+| rename_previous_edition_publications | 20260927120000 | 20260926234033 |
+| award_winner_cover_asset | 20261001121542 | 20261001121646 |
+
+The SQL is identical on both sides (checked statement by statement), so the database itself was never out of sync, only the version labels. Running `supabase db push` would have re-run both: deleting a publication row again and rewriting catalogue snapshots.
+
+**Fix:** renamed the two repo files to the live version numbers. No database change was needed. `supabase migration list` now shows 26/26 in sync.
+
+**To avoid it again:** add migrations with `supabase migration new <name>` and apply them with `supabase db push`, or, if you use the dashboard, copy the version it records back into the file name.
+
+## What was applied
+Migration `20261125120000_close_public_bucket_listing`, run in one transaction and recorded in the migration history:
+1. Anonymous users can no longer list the public image bucket. Files are still served by URL, and CMS admins keep read access.
+2. Removed unused `REFERENCES` and `TRIGGER` privileges from `anon` and `authenticated` on all public tables, including future ones. The API never uses them.
+
+No data was touched. Row counts are identical before and after (editions 6, programmes 15, press 6, home covers 3, award winners 13, about 4, assets 699, people 241, institutions 70).
+
+**Rollback** (if ever needed):
+```sql
+drop policy if exists sb_assets_public_cms_read on storage.objects;
+create policy sb_assets_public_read on storage.objects for select
+  to anon, authenticated using (bucket_id = 'sb-assets-public');
+```
+
+**Backup:** a snapshot of every policy, grant, function, bucket and row count from before the change is in `~/Desktop/SB-db-backup-2026-11-25/` (outside the public repo).
+
+## Live database security review
+| Check | Result |
+|---|---|
+| Supabase security advisor | 1 warning: `pg_trgm` extension in `public` schema. Left as is: moving it can break search, and the risk is minimal |
+| RLS enabled on every table | ✅ all 39 tables, views and partitions in public/private/storage |
+| Anonymous writes | ✅ none: no INSERT, UPDATE or DELETE grants or policies for `anon` (verified live: 401) |
+| Draft content | ✅ hidden from the public (published-only policies on programmes, press, artworks, editions, people, asset links, snapshots, covers) |
+| HD originals | ✅ private bucket, CMS-only, and original-variant rows hidden from the public |
+| Personal data | ✅ no email, phone or address columns in public tables |
+| `SECURITY DEFINER` functions | ✅ 3, all with a fixed `search_path`; none callable by the public except `is_cms_admin` (returns a boolean only) |
+| CMS role | ✅ checked from `app_metadata.role` (users can't edit it); sign-ups disabled; 1 CMS account |
+| Not verified | Admin image upload, because I can't sign in to the CMS. The policy it needs (INSERT, plus SELECT for admins) is unchanged or kept |
