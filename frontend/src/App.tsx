@@ -1,6 +1,7 @@
 import { useEffect, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import { Layout } from "./components/Layout";
 import { SplashScreen } from "./components/SplashScreen";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -109,6 +110,7 @@ export default function App() {
             </ErrorBoundary>
             <SplashScreen />
             <SpeedInsights />
+            <Analytics />
           </SplashProvider>
         </HomeCmsProvider>
       </BrowserRouter>
