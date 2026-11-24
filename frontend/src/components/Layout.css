@@ -68,12 +68,16 @@
   --header-h: var(--nav-height);
 }
 
-@media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
-  .site-layout--discover .site-layout__main {
-    height: calc(100dvh - var(--nav-height-mobile));
-    max-height: calc(100dvh - var(--nav-height-mobile));
-  }
+/* The canvas colour, not white, behind iOS Safari's translucent bottom toolbar. */
+html:has(.site-layout--discover),
+html:has(.site-layout--discover) body,
+.site-layout--discover {
+  background: var(--color-neutral-bg-light);
+}
 
+@media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
+  /* No mobile height cut: the header is fixed (out of flow) here, so subtracting
+     its height left an empty strip at the bottom of the canvas. */
   :root {
     --header-h: var(--nav-height-mobile);
   }
