@@ -42,6 +42,9 @@
   max-width: none;
   height: 100dvh;
   max-height: 100dvh;
+  /* Large viewport: reach under Safari's floating bottom toolbar instead of stopping above it. */
+  height: 100lvh;
+  max-height: 100lvh;
   overflow: hidden;
 }
 
@@ -61,6 +64,8 @@
   width: 100%;
   height: 100dvh;
   max-height: 100dvh;
+  height: 100lvh;
+  max-height: 100lvh;
   padding-top: 0;
 }
 
@@ -73,6 +78,11 @@ html:has(.site-layout--discover),
 html:has(.site-layout--discover) body,
 .site-layout--discover {
   background: var(--color-neutral-bg-light);
+}
+
+/* The canvas is taller than the small viewport now; stop the page itself from scrolling. */
+html:has(.site-layout--discover) {
+  overflow: hidden;
 }
 
 @media (max-width: 899px), (max-width: 1024px) and (orientation: portrait) {
