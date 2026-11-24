@@ -1053,7 +1053,7 @@ export function Home() {
         }
         gsap.set(".home-hero__slide", { opacity: 0, visibility: "visible" });
         gsap.set(
-          ".home-hero__card, .home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
+          ".home-hero__card, .home-hero__credit p, .home-hero__mobile-meta, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow",
           { autoAlpha: 0 },
         );
         return;
@@ -1239,7 +1239,7 @@ export function Home() {
           gsap.set(".home-hero__card", { autoAlpha: 1, clearProps: "transform,rotation" });
           gsap.set(".home-hero__stack, .home-hero__meta, .home-hero__mobile-group", { y: 0 });
           gsap.set(".home-hero__slides", { scale: 1 });
-          gsap.set(".home-hero__credit p, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow", {
+          gsap.set(".home-hero__credit p, .home-hero__mobile-meta, .home-hero .carousel-dots, .home-hero .carousel-nav-arrow", {
             autoAlpha: 1,
             y: 0,
           });

@@ -56,9 +56,10 @@ export function SplashScreen() {
       spinTweenRef.current?.kill();
 
       // Reveal hero under the splash at the same scale ScrollTrigger will use (1.12),
-      // so the white-flash handoff does not pop the image size.
+      // so the white-flash handoff does not pop the image size. Desktop only: mobile hero stays
+      // at scale 1, so pre-scaling here made it visibly zoom out once Home cleared it.
       const slidesWrap = document.querySelector<HTMLElement>(".home-hero__slides");
-      if (slidesWrap) {
+      if (slidesWrap && window.innerWidth > 899) {
         gsap.set(slidesWrap, { scale: 1.12, transformOrigin: "center center" });
       }
       const firstSlide = document.querySelector<HTMLElement>(".home-hero__slide:first-child");
