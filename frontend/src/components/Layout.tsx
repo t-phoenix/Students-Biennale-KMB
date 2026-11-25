@@ -75,6 +75,15 @@ export function Layout() {
   const prevProgrammesPathRef = useRef(location.pathname);
   const prevHomePathRef = useRef(location.pathname);
   const splashFadeSuppressedRef = useRef(false);
+  const landingPathRef = useRef(location.pathname);
+
+  // Each page's HTML ships its own title (frontend/prerender.ts); once the visitor moves on,
+  // fall back to the site title so the tab never names a page they have left.
+  useEffect(() => {
+    if (location.pathname !== landingPathRef.current) {
+      document.title = "Students' Biennale | Kochi Biennale Foundation";
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (isDiscover) {
